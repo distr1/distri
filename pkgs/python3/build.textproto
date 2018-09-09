@@ -1,0 +1,61 @@
+source: "https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz"
+hash: "0382996d1ee6aafe59763426cf0139ffebe36984474d0ec4126dd1c40a8b3549"
+version: "3.7.0"
+
+# TODO: file upstream bug
+# TODO: LIBFFI_INCLUDEDIR is hard-coded
+# cherry_pick: "http://t.zekjur.net/py.patch"
+
+# configure runtime requirements:
+dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "sed-4.5"
+dep: "grep-3.1"
+dep: "gawk-4.2.1"
+
+# C build environment:
+dep: "gcc-8.2.0"
+dep: "binutils-2.31"
+dep: "make-4.2.1"
+dep: "glibc-2.27"
+dep: "linux-libc-dev-4.15.4"
+
+# build dependencies:
+dep: "zlib-1.2.11"
+dep: "openssl-1.0.2p"
+dep: "libffi-3.2.1"
+dep: "pkg-config-0.29.2"
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--with-openssl=/ro/openssl-1.0.2p/buildoutput"
+  argv: "LIBFFI_INCLUDEDIR=/ro/libffi-3.2.1/buildoutput/include/"
+>
+
+# HACK: remove once we make available all lib directories under /lib (or /lib64)
+build_step: <
+  argv: "ln"
+  argv: "-s"
+  argv: "/ro/libffi-3.2.1/buildoutput/lib64"
+  argv: "/usr/"
+>
+
+build_step: <
+  argv: "sed"
+  argv: "-i"
+  argv: "s,^#zlib,zlib,g"
+  argv: "Modules/Setup"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ro/gcc-8.2.0/buildoutput/lib64 LIBRARY_PATH=$LIBRARY_PATH:/ro/gcc-8.2.0/buildoutput/lib64 make -j8" # TODO: put this into {,LD_}LIBRARY_PATH in zi
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} make install DESTDIR=${ZI_DESTDIR}"
+>

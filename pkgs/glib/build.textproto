@@ -1,0 +1,7 @@
+source: "https://ftp.gnome.org/pub/gnome/sources/glib/2.57/glib-2.57.3.tar.xz"
+hash: "2d0430f6b7f317675ad73e16e3e865be45b0e4aa40364969a20dcb15e10eef6e"
+version: "2.57.3"
+
+# TODO: glib doesn’t build (release tarball does not have configure?!)
+cbuilder: <>
+

@@ -1,0 +1,51 @@
+source: "http://t.zekjur.net/empty.tar.gz"
+hash: "9eb0136c44c2c33764a36af279a3eac58f4e9ab827e1a771aa15f286ae9ca4c7"
+version: "1"
+
+# configure runtime requirements:
+dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "sed-4.5"
+dep: "grep-3.1"
+dep: "gawk-4.2.1"
+
+# C build environment:
+dep: "gcc-8.2.0"
+dep: "binutils-2.31"
+dep: "make-4.2.1"
+dep: "glibc-2.27"
+dep: "linux-libc-dev-4.15.4"
+
+dep: "strace-4.24"
+dep: "m4-1.4.18"
+
+dep: "libmnl-1.0.4"
+
+dep: "findutils-4.6.0"
+
+# pre-warming for squashfs performance measurements:
+# build_step: <
+#   argv: "find"
+#   argv: "/ro/gcc-8.2.0/buildoutput/bin"
+#   argv: "-exec"
+#   argv: "md5sum"
+#   argv: "{}"
+#   argv: ";"
+# >
+# 
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "gcc -o foo ${ZI_SOURCEDIR}/foo.c -lmnl $LDFLAGS"
+>
+
+# build_step: <
+#   argv: "/bin/sh"
+#   argv: "-i"
+# >
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/bin/foo; mkdir -p $(dirname $d); cp foo $d"
+>

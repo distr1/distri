@@ -1,0 +1,26 @@
+source: "http://mirror.koddos.net/gcc/releases/gcc-8.2.0/gcc-8.2.0.tar.xz"
+hash: "196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080"
+version: "8.2.0"
+
+# configure runtime requirements:
+dep: "bash-4.4.18"
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_DESTDIR}"
+  argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
+  argv: "--with-stage1-ldflags=-static"
+  argv: "--with-boot-ldflags=-static"
+  argv: "--enable-languages=c,c++"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+>
+

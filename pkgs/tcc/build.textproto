@@ -1,0 +1,12 @@
+source: "http://download.savannah.nongnu.org/releases/tinycc/tcc-0.9.27.tar.bz2"
+hash: "de23af78fca90ce32dff2dd45b3432b2334740bb9bb7b05bf60fdbfc396ceb9c"
+version: "0.9.27"
+
+cbuilder: <
+  extra_configure_flag: "--enable-static"
+  extra_configure_flag: "--extra-ldflags=-static"
+  extra_configure_flag: "--crtprefix=/ro/glibc-2.27/buildoutput/lib"
+>
+
+# build dependencies:
+dep: "gzip-1.9"

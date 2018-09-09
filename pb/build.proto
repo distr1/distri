@@ -1,0 +1,37 @@
+syntax = "proto2";
+
+package pb;
+
+message BuildStep {
+  repeated string argv = 1;
+}
+
+message CBuilder {
+  repeated string extra_configure_flag = 1;
+
+  // Packages which don’t support separate builddirs need to use this
+  // kludge. Bugs should be reported with the respective upstream authors.
+  optional bool copy_to_builddir = 2;
+}
+
+message Build {
+  // URL to upstream source archive. Currently, only tar.gz archives are supported.
+  optional string source = 1;
+  // Hash (TODO: describe length, introduce prefixes?) of the upstream source archive.
+  optional string hash = 2;
+  // Version number, to be concatenated to the package name.
+  optional string version = 3;
+
+  oneof builder {
+    CBuilder cbuilder = 7;
+  }
+
+  // TODO: move this field into a custom builder
+  repeated BuildStep build_step = 4;
+
+  repeated string dep = 5;
+
+  // URLs to patches to cherry-pick after extracting the source, e.g.:
+  // https://git.savannah.gnu.org/cgit/make.git/patch/?id=48c8a116a914a325a0497721f5d8b58d5bba34d4
+  repeated string cherry_pick = 6;
+}

@@ -1,0 +1,8 @@
+source: "https://downloads.sourceforge.net/project/docbook2x/docbook2x/0.8.8/docbook2X-0.8.8.tar.gz"
+hash: "4077757d367a9d1b1427e8d5dfc3c49d993e90deabc6df23d05cfe9cd2fcdc45"
+version: "0.8.8"
+
+# build dependencies:
+dep: "perl-5.28.0"
+
+cbuilder: <>

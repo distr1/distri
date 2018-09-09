@@ -1,0 +1,28 @@
+source: "http://t.zekjur.net/empty.tar.gz"
+hash: "9eb0136c44c2c33764a36af279a3eac58f4e9ab827e1a771aa15f286ae9ca4c7"
+version: "1"
+
+dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "glibc-2.27"
+dep: "hello-1"
+dep: "libmnl-1.0.4"
+dep: "systemd-239"
+dep: "util-linux-2.32"
+dep: "libcap-2.25"
+dep: "meson-0.47.1"
+dep: "python3-3.7.0"
+dep: "gcc-8.2.0" # ninja
+dep: "binutils-2.31"
+dep: "grep-3.1"
+dep: "ninja-1.8.2"
+dep: "zlib-1.2.11" # TODO: for python. remove once runtime-deps are installed
+dep: "openssl-1.0.2p" # TODO: for python. remove once runtime-deps are installed
+dep: "libffi-3.2.1" # TODO: for python. remove once runtime-deps are installed
+
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-i"
+>
+

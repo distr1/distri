@@ -1,0 +1,8 @@
+source: "https://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
+hash: "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334"
+version: "7.0"
+
+# build dependencies:
+dep: "ncurses-6.1"
+
+cbuilder: <>

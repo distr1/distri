@@ -1,0 +1,32 @@
+source: "https://github.com/docker/cli/archive/v18.06.1-ce.tar.gz"
+hash: "47eda354afc199693aa338f5b2bb87e4511354c02561ddc6520a06d169921bdf"
+version: "18.06.1-ce"
+
+# configure runtime requirements:
+dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "sed-4.5"
+dep: "grep-3.1"
+dep: "gawk-4.2.1"
+
+# C build environment:
+dep: "gcc-8.2.0"
+dep: "binutils-2.31"
+dep: "make-4.2.1"
+dep: "glibc-2.27"
+dep: "linux-libc-dev-4.15.4"
+
+# Go build environment:
+dep: "golang-1.11"
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+
+# TODO: map GOCACHE into the build environment
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "export GOPATH=$PWD/go && d=go/src/github.com/docker/cli && mkdir -p $d && cd $d && cp -T -ar ${ZI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= make && d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp -H build/docker $d/"
+>
+

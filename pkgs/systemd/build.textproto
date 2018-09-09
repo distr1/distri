@@ -1,0 +1,97 @@
+source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
+hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
+version: "239"
+
+# configure runtime requirements:
+dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "sed-4.5"
+dep: "grep-3.1"
+dep: "gawk-4.2.1"
+
+# C build environment:
+dep: "gcc-8.2.0"
+dep: "binutils-2.31"
+dep: "make-4.2.1"
+dep: "glibc-2.27"
+dep: "linux-libc-dev-4.15.4"
+
+# build dependencies:
+dep: "diffutils-3.6"
+dep: "m4-1.4.18"
+dep: "gperf-3.1"
+dep: "libcap-2.25"
+dep: "pkg-config-0.29.2"
+dep: "util-linux-2.32"
+dep: "gettext-0.19.8.1"
+dep: "meson-0.47.1"
+dep: "ninja-1.8.2"
+dep: "python3-3.7.0"
+dep: "zlib-1.2.11" # TODO: for python. remove once runtime-deps are installed
+dep: "openssl-1.0.2p" # TODO: for python. remove once runtime-deps are installed
+dep: "libffi-3.2.1" # TODO: for python. remove once runtime-deps are installed
+dep: "kmod-25"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ./configure --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
+#  argv: "LDFLAGS=-static"
+>
+
+# workaround for meson to pick up the sed change we are about to do:
+build_step: <
+  argv: "sleep"
+  argv: "1"
+>
+
+build_step: <
+  argv: "sed"
+  argv: "-i"
+  argv: "/shift-overflow/d"
+  argv: "meson.build"
+>
+
+# TODO: this results in no rpath at all :/
+# build_step: <
+#   argv: "sed"
+#   argv: "-i"
+#   argv: "/install_rpath/d"
+#   argv: "meson.build"
+# >
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ninja -C build -v"
+>
+
+# TODO: glibc bug: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sys/mount.h;h=ce2838e3a79caf1f49c9aceacb143ff5e403e50e;hb=HEAD#l85 should read 1UL, not 1:
+# /ro/glibc-2.27/buildoutput/include/sys/mount.h:85:17: error: result of '1 << 31' requires 33 bits to represent, but 'int' only has 32 bits [-Werror=shift-overflow=]
+#   MS_NOUSER = 1 << 31
+#                 ^~
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
+>
+
+# # TODO: figure out why capabilities are not working
+# build_step: <
+#   argv: "/bin/sh"
+#   argv: "-c"
+#   argv: "sed -i 's/^CapabilityBoundingSet=/#CapabilityBoundingSet=/g' ${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system/*.service"
+# >
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,/sbin/agetty,/ro/util-linux-2.32/buildoutput/sbin/agetty,g' ${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system/*getty*"
+>

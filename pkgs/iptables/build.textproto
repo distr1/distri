@@ -1,0 +1,20 @@
+source: "https://netfilter.org/projects/iptables/files/iptables-1.6.2.tar.bz2"
+hash: "55d02dfa46263343a401f297d44190f2a3e5113c8933946f094ed40237053733"
+version: "1.6.2"
+
+# 1.8.0 doesn’t build due to some header-related issue
+# source: "https://netfilter.org/projects/iptables/files/iptables-1.8.0.tar.bz2"
+# hash: "c4cbfa187c4296e4bc2e347ebbc21e309def7274773f20f0df0b8feaf7e8de50"
+# version: "1.8.0"
+
+cbuilder: <
+  extra_configure_flag: "--disable-silent-rules"
+>
+
+# build dependencies:
+dep: "libmnl-1.0.4"
+dep: "libnftnl-1.1.1"
+dep: "bison-3.0.5"
+dep: "flex-2.6.4"
+dep: "pkg-config-0.29.2"
+dep: "m4-1.4.18"

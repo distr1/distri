@@ -1,0 +1,143 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"syscall"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
+)
+
+func mount(args []string) (cleanup func(), _ error) {
+	fset := flag.NewFlagSet("mount", flag.ExitOnError)
+	var (
+		root = fset.String("root",
+			"/ro",
+			"TODO")
+		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
+	)
+	fset.Parse(args)
+	if fset.NArg() != 1 {
+		return nil, fmt.Errorf("syntax: mount <package>")
+	}
+	pkg := fset.Arg(0)
+
+	mountpoint := filepath.Join(*root, pkg)
+	if err := os.MkdirAll(mountpoint, 0755); err != nil {
+		return nil, err
+	}
+
+	// Find the next free loop device:
+	const (
+		LOOP_CTL_GET_FREE = 0x4c82
+		LOOP_SET_FD       = 0x4c00
+		LOOP_SET_STATUS64 = 0x4c04
+	)
+
+	loopctl, err := os.Open("/dev/loop-control")
+	if err != nil {
+		return nil, err
+	}
+	defer loopctl.Close()
+	free, _, errno := unix.Syscall(unix.SYS_IOCTL, loopctl.Fd(), LOOP_CTL_GET_FREE, 0)
+	if errno != 0 {
+		return nil, errno
+	}
+	loopctl.Close()
+	log.Printf("next free: %d", free)
+
+	img, err := os.OpenFile(filepath.Join(*imgDir, pkg+".squashfs"), os.O_RDWR|unix.O_CLOEXEC, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	loopdev := fmt.Sprintf("/dev/loop%d", free)
+	loop, err := os.OpenFile(loopdev, os.O_RDWR|unix.O_CLOEXEC, 0644)
+	if err != nil {
+		return nil, err
+	}
+	defer loop.Close()
+	// TODO: get this into x/sys/unix
+	type LoopInfo64 struct {
+		device         uint64
+		inode          uint64
+		rdevice        uint64
+		offset         uint64
+		sizeLimit      uint64
+		number         uint32
+		encryptType    uint32
+		encryptKeySize uint32
+		flags          uint32
+		filename       [64]byte
+		cryptname      [64]byte
+		encryptkey     [32]byte
+		init           [2]uint64
+	}
+	const (
+		LO_FLAGS_READ_ONLY = 1
+		LO_FLAGS_AUTOCLEAR = 4 // loop device will autodestruct on last close
+	)
+	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_FD, uintptr(img.Fd())); errno != 0 {
+		return nil, errno
+	}
+	var filename [64]byte
+	copy(filename[:], []byte(pkg))
+	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_STATUS64, uintptr(unsafe.Pointer(&LoopInfo64{
+		flags:    LO_FLAGS_AUTOCLEAR | LO_FLAGS_READ_ONLY,
+		filename: filename,
+	}))); errno != 0 {
+		return nil, errno
+	}
+
+	if err := syscall.Mount(loopdev, mountpoint, "squashfs", syscall.MS_MGC_VAL, ""); err != nil {
+		return nil, err
+	}
+
+	// TODO: de-duplicate this code with install()
+
+	// Link <root>/<pkg>-<version>/bin/ entries to <root>/bin:
+	if err := os.MkdirAll(filepath.Join(*root, "bin"), 0755); err != nil {
+		return nil, err
+	}
+	binDir := filepath.Join(*root, pkg, "bin")
+	fis, err := ioutil.ReadDir(binDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, fi := range fis {
+		oldname := filepath.Join(binDir, fi.Name())
+		newname := filepath.Join(*root, "bin", fi.Name())
+		tmp, err := ioutil.TempFile(filepath.Dir(newname), "zi")
+		if err != nil {
+			return nil, err
+		}
+		tmp.Close()
+		if err := os.Remove(tmp.Name()); err != nil {
+			return nil, err
+		}
+		rel, err := filepath.Rel(filepath.Join(*root, "bin"), oldname)
+		if err != nil {
+			return nil, err
+		}
+		if err := os.Symlink(rel, tmp.Name()); err != nil {
+			return nil, err
+		}
+		if err := os.Rename(tmp.Name(), newname); err != nil {
+			return nil, err
+		}
+	}
+
+	log.Printf("mounted %s", mountpoint)
+
+	return func() {
+		if err := syscall.Unmount(mountpoint, 0); err != nil {
+			log.Printf("unmounting %s failed: %v", mountpoint, err)
+		}
+	}, nil
+}
