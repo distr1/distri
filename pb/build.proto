@@ -14,6 +14,10 @@ message CBuilder {
   optional bool copy_to_builddir = 2;
 }
 
+message Install {
+  repeated string systemd_unit = 1;
+}
+
 message Build {
   // URL to upstream source archive. Currently, only tar.gz archives are supported.
   optional string source = 1;
@@ -34,4 +38,6 @@ message Build {
   // URLs to patches to cherry-pick after extracting the source, e.g.:
   // https://git.savannah.gnu.org/cgit/make.git/patch/?id=48c8a116a914a325a0497721f5d8b58d5bba34d4
   repeated string cherry_pick = 6;
+
+  optional Install install = 8;
 }

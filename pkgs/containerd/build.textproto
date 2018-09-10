@@ -2,9 +2,10 @@ source: "https://github.com/containerd/containerd/archive/v1.2.0-beta.2.tar.gz"
 hash: "f83dca711bb2b496a55445da6fa18c1df1af7c37252110416b824abc50814e33"
 version: "1.2.0-beta.2"
 
-cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+cherry_pick: "service-execstart.patch"
 
-# TODO: patch: fix path in .service file to containerd
+
+cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
 
 # Go build environment:
 dep: "golang-1.11"
@@ -18,4 +19,8 @@ build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "export GOPATH=$PWD/go && d=go/src/github.com/containerd/containerd && mkdir -p $d && cd $d && cp -T -ar ${ZI_SOURCEDIR}/ . && make BUILDTAGS=no_btrfs && d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; mv bin/ctr bin/docker-ctr; mv bin/containerd bin/docker-containerd; mv bin/containerd-release bin/docker-containerd-release; mv bin/containerd-shim-runc-v1 bin/docker-containerd-shim-runc-v1; mv bin/containerd-stress bin/docker-containerd-stress; mv bin/containerd-shim bin/docker-containerd-shim; cp bin/* $d/; d=${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system; mkdir -p $d; cp containerd.service $d"
+>
+
+install: <
+  systemd_unit: "${ZI_SOURCEDIR}/containerd.service"
 >

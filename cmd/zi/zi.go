@@ -42,13 +42,13 @@ var (
 
 type buildctx struct {
 	Proto     *pb.Build `json:"-"`
-	ProtoPath string
-	Pkg       string // e.g. busybox
-	Version   string // e.g. 1.29.2
-	SourceDir string // e.g. /home/michael/zi/build/busybox/busybox-1.29.2
-	BuildDir  string // e.g. /tmp/zibuild-8123911
-	DestDir   string // e.g. /tmp/zidest-3129384
-	Prefix    string // e.g. /ro/busybox-1.29.2
+	PkgDir    string    // e.g. /home/michael/zi/pkgs/busybox
+	Pkg       string    // e.g. busybox
+	Version   string    // e.g. 1.29.2
+	SourceDir string    // e.g. /home/michael/zi/build/busybox/busybox-1.29.2
+	BuildDir  string    // e.g. /tmp/zibuild-8123911
+	DestDir   string    // e.g. /tmp/zidest-3129384
+	Prefix    string    // e.g. /ro/busybox-1.29.2
 	Hermetic  bool
 	Debug     bool
 	ChrootDir string // only set if Hermetic is enabled
@@ -70,12 +70,12 @@ func buildpkg() error {
 	}
 
 	b := &buildctx{
-		Proto:     &buildProto,
-		ProtoPath: filepath.Join(pwd, "build.textproto"),
-		Pkg:       filepath.Base(pwd),
-		Version:   buildProto.GetVersion(),
-		Hermetic:  *hermetic,
-		Debug:     *debug,
+		Proto:    &buildProto,
+		PkgDir:   pwd,
+		Pkg:      filepath.Base(pwd),
+		Version:  buildProto.GetVersion(),
+		Hermetic: *hermetic,
+		Debug:    *debug,
 	}
 
 	{
@@ -660,6 +660,21 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
+	for _, unit := range b.Proto.GetInstall().GetSystemdUnit() {
+		fn := b.substitute(unit)
+		if _, err := os.Stat(fn); err != nil {
+			return nil, fmt.Errorf("unit %q: %v", unit, err)
+		}
+		dest := filepath.Join(b.DestDir, b.Prefix, "buildoutput", "lib", "systemd", "system")
+		log.Printf("installing systemd unit %q: cp %s %s/", unit, fn, dest)
+		if err := os.MkdirAll(dest, 0755); err != nil {
+			return nil, err
+		}
+		if err := copyFile(fn, filepath.Join(dest, filepath.Base(fn))); err != nil {
+			return nil, err
+		}
+	}
+
 	// Find shlibdeps while we’re still in the chroot, so that ldd(1) locates
 	// the dependencies.
 	depPkgs := make(map[string]bool)
@@ -706,8 +721,28 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	return deps, nil
 }
 
-func (b *buildctx) cherryPick(u, tmp string) error {
-	resp, err := http.Get(u)
+// cherryPick applies src to the extracted sources in tmp. src is either the
+// path to a file relative to b.PkgDir (i.e., next to build.textproto), or a
+// URL.
+func (b *buildctx) cherryPick(src, tmp string) error {
+	fn := filepath.Join(b.PkgDir, src)
+	if _, err := os.Stat(fn); err == nil {
+		f, err := os.Open(fn)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		cmd := exec.Command("patch", "-p1", "--batch", "--set-time", "--set-utc")
+		cmd.Dir = tmp
+		cmd.Stdin = f
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("%v: %v", cmd.Args, err)
+		}
+		return nil
+	}
+	// TODO: remove the URL support. we want patches to be committed alongside the packaging
+	resp, err := http.Get(src)
 	if err != nil {
 		return err
 	}
@@ -728,11 +763,9 @@ func (b *buildctx) cherryPick(u, tmp string) error {
 func (b *buildctx) extract() (srcdir string, _ error) {
 	fn := filepath.Base(b.Proto.GetSource())
 	dir := fn
-	dir = strings.TrimSuffix(dir, ".gz")
-	dir = strings.TrimSuffix(dir, ".lz")
-	dir = strings.TrimSuffix(dir, ".xz")
-	dir = strings.TrimSuffix(dir, ".bz2")
-	dir = strings.TrimSuffix(dir, ".tar")
+	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
+		dir = strings.TrimSuffix(dir, "."+suffix)
+	}
 	_, err := os.Stat(dir)
 	if err == nil {
 		return dir, nil // already extracted
@@ -837,7 +870,7 @@ func runJob(job string) error {
 	if err := json.Unmarshal(c, &b); err != nil {
 		return fmt.Errorf("unmarshaling %q: %v", string(c), err)
 	}
-	c, err = ioutil.ReadFile(b.ProtoPath)
+	c, err = ioutil.ReadFile(filepath.Join(b.PkgDir, "build.textproto"))
 	if err != nil {
 		return err
 	}
