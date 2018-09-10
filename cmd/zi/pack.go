@@ -9,6 +9,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 const passwd = `root:x:0:0:root:/root:/bin/sh
@@ -39,13 +43,55 @@ func copyFile(src, dest string) error {
 	return nil
 }
 
+func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
+	resolved := []string{pkg}
+	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
+	if err != nil {
+		return nil, err
+	}
+	for _, dep := range meta.GetRuntimeDep() {
+		if dep == pkg {
+			continue // skip circular dependencies, e.g. gcc depends on itself
+		}
+		if seen[dep] {
+			continue
+		}
+		seen[dep] = true
+		r, err := resolve1(imgDir, dep, seen)
+		if err != nil {
+			return nil, err
+		}
+		resolved = append(resolved, r...)
+	}
+	return resolved, nil
+}
+
+// resolve returns the transitive closure of runtime dependencies for the
+// specified packages.
+//
+// E.g., if iptables depends on libnftnl, which depends on libmnl,
+// resolve("iptables") will return ["iptables", "libnftnl", "libmnl"].
+func resolve(imgDir string, pkgs []string) ([]string, error) {
+	var resolved []string
+	seen := make(map[string]bool)
+	for _, pkg := range pkgs {
+		r, err := resolve1(imgDir, pkg, seen)
+		if err != nil {
+			return nil, err
+		}
+		resolved = append(resolved, r...)
+	}
+	return resolved, nil
+}
+
 func pack(args []string) error {
 	fset := flag.NewFlagSet("pack", flag.ExitOnError)
 	var (
 		root = fset.String("root",
 			"",
 			"TODO")
-		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		imgDir  = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		diskImg = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
 	fset.Parse(args)
@@ -102,15 +148,8 @@ func pack(args []string) error {
 		return err
 	}
 
-	basePkgs := []string{
+	basePkgs, err := resolve(*imgDir, []string{
 		"systemd-239",
-		// TODO: remove the following systemd deps:
-		"libcap-2.25",
-		"util-linux-2.32",
-		// (end of systemd deps)
-		// TODO: remove the following login deps:
-		"pam-1.3.1",
-		// (end of login deps)
 		"glibc-2.27",
 		"coreutils-8.30",
 		"strace-4.24",
@@ -120,35 +159,29 @@ func pack(args []string) error {
 		"containerd-1.2.0-beta.2",
 		"docker-engine-18.06.1-ce",
 		"docker-18.06.1-ce",
+		// TODO: make these runtime deps of docker:
 		"procps-ng-3.3.15",
 		"iptables-1.6.2",
 		"xzutils-5.2.4",
 		"e2fsprogs-1.44.4",
 		"kmod-25",
+		// end of docker deps
 		"runc-1.0.0-rc5",
 		"grep-3.1",
 		"openssh-7.8p1",
-		// TODO: remove openssh deps:
-		"openssl-1.0.2p",
-		"zlib-1.2.11",
-		// (end of login deps)
 		"iproute2-4.18.0",
-		// TODO: remove iproute2 deps:
-		"libmnl-1.0.4",
-		// (end of iproute2 deps)
 		"iputils-20180629",
-		// TODO: remove iputils deps:
-		"libcap-2.25",
-		"libidn2-2.0.5",
-		"iconv-1.15",
-		"libunistring-0.9.10",
-		"nettle-3.4",
-		// (end of iputils deps)
+	})
+	if err != nil {
+		return fmt.Errorf("resolve: %v", err)
 	}
 
 	for _, pkg := range basePkgs {
 		log.Printf("copying %s", pkg)
 		if err := copyFile(filepath.Join(*imgDir, pkg+".squashfs"), filepath.Join(*root, "ro", pkg+".squashfs")); err != nil {
+			return err
+		}
+		if err := copyFile(filepath.Join(*imgDir, pkg+".meta.textproto"), filepath.Join(*root, "ro", pkg+".meta.textproto")); err != nil {
 			return err
 		}
 	}
@@ -274,6 +307,108 @@ ipt_MASQUERADE
 xt_addrtype
 veth
 `), 0644); err != nil {
+		return err
+	}
+
+	if *diskImg != "" {
+		if err := writeDiskImg(*diskImg, *root); err != nil {
+			return fmt.Errorf("writeDiskImg: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func writeDiskImg(dest, src string) error {
+	f, err := os.OpenFile(dest, os.O_CREATE|os.O_TRUNC|os.O_RDWR|unix.O_CLOEXEC, 0644)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if err := f.Truncate(2 * 1024 * 1024 * 1024); err != nil { // 2 GB
+		return err
+	}
+
+	// Find the next free loop device:
+	const (
+		LOOP_CTL_GET_FREE = 0x4c82
+		LOOP_SET_FD       = 0x4c00
+		LOOP_SET_STATUS64 = 0x4c04
+	)
+
+	loopctl, err := os.Open("/dev/loop-control")
+	if err != nil {
+		return err
+	}
+	defer loopctl.Close()
+	free, _, errno := unix.Syscall(unix.SYS_IOCTL, loopctl.Fd(), LOOP_CTL_GET_FREE, 0)
+	if errno != 0 {
+		return errno
+	}
+	loopctl.Close()
+	log.Printf("next free: %d", free)
+
+	loopdev := fmt.Sprintf("/dev/loop%d", free)
+	loop, err := os.OpenFile(loopdev, os.O_RDWR|unix.O_CLOEXEC, 0644)
+	if err != nil {
+		return err
+	}
+	defer loop.Close()
+	// TODO: get this into x/sys/unix
+	type LoopInfo64 struct {
+		device         uint64
+		inode          uint64
+		rdevice        uint64
+		offset         uint64
+		sizeLimit      uint64
+		number         uint32
+		encryptType    uint32
+		encryptKeySize uint32
+		flags          uint32
+		filename       [64]byte
+		cryptname      [64]byte
+		encryptkey     [32]byte
+		init           [2]uint64
+	}
+	const (
+		LO_FLAGS_READ_ONLY = 1
+		LO_FLAGS_AUTOCLEAR = 4 // loop device will autodestruct on last close
+	)
+	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_FD, uintptr(f.Fd())); errno != 0 {
+		return errno
+	}
+	var filename [64]byte
+	copy(filename[:], []byte("root"))
+	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_STATUS64, uintptr(unsafe.Pointer(&LoopInfo64{
+		flags:    LO_FLAGS_AUTOCLEAR | LO_FLAGS_READ_ONLY,
+		filename: filename,
+	}))); errno != 0 {
+		return errno
+	}
+
+	mkfs := exec.Command("sudo", "mkfs.ext4", loopdev)
+	mkfs.Stdout = os.Stdout
+	mkfs.Stderr = os.Stderr
+	if err := mkfs.Run(); err != nil {
+		return fmt.Errorf("%v: %v", mkfs.Args, err)
+	}
+
+	if err := syscall.Mount(loopdev, "/mnt", "ext4", syscall.MS_MGC_VAL, ""); err != nil {
+		return err
+	}
+
+	cp := exec.Command("sudo", "sh", "-c", "cp -r "+filepath.Join(src, "*")+" /mnt/")
+	cp.Stdout = os.Stdout
+	cp.Stderr = os.Stderr
+	if err := cp.Run(); err != nil {
+		syscall.Unmount("/mnt", 0)
+		return fmt.Errorf("%v: %v", cp.Args, err)
+	}
+
+	if err := syscall.Unmount("/mnt", 0); err != nil {
 		return err
 	}
 

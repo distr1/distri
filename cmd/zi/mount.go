@@ -7,30 +7,47 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"unsafe"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sys/unix"
 )
 
-func mount(args []string) (cleanup func(), _ error) {
-	fset := flag.NewFlagSet("mount", flag.ExitOnError)
-	var (
-		root = fset.String("root",
-			"/ro",
-			"TODO")
-		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
-		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
-	)
-	fset.Parse(args)
-	if fset.NArg() != 1 {
-		return nil, fmt.Errorf("syntax: mount <package>")
-	}
-	pkg := fset.Arg(0)
-
-	mountpoint := filepath.Join(*root, pkg)
-	if err := os.MkdirAll(mountpoint, 0755); err != nil {
+func readMeta(fn string) (*pb.Meta, error) {
+	b, err := ioutil.ReadFile(fn)
+	if err != nil {
 		return nil, err
+	}
+	var m pb.Meta
+	if err := proto.UnmarshalText(string(b), &m); err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+func mountpoint(fn string) bool {
+	b, err := ioutil.ReadFile("/proc/self/mountinfo")
+	if err != nil {
+		panic(err)
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+		parts := strings.Split(line, " ")
+		if len(parts) < 5 {
+			continue
+		}
+		if parts[4] == fn {
+			return true
+		}
+	}
+	return false
+}
+
+func mount1(mountpoint, pkg, src string) error {
+	if err := os.MkdirAll(mountpoint, 0755); err != nil {
+		return err
 	}
 
 	// Find the next free loop device:
@@ -42,25 +59,25 @@ func mount(args []string) (cleanup func(), _ error) {
 
 	loopctl, err := os.Open("/dev/loop-control")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer loopctl.Close()
 	free, _, errno := unix.Syscall(unix.SYS_IOCTL, loopctl.Fd(), LOOP_CTL_GET_FREE, 0)
 	if errno != 0 {
-		return nil, errno
+		return errno
 	}
 	loopctl.Close()
 	log.Printf("next free: %d", free)
 
-	img, err := os.OpenFile(filepath.Join(*imgDir, pkg+".squashfs"), os.O_RDWR|unix.O_CLOEXEC, 0644)
+	img, err := os.OpenFile(src, os.O_RDWR|unix.O_CLOEXEC, 0644)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	loopdev := fmt.Sprintf("/dev/loop%d", free)
 	loop, err := os.OpenFile(loopdev, os.O_RDWR|unix.O_CLOEXEC, 0644)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer loop.Close()
 	// TODO: get this into x/sys/unix
@@ -84,7 +101,7 @@ func mount(args []string) (cleanup func(), _ error) {
 		LO_FLAGS_AUTOCLEAR = 4 // loop device will autodestruct on last close
 	)
 	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_FD, uintptr(img.Fd())); errno != 0 {
-		return nil, errno
+		return errno
 	}
 	var filename [64]byte
 	copy(filename[:], []byte(pkg))
@@ -92,10 +109,57 @@ func mount(args []string) (cleanup func(), _ error) {
 		flags:    LO_FLAGS_AUTOCLEAR | LO_FLAGS_READ_ONLY,
 		filename: filename,
 	}))); errno != 0 {
-		return nil, errno
+		return errno
 	}
 
 	if err := syscall.Mount(loopdev, mountpoint, "squashfs", syscall.MS_MGC_VAL, ""); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func mount(args []string) (cleanup func(), _ error) {
+	fset := flag.NewFlagSet("mount", flag.ExitOnError)
+	var (
+		root = fset.String("root",
+			"/ro",
+			"TODO")
+		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
+	)
+	fset.Parse(args)
+	if fset.NArg() != 1 {
+		return nil, fmt.Errorf("syntax: mount <package>")
+	}
+	pkg := fset.Arg(0)
+
+	// TODO: glob package so that users can use “mount systemd” instead of
+	// “mount systemd-239”? alternatively: tab completion
+
+	meta, err := readMeta(filepath.Join(*imgDir, pkg+".meta.textproto"))
+	if err != nil {
+		return nil, err
+	}
+	var deps []string
+	for _, dep := range meta.GetRuntimeDep() {
+		if dep == pkg {
+			continue // skip circular dependencies, e.g. gcc depends on itself
+		}
+		if !mountpoint(filepath.Join(*root, dep)) {
+			mountpoint := filepath.Join(*root, dep)
+			src := filepath.Join(*imgDir, dep+".squashfs")
+			if err := mount1(mountpoint, dep, src); err != nil {
+				return nil, err
+			}
+			log.Printf("mounted %s (run-time dependency of %s)", mountpoint, pkg)
+			deps = append(deps, dep)
+		}
+	}
+
+	mountpoint := filepath.Join(*root, pkg)
+	src := filepath.Join(*imgDir, pkg+".squashfs")
+	if err := mount1(mountpoint, pkg, src); err != nil {
 		return nil, err
 	}
 
@@ -138,6 +202,12 @@ func mount(args []string) (cleanup func(), _ error) {
 	return func() {
 		if err := syscall.Unmount(mountpoint, 0); err != nil {
 			log.Printf("unmounting %s failed: %v", mountpoint, err)
+		}
+		for _, dep := range deps {
+			mountpoint := filepath.Join(*root, dep)
+			if err := syscall.Unmount(mountpoint, 0); err != nil {
+				log.Printf("unmounting %s failed: %v", mountpoint, err)
+			}
 		}
 	}, nil
 }

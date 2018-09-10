@@ -10,6 +10,12 @@ import (
 func pid1() error {
 	log.Printf("mounting packages")
 
+	// We need to mount /proc ourselves so that mount() can consult
+	// /proc/self/mountinfo:
+	if err := syscall.Mount("proc", "/proc", "proc", syscall.MS_MGC_VAL, ""); err != nil {
+		return err
+	}
+
 	matches, err := filepath.Glob("/ro/*.squashfs")
 	if err != nil {
 		return err
