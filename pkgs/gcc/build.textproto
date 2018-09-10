@@ -2,25 +2,64 @@ source: "http://mirror.koddos.net/gcc/releases/gcc-8.2.0/gcc-8.2.0.tar.xz"
 hash: "196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080"
 version: "8.2.0"
 
-# configure runtime requirements:
+# cbuilder: <
+#   extra_configure_flag: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
+#   extra_configure_flag: "--enable-languages=c,c++" # skip fortran etc. for now
+# >
+
 dep: "bash-4.4.18"
+dep: "coreutils-8.30"
+dep: "sed-4.5"
+dep: "grep-3.1"
+dep: "gawk-4.2.1"
+dep: "diffutils-3.6"
+dep: "file-5.34"
+
+# C build environment:
+dep: "gcc-8.2.0"
+dep: "binutils-2.31"
+dep: "make-4.2.1"
+dep: "glibc-2.27"
+dep: "linux-libc-dev-4.15.4"
+dep: "findutils-4.6.0" # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+
+# build dependencies:
+dep: "gmp-6.1.2"
+dep: "mpfr-4.0.1"
+dep: "mpc-1.1.0"
+dep: "tar-1.30"
+
+# kludge: the C++ header cstdlib uses the #include_next pragma, which requires
+# that /ro/glibc-2.27/buildoutput/include comes _after_ the g++ includes. This
+# requires /ro/glibc-2.27/buildoutput/include to be a system include, which we
+# achieve by symlinking /usr/include to it.
+build_step: <
+  argv: "ln"
+  argv: "-s"
+  argv: "/ro/glibc-2.27/buildoutput/include"
+  argv: "/usr/include"
+>
+# TODO: the g++ search path needs to be changed.
+# print the search path using “echo | cpp -xc++ -Wp,-v”
+# the search path is persisted in gcc/cppdefault.c
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_DESTDIR}"
+  argv: "--prefix=${ZI_PREFIX}"
   argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
-  argv: "--with-stage1-ldflags=-static"
-  argv: "--with-boot-ldflags=-static"
+  # argv: "--with-stage1-ldflags=-static"
+  # argv: "--with-boot-ldflags=-static"
   argv: "--enable-languages=c,c++"
 >
 
 build_step: <
   argv: "make"
   argv: "-j8"
+  argv: "V=1"
 >
 
 build_step: <
   argv: "make"
   argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
 >
-

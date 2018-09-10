@@ -281,6 +281,9 @@ func builddeps(p *pb.Build) []string {
 			// C build environment:
 			deps = append(deps, []string{
 				"gcc-8.2.0",
+				"mpc-1.1.0",  // TODO: remove once gcc binaries find these via their rpath
+				"mpfr-4.0.1", // TODO: remove once gcc binaries find these via their rpath
+				"gmp-6.1.2",  // TODO: remove once gcc binaries find these via their rpath
 				"binutils-2.31",
 				"make-4.2.1",
 				"glibc-2.27",
@@ -308,10 +311,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if err := os.MkdirAll(deps, 0755); err != nil {
 			return nil, err
 		}
-
-		// TODO: the builder should likely install dependencies as required
-		// (e.g. if autotools is detected, bash+coreutils+sed+grep+gawk need to
-		// be installed as runtime env, and gcc+binutils+make for building)
 
 		for _, dep := range builddeps(b.Proto) {
 			cleanup, err := mount([]string{"-root=" + deps, dep})
