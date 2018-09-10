@@ -2,22 +2,9 @@ source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
 hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
 version: "239"
 
-# configure runtime requirements:
-dep: "bash-4.4.18"
-dep: "coreutils-8.30"
-dep: "sed-4.5"
-dep: "grep-3.1"
-dep: "gawk-4.2.1"
-
-# C build environment:
-dep: "gcc-8.2.0"
-dep: "binutils-2.31"
-dep: "make-4.2.1"
-dep: "glibc-2.27"
-dep: "linux-4.18.7"
+cbuilder: <>
 
 # build dependencies:
-dep: "diffutils-3.6"
 dep: "m4-1.4.18"
 dep: "gperf-3.1"
 dep: "libcap-2.25"
@@ -27,9 +14,6 @@ dep: "gettext-0.19.8.1"
 dep: "meson-0.47.1"
 dep: "ninja-1.8.2"
 dep: "python3-3.7.0"
-dep: "zlib-1.2.11" # TODO: for python. remove once runtime-deps are installed
-dep: "openssl-1.0.2p" # TODO: for python. remove once runtime-deps are installed
-dep: "libffi-3.2.1" # TODO: for python. remove once runtime-deps are installed
 dep: "kmod-25"
 
 build_step: <
@@ -82,13 +66,6 @@ build_step: <
   argv: "-c"
   argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
 >
-
-# # TODO: figure out why capabilities are not working
-# build_step: <
-#   argv: "/bin/sh"
-#   argv: "-c"
-#   argv: "sed -i 's/^CapabilityBoundingSet=/#CapabilityBoundingSet=/g' ${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system/*.service"
-# >
 
 build_step: <
   argv: "/bin/sh"

@@ -2,23 +2,10 @@ source: "https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz"
 hash: "0382996d1ee6aafe59763426cf0139ffebe36984474d0ec4126dd1c40a8b3549"
 version: "3.7.0"
 
-# TODO: file upstream bug
-# TODO: LIBFFI_INCLUDEDIR is hard-coded
-# cherry_pick: "http://t.zekjur.net/py.patch"
+cbuilder: <>
 
-# configure runtime requirements:
-dep: "bash-4.4.18"
-dep: "coreutils-8.30"
-dep: "sed-4.5"
-dep: "grep-3.1"
-dep: "gawk-4.2.1"
-
-# C build environment:
-dep: "gcc-8.2.0"
-dep: "binutils-2.31"
-dep: "make-4.2.1"
-dep: "glibc-2.27"
-dep: "linux-4.18.7"
+# TODO: file upstream bug: pkg-config invocation does not ignore CPATH
+cherry_pick: "http://t.zekjur.net/py.patch"
 
 # build dependencies:
 dep: "zlib-1.2.11"
@@ -30,7 +17,7 @@ build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
   argv: "--with-openssl=/ro/openssl-1.0.2p/buildoutput"
-  argv: "LIBFFI_INCLUDEDIR=/ro/libffi-3.2.1/buildoutput/include/"
+#  argv: "LIBFFI_INCLUDEDIR=/ro/libffi-3.2.1/buildoutput/include/"
 >
 
 # HACK: remove once we make available all lib directories under /lib (or /lib64)

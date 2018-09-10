@@ -2,27 +2,10 @@ source: "https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-4
 hash: "a9e6c70c95f513871c5e1f4e452c04fcb3c4d8a05be651bd794cd994a52daa45"
 version: "4.18.0"
 
+cbuilder: <
 # TODO: switch to cbuilder once we decide how custom make install arguments should be passed
-# cbuilder: <
 #   copy_to_builddir: true
-# >
-
-# configure runtime requirements:
-dep: "bash-4.4.18"
-dep: "coreutils-8.30"
-dep: "sed-4.5"
-dep: "grep-3.1"
-dep: "gawk-4.2.1"
-
-# C build environment:
-dep: "gcc-8.2.0"
-dep: "binutils-2.31"
-dep: "make-4.2.1"
-dep: "glibc-2.27"
-dep: "linux-4.18.7"
-
-dep: "diffutils-3.6"
-dep: "findutils-4.6.0"
+>
 
 # build dependencies:
 dep: "pkg-config-0.29.2"

@@ -2,22 +2,9 @@ source: "https://dl.google.com/go/go1.11.src.tar.gz"
 hash: "afc1e12f5fe49a471e3aae7d906c73e9d5b1fdd36d52d72652dde8f6250152fb"
 version: "1.11"
 
-# configure runtime requirements:
-dep: "bash-4.4.18"
-dep: "coreutils-8.30"
-dep: "sed-4.5"
-dep: "grep-3.1"
-dep: "gawk-4.2.1"
-
-# C build environment:
-dep: "gcc-8.2.0"
-dep: "binutils-2.31"
-dep: "make-4.2.1"
-dep: "glibc-2.27"
-dep: "linux-4.18.7"
+cbuilder: <>
 
 # build dependencies:
-dep: "diffutils-3.6"
 dep: "golang14-1.4.3"
 
 build_step: <
