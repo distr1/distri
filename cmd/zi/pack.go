@@ -109,6 +109,7 @@ func pack(args []string) error {
 		"tmp",         // tmpfs
 		"var/tmp",     // systemd (e.g. systemd-networkd)
 		"lib/systemd", // systemd
+		"etc/ssl",     // openssl
 	} {
 		if err := os.MkdirAll(filepath.Join(*root, dir), 0755); err != nil {
 			return err
@@ -136,6 +137,10 @@ func pack(args []string) error {
 		return err
 	}
 
+	if err := os.Symlink("/ro/ca-certificates-3.39/buildoutput/etc/ssl/certs", filepath.Join(*root, "etc", "ssl", "certs")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
 	// TODO: de-duplicate with zi.go
 	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
@@ -152,6 +157,10 @@ func pack(args []string) error {
 	}
 
 	if err := os.Chmod(filepath.Join(*root, "init"), 0755); err != nil {
+		return err
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(*root, "etc/resolv.conf"), []byte("nameserver 8.8.8.8"), 0644); err != nil {
 		return err
 	}
 
@@ -186,6 +195,7 @@ func pack(args []string) error {
 		"iproute2-4.18.0",
 		"iputils-20180629",
 		"linux-4.18.7",
+		"ca-certificates-3.39",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
