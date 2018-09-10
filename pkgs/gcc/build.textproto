@@ -20,7 +20,7 @@ dep: "gcc-8.2.0"
 dep: "binutils-2.31"
 dep: "make-4.2.1"
 dep: "glibc-2.27"
-dep: "linux-libc-dev-4.15.4"
+dep: "linux-4.18.7"
 dep: "findutils-4.6.0" # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 
 # build dependencies:
