@@ -10,8 +10,6 @@ import (
 )
 
 func (b *buildctx) buildc(opts *pb.CBuilder, env []string, buildLog io.Writer) error {
-	log.Printf("TODO: build C program")
-
 	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
 	env = append(env, b.substitute("DESTDIR=${ZI_DESTDIR}"))
 
