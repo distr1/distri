@@ -2,21 +2,9 @@ source: "https://github.com/containerd/containerd/archive/v1.2.0-beta.2.tar.gz"
 hash: "f83dca711bb2b496a55445da6fa18c1df1af7c37252110416b824abc50814e33"
 version: "1.2.0-beta.2"
 
+cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+
 # TODO: patch: fix path in .service file to containerd
-
-# configure runtime requirements:
-dep: "bash-4.4.18"
-dep: "coreutils-8.30"
-dep: "sed-4.5"
-dep: "grep-3.1"
-dep: "gawk-4.2.1"
-
-# C build environment:
-dep: "gcc-8.2.0"
-dep: "binutils-2.31"
-dep: "make-4.2.1"
-dep: "glibc-2.27"
-dep: "linux-4.18.7"
 
 # Go build environment:
 dep: "golang-1.11"

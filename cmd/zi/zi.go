@@ -591,8 +591,8 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":"),         // for pkg-config
 	}
 
-	// TODO: if b.Proto.Builder is non-nil (oneof field), run the builder instead
-	if builder := b.Proto.Builder; builder != nil {
+	steps := b.Proto.GetBuildStep()
+	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
 		switch v := builder.(type) {
 		case *pb.Build_Cbuilder:
 			if err := b.buildc(v.Cbuilder, env, buildLog); err != nil {
@@ -600,7 +600,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			}
 		}
 	} else {
-		steps := b.Proto.GetBuildStep()
 		if len(steps) == 0 {
 			return nil, fmt.Errorf("build.textproto does not specify Builder nor BuildSteps")
 		}
