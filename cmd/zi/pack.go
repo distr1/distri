@@ -252,7 +252,9 @@ func pack(args []string) error {
 		"--",
 		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemctl",
 		"enable",
-		"systemd-networkd")
+		"systemd-networkd",
+		"containerd",
+		"docker")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -290,6 +292,9 @@ session	required	pam_warn.so
 		return err
 	}
 	if err := addgroup(*root, "systemd-network:x:103:"); err != nil {
+		return err
+	}
+	if err := addgroup(*root, "docker:x:104:"); err != nil {
 		return err
 	}
 

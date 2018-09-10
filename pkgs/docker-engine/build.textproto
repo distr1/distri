@@ -18,4 +18,7 @@ build_step: <
   argv: "export GOPATH=$PWD/go && d=go/src/github.com/docker/docker && mkdir -p $d && cd $d && cp -T -ar ${ZI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= DOCKER_GITCOMMIT=unsupported DOCKER_BUILDTAGS='exclude_graphdriver_btrfs' hack/make.sh binary && d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp -H bundles/binary-daemon/dockerd $d/"
 >
 
-
+install: <
+  systemd_unit: "${ZI_SOURCEDIR}/contrib/init/systemd/docker.service"
+  systemd_unit: "${ZI_SOURCEDIR}/contrib/init/systemd/docker.socket"
+>

@@ -16,8 +16,8 @@ build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "export GOPATH=$PWD/go && d=go/src/github.com/opencontainers/runc && mkdir -p $d && cd $d && cp -T -ar ${ZI_SOURCEDIR}/ . && make BUILDTAGS=no_btrfs && d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp runc $d/"
-#argv: "export GOPATH=$PWD/go && d=go/src/github.com/opencontainers/runc && mkdir -p $d && cd $d && cp -T -ar ${ZI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= DOCKER_GITCOMMIT=unsupported DOCKER_BUILDTAGS='exclude_graphdriver_btrfs' hack/make.sh binary && d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp -H bundles/binary-daemon/dockerd $d/"
 >
 
-
-
+install: <
+  symlink: < oldname: "runc" newname: "bin/docker-runc" >
+>
