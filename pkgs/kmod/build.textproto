@@ -8,4 +8,9 @@ cbuilder: <
 # build dependencies:
 dep: "findutils-4.6.0"
 
-# TODO: symlinks modprobe→kmod etc.
+install: <
+  symlink: < oldname: "kmod" newname: "bin/modprobe" >
+  symlink: < oldname: "kmod" newname: "bin/depmod" >
+  symlink: < oldname: "kmod" newname: "bin/lsmod" >
+  symlink: < oldname: "kmod" newname: "bin/rmmod" >
+>

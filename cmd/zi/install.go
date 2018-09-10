@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -37,35 +36,11 @@ func install(args []string) error {
 		}
 
 		// Link <root>/<pkg>-<version>/bin/ entries to <root>/bin:
-		if err := os.MkdirAll(filepath.Join(*root, "bin"), 0755); err != nil {
+		if err := symlinkfarm(*root, pkg, "bin"); err != nil {
 			return err
 		}
-		binDir := filepath.Join(*root, pkg, "bin")
-		fis, err := ioutil.ReadDir(binDir)
-		if err != nil {
+		if err := symlinkfarm(*root, pkg, "buildoutput/lib/systemd/system"); err != nil {
 			return err
-		}
-		for _, fi := range fis {
-			oldname := filepath.Join(binDir, fi.Name())
-			newname := filepath.Join(*root, "bin", fi.Name())
-			tmp, err := ioutil.TempFile(filepath.Dir(newname), "zi")
-			if err != nil {
-				return err
-			}
-			tmp.Close()
-			if err := os.Remove(tmp.Name()); err != nil {
-				return err
-			}
-			rel, err := filepath.Rel(filepath.Join(*root, "bin"), oldname)
-			if err != nil {
-				return err
-			}
-			if err := os.Symlink(rel, tmp.Name()); err != nil {
-				return err
-			}
-			if err := os.Rename(tmp.Name(), newname); err != nil {
-				return err
-			}
 		}
 
 		// TODO: read meta.textproto, install runtime dependencies as well

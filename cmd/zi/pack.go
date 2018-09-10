@@ -102,12 +102,13 @@ func pack(args []string) error {
 	for _, dir := range []string{
 		"etc",
 		"root",
-		"dev",     // udev
-		"ro",      // read-only package directory
-		"proc",    // procfs
-		"sys",     // sysfs
-		"tmp",     // tmpfs
-		"var/tmp", // systemd (e.g. systemd-networkd)
+		"dev",         // udev
+		"ro",          // read-only package directory
+		"proc",        // procfs
+		"sys",         // sysfs
+		"tmp",         // tmpfs
+		"var/tmp",     // systemd (e.g. systemd-networkd)
+		"lib/systemd", // systemd
 	} {
 		if err := os.MkdirAll(filepath.Join(*root, dir), 0755); err != nil {
 			return err
@@ -119,6 +120,19 @@ func pack(args []string) error {
 	}
 
 	if err := os.Symlink("/ro/bin", filepath.Join(*root, "sbin")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	// We run systemd in non-split mode, so /usr needs to point to /
+	if err := os.Symlink("/", filepath.Join(*root, "usr")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	if err := os.Symlink("/ro/system", filepath.Join(*root, "lib", "systemd", "system")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	if err := os.Symlink("/ro/linux-4.18.7/buildoutput/lib/modules", filepath.Join(*root, "lib", "modules")); err != nil && !os.IsExist(err) {
 		return err
 	}
 

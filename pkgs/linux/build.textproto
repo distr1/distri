@@ -18,14 +18,6 @@ dep: "perl-5.28.0"
 dep: "gzip-1.9"
 dep: "kmod-25"
 
-# TODO: remove once kmod ships with symbolic links
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/kmod-25/bin/kmod"
-  argv: "/ro/bin/depmod"
->
-
 build_step: <
   argv: "make"
   argv: "-C"

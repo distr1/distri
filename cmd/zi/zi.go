@@ -675,6 +675,16 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
+	for _, link := range b.Proto.GetInstall().GetSymlink() {
+		oldname := link.GetOldname()
+		newname := link.GetNewname()
+		log.Printf("symlinking %s → %s", newname, oldname)
+		dest := filepath.Join(b.DestDir, b.Prefix, "buildoutput")
+		if err := os.Symlink(oldname, filepath.Join(dest, newname)); err != nil {
+			return nil, err
+		}
+	}
+
 	// Find shlibdeps while we’re still in the chroot, so that ldd(1) locates
 	// the dependencies.
 	depPkgs := make(map[string]bool)

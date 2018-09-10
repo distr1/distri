@@ -15,7 +15,14 @@ message CBuilder {
 }
 
 message Install {
+  message Symlink {
+    optional string oldname = 1;
+    optional string newname = 2;
+  }
+
   repeated string systemd_unit = 1;
+
+  repeated Symlink symlink = 2;
 }
 
 message Build {
