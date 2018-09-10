@@ -171,6 +171,7 @@ func pack(args []string) error {
 		"openssh-7.8p1",
 		"iproute2-4.18.0",
 		"iputils-20180629",
+		"linux-4.18.7",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)

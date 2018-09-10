@@ -1,0 +1,10 @@
+source: "https://ftp.gnu.org/gnu/bc/bc-1.07.1.tar.gz"
+hash: "62adfca89b0a1c0164c2cdca59ca210c1d44c3ffc46daf9931cf4942664cb02a"
+version: "1.07.1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "ed-1.14.2"
+dep: "texinfo-6.5" # TODO: report a bug with bc as per https://ftp.gnu.org/gnu/makeinfo.README
+dep: "perl-5.28.0" # TODO: mark as runtime dep of texinfo

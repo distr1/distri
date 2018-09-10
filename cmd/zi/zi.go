@@ -287,7 +287,7 @@ func builddeps(p *pb.Build) []string {
 				"binutils-2.31",
 				"make-4.2.1",
 				"glibc-2.27",
-				"linux-libc-dev-4.15.4",
+				"linux-4.18.7",
 				"findutils-4.6.0", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 			}...)
 		}
@@ -462,6 +462,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			//   /ro/bin/sh → bash
 			//   /bin → /ro/bin
 			//   /usr/bin → /ro/bin (for e.g. /usr/bin/env)
+			//   /sbin → /ro/bin (for e.g. linux, which hard-codes /sbin/depmod)
 			//   /lib64 → /ro/glibc-2.27/buildoutput/lib for ld-linux.so
 			if err := os.Symlink("bash", filepath.Join(deps, "bin", "sh")); err != nil {
 				return nil, err
@@ -471,11 +472,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				return nil, err
 			}
 
-			if err := os.Symlink("/ro/bin", filepath.Join(b.ChrootDir, "bin")); err != nil {
-				return nil, err
-			}
-			if err := os.Symlink("/ro/bin", filepath.Join(b.ChrootDir, "usr", "bin")); err != nil {
-				return nil, err
+			for _, bin := range []string{"bin", "usr/bin", "sbin"} {
+				if err := os.Symlink("/ro/bin", filepath.Join(b.ChrootDir, bin)); err != nil {
+					return nil, err
+				}
 			}
 
 			if err := os.Setenv("PATH", "/bin"); err != nil {
