@@ -143,11 +143,19 @@ func buildpkg() error {
 	// package installs into b.DestDir/ro/hello-1
 
 	rel := b.Pkg + "-" + b.Version
+	// Set fields from the perspective of an installed package so that variable
+	// substitution works within wrapper scripts.
+	b.Prefix = "/ro/" + rel // e.g. /ro/hello-1
 
-	destDir := filepath.Join(filepath.Dir(b.DestDir), rel)
+	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/zi-dest123/hello-1
 
-	// rename b.DestDir/ro/hello-1 to b.DestDir/../hello-1:
+	// rename destDir/tmp/ro/hello-1 to destDir/hello-1:
 	if err := os.Rename(filepath.Join(b.DestDir, "ro", rel), destDir); err != nil {
+		return err
+	}
+
+	// rename destDir/tmp/etc to destDir/etc
+	if err := os.Rename(filepath.Join(b.DestDir, "etc"), filepath.Join(destDir, "etc")); err != nil {
 		return err
 	}
 
@@ -166,14 +174,26 @@ func buildpkg() error {
 			return err
 		}
 		for _, fi := range fis {
-			oldname := filepath.Join(dir, fi.Name())
 			newname := filepath.Join(destDir, "bin", fi.Name())
-			oldname, err = filepath.Rel(filepath.Join(destDir, "bin"), oldname)
-			if err != nil {
-				return err
-			}
-			if err := os.Symlink(oldname, newname); err != nil {
-				return err
+			wrapper := filepath.Join(b.PkgDir, "wrappers", fi.Name())
+			if _, err := os.Stat(wrapper); err == nil {
+				c, err := ioutil.ReadFile(wrapper)
+				if err != nil {
+					return err
+				}
+				c = []byte(b.substitute(string(c)))
+				if err := ioutil.WriteFile(newname, c, 0755); err != nil {
+					return err
+				}
+			} else {
+				oldname := filepath.Join(dir, fi.Name())
+				oldname, err = filepath.Rel(filepath.Join(destDir, "bin"), oldname)
+				if err != nil {
+					return err
+				}
+				if err := os.Symlink(oldname, newname); err != nil {
+					return err
+				}
 			}
 		}
 	}
