@@ -155,7 +155,7 @@ func buildpkg() error {
 	}
 
 	// rename destDir/tmp/etc to destDir/etc
-	if err := os.Rename(filepath.Join(b.DestDir, "etc"), filepath.Join(destDir, "etc")); err != nil {
+	if err := os.Rename(filepath.Join(b.DestDir, "etc"), filepath.Join(destDir, "etc")); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
