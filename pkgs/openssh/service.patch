@@ -1,0 +1,22 @@
+--- /dev/null	2018-06-20 07:59:00.548558951 +0200
++++ ./ssh.service	2018-09-12 22:14:34.951519355 +0200
+@@ -0,0 +1,19 @@
++[Unit]
++Description=OpenBSD Secure Shell server
++After=network.target
++
++[Service]
++ExecStartPre=/bin/sshd -t
++ExecStart=/bin/sshd -D
++ExecReload=/bin/sshd -t
++ExecReload=/bin/kill -HUP $MAINPID
++KillMode=process
++Restart=on-failure
++RestartPreventExitStatus=255
++#Type=notify
++RuntimeDirectory=sshd
++RuntimeDirectoryMode=0755
++
++[Install]
++WantedBy=multi-user.target
++Alias=sshd.service

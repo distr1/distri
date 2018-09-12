@@ -225,6 +225,21 @@ func pack(args []string) error {
 		defer cleanup()
 	}
 
+	// This is an initial installation of all packages, so copy their
+	// /ro/<pkg>-<version>/etc directory contents to /etc (if any):
+	for _, pkg := range basePkgs {
+		pkgetc := filepath.Join(*root, "ro", pkg, "etc")
+		if _, err := os.Stat(pkgetc); err != nil {
+			continue // package has no etc directory
+		}
+		// TODO: do this copy in pure Go
+		cp := exec.Command("cp", "-r", pkgetc, *root)
+		cp.Stderr = os.Stderr
+		if err := cp.Run(); err != nil {
+			return err
+		}
+	}
+
 	// XXX: this is required for systemd-firstboot
 	cmdline := filepath.Join(*root, "proc", "cmdline")
 	if err := ioutil.WriteFile(cmdline, []byte("systemd.firstboot=1"), 0644); err != nil {
@@ -270,7 +285,8 @@ func pack(args []string) error {
 		"enable",
 		"systemd-networkd",
 		"containerd",
-		"docker")
+		"docker",
+		"ssh")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -310,6 +326,11 @@ session	required	pam_warn.so
 	if err := addgroup(*root, "systemd-network:x:103:"); err != nil {
 		return err
 	}
+
+	if err := adduser(*root, "sshd:x:102:102:sshd:/:/bin/false"); err != nil {
+		return err
+	}
+
 	if err := addgroup(*root, "docker:x:104:"); err != nil {
 		return err
 	}

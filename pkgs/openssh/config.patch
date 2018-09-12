@@ -1,0 +1,13 @@
+diff --git i/sshd_config w/sshd_config
+index 19b7c91..b7d73d4 100644
+--- i/sshd_config
++++ w/sshd_config
+@@ -79,7 +79,7 @@ AuthorizedKeysFile	.ssh/authorized_keys
+ # If you just want the PAM account and session checks to run without
+ # PAM authentication, then enable this but set PasswordAuthentication
+ # and ChallengeResponseAuthentication to 'no'.
+-#UsePAM no
++UsePAM yes
+ 
+ #AllowAgentForwarding yes
+ #AllowTcpForwarding yes
