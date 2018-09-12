@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"unsafe"
 
@@ -196,6 +197,11 @@ func pack(args []string) error {
 		"iputils-20180629",
 		"linux-4.18.7",
 		"ca-certificates-3.39",
+		"grub2-2.02",
+		// TODO: make these runtime deps of grub:
+		"sed-4.5",
+		"gawk-4.2.1",
+		// end of grub deps
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
@@ -419,14 +425,63 @@ func writeDiskImg(dest, src string) error {
 		return errno
 	}
 
-	mkfs := exec.Command("sudo", "mkfs.ext4", loopdev)
+	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
+	sfdisk.Stdin = strings.NewReader(`size=250M, name=boot
+name=root`)
+	sfdisk.Stdout = os.Stdout
+	sfdisk.Stderr = os.Stderr
+	if err := sfdisk.Run(); err != nil {
+		return fmt.Errorf("%v: %v", sfdisk.Args, err)
+	}
+
+	kpartx := exec.Command("sudo", "kpartx", "-av", dest)
+	kpartx.Stderr = os.Stderr
+	out, err := kpartx.Output()
+	if err != nil {
+		return fmt.Errorf("%v: %v", kpartx.Args, err)
+	}
+
+	var partitions []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if !strings.HasPrefix(line, "add map ") {
+			continue
+		}
+		parts := strings.Split(line, " ")
+		if len(parts) < 3 {
+			continue
+		}
+		partitions = append(partitions, parts[2])
+	}
+
+	if got, want := len(partitions), 2; got != want {
+		return fmt.Errorf("unexpected number of partitions: got %d, want %d", got, want)
+	}
+
+	if !strings.HasSuffix(partitions[0], "p1") ||
+		!strings.HasSuffix(partitions[1], "p2") {
+		return fmt.Errorf("unexpected kpartx output: expected *p1 and *p2, got partitions %q", partitions)
+	}
+
+	log.Printf("partitions: %q", partitions)
+
+	boot := "/dev/mapper/" + partitions[0]
+	root := "/dev/mapper/" + partitions[1]
+
+	mkfs := exec.Command("sudo", "mkfs.ext2", boot)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
 		return fmt.Errorf("%v: %v", mkfs.Args, err)
 	}
 
-	if err := syscall.Mount(loopdev, "/mnt", "ext4", syscall.MS_MGC_VAL, ""); err != nil {
+	mkfs = exec.Command("sudo", "mkfs.ext4", root)
+	mkfs.Stdout = os.Stdout
+	mkfs.Stderr = os.Stderr
+	if err := mkfs.Run(); err != nil {
+		return fmt.Errorf("%v: %v", mkfs.Args, err)
+	}
+
+	if err := syscall.Mount(root, "/mnt", "ext4", syscall.MS_MGC_VAL, ""); err != nil {
 		return err
 	}
 
@@ -440,6 +495,13 @@ func writeDiskImg(dest, src string) error {
 
 	if err := syscall.Unmount("/mnt", 0); err != nil {
 		return err
+	}
+
+	kpartx = exec.Command("sudo", "kpartx", "-d", dest)
+	kpartx.Stdout = os.Stdout
+	kpartx.Stderr = os.Stderr
+	if err := kpartx.Run(); err != nil {
+		return fmt.Errorf("%v: %v", kpartx.Args, err)
 	}
 
 	return nil
