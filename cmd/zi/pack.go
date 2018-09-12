@@ -202,6 +202,7 @@ func pack(args []string) error {
 		"sed-4.5",
 		"gawk-4.2.1",
 		// end of grub deps
+		"emacs-26.1",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
@@ -385,7 +386,7 @@ func writeDiskImg(dest, src string) error {
 		return err
 	}
 	defer f.Close()
-	if err := f.Truncate(2 * 1024 * 1024 * 1024); err != nil { // 2 GB
+	if err := f.Truncate(3 * 1024 * 1024 * 1024); err != nil { // 3 GB
 		return err
 	}
 

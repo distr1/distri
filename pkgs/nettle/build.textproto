@@ -4,5 +4,6 @@ version: "3.4"
 
 # build dependencies:
 dep: "m4-1.4.18"
+dep: "gmp-6.1.2"
 
 cbuilder: <>

@@ -1,0 +1,41 @@
+source: "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.5/gnutls-3.5.18.tar.xz"
+hash: "ae2248d9e78747cf9c469dde81ff8f90b56838b707a0637f3f7d4eee90e80234"
+version: "3.5.18"
+
+cbuilder: <
+  extra_configure_flag: "--without-p11-kit"
+>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "nettle-3.4"
+dep: "libtasn1-4.13"
+dep: "libunistring-0.9.10"
+dep: "zlib-1.2.11"
+
+# TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
+build_step: <
+  argv: "ln"
+  argv: "-s"
+  argv: "/ro/glibc-2.27/buildoutput/include"
+  argv: "/usr/include"
+>
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--without-p11-kit"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+>
