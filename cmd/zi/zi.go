@@ -917,7 +917,7 @@ func runJob(job string) error {
 
 	{
 		b, err := proto.Marshal(&pb.Meta{
-			RuntimeDep: deps,
+			RuntimeDep: append(deps, b.Proto.GetRuntimeDep()...),
 		})
 		if err != nil {
 			return err
