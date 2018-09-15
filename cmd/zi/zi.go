@@ -282,7 +282,7 @@ func (b *buildctx) substituteStrings(strings []string) []string {
 	return output
 }
 
-func builddeps(p *pb.Build) []string {
+func builddeps(p *pb.Build) ([]string, error) {
 	deps := p.GetDep()
 	if builder := p.Builder; builder != nil {
 		switch builder.(type) {
@@ -313,7 +313,7 @@ func builddeps(p *pb.Build) []string {
 		}
 	}
 
-	return deps
+	return resolve(filepath.Join(os.Getenv("HOME"), "zi", "build", "zi", "pkg"), deps)
 }
 
 func (b *buildctx) build() (runtimedeps []string, _ error) {
@@ -326,14 +326,18 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		b.ChrootDir = chrootDir
 
 		// Install build dependencies into /ro
-		deps := filepath.Join(b.ChrootDir, "ro")
+		depsdir := filepath.Join(b.ChrootDir, "ro")
 		// TODO: mount() does this, no?
-		if err := os.MkdirAll(deps, 0755); err != nil {
+		if err := os.MkdirAll(depsdir, 0755); err != nil {
 			return nil, err
 		}
 
-		for _, dep := range builddeps(b.Proto) {
-			cleanup, err := mount([]string{"-root=" + deps, dep})
+		deps, err := builddeps(b.Proto)
+		if err != nil {
+			return nil, err
+		}
+		for _, dep := range deps {
+			cleanup, err := mount([]string{"-root=" + depsdir, dep})
 			if err != nil {
 				return nil, err
 			}
@@ -389,6 +393,13 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		return nil, err
 	}
 	defer buildLog.Close()
+
+	// Resolve build dependencies before we chroot, so that we still have access
+	// to the meta files.
+	deps, err := builddeps(b.Proto)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: link /bin to /ro/bin, then set PATH=/ro/bin
 
@@ -556,7 +567,11 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			// (e.g. if autotools is detected, bash+coreutils+sed+grep+gawk need to
 			// be installed as runtime env, and gcc+binutils+make for building)
 
-			if err := install(append([]string{"-root=/ro"}, builddeps(b.Proto)...)); err != nil {
+			deps, err := builddeps(b.Proto)
+			if err != nil {
+				return nil, err
+			}
+			if err := install(append([]string{"-root=/ro"}, deps...)); err != nil {
 				return nil, err
 			}
 
@@ -592,7 +607,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(builddeps(b.Proto), b.Pkg+"-"+b.Version) {
+	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
 		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
 		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
@@ -700,6 +715,9 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		newname := link.GetNewname()
 		log.Printf("symlinking %s → %s", newname, oldname)
 		dest := filepath.Join(b.DestDir, b.Prefix, "buildoutput")
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(dest, newname)), 0755); err != nil {
+			return nil, err
+		}
 		if err := os.Symlink(oldname, filepath.Join(dest, newname)); err != nil {
 			return nil, err
 		}
@@ -728,7 +746,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if !bytes.Equal(buf[:], []byte("\x7fELF")) {
 			return nil
 		}
-		// TODO: store deps
 		pkgs, err := findShlibDeps(path)
 		if err != nil {
 			return err
@@ -742,8 +759,29 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		return nil, err
 	}
 
+	// TODO(optimization): these could be build-time dependencies, as they are
+	// only required when building against the library, not when using it.
+	pkgconfig := filepath.Join(destDir, "buildoutput", "lib", "pkgconfig")
+	fis, err := ioutil.ReadDir(pkgconfig)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	for _, fi := range fis {
+		b, err := ioutil.ReadFile(filepath.Join(pkgconfig, fi.Name()))
+		if err != nil {
+			return nil, err
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+			if strings.HasPrefix(line, "Requires.private: ") ||
+				strings.HasPrefix(line, "Requires: ") {
+				// TODO: add packages which contain this pkgconfig file
+				log.Printf("TODO: extract names from %q", line)
+			}
+		}
+	}
+
 	log.Printf("run-time dependencies: %+v", depPkgs)
-	deps := make([]string, 0, len(depPkgs))
+	deps = make([]string, 0, len(depPkgs))
 	for pkg := range depPkgs {
 		deps = append(deps, pkg)
 	}
