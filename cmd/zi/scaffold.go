@@ -1,0 +1,97 @@
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/stapelberg/zi/pb"
+)
+
+var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
+hash: "{{.Hash}}"
+version: "{{.Version}}"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+`))
+
+func scaffold(args []string) error {
+	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
+	fset.Parse(args)
+	if fset.NArg() != 1 {
+		return fmt.Errorf("syntax: scaffold <url>")
+	}
+	u := fset.Arg(0)
+
+	pkg := filepath.Base(u)
+	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
+		pkg = strings.TrimSuffix(pkg, "."+suffix)
+	}
+	idx := strings.LastIndex(pkg, "-")
+	if idx == -1 {
+		return fmt.Errorf("could not segment %q into <name>-<version>", pkg)
+	}
+	name := strings.ToLower(pkg[:idx])
+	version := pkg[idx+1:]
+
+	b := &buildctx{
+		Proto: &pb.Build{
+			Source: proto.String(u),
+		},
+	}
+	builddir := filepath.Join(os.Getenv("HOME"), "zi", "build", name)
+	if err := os.MkdirAll(builddir, 0755); err != nil {
+		return err
+	}
+	if err := os.Chdir(builddir); err != nil {
+		return err
+	}
+	fn := filepath.Base(u)
+	if err := b.download(fn); err != nil {
+		return err
+	}
+
+	h := sha256.New()
+	f, err := os.Open(fn)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := buildTmpl.Execute(&buf, struct {
+		Source  string
+		Hash    string
+		Version string
+	}{
+		Source:  u,
+		Hash:    fmt.Sprintf("%x", h.Sum(nil)),
+		Version: version,
+	}); err != nil {
+		return err
+	}
+
+	pkgdir := filepath.Join(os.Getenv("HOME"), "zi", "pkgs", name)
+	if err := os.MkdirAll(pkgdir, 0755); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filepath.Join(pkgdir, "build.textproto"), buf.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	return nil
+}

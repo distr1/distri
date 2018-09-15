@@ -994,6 +994,11 @@ func main() {
 			log.Fatal(err)
 		}
 
+	case "scaffold":
+		if err := scaffold(args); err != nil {
+			log.Fatal(err)
+		}
+
 	case "install":
 		if err := install(args); err != nil {
 			log.Fatal(err)
