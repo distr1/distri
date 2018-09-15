@@ -1,0 +1,13 @@
+source: "https://github.com/Airblader/xcb-util-xrm/releases/download/v1.3/xcb-util-xrm-1.3.tar.bz2"
+hash: "301cf33701207ea8782d49f4cb6404abd8f2d64e16f242017fd720be7c900c85"
+version: "1.3"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "m4-1.4.18"
+dep: "libxcb-1.13"
+dep: "xorgproto-2018.4"
+dep: "xcb-util-0.4.0"
+dep: "libx11-1.6.6"

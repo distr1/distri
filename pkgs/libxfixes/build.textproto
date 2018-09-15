@@ -1,0 +1,9 @@
+source: "https://xorg.freedesktop.org/releases/individual/lib/libXfixes-5.0.3.tar.bz2"
+hash: "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"
+version: "5.0.3"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "libx11-1.6.6"

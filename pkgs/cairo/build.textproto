@@ -1,0 +1,16 @@
+source: "https://www.cairographics.org/releases/cairo-1.14.12.tar.xz"
+hash: "8c90f00c500b2299c0a323dd9beead2a00353752b2092ead558139bd67f7bf16"
+version: "1.14.12"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "libpng-1.6.35"
+dep: "pixman-0.34.0"
+dep: "freetype-2.9.1"
+dep: "fontconfig-2.13.1"
+dep: "libxcb-1.13"
+dep: "xcb-util-renderutil-0.3.9"
+dep: "libx11-1.6.6"
+dep: "libxext-1.3.3"

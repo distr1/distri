@@ -1,0 +1,12 @@
+source: "https://xorg.freedesktop.org/releases/individual/proto/xorgproto-2018.4.tar.bz2"
+hash: "fee885e0512899ea5280c593fdb2735beb1693ad170c22ebcc844470eec415a0"
+version: "2018.4"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+
+install: <
+  symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >
+>

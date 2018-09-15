@@ -1,0 +1,15 @@
+source: "http://ftp.gnome.org/pub/GNOME/sources/pango/1.42/pango-1.42.4.tar.xz"
+hash: "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d"
+version: "1.42.4"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "cairo-1.14.12"
+dep: "harfbuzz-1.9.0"
+dep: "fontconfig-2.13.1"
+dep: "glib-2.58.0"
+dep: "fribidi-1.0.5"
+dep: "python3-3.7.0"
+

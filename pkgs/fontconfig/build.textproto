@@ -1,0 +1,12 @@
+source: "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.1.tar.bz2"
+hash: "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741"
+version: "2.13.1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "freetype-2.9.1"
+dep: "util-linux-2.32"
+dep: "expat-2.2.6"
+dep: "gperf-3.1"

@@ -1,0 +1,11 @@
+source: "https://xcb.freedesktop.org/dist/xcb-util-wm-0.4.1.tar.bz2"
+hash: "28bf8179640eaa89276d2b0f1ce4285103d136be6c98262b6151aaee1d3c2a3f"
+version: "0.4.1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "libxcb-1.13"
+dep: "xorgproto-2018.4"
+dep: "m4-1.4.18"

@@ -1,0 +1,11 @@
+source: "https://xcb.freedesktop.org/dist/xcb-util-renderutil-0.3.9.tar.bz2"
+hash: "c6e97e48fb1286d6394dddb1c1732f00227c70bd1bedb7d1acabefdd340bea5b"
+version: "0.3.9"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "libxcb-1.13"
+dep: "xorgproto-2018.4"
+

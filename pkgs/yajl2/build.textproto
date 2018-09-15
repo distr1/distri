@@ -1,0 +1,33 @@
+source: "https://github.com/lloyd/yajl/archive/2.1.0.tar.gz"
+hash: "3fb73364a5a30efe615046d07e6db9d09fd2b41c763c5f7d3bfb121cd5c5ac5a"
+version: "2.1.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "cmake-3.12.2"
+
+build_step: <
+  argv: "/bin/cmake"
+  argv: "${ZI_SOURCEDIR}"
+  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${ZI_PREFIX}"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+>
+
+install: <
+  # xtrans is the only package which installs to share/pkgconfig
+  symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >
+>

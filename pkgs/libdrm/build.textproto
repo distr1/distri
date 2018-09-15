@@ -1,0 +1,9 @@
+source: "https://dri.freedesktop.org/libdrm/libdrm-2.4.94.tar.bz2"
+hash: "b73c59b0a3760502c428ba81de49cd4807657d26be5e697eba3a87dd021d16be"
+version: "2.4.94"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "libpciaccess-0.14"

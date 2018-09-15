@@ -1,0 +1,20 @@
+source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.1.tar.bz2"
+hash: "59c99fe86fe75b8164c6567bfc6e982aecc2e4a51e6fbac1b842d5d00549e918"
+version: "1.20.1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "pkg-config-0.29.2"
+dep: "pixman-0.34.0"
+dep: "libdrm-2.4.94"
+dep: "libx11-1.6.6"
+dep: "mesa-18.2.0"
+dep: "openssl-1.0.2p"
+dep: "xorgproto-2018.4"
+dep: "xtrans-1.3.5"
+dep: "libxkbfile-1.0.9"
+dep: "libxfont2-2.0.3"
+dep: "libpciaccess-0.14"
+dep: "libepoxy-1.5.2"
+dep: "zlib-1.2.11" # TODO: configure doesn’t check for it
