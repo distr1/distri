@@ -7,7 +7,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "nettle-3.4"
 dep: "libtasn1-4.13"
 dep: "libunistring-0.9.10"

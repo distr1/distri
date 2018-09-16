@@ -5,6 +5,5 @@ version: "0.8.2"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "bison-3.0.5"
 dep: "libxcb-1.13"

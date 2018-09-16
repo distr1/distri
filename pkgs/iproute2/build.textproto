@@ -8,7 +8,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "libmnl-1.0.4"
 dep: "findutils-4.6.0"
 dep: "bison-3.0.5"

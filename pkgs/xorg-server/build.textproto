@@ -5,7 +5,6 @@ version: "1.20.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "pixman-0.34.0"
 dep: "libdrm-2.4.94"
 dep: "libx11-1.6.6"

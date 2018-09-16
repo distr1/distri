@@ -7,7 +7,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "gnutls-3.5.18"
 dep: "ncurses-6.1"
 dep: "tar-1.30"

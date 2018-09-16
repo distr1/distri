@@ -23,7 +23,6 @@ version: "{{.Version}}"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 `))
 
 func scaffold(args []string) error {

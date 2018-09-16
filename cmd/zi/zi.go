@@ -296,6 +296,7 @@ func builddeps(p *pb.Build) ([]string, error) {
 				"gawk-4.2.1",
 				"diffutils-3.6",
 				"file-5.34",
+				"pkg-config-0.29.2",
 			}...)
 
 			// C build environment:

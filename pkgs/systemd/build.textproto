@@ -8,7 +8,6 @@ cbuilder: <>
 dep: "m4-1.4.18"
 dep: "gperf-3.1"
 dep: "libcap-2.25"
-dep: "pkg-config-0.29.2"
 dep: "util-linux-2.32"
 dep: "gettext-0.19.8.1"
 dep: "meson-0.47.1"

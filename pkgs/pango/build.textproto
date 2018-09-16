@@ -5,7 +5,6 @@ version: "1.42.4"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "cairo-1.14.12"
 dep: "harfbuzz-1.9.0"
 dep: "fontconfig-2.13.1"

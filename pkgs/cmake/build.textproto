@@ -5,7 +5,6 @@ version: "3.12.2"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 
 # TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
 build_step: <

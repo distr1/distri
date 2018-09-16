@@ -5,7 +5,6 @@ version: "2018.4"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 
 install: <
   symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >

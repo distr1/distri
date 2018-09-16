@@ -5,5 +5,4 @@ version: "0.4.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "libxcb-1.13"

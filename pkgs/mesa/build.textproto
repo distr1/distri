@@ -8,7 +8,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "zlib-1.2.11"
 dep: "libdrm-2.4.94"
 dep: "libx11-1.6.6"

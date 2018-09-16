@@ -5,7 +5,6 @@ version: "1.14.12"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "libpng-1.6.35"
 dep: "pixman-0.34.0"
 dep: "freetype-2.9.1"

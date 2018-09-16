@@ -5,4 +5,3 @@ version: "2.2.6"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"

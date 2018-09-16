@@ -5,7 +5,6 @@ version: "1.13"
 cbuilder: <>
 
 # build dependencies:
-dep: "pkg-config-0.29.2"
 dep: "python3-3.7.0"
 dep: "xcb-proto-1.13"
 dep: "libpthread-stubs-0.4"
