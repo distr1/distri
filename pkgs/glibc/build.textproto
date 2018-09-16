@@ -8,6 +8,8 @@ version: "2.27"
 # hash: "da9e45260c0cd3dbf6a585082a602521092ae7b3ecb17092cd7347603ef1e2cb"
 # version: "2.28"
 
+cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
+
 cbuilder: <>
 
 # build dependencies:

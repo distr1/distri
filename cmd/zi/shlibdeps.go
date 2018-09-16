@@ -11,8 +11,7 @@ import (
 var lddRe = regexp.MustCompile(`^\t([^ ]+) => /ro/([^/]+)`)
 
 func findShlibDeps(fn string) ([]string, error) {
-	cmd := exec.Command("/lib64/ld-linux-x86-64.so.2", fn)
-	cmd.Env = []string{"LD_TRACE_LOADED_OBJECTS=1"}
+	cmd := exec.Command("ldd", fn)
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
