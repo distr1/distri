@@ -605,6 +605,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		libDirs       []string
 		pkgconfigDirs []string
 		includeDirs   []string
+		perl5Dirs     []string
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
@@ -615,16 +616,22 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/lib/pkgconfig")
 		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
 		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
+		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
 	}
 
 	env := []string{
 		// TODO: remove /ro/bin hack for python, file bug: python3 -c 'import sys;print(sys.path)' prints wrong result with PATH=/bin and /bin→/ro/bin and /ro/bin/python3→../python3-3.7.0/bin/python3
-		"PATH=/ro/bin:bin",                                            // for finding binaries
-		"LIBRARY_PATH=" + strings.Join(libDirs, ":"),                  // for gcc
-		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":"),               // for ld
-		"CPATH=" + strings.Join(includeDirs, ":"),                     // for gcc
-		"LDFLAGS=-Wl,-rpath=" + strings.Join(libDirs, " -Wl,-rpath="), // for ld
-		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":"),         // for pkg-config
+		"PATH=/ro/bin:bin",                                    // for finding binaries
+		"LIBRARY_PATH=" + strings.Join(libDirs, ":"),          // for gcc
+		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":"),       // for ld
+		"CPATH=" + strings.Join(includeDirs, ":"),             // for gcc
+		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":"), // for pkg-config
+		"PERL5LIB=" + strings.Join(perl5Dirs, ":"),            // for perl
+	}
+	// Exclude LDFLAGS for glibc as per
+	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
+	if b.Pkg != "glibc" {
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")) // for ld
 	}
 
 	steps := b.Proto.GetBuildStep()
