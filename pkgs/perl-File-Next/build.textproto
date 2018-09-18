@@ -1,0 +1,32 @@
+source: "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/File-Next-1.16.tar.gz"
+hash: "6965f25c2c132d0ba7a6f72b57b8bc6d25cf8c1b7032caa3a9bda8612e41d759"
+version: "1.16"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "perl-5.28.0"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "perl Makefile.PL INSTALL_BASE=${ZI_PREFIX} EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib PREREQ_FATAL=true"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make -j8"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make install DESTDIR=${ZI_DESTDIR}"
+>
