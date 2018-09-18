@@ -713,7 +713,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			if err := cmd.Run(); err != nil {
 				// TODO: ask the user first if they want to debug, and only during interactive builds. detect pty?
 				// TODO: ring the bell :)
-				log.Printf("build step failed (%v), starting debug shell", err)
+				log.Printf("build step %v failed (%v), starting debug shell", cmd.Args, err)
 				cmd := exec.Command("bash", "-i")
 				if b.Hermetic {
 					cmd.Env = env
