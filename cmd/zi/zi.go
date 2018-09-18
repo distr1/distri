@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"text/template"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -159,6 +160,13 @@ func buildpkg() error {
 		return err
 	}
 
+	// TODO: do this only once, not also in b.build()
+	deps, err := builddeps(b.Proto)
+	if err != nil {
+		return err
+	}
+	env := b.env(deps, false)
+
 	// TODO: create binary wrappers for runtime deps (symlinks for now)
 	if err := os.MkdirAll(filepath.Join(destDir, "bin"), 0755); err != nil {
 		return err
@@ -187,11 +195,24 @@ func buildpkg() error {
 				}
 			} else {
 				oldname := filepath.Join(dir, fi.Name())
-				oldname, err = filepath.Rel(filepath.Join(destDir, "bin"), oldname)
+				oldname, err = filepath.Rel(destDir, oldname)
 				if err != nil {
 					return err
 				}
-				if err := os.Symlink(oldname, newname); err != nil {
+				var buf bytes.Buffer
+				if err := wrapperTmpl.Execute(&buf, struct {
+					Bin    string
+					Prefix string
+					Env    []string
+				}{
+					Bin:    oldname,
+					Prefix: b.Prefix,
+					Env:    env,
+				}); err != nil {
+					return err
+				}
+
+				if err := ioutil.WriteFile(newname, buf.Bytes(), 0755); err != nil {
 					return err
 				}
 			}
@@ -204,6 +225,17 @@ func buildpkg() error {
 
 	return nil
 }
+
+var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
+	"quoteenv": func(env string) string {
+		return strings.Replace(env, `=`, `="`, 1) + `"`
+	},
+}).Parse(`#!/bin/sh
+{{ range $idx, $env := .Env }}
+export {{ quoteenv $env }}
+{{ end }}
+exec {{ .Prefix }}/{{ .Bin }} "$@"
+`))
 
 func (b *buildctx) serialize() (string, error) {
 	// TODO: exempt the proto field from marshaling, it needs jsonpb once you use oneofs
@@ -280,6 +312,50 @@ func (b *buildctx) substituteStrings(strings []string) []string {
 		output[idx] = b.substitute(s)
 	}
 	return output
+}
+
+func (b *buildctx) env(deps []string, hermetic bool) []string {
+	// TODO: this should go into the C builder once the C builder is used by all packages
+	var (
+		libDirs       []string
+		pkgconfigDirs []string
+		includeDirs   []string
+		perl5Dirs     []string
+	)
+	// add the package itself, not just its dependencies: the package might
+	// install a shared library which it also uses (e.g. systemd).
+	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
+		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
+		// TODO: should we try to make programs install to /lib instead? examples: libffi
+		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
+		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/lib/pkgconfig")
+		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
+		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
+		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
+	}
+
+	ifNotHermetic := func(val string) string {
+		if !hermetic {
+			return val
+		}
+		return ""
+	}
+
+	env := []string{
+		// TODO: remove /ro/bin hack for python, file bug: python3 -c 'import sys;print(sys.path)' prints wrong result with PATH=/bin and /bin→/ro/bin and /ro/bin/python3→../python3-3.7.0/bin/python3
+		"PATH=/ro/bin:/bin" + ifNotHermetic(":$PATH"),                                              // for finding binaries
+		"LIBRARY_PATH=" + strings.Join(libDirs, ":") + ifNotHermetic(":$LIBRARY_PATH"),             // for gcc
+		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":") + ifNotHermetic(":$LD_LIBRARY_PATH"),       // for ld
+		"CPATH=" + strings.Join(includeDirs, ":") + ifNotHermetic(":$CPATH"),                       // for gcc
+		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":") + ifNotHermetic(":$PKG_CONFIG_PATH"), // for pkg-config
+		"PERL5LIB=" + strings.Join(perl5Dirs, ":") + ifNotHermetic(":$PERL5LIB"),                   // for perl
+	}
+	// Exclude LDFLAGS for glibc as per
+	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
+	if b.Pkg != "glibc" {
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")) // for ld
+	}
+	return env
 }
 
 func builddeps(p *pb.Build) ([]string, error) {
@@ -600,39 +676,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		return nil, err
 	}
 
-	// TODO: this should go into the C builder once the C builder is used by all packages
-	var (
-		libDirs       []string
-		pkgconfigDirs []string
-		includeDirs   []string
-		perl5Dirs     []string
-	)
-	// add the package itself, not just its dependencies: the package might
-	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
-		// TODO: should we try to make programs install to /lib instead? examples: libffi
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
-		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/lib/pkgconfig")
-		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
-		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
-		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
-	}
-
-	env := []string{
-		// TODO: remove /ro/bin hack for python, file bug: python3 -c 'import sys;print(sys.path)' prints wrong result with PATH=/bin and /bin→/ro/bin and /ro/bin/python3→../python3-3.7.0/bin/python3
-		"PATH=/ro/bin:bin",                                    // for finding binaries
-		"LIBRARY_PATH=" + strings.Join(libDirs, ":"),          // for gcc
-		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":"),       // for ld
-		"CPATH=" + strings.Join(includeDirs, ":"),             // for gcc
-		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":"), // for pkg-config
-		"PERL5LIB=" + strings.Join(perl5Dirs, ":"),            // for perl
-	}
-	// Exclude LDFLAGS for glibc as per
-	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
-	if b.Pkg != "glibc" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")) // for ld
-	}
+	env := b.env(deps, true)
 
 	steps := b.Proto.GetBuildStep()
 	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
