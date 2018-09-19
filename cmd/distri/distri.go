@@ -1093,5 +1093,10 @@ func main() {
 		if err := install(args); err != nil {
 			log.Fatal(err)
 		}
+
+	default:
+		fmt.Fprintf(os.Stderr, "unknown command %q\n", verb)
+		fmt.Fprintf(os.Stderr, "syntax: distri <command> [options]\n")
+		os.Exit(2)
 	}
 }
