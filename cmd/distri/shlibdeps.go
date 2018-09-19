@@ -12,6 +12,8 @@ var lddRe = regexp.MustCompile(`^\t([^ ]+) => /ro/([^/]+)`)
 
 func findShlibDeps(fn string) ([]string, error) {
 	cmd := exec.Command("ldd", fn)
+	// TODO: lack of cmd.Env means that pre-built binaries (e.g. google-chrome)
+	// won’t work: they rely on LD_LIBRARY_PATH instead of rpath
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
