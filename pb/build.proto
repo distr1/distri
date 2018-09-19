@@ -14,6 +14,12 @@ message CBuilder {
   optional bool copy_to_builddir = 2;
 }
 
+message PerlBuilder {
+  // Extra flags to be specified when running Makefile.PL, e.g.
+  // EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib
+  repeated string extra_makefile_flag = 1;
+}
+
 message Install {
   message Symlink {
     optional string oldname = 1;
@@ -35,6 +41,7 @@ message Build {
 
   oneof builder {
     CBuilder cbuilder = 7;
+    PerlBuilder perlbuilder = 10;
   }
 
   // TODO: move this field into a custom builder

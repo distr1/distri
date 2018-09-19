@@ -1,0 +1,10 @@
+source: "https://cpan.metacpan.org/authors/id/G/GA/GAAS/HTTP-Daemon-6.01.tar.gz"
+hash: "43fd867742701a3f9fcc7bd59838ab72c6490c0ebaf66901068ec6997514adc2"
+version: "6.01"
+
+perlbuilder: <>
+
+# build dependencies:
+dep: "perl-LWP-MediaTypes-6.02"
+dep: "perl-HTTP-Date-6.02"
+dep: "perl-HTTP-Message-6.18"

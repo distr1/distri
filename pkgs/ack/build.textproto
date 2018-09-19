@@ -2,36 +2,8 @@ source: "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/ack-2.24.tar.gz"
 hash: "72934009ad8fe712deeb2c41960f2746d0a25e3a226ad7c54232c00105e54f00"
 version: "2.24"
 
-cbuilder: <>
+perlbuilder: <>
 
 # build dependencies:
 dep: "perl-5.28.0"
 dep: "perl-File-Next-1.16"
-
-runtime_dep: "perl-5.28.0" # TODO: have the perlbuilder set this
-runtime_dep: "perl-File-Next-1.16" # TODO: have the perlbuilder set this
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "perl Makefile.PL INSTALL_BASE=${ZI_PREFIX} EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib PREREQ_FATAL=true"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "make -j8"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "make install DESTDIR=${ZI_DESTDIR}"
->
-

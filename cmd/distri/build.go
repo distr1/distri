@@ -344,32 +344,40 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 func builddeps(p *pb.Build) ([]string, error) {
 	deps := p.GetDep()
 	if builder := p.Builder; builder != nil {
-		switch builder.(type) {
-		case *pb.Build_Cbuilder:
+		// The C builder dependencies are re-used by many other builders
+		// (anything that supports linking against C libraries).
+		cdeps := []string{
 			// configure runtime dependencies:
-			deps = append(deps, []string{
-				"bash-4.4.18",
-				"coreutils-8.30",
-				"sed-4.5",
-				"grep-3.1",
-				"gawk-4.2.1",
-				"diffutils-3.6",
-				"file-5.34",
-				"pkg-config-0.29.2",
-			}...)
+			"bash-4.4.18",
+			"coreutils-8.30",
+			"sed-4.5",
+			"grep-3.1",
+			"gawk-4.2.1",
+			"diffutils-3.6",
+			"file-5.34",
+			"pkg-config-0.29.2",
 
 			// C build environment:
+			"gcc-8.2.0",
+			"mpc-1.1.0",  // TODO: remove once gcc binaries find these via their rpath
+			"mpfr-4.0.1", // TODO: remove once gcc binaries find these via their rpath
+			"gmp-6.1.2",  // TODO: remove once gcc binaries find these via their rpath
+			"binutils-2.31",
+			"make-4.2.1",
+			"glibc-2.27",
+			"linux-4.18.7",
+			"findutils-4.6.0", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+		}
+
+		switch builder.(type) {
+		case *pb.Build_Perlbuilder:
 			deps = append(deps, []string{
-				"gcc-8.2.0",
-				"mpc-1.1.0",  // TODO: remove once gcc binaries find these via their rpath
-				"mpfr-4.0.1", // TODO: remove once gcc binaries find these via their rpath
-				"gmp-6.1.2",  // TODO: remove once gcc binaries find these via their rpath
-				"binutils-2.31",
-				"make-4.2.1",
-				"glibc-2.27",
-				"linux-4.18.7",
-				"findutils-4.6.0", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+				"perl-5.28.0",
 			}...)
+			deps = append(deps, cdeps...)
+
+		case *pb.Build_Cbuilder:
+			deps = append(deps, cdeps...)
 		}
 	}
 
@@ -668,6 +676,12 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			if err := b.buildc(v.Cbuilder, env, buildLog); err != nil {
 				return nil, err
 			}
+		case *pb.Build_Perlbuilder:
+			if err := b.buildperl(v.Perlbuilder, env, buildLog); err != nil {
+				return nil, err
+			}
+		default:
+			return nil, fmt.Errorf("BUG: unknown builder")
 		}
 	} else {
 		if len(steps) == 0 {
@@ -812,6 +826,21 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				// TODO: add packages which contain this pkgconfig file
 				log.Printf("TODO: extract names from %q", line)
 			}
+		}
+	}
+
+	if builder := b.Proto.Builder; builder != nil {
+		switch builder.(type) {
+		case *pb.Build_Cbuilder:
+		case *pb.Build_Perlbuilder:
+			depPkgs["perl-5.28.0"] = true
+			// pass through all deps to run-time deps
+			// TODO: distinguish test-only deps from actual deps based on Makefile.PL
+			for _, pkg := range b.Proto.GetDep() {
+				depPkgs[pkg] = true
+			}
+		default:
+			return nil, fmt.Errorf("BUG: unknown builder")
 		}
 	}
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,10 +21,15 @@ var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
 hash: "{{.Hash}}"
 version: "{{.Version}}"
 
-cbuilder: <>
+{{.Builder}}: <>
 
 # build dependencies:
 `))
+
+const (
+	scaffoldC = iota
+	scaffoldPerl
+)
 
 func scaffold(args []string) error {
 	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
@@ -32,6 +38,14 @@ func scaffold(args []string) error {
 		return fmt.Errorf("syntax: scaffold <url>")
 	}
 	u := fset.Arg(0)
+	parsed, err := url.Parse(u)
+	if err != nil {
+		return fmt.Errorf("could not parse URL %q: %v", u, err)
+	}
+	var scaffoldType int
+	if parsed.Host == "cpan.metacpan.org" {
+		scaffoldType = scaffoldPerl
+	}
 
 	pkg := filepath.Base(u)
 	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
@@ -43,6 +57,9 @@ func scaffold(args []string) error {
 	}
 	name := strings.ToLower(pkg[:idx])
 	version := pkg[idx+1:]
+	if scaffoldType == scaffoldPerl {
+		name = "perl-" + pkg[:idx]
+	}
 
 	b := &buildctx{
 		Proto: &pb.Build{
@@ -71,15 +88,21 @@ func scaffold(args []string) error {
 		return err
 	}
 
+	builder := "cbuilder"
+	if scaffoldType == scaffoldPerl {
+		builder = "perlbuilder"
+	}
 	var buf bytes.Buffer
 	if err := buildTmpl.Execute(&buf, struct {
 		Source  string
 		Hash    string
 		Version string
+		Builder string
 	}{
 		Source:  u,
 		Hash:    fmt.Sprintf("%x", h.Sum(nil)),
 		Version: version,
+		Builder: builder,
 	}); err != nil {
 		return err
 	}

@@ -9,30 +9,18 @@ import (
 	"github.com/stapelberg/zi/pb"
 )
 
-func (b *buildctx) buildc(opts *pb.CBuilder, env []string, buildLog io.Writer) error {
-	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
-	env = append(env, b.substitute("DESTDIR=${ZI_DESTDIR}"))
-
+func (b *buildctx) buildperl(opts *pb.PerlBuilder, env []string, buildLog io.Writer) error {
 	var steps [][]string
-	if opts.GetCopyToBuilddir() {
-		steps = [][]string{
-			[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
-			append([]string{"./configure", "--prefix=${ZI_PREFIX}"}, opts.GetExtraConfigureFlag()...),
-		}
-	} else {
-		steps = [][]string{
-			// TODO: set --disable-silent-rules if found in configure help output
-			append([]string{"${ZI_SOURCEDIR}/configure", "--prefix=${ZI_PREFIX}"}, opts.GetExtraConfigureFlag()...),
-		}
+	// TODO: Perl distributions generally don’t seem to build out-of-source? If they start doing so, stop copying
+	steps = [][]string{
+		[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
 	}
+
 	steps = append(steps, [][]string{
+		append([]string{"perl", "Makefile.PL", "INSTALL_BASE=${ZI_PREFIX}", "PREREQ_FATAL=true"}, opts.GetExtraMakefileFlag()...),
 		// TODO: the problem with V=1 is that it typically doesn’t apply to recursive make invocations (e.g. mesa)
 		[]string{"make", "-j8", "V=1"},
-		// e.g. help2man doesn’t pick up the environment variable
-		[]string{"make", "install",
-			"DESTDIR=${ZI_DESTDIR}",
-			"PREFIX=${ZI_PREFIX}", // e.g. for iputils
-		},
+		[]string{"make", "install", "DESTDIR=${ZI_DESTDIR}"},
 	}...)
 
 	for idx, step := range steps {

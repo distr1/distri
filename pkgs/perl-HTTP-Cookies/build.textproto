@@ -1,0 +1,11 @@
+source: "https://cpan.metacpan.org/authors/id/O/OA/OALDERS/HTTP-Cookies-6.04.tar.gz"
+hash: "0cc7f079079dcad8293fea36875ef58dd1bfd75ce1a6c244cd73ed9523eb13d4"
+version: "6.04"
+
+perlbuilder: <>
+
+# build dependencies:
+dep: "perl-HTTP-Date-6.02"
+dep: "perl-HTTP-Message-6.18"
+dep: "perl-URI-1.74"
+

@@ -1,0 +1,19 @@
+source: "https://cpan.metacpan.org/authors/id/E/ET/ETHER/libwww-perl-6.35.tar.gz"
+hash: "dda2578d7b32152c4afce834761a61d117de286c705a9f7972c7ac6032ca5953"
+version: "6.35"
+
+perlbuilder: <>
+
+# build dependencies:
+dep: "perl-Encode-Locale-1.05"
+dep: "perl-File-Listing-6.04"
+dep: "perl-HTML-Parser-3.72"
+dep: "perl-HTTP-Cookies-6.04"
+dep: "perl-HTTP-Message-6.18"
+dep: "perl-URI-1.74"
+dep: "perl-HTTP-Daemon-6.01"
+dep: "perl-HTTP-Negotiate-6.01"
+dep: "perl-Net-HTTP-6.18"
+dep: "perl-Test-Fatal-0.014"
+dep: "perl-Test-RequiresInternet-0.05"
+dep: "perl-WWW-RobotRules-6.02"
