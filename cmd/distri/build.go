@@ -178,6 +178,20 @@ func buildpkg(hermetic, debug bool) error {
 				}
 			} else {
 				oldname := filepath.Join(dir, fi.Name())
+
+				if b.Pkg == "bash" && fi.Name() == "sh" {
+					// prevent creation of a wrapper script for /bin/sh
+					// (wrappers execute /bin/sh) by using a symlink instead:
+					oldname, err = filepath.Rel(filepath.Join(destDir, "bin"), oldname)
+					if err != nil {
+						return err
+					}
+					if err := os.Symlink(oldname, newname); err != nil {
+						return err
+					}
+					continue
+				}
+
 				oldname, err = filepath.Rel(destDir, oldname)
 				if err != nil {
 					return err
@@ -555,17 +569,12 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			// 	return nil, err
 			// }
 
-			deps := filepath.Join(b.ChrootDir, "ro")
-
 			// Symlinks:
-			//   /ro/bin/sh → bash
 			//   /bin → /ro/bin
 			//   /usr/bin → /ro/bin (for e.g. /usr/bin/env)
 			//   /sbin → /ro/bin (for e.g. linux, which hard-codes /sbin/depmod)
 			//   /lib64 → /ro/glibc-2.27/buildoutput/lib for ld-linux.so
-			if err := os.Symlink("bash", filepath.Join(deps, "bin", "sh")); err != nil {
-				return nil, err
-			}
+
 			// TODO: glob glibc? chose newest? error on >1 glibc?
 			if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err

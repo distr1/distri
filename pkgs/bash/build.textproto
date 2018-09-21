@@ -5,3 +5,7 @@ version: "4.4.18"
 cbuilder: <
   extra_configure_flag: "--without-bash-malloc"
 >
+
+install: <
+  symlink: < oldname: "bash" newname: "bin/sh" >
+>
