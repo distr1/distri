@@ -26,7 +26,10 @@ import (
 // buildoutput/lib/systemd/system directories.
 var wellKnown = []string{
 	"bin",
-	"lib/systemd/system",
+	"buildoutput/lib/systemd/system",
+	"buildoutput/lib/pkgconfig",
+	// TODO: lib -> buildoutput/lib
+	// TODO: usr/include -> buildoutput/include (or just include?)
 }
 
 func mountfuse(args []string) error {
@@ -72,15 +75,11 @@ func mountfuse(args []string) error {
 		}
 		for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
 			line = strings.TrimPrefix(line, "squashfs-root/")
-			// TODO: use all well-known paths, not just bin
-			if !strings.HasPrefix(line, "bin/") {
+			farm, ok := farms[filepath.Dir(line)]
+			if !ok {
 				continue
 			}
-			name := strings.TrimPrefix(line, "bin/")
-			if idx := strings.Index(name, "/"); idx > -1 {
-				name = name[:idx]
-			}
-			farm := farms["bin"]
+			name := filepath.Base(line)
 			if _, ok := farm.byName[name]; ok {
 				//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
 				continue
@@ -94,9 +93,9 @@ func mountfuse(args []string) error {
 		}
 	}
 	//log.Printf("farm: ")
-	for _, link := range farms["bin"].links {
-		log.Printf("  %s -> %s", link.name, link.target)
-	}
+	// for _, link := range farms["bin"].links {
+	// 	log.Printf("  %s -> %s", link.name, link.target)
+	// }
 
 	server := fuseutil.NewFileSystemServer(&fuseFS{
 		imgDir:  *imgDir,
