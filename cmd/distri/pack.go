@@ -105,7 +105,8 @@ func pack(args []string) error {
 		"etc",
 		"root",
 		"dev",         // udev
-		"ro",          // read-only package directory
+		"ro",          // read-only package directory (mountpoint)
+		"roimg",       // read-only package store
 		"proc",        // procfs
 		"sys",         // sysfs
 		"tmp",         // tmpfs
@@ -204,6 +205,8 @@ func pack(args []string) error {
 		"gawk-4.2.1",
 		// end of grub deps
 		"emacs-26.1",
+		"squashfs-4.3",
+		"fuse-3.2.6",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
@@ -217,6 +220,15 @@ func pack(args []string) error {
 		if err := copyFile(filepath.Join(*imgDir, pkg+".meta.textproto"), filepath.Join(*root, "ro", pkg+".meta.textproto")); err != nil {
 			return err
 		}
+
+		// TODO: get rid of the double copy
+		if err := copyFile(filepath.Join(*imgDir, pkg+".squashfs"), filepath.Join(*root, "roimg", pkg+".squashfs")); err != nil {
+			return err
+		}
+		if err := copyFile(filepath.Join(*imgDir, pkg+".meta.textproto"), filepath.Join(*root, "roimg", pkg+".meta.textproto")); err != nil {
+			return err
+		}
+
 	}
 
 	for _, pkg := range basePkgs {
@@ -387,7 +399,7 @@ func writeDiskImg(dest, src string) error {
 		return err
 	}
 	defer f.Close()
-	if err := f.Truncate(3 * 1024 * 1024 * 1024); err != nil { // 3 GB
+	if err := f.Truncate(4 * 1024 * 1024 * 1024); err != nil { // 4 GB
 		return err
 	}
 
@@ -510,6 +522,7 @@ name=root`)
 		return err
 	}
 
+	// TODO: get rid of this copying step
 	cp := exec.Command("sudo", "sh", "-c", "cp -r "+filepath.Join(src, "*")+" /mnt/")
 	cp.Stdout = os.Stdout
 	cp.Stderr = os.Stderr

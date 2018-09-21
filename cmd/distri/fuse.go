@@ -32,17 +32,18 @@ var wellKnown = []string{
 func mountfuse(args []string) error {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
-	var ()
+	var (
+		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return fmt.Errorf("syntax: fuse <mountpoint>")
 	}
 	mountpoint := fset.Arg(0)
-	log.Printf("mounting FUSE file system at %q", mountpoint)
+	//log.Printf("mounting FUSE file system at %q", mountpoint)
 
 	// TODO: use inotify to efficiently get updates to the store
-	pkgdir := "/home/michael/zi/build/zi/pkg/"
-	fis, err := ioutil.ReadDir(pkgdir)
+	fis, err := ioutil.ReadDir(*imgDir)
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,7 @@ func mountfuse(args []string) error {
 		pkgs = append(pkgs, pkg)
 
 		// TODO: list contents using pure Go
-		unsquashfs := exec.Command("unsquashfs", "-l", filepath.Join(pkgdir, fi.Name()))
+		unsquashfs := exec.Command("unsquashfs", "-l", filepath.Join(*imgDir, fi.Name()))
 		unsquashfs.Stderr = os.Stderr
 		out, err := unsquashfs.Output()
 		if err != nil {
@@ -81,7 +82,7 @@ func mountfuse(args []string) error {
 			}
 			farm := farms["bin"]
 			if _, ok := farm.byName[name]; ok {
-				log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
+				//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
 				continue
 			}
 			link := &symlink{
@@ -92,12 +93,13 @@ func mountfuse(args []string) error {
 			farm.byName[name] = link
 		}
 	}
-	log.Printf("farm: ")
+	//log.Printf("farm: ")
 	for _, link := range farms["bin"].links {
 		log.Printf("  %s -> %s", link.name, link.target)
 	}
 
 	server := fuseutil.NewFileSystemServer(&fuseFS{
+		imgDir:  *imgDir,
 		pkgs:    pkgs,
 		readers: make([]*squashfs.Reader, len(pkgs)),
 		farms:   farms,
@@ -126,6 +128,8 @@ type farm struct {
 type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
+	imgDir string
+
 	// pkgs is only ever appended to (empty strings are tombstones), because the
 	// inode for /<pkg> is an index into pkgs.
 	pkgs []string
@@ -136,11 +140,11 @@ type fuseFS struct {
 }
 
 func (fs *fuseFS) mountImage(image int) error {
-	log.Printf("mountImage(%d)", image)
+	//log.Printf("mountImage(%d)", image)
 	if fs.readers[image] != nil {
 		return nil // already mounted
 	}
-	f, err := os.Open("/home/michael/zi/build/zi/pkg/" + fs.pkgs[image] + ".squashfs")
+	f, err := os.Open(filepath.Join(fs.imgDir, fs.pkgs[image]+".squashfs"))
 	if err != nil {
 		return err
 	}
@@ -168,7 +172,7 @@ func (fs *fuseFS) squashfsInode(i fuseops.InodeID) (int, squashfs.Inode, error) 
 }
 
 func (fs *fuseFS) fuseInode(image int, i squashfs.Inode) fuseops.InodeID {
-	log.Printf("fuseInode(%d, %d) = %d", image, i, fuseops.InodeID(uint16(image+1))<<48|fuseops.InodeID(i))
+	//log.Printf("fuseInode(%d, %d) = %d", image, i, fuseops.InodeID(uint16(image+1))<<48|fuseops.InodeID(i))
 	return fuseops.InodeID(uint16(image+1))<<48 | fuseops.InodeID(i)
 }
 
@@ -188,12 +192,12 @@ func (fs *fuseFS) fuseAttributes(fi os.FileInfo) fuseops.InodeAttributes {
 }
 
 func (fs *fuseFS) StatFS(ctx context.Context, op *fuseops.StatFSOp) error {
-	log.Printf("StatFS(op=%+v)", op)
+	//log.Printf("StatFS(op=%+v)", op)
 	return fuse.ENOSYS
 }
 
 func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) error {
-	log.Printf("LookUpInode(op=%+v)", op)
+	//log.Printf("LookUpInode(op=%+v)", op)
 	// find dirent op.Name in inode op.Parent
 	image, squashfsInode, err := fs.squashfsInode(op.Parent)
 	if err != nil {
@@ -203,7 +207,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 
 	if image == -1 { // (virtual) root directory
 		wkidx, linkidx := fs.farmInode(squashfsInode)
-		log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
+		//log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
 		if wkidx == 0 && linkidx == 1 { // root directory (e.g. /ro)
 			for idx, pkg := range fs.pkgs {
 				if pkg != op.Name {
@@ -256,13 +260,13 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 			}
 			return fuse.ENOENT
 		}
-		log.Printf("return EIO")
+		//log.Printf("return EIO")
 		return fuse.EIO
 	}
 
 	fis, err := fs.readers[image].Readdir(squashfsInode)
 	if err != nil {
-		log.Printf("Readdir: %v", err)
+		//log.Printf("Readdir: %v", err)
 		return fuse.EIO // TODO: what happens if we pass err?
 	}
 
@@ -280,7 +284,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 }
 
 func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAttributesOp) error {
-	log.Printf("GetInodeAttributes(op=%#v)", op)
+	//log.Printf("GetInodeAttributes(op=%#v)", op)
 	if op.Inode&0xFFFFFFFFFFFF == 1 {
 		// prevent mounting of images for accessing the root (which happens when doing “ls /ro”)
 		op.Attributes = fuseops.InodeAttributes{
@@ -299,11 +303,11 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 	}
 
 	if image == -1 {
-		wkidx, linkidx := fs.farmInode(squashfsInode)
-		log.Printf("wkidx %d, linkidx %d", wkidx, linkidx)
+		wkidx, _ := fs.farmInode(squashfsInode)
+		//log.Printf("wkidx %d, linkidx %d", wkidx, linkidx)
 		if wkidx == 0 { // root directory of a farm
 			idx := int(squashfsInode - 2)
-			log.Printf("well-known idx %d", idx)
+			//log.Printf("well-known idx %d", idx)
 			if idx >= len(wellKnown) {
 				return fuse.ENOENT
 			}
@@ -325,13 +329,13 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 			Mtime: time.Now(), // TODO
 			Ctime: time.Now(), // TODO
 		}
-		log.Printf("return nil")
+		//log.Printf("return nil")
 		return nil
 	}
 
 	fi, err := fs.readers[image].Stat("", squashfsInode)
 	if err != nil {
-		log.Printf("Stat: %v", err)
+		//log.Printf("Stat: %v", err)
 		return fuse.ENOENT // TODO
 	}
 	op.Attributes = fs.fuseAttributes(fi)
@@ -339,13 +343,13 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 }
 
 func (fs *fuseFS) OpenDir(ctx context.Context, op *fuseops.OpenDirOp) error {
-	image, squashfsInode, err := fs.squashfsInode(op.Inode)
+	_, _, err := fs.squashfsInode(op.Inode)
 	if err != nil {
 		log.Println(err)
 		return fuse.EIO
 	}
 
-	log.Printf("OpenDir(op=%+v, image %d, inode %d)", op, image, squashfsInode)
+	//log.Printf("OpenDir(op=%+v, image %d, inode %d)", op, image, squashfsInode)
 	// TODO: open reader
 	return nil // allow opening any directory
 }
@@ -367,7 +371,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 		return fuse.EIO
 	}
 
-	log.Printf("ReadDir(inode %d (image %d, i %d), handle %d, offset %d)", op.Inode, image, squashfsInode, op.Handle, op.Offset) // skip op.Dst, which is large
+	//log.Printf("ReadDir(inode %d (image %d, i %d), handle %d, offset %d)", op.Inode, image, squashfsInode, op.Handle, op.Offset) // skip op.Dst, which is large
 
 	if image == -1 { // (virtual) root directory
 		var entries []fuseutil.Dirent
@@ -426,7 +430,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 
 	fis, err := fs.readers[image].Readdir(squashfsInode)
 	if err != nil {
-		log.Printf("Readdir: %v", err)
+		//log.Printf("Readdir: %v", err)
 		return fuse.EIO // TODO: what happens if we pass err?
 	}
 
@@ -445,7 +449,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 			Name:   e.Name(),
 			Type:   direntType,
 		}
-		log.Printf("  dirent: %+v", dirent)
+		//log.Printf("  dirent: %+v", dirent)
 		n := fuseutil.WriteDirent(op.Dst[op.BytesRead:], dirent)
 		if n == 0 {
 			break
@@ -457,12 +461,12 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 }
 
 func (fs *fuseFS) OpenFile(ctx context.Context, op *fuseops.OpenFileOp) error {
-	log.Printf("OpenFile(op=%+v)", op)
+	//log.Printf("OpenFile(op=%+v)", op)
 	return nil // allow opening any file
 }
 
 func (fs *fuseFS) ReadFile(ctx context.Context, op *fuseops.ReadFileOp) error {
-	log.Printf("ReadFile(inode %d, handle %d, offset %d)", op.Inode, op.Handle, op.Offset) // skip op.Dst, which is large
+	//log.Printf("ReadFile(inode %d, handle %d, offset %d)", op.Inode, op.Handle, op.Offset) // skip op.Dst, which is large
 
 	image, squashfsInode, err := fs.squashfsInode(op.Inode)
 	if err != nil {
@@ -482,7 +486,7 @@ func (fs *fuseFS) ReadFile(ctx context.Context, op *fuseops.ReadFileOp) error {
 }
 
 func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) error {
-	log.Printf("ReadSymlink(inode %d)", op.Inode)
+	//log.Printf("ReadSymlink(inode %d)", op.Inode)
 
 	image, squashfsInode, err := fs.squashfsInode(op.Inode)
 	if err != nil {
@@ -492,7 +496,7 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 
 	if image == -1 {
 		wkidx, linkidx := fs.farmInode(squashfsInode)
-		log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
+		//log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
 		if wkidx == 0 {
 			return fuse.EIO // no symlinks in root
 		}

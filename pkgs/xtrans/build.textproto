@@ -7,6 +7,6 @@ cbuilder: <>
 # build dependencies:
 
 install: <
-  # xtrans is the only package which installs to share/pkgconfig
+  # TODO: remove once both share/pkgconfig (arch-indep) and lib/pkgconfig (arch-dep) are union overlays
   symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >
 >

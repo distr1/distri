@@ -71,3 +71,8 @@ build_step: <
   argv: "-c"
   argv: "sed -i 's,/sbin/agetty,/ro/util-linux-2.32/buildoutput/sbin/agetty,g' ${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system/*getty*"
 >
+
+install: <
+  # TODO: remove once both share/pkgconfig (arch-indep) and lib/pkgconfig (arch-dep) are union overlays
+  symlink: < oldname: "../../share/pkgconfig/udev.pc" newname: "lib/pkgconfig/udev.pc" >
+>

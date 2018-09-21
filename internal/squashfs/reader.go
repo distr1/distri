@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 )
@@ -29,7 +28,7 @@ func NewReader(r *os.File) (*Reader, error) {
 		return nil, fmt.Errorf("invalid magic (not a SquashFS image?): got %x, want %x", got, want)
 	}
 
-	log.Printf("superblock: %+v", sb)
+	//log.Printf("superblock: %+v", sb)
 	return &Reader{
 		r:     r,
 		super: sb,
@@ -51,10 +50,10 @@ type blockReader struct {
 
 func (br *blockReader) Read(p []byte) (n int, err error) {
 	n, err = br.buf.Read(p)
-	log.Printf("n = %v, err = %v", n, err)
+	//log.Printf("n = %v, err = %v", n, err)
 	if err == io.EOF {
 		br.buf.Reset()
-		log.Printf("  (rewinding to offset %v)", br.off)
+		//log.Printf("  (rewinding to offset %v)", br.off)
 		if _, err := br.r.Seek(br.off, io.SeekStart); err != nil {
 			return 0, err
 		}
@@ -62,9 +61,9 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 		if err := binary.Read(br.r, binary.LittleEndian, &l); err != nil {
 			return 0, err
 		}
-		uncompressed := l&0x8000 > 0
+		//uncompressed := l&0x8000 > 0
 		l &= 0x7FFF
-		log.Printf("block of len %d, uncompressed: %v", l, uncompressed)
+		//log.Printf("block of len %d, uncompressed: %v", l, uncompressed)
 		if _, err := io.CopyN(br.buf, br.r, int64(l)); err != nil {
 			return 0, err
 		}
@@ -73,13 +72,13 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 			return 0, err
 		}
 		n, err = br.buf.Read(p)
-		log.Printf("(retry) n = %v, err = %v", n, err)
+		//log.Printf("(retry) n = %v, err = %v", n, err)
 	}
 	return n, err
 }
 
 func (r *Reader) blockReader(blockoffset, offset int64) (io.Reader, error) {
-	log.Printf("blockoffset %v (%x), offset %v (%x)", blockoffset, blockoffset, offset, offset)
+	//log.Printf("blockoffset %v (%x), offset %v (%x)", blockoffset, blockoffset, offset, offset)
 	if _, err := r.r.Seek(blockoffset, io.SeekStart); err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func (r *Reader) blockReader(blockoffset, offset int64) (io.Reader, error) {
 		buf: bytes.NewBuffer(make([]byte, 0, metadataBlockSize)),
 		off: blockoffset,
 	}
-	log.Printf("discarding %d bytes", offset)
+	//log.Printf("discarding %d bytes", offset)
 	if _, err := io.CopyN(ioutil.Discard, br, offset); err != nil {
 		return nil, err
 	}
@@ -116,9 +115,9 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 	// if err := binary.Read(br, binary.LittleEndian, &ih); err != nil {
 	// 	return err
 	// }
-	// log.Printf("ih: %+v", ih)
+	// //log.Printf("ih: %+v", ih)
 
-	log.Printf("inode type: %v", inodeType)
+	//log.Printf("inode type: %v", inodeType)
 	switch inodeType {
 	case dirType:
 		var di dirInodeHeader
@@ -175,7 +174,7 @@ func (r *Reader) Stat(name string, i Inode) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("i %d, inode: %T, %+v", i, inode, inode)
+	//log.Printf("i %d, inode: %T, %+v", i, inode, inode)
 	switch x := inode.(type) {
 	case dirInodeHeader:
 		return &FileInfo{
@@ -251,20 +250,20 @@ func (r *Reader) ReadLink(i Inode) (string, error) {
 }
 
 func (r *Reader) FileReader(inode Inode) (*io.SectionReader, error) {
-	log.Printf("Readfile(%v)", inode)
+	//log.Printf("Readfile(%v)", inode)
 	i, err := r.readInode(inode)
 	if err != nil {
 		return nil, err
 	}
 	ri := i.(regInodeHeader)
-	log.Printf("i: %+v", i)
+	//log.Printf("i: %+v", i)
 	// TODO(compression): read the blocksizes to read compressed blocks
 	off := int64(ri.StartBlock) + int64(ri.Offset)
 	return io.NewSectionReader(r.r, off, int64(ri.FileSize)), nil
 }
 
 func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
-	log.Printf("Readdir(%v (%x))", dirInode, dirInode)
+	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
 	i, err := r.readInode(dirInode)
 	if err != nil {
 		return nil, err
@@ -308,7 +307,7 @@ func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
 			return nil, err
 		}
 		dh.Count++ // SquashFS stores count-1
-		log.Printf("dh: %+v", dh)
+		//log.Printf("dh: %+v", dh)
 
 		for i := 0; i < int(dh.Count); i++ {
 			var de dirEntry
@@ -316,12 +315,12 @@ func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
 				return nil, err
 			}
 			de.Size++ // SquashFS stores size-1
-			log.Printf("de: %+v", de)
+			//log.Printf("de: %+v", de)
 			name := make([]byte, de.Size)
 			if _, err := io.ReadFull(br, name); err != nil {
 				return nil, err
 			}
-			log.Printf("name: %q", string(name))
+			//log.Printf("name: %q", string(name))
 
 			fi, err := r.Stat(string(name), Inode(int64(dh.StartBlock)<<16|int64(de.Offset)))
 			if err != nil {
