@@ -11,16 +11,14 @@ import (
 )
 
 type Reader struct {
-	r     *os.File // TODO: limit to what we actually need
+	r     io.ReaderAt
 	super superblock
 }
 
-func NewReader(r *os.File) (*Reader, error) {
+func NewReader(r io.ReaderAt) (*Reader, error) {
 	var sb superblock
-	if _, err := r.Seek(0, io.SeekStart); err != nil {
-		return nil, fmt.Errorf("reading superblock: %v", err)
-	}
-	if err := binary.Read(r, binary.LittleEndian, &sb); err != nil {
+
+	if err := binary.Read(io.NewSectionReader(r, 0, int64(binary.Size(sb))), binary.LittleEndian, &sb); err != nil {
 		return nil, fmt.Errorf("reading superblock: %v", err)
 	}
 
@@ -53,10 +51,6 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 	//log.Printf("n = %v, err = %v", n, err)
 	if err == io.EOF {
 		br.buf.Reset()
-		//log.Printf("  (rewinding to offset %v)", br.off)
-		if _, err := br.r.Seek(br.off, io.SeekStart); err != nil {
-			return 0, err
-		}
 		var l uint16
 		if err := binary.Read(br.r, binary.LittleEndian, &l); err != nil {
 			return 0, err
@@ -67,10 +61,6 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 		if _, err := io.CopyN(br.buf, br.r, int64(l)); err != nil {
 			return 0, err
 		}
-		br.off, err = br.r.Seek(0, io.SeekCurrent)
-		if err != nil {
-			return 0, err
-		}
 		n, err = br.buf.Read(p)
 		//log.Printf("(retry) n = %v, err = %v", n, err)
 	}
@@ -79,11 +69,8 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 
 func (r *Reader) blockReader(blockoffset, offset int64) (io.Reader, error) {
 	//log.Printf("blockoffset %v (%x), offset %v (%x)", blockoffset, blockoffset, offset, offset)
-	if _, err := r.r.Seek(blockoffset, io.SeekStart); err != nil {
-		return nil, err
-	}
 	br := &blockReader{
-		r:   r.r,
+		r:   io.NewSectionReader(r.r, blockoffset, 5500*1024*1024), // TODO: correct limit? can we use IntMax
 		buf: bytes.NewBuffer(make([]byte, 0, metadataBlockSize)),
 		off: blockoffset,
 	}
