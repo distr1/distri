@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -485,6 +486,8 @@ name=root`)
 	}
 
 	log.Printf("partitions: %q", partitions)
+
+	time.Sleep(1 * time.Second) // is this for udev?
 
 	boot := "/dev/mapper/" + partitions[0]
 	root := "/dev/mapper/" + partitions[1]
