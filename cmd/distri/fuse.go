@@ -105,7 +105,13 @@ func mountfuse(args []string) error {
 		farms:   farms,
 	})
 
-	mfs, err := fuse.Mount(mountpoint, server, &fuse.MountConfig{ReadOnly: true})
+	mfs, err := fuse.Mount(mountpoint, server, &fuse.MountConfig{
+		FSName:   "distri",
+		ReadOnly: true,
+		Options: map[string]string{
+			"allow_other": "", // allow all users to read files
+		},
+	})
 	if err != nil {
 		return err
 	}
