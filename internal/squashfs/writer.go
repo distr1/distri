@@ -23,7 +23,7 @@ import (
 )
 
 // inode contains a block number + offset within that block.
-type inode int64
+type Inode int64
 
 const (
 	zlibCompression = 1 + iota
@@ -50,7 +50,7 @@ type superblock struct {
 	NoIds               uint16
 	Major               uint16
 	Minor               uint16
-	RootInode           inode
+	RootInode           Inode
 	BytesUsed           int64
 	IdTableStart        int64
 	XattrIdTableStart   int64
@@ -521,7 +521,7 @@ func (d *Directory) Flush() error {
 			name:        d.name,
 		})
 	} else { // root
-		d.w.sb.RootInode = inode((startBlock*(metadataBlockSize+2))<<16 | offset)
+		d.w.sb.RootInode = Inode((startBlock*(metadataBlockSize+2))<<16 | offset)
 	}
 
 	d.w.sb.Inodes++
