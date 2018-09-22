@@ -9,6 +9,8 @@ message BuildStep {
 message CBuilder {
   repeated string extra_configure_flag = 1;
 
+  repeated string extra_ldflag = 3;
+
   // Packages which don’t support separate builddirs need to use this
   // kludge. Bugs should be reported with the respective upstream authors.
   optional bool copy_to_builddir = 2;

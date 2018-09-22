@@ -26,6 +26,7 @@ import (
 // buildoutput/lib/systemd/system directories.
 var wellKnown = []string{
 	"bin",
+	"buildoutput/lib",
 	"buildoutput/lib/systemd/system",
 	"buildoutput/lib/pkgconfig",
 	// TODO: lib -> buildoutput/lib

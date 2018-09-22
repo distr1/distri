@@ -227,7 +227,7 @@ var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	"quoteenv": func(env string) string {
 		return strings.Replace(env, `=`, `="`, 1) + `"`
 	},
-}).Parse(`#!/bin/sh
+}).Parse(`#!/ro/bin/sh
 {{ range $idx, $env := .Env }}
 export {{ quoteenv $env }}
 {{ end }}
@@ -350,7 +350,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")) // for ld
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
 }
@@ -577,6 +577,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
 			if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
+				return nil, err
+			}
+
+			if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
 				return nil, err
 			}
 
