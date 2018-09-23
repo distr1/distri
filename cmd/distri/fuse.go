@@ -37,7 +37,7 @@ func mountfuse(args []string) error {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
-		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		imgDir = fset.String("imgdir", defaultImgDir, "TODO")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {

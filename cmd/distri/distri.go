@@ -5,7 +5,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
+
+// Environment
+var (
+	distriRoot    = findDistriRoot()
+	defaultImgDir = filepath.Join(distriRoot, "build/distri/pkg")
+)
+
+func findDistriRoot() string {
+	env := os.Getenv("DISTRIROOT")
+	if env != "" {
+		return env
+	}
+	return os.ExpandEnv("$HOME/distri") // default
+}
 
 func main() {
 	flag.Parse()
@@ -71,6 +86,11 @@ func main() {
 
 	case "export":
 		if err := export(args); err != nil {
+			log.Fatal(err)
+		}
+
+	case "env":
+		if err := env(args); err != nil {
 			log.Fatal(err)
 		}
 

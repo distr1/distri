@@ -92,7 +92,7 @@ func pack(args []string) error {
 		root = fset.String("root",
 			"",
 			"TODO")
-		imgDir  = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		imgDir  = fset.String("imgdir", defaultImgDir, "TODO")
 		diskImg = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
@@ -144,7 +144,7 @@ func pack(args []string) error {
 		return err
 	}
 
-	// TODO: de-duplicate with zi.go
+	// TODO: de-duplicate with build.go
 	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -265,7 +265,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemd-firstboot", "--hostname=zi0",
+		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password=bleh",
 		"--copy-timezone",
 		"--copy-locale",

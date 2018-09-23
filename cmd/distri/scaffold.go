@@ -66,7 +66,7 @@ func scaffold(args []string) error {
 			Source: proto.String(u),
 		},
 	}
-	builddir := filepath.Join(os.Getenv("HOME"), "zi", "build", name)
+	builddir := filepath.Join(distriRoot, "build", name)
 	if err := os.MkdirAll(builddir, 0755); err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func scaffold(args []string) error {
 		return err
 	}
 
-	pkgdir := filepath.Join(os.Getenv("HOME"), "zi", "pkgs", name)
+	pkgdir := filepath.Join(distriRoot, "pkgs", name)
 	if err := os.MkdirAll(pkgdir, 0755); err != nil {
 		return err
 	}

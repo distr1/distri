@@ -27,8 +27,8 @@ func install(args []string) error {
 	for _, pkg := range fset.Args() {
 		log.Printf("installing package %q to root %s", pkg, *root)
 		// TODO(later): unpack in pure Go to get rid of the tar dependency
-		//cmd := exec.Command("tar", "xf", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/", pkg+".tar.gz"), "--no-same-owner")
-		cmd := exec.Command("unsquashfs", "-force", "-d", filepath.Join(*root, pkg), filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/", pkg+".squashfs"))
+		//cmd := exec.Command("tar", "xf", filepath.Join(defaultImgDir, pkg+".tar.gz"), "--no-same-owner")
+		cmd := exec.Command("unsquashfs", "-force", "-d", filepath.Join(*root, pkg), filepath.Join(defaultImgDir, pkg+".squashfs"))
 		cmd.Dir = *root
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {

@@ -125,7 +125,7 @@ func mount(args []string) (cleanup func(), _ error) {
 		root = fset.String("root",
 			"/ro",
 			"TODO")
-		imgDir = fset.String("imgdir", filepath.Join(os.Getenv("HOME"), "zi/build/zi/pkg/"), "TODO")
+		imgDir = fset.String("imgdir", defaultImgDir, "TODO")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
 	fset.Parse(args)

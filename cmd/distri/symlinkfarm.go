@@ -25,7 +25,7 @@ func symlinkfarm(root, pkg, dir string) error {
 	for _, fi := range fis {
 		oldname := filepath.Join(binDir, fi.Name())
 		newname := filepath.Join(dest, fi.Name())
-		tmp, err := ioutil.TempFile(filepath.Dir(newname), "zi")
+		tmp, err := ioutil.TempFile(filepath.Dir(newname), "distri")
 		if err != nil {
 			return err
 		}

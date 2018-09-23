@@ -12,11 +12,11 @@ import (
 	"github.com/stapelberg/zi/pb"
 )
 
-// TODO: add an implicit dependency (syntax: “ | foo”) on the zi build tool itself
+// TODO: add an implicit dependency (syntax: “ | foo”) on the distri build tool itself
 // TODO: add implicit dependencies for the package deps
 const ninjaTemplate = `
 rule pkg
-  command = cd $$(dirname $in) && zi build
+  command = cd $$(dirname $in) && distri build
 
 {{ range .Packages }}
 build {{ .OutputFile }}: pkg {{ .BuildFile }} | {{ range .BuildDeps }}{{ . }} {{ end }}
@@ -29,8 +29,7 @@ func ninja(args []string) error {
 	fset := flag.NewFlagSet("ninja", flag.ExitOnError)
 	fset.Parse(args)
 
-	ziDir := filepath.Join(os.Getenv("HOME"), "zi")
-	pkgsDir := filepath.Join(ziDir, "pkgs")
+	pkgsDir := filepath.Join(distriRoot, "pkgs")
 	fis, err := ioutil.ReadDir(pkgsDir)
 	if err != nil {
 		return err
@@ -40,16 +39,16 @@ func ninja(args []string) error {
 		Name    string // e.g. busybox
 		Version string // e.g. 1.29.2
 
-		// build definition file, relative to the zi directory,
+		// build definition file, relative to distriRoot,
 		// e.g. pkgs/busybox/build.textproto
 		BuildFile string
 
-		// resulting file, relative to the zi directory,
-		// e.g. build/zi/pkg/busybox-1.29.2.squashfs
+		// resulting file, relative to distriRoot,
+		// e.g. build/distri/pkg/busybox-1.29.2.squashfs
 		OutputFile string
 
-		// build dependency file names, relative to the zi directory,
-		// e.g. [build/zi/pkg/glibc-2.27.squashfs, build/zi/pkg/zlib-1.13.squashfs]
+		// build dependency file names, relative to distriRoot,
+		// e.g. [build/distri/pkg/glibc-2.27.squashfs, build/distri/pkg/zlib-1.13.squashfs]
 		BuildDeps []string
 	}
 
@@ -74,19 +73,19 @@ func ninja(args []string) error {
 			if dep == pkg+"-"+version {
 				continue // ninja does not support cyclical dependencies
 			}
-			deps = append(deps, filepath.Join("build", "zi", "pkg", dep+".squashfs"))
+			deps = append(deps, filepath.Join("build", "distri", "pkg", dep+".squashfs"))
 		}
 
 		pkgs[idx] = packageInfo{
 			Name:       pkg,
 			Version:    version,
 			BuildFile:  filepath.Join("pkgs", pkg, "build.textproto"),
-			OutputFile: filepath.Join("build", "zi", "pkg", pkg+"-"+version+".squashfs"),
+			OutputFile: filepath.Join("build", "distri", "pkg", pkg+"-"+version+".squashfs"),
 			BuildDeps:  deps,
 		}
 	}
 
-	f, err := ioutil.TempFile(ziDir, "zi-ninja")
+	f, err := ioutil.TempFile(distriRoot, "distri-ninja")
 	if err != nil {
 		return err
 	}
@@ -97,7 +96,7 @@ func ninja(args []string) error {
 	}); err != nil {
 		return err
 	}
-	ninjaFile := filepath.Join(ziDir, "build.ninja")
+	ninjaFile := filepath.Join(distriRoot, "build.ninja")
 	if err := os.Rename(f.Name(), ninjaFile); err != nil {
 		return err
 	}

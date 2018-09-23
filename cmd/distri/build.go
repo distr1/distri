@@ -26,12 +26,12 @@ import (
 
 type buildctx struct {
 	Proto     *pb.Build `json:"-"`
-	PkgDir    string    // e.g. /home/michael/zi/pkgs/busybox
+	PkgDir    string    // e.g. /home/michael/distri/pkgs/busybox
 	Pkg       string    // e.g. busybox
 	Version   string    // e.g. 1.29.2
-	SourceDir string    // e.g. /home/michael/zi/build/busybox/busybox-1.29.2
-	BuildDir  string    // e.g. /tmp/zibuild-8123911
-	DestDir   string    // e.g. /tmp/zidest-3129384
+	SourceDir string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
+	BuildDir  string    // e.g. /tmp/distri-build-8123911
+	DestDir   string    // e.g. /tmp/distri-dest-3129384
 	Prefix    string    // e.g. /ro/busybox-1.29.2
 	Hermetic  bool
 	Debug     bool
@@ -63,7 +63,7 @@ func buildpkg(hermetic, debug bool) error {
 	}
 
 	{
-		tmpdir, err := ioutil.TempDir("", "zi-dest")
+		tmpdir, err := ioutil.TempDir("", "distri-dest")
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func buildpkg(hermetic, debug bool) error {
 	}
 
 	{
-		tmpdir, err := ioutil.TempDir("", "zi-build")
+		tmpdir, err := ioutil.TempDir("", "distri-build")
 		if err != nil {
 			return err
 		}
@@ -118,12 +118,12 @@ func buildpkg(hermetic, debug bool) error {
 		c := proto.MarshalTextString(&pb.Meta{
 			RuntimeDep: deps,
 		})
-		if err := ioutil.WriteFile(filepath.Join("../zi/pkg/"+b.Pkg+"-"+b.Version+".meta.textproto"), []byte(c), 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join("../distri/pkg/"+b.Pkg+"-"+b.Version+".meta.textproto"), []byte(c), 0644); err != nil {
 			return err
 		}
 	}
 
-	// b.DestDir is /tmp/zi-dest123/tmp
+	// b.DestDir is /tmp/distri-dest123/tmp
 	// package installs into b.DestDir/ro/hello-1
 
 	rel := b.Pkg + "-" + b.Version
@@ -131,7 +131,7 @@ func buildpkg(hermetic, debug bool) error {
 	// substitution works within wrapper scripts.
 	b.Prefix = "/ro/" + rel // e.g. /ro/hello-1
 
-	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/zi-dest123/hello-1
+	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/distri-dest123/hello-1
 
 	// rename destDir/tmp/ro/hello-1 to destDir/hello-1:
 	if err := os.Rename(filepath.Join(b.DestDir, "ro", rel), destDir); err != nil {
@@ -241,7 +241,7 @@ func (b *buildctx) serialize() (string, error) {
 		return "", err
 	}
 
-	tmp, err := ioutil.TempFile("", "zi")
+	tmp, err := ioutil.TempFile("", "distri")
 	if err != nil {
 		return "", err
 	}
@@ -255,7 +255,7 @@ func (b *buildctx) serialize() (string, error) {
 
 func (b *buildctx) pkg() error {
 	// TODO: create the archive in pure Go
-	dest, err := filepath.Abs("../zi/pkg/" + b.Pkg + "-" + b.Version + ".squashfs")
+	dest, err := filepath.Abs("../distri/pkg/" + b.Pkg + "-" + b.Version + ".squashfs")
 	if err != nil {
 		return err
 	}
@@ -395,12 +395,12 @@ func builddeps(p *pb.Build) ([]string, error) {
 		}
 	}
 
-	return resolve(filepath.Join(os.Getenv("HOME"), "zi", "build", "zi", "pkg"), deps)
+	return resolve(defaultImgDir, deps)
 }
 
 func (b *buildctx) build() (runtimedeps []string, _ error) {
 	if os.Getenv("ZI_BUILD_PROCESS") != "1" {
-		chrootDir, err := ioutil.TempDir("", "zi-buildchroot")
+		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
 		if err != nil {
 			return nil, err
 		}
@@ -928,7 +928,7 @@ func (b *buildctx) extract() (srcdir string, _ error) {
 	if err != nil {
 		return "", err
 	}
-	tmp, err := ioutil.TempDir(pwd, "zi")
+	tmp, err := ioutil.TempDir(pwd, "distri")
 	if err != nil {
 		return "", err
 	}
