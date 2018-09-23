@@ -130,6 +130,10 @@ func pack(args []string) error {
 		return err
 	}
 
+	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "ro", "lib")); err != nil {
+		return err
+	}
+
 	// We run systemd in non-split mode, so /usr needs to point to /
 	if err := os.Symlink("/", filepath.Join(*root, "usr")); err != nil && !os.IsExist(err) {
 		return err
@@ -268,7 +272,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemd-firstboot", "--hostname=distri0",
+		"chroot", *root, "/ro/systemd-239/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password=bleh",
 		"--copy-timezone",
 		"--copy-locale",
@@ -284,7 +288,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemd-sysusers",
+		"chroot", *root, "/ro/systemd-239/bin/systemd-sysusers",
 		"/ro/systemd-239/buildoutput/lib/sysusers.d/basic.conf",
 		"/ro/systemd-239/buildoutput/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
@@ -298,7 +302,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-239/buildoutput/bin/systemctl",
+		"chroot", *root, "/ro/systemd-239/bin/systemctl",
 		"enable",
 		"systemd-networkd",
 		"containerd",
