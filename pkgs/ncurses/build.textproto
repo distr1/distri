@@ -12,4 +12,6 @@ cbuilder: <
 
   # install headers to /usr/include/curses.h instead of /usr/include/ncurses (the latter is not picked up by psmisc)
   extra_configure_flag: "--enable-overwrite"
+
+  extra_configure_flag: "--with-shared"
 >
