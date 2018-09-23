@@ -5,7 +5,7 @@ version: "5.6.2"
 cbuilder: <
   copy_to_builddir: true # TODO: patch Doc/Makefile.in to use $(sdir)/help.txt
   extra_configure_flag: "--with-tcsetpgrp"
-  extra_ldflag: "-Wl,--dynamic-linker /ro/lib/ld-linux-x86-64.so.2"
+  extra_ldflag: "-Wl,--dynamic-linker=/ro/lib/ld-linux-x86-64.so.2"
 >
 
 # build dependencies:
