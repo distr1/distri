@@ -38,6 +38,41 @@ func main() {
 	}
 
 	switch verb {
+	case "help":
+		helpFlag := []string{"-help"}
+		type cmd struct {
+			helpText string
+			helpFunc func()
+		}
+		verbs := map[string]cmd{
+			"build":    {buildHelp, func() { build(helpFlag) }},
+			"mount":    {mountHelp, func() { mount(helpFlag) }},
+			"umount":   {umountHelp, func() { umount(helpFlag) }},
+			"ninja":    {ninjaHelp, func() { ninja(helpFlag) }},
+			"pack":     {packHelp, func() { pack(helpFlag) }},
+			"scaffold": {scaffoldHelp, func() { scaffold(helpFlag) }},
+			"install":  {installHelp, func() { install(helpFlag) }},
+			"fuse":     {fuseHelp, func() { mountfuse(helpFlag) }},
+			"export":   {exportHelp, func() { export(helpFlag) }},
+			"env":      {envHelp, func() { env(helpFlag) }},
+		}
+		if len(args) != 1 {
+			fmt.Fprintf(os.Stderr, "syntax: %s help <verb>\n", os.Args[0])
+			fmt.Fprintf(os.Stderr, "\n")
+			fmt.Fprintf(os.Stderr, "Verbs:\n")
+			fmt.Fprintf(os.Stderr, "\tbuild - build a distri package\n")
+			// TODO: complete short descriptions
+			os.Exit(2)
+		}
+
+		verb, ok := verbs[args[0]]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "unknown command %q\n", args[0])
+			os.Exit(2)
+		}
+		fmt.Fprintf(os.Stderr, "%s", verb.helpText)
+		verb.helpFunc()
+
 	case "build":
 		if err := build(args); err != nil {
 			log.Fatal(err)

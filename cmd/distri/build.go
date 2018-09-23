@@ -24,6 +24,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const buildHelp = `TODO
+`
+
 type buildctx struct {
 	Proto     *pb.Build `json:"-"`
 	PkgDir    string    // e.g. /home/michael/distri/pkgs/busybox

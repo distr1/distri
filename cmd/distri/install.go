@@ -9,6 +9,9 @@ import (
 	"path/filepath"
 )
 
+const installHelp = `TODO
+`
+
 func install(args []string) error {
 	fset := flag.NewFlagSet("install", flag.ExitOnError)
 	var (

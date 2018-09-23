@@ -17,6 +17,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const packHelp = `TODO
+`
+
 const passwd = `root:x:0:0:root:/root:/bin/sh
 `
 const group = `root:x:0:

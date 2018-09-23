@@ -8,6 +8,9 @@ import (
 	"syscall"
 )
 
+const umountHelp = `TODO
+`
+
 func umount(args []string) error {
 	fset := flag.NewFlagSet("umount", flag.ExitOnError)
 	var (

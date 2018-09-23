@@ -20,6 +20,9 @@ import (
 	"github.com/stapelberg/zi/internal/squashfs"
 )
 
+const fuseHelp = `TODO
+`
+
 // wellKnown lists paths which should be created as a union overlay underneath
 // /ro. E.g., /ro/bin will contain symlinks to all package’s bin directories, or
 // /ro/system will contain symlinks to all package’s

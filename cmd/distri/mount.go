@@ -16,6 +16,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const mountHelp = `TODO
+`
+
 func readMeta(fn string) (*pb.Meta, error) {
 	b, err := ioutil.ReadFile(fn)
 	if err != nil {

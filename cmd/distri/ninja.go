@@ -12,6 +12,9 @@ import (
 	"github.com/stapelberg/zi/pb"
 )
 
+const ninjaHelp = `TODO
+`
+
 // TODO: add an implicit dependency (syntax: “ | foo”) on the distri build tool itself
 // TODO: add implicit dependencies for the package deps
 const ninjaTemplate = `

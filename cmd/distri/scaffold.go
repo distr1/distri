@@ -17,6 +17,9 @@ import (
 	"github.com/stapelberg/zi/pb"
 )
 
+const scaffoldHelp = `TODO
+`
+
 var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
 hash: "{{.Hash}}"
 version: "{{.Version}}"
