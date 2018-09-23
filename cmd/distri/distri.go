@@ -69,6 +69,11 @@ func main() {
 			log.Fatal(err)
 		}
 
+	case "export":
+		if err := export(args); err != nil {
+			log.Fatal(err)
+		}
+
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command %q\n", verb)
 		fmt.Fprintf(os.Stderr, "syntax: distri <command> [options]\n")
