@@ -1,0 +1,53 @@
+source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.2.6/fuse-3.2.6.tar.xz"
+hash: "cea4dad559b3fbdbb8e4ad5f9df6083fdb7f2b904104bd507ef790d311d271cf"
+version: "3.2.6"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson-0.47.1"
+dep: "ninja-1.8.2"
+dep: "python3-3.7.0"
+dep: "systemd-239"
+
+# build_step: <
+#   argv: "/bin/sh"
+#   argv: "-c"
+#   argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+# >
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" meson ${ZI_SOURCEDIR} --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX}"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ninja -v"
+>
+
+# ensure the install script doesn’t try to create /dev/fuse, for which we don’t have permission
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${ZI_DESTDIR}/dev/; mkdir -p $d; touch $d/fuse"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} ninja -v install"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "rm ${ZI_DESTDIR}/dev/fuse"
+>
+
+install: <
+  # Programs expect “fusermount” to be in $PATH
+  symlink: < oldname: "fusermount3" newname: "bin/fusermount" >
+>

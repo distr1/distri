@@ -199,6 +199,14 @@ func buildpkg(hermetic, debug bool) error {
 				if err != nil {
 					return err
 				}
+				var runtimeEnv []string
+				for _, e := range env {
+					if strings.HasPrefix(e, "PATH=") ||
+						strings.HasPrefix(e, "LD_LIBRARY_PATH=") ||
+						strings.HasPrefix(e, "PERL5LIB=") {
+						runtimeEnv = append(runtimeEnv, e)
+					}
+				}
 				var buf bytes.Buffer
 				if err := wrapperTmpl.Execute(&buf, struct {
 					Bin    string
@@ -207,7 +215,7 @@ func buildpkg(hermetic, debug bool) error {
 				}{
 					Bin:    oldname,
 					Prefix: b.Prefix,
-					Env:    env,
+					Env:    runtimeEnv,
 				}); err != nil {
 					return err
 				}
