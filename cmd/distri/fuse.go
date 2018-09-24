@@ -213,7 +213,17 @@ func (fs *fuseFS) StatFS(ctx context.Context, op *fuseops.StatFSOp) error {
 	return fuse.ENOSYS
 }
 
+// never is used for FUSE expiration timestamps. Since the package store is
+// immutable and inodes are stable, the kernel can cache all values forever.
+//
+// The value is named never even though, strictly speaking, it refers to one
+// year in the future, because we can take a cache miss once every year and
+// there is no sentinel value meaning never in FUSE.
+var never = time.Now().Add(365 * 24 * time.Hour)
+
 func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) error {
+	op.Entry.AttributesExpiration = never
+	op.Entry.EntryExpiration = never
 	//log.Printf("LookUpInode(op=%+v)", op)
 	// find dirent op.Name in inode op.Parent
 	image, squashfsInode, err := fs.squashfsInode(op.Parent)
@@ -301,6 +311,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 }
 
 func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAttributesOp) error {
+	op.AttributesExpiration = never
 	//log.Printf("GetInodeAttributes(op=%#v)", op)
 	if op.Inode&0xFFFFFFFFFFFF == 1 {
 		// prevent mounting of images for accessing the root (which happens when doing “ls /ro”)
