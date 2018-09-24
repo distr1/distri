@@ -153,6 +153,12 @@ func (fs *fuseFS) mountImage(image int) error {
 	if fs.readers[image] != nil {
 		return nil // already mounted
 	}
+
+	// f, err := updateAndOpen("/tmp/imgdir" /*fs.imgDir*/, "http://localhost:7080/"+fs.pkgs[image]+".squashfs")
+	// if err != nil {
+	// 	return err
+	// }
+
 	// var err error
 	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + fs.pkgs[image] + ".squashfs"}
 	f, err := os.Open(filepath.Join(fs.imgDir, fs.pkgs[image]+".squashfs"))

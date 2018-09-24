@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -48,4 +49,29 @@ func (hr *httpReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 
 	log.Printf("[%s] %d-%d (len %d), read %d (content-length %d)", filepath.Base(hr.fileurl), off, off+int64(len(p)), len(p), n, resp.ContentLength)
 	return n, err
+}
+
+func updateAndOpen(imgDir, fileurl string) (io.ReaderAt, error) {
+	// TODO: use etags (?) or if-modified-since for skipping the download if the file is unchanged
+
+	resp, err := http.Get(fileurl)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if got, want := resp.StatusCode, http.StatusOK; got != want {
+		return nil, fmt.Errorf("HTTP status %v", resp.Status)
+	}
+	f, err := os.Create(filepath.Join(imgDir, filepath.Base(fileurl)))
+	if err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		return nil, err
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
