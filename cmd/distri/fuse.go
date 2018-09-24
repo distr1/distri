@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jacobsa/fuse"
@@ -104,7 +105,7 @@ func mountfuse(args []string) error {
 	server := fuseutil.NewFileSystemServer(&fuseFS{
 		imgDir:  *imgDir,
 		pkgs:    pkgs,
-		readers: make([]*squashfs.Reader, len(pkgs)),
+		readers: make([]*squashfsReader, len(pkgs)),
 		farms:   farms,
 	})
 
@@ -114,6 +115,7 @@ func mountfuse(args []string) error {
 		Options: map[string]string{
 			"allow_other": "", // allow all users to read files
 		},
+		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
 		return err
@@ -133,6 +135,13 @@ type farm struct {
 	byName map[string]*symlink
 }
 
+type squashfsReader struct {
+	*squashfs.Reader
+
+	dircacheMu sync.Mutex
+	dircache   map[squashfs.Inode][]os.FileInfo
+}
+
 // TODO: does fuseFS need a mutex? is there concurrency in FUSE at all?
 type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
@@ -143,7 +152,7 @@ type fuseFS struct {
 	// inode for /<pkg> is an index into pkgs.
 	pkgs []string
 
-	readers []*squashfs.Reader
+	readers []*squashfsReader
 
 	farms map[string]*farm
 }
@@ -165,8 +174,15 @@ func (fs *fuseFS) mountImage(image int) error {
 	if err != nil {
 		return err
 	}
-	fs.readers[image], err = squashfs.NewReader(f)
-	return err
+	rd, err := squashfs.NewReader(f)
+	if err != nil {
+		return err
+	}
+	fs.readers[image] = &squashfsReader{
+		Reader:   rd,
+		dircache: make(map[squashfs.Inode][]os.FileInfo),
+	}
+	return nil
 }
 
 func (fs *fuseFS) squashfsInode(i fuseops.InodeID) (int, squashfs.Inode, error) {
@@ -291,10 +307,22 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		return fuse.EIO
 	}
 
-	fis, err := fs.readers[image].Readdir(squashfsInode)
-	if err != nil {
-		//log.Printf("Readdir: %v", err)
-		return fuse.EIO // TODO: what happens if we pass err?
+	rd := fs.readers[image]
+	rd.dircacheMu.Lock()
+	fis, ok := rd.dircache[squashfsInode]
+	rd.dircacheMu.Unlock()
+	if !ok {
+		var err error
+		fis, err = rd.Readdir(squashfsInode)
+		if err != nil {
+			//log.Printf("Readdir: %v", err)
+			return fuse.EIO // TODO: what happens if we pass err?
+		}
+		// It is okay if another goroutine races us to getting this lock: the
+		// contents will be the same, and an extra write doesn’t hurt.
+		rd.dircacheMu.Lock()
+		rd.dircache[squashfsInode] = fis
+		rd.dircacheMu.Unlock()
 	}
 
 	for _, fi := range fis {
