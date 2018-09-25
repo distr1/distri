@@ -517,6 +517,9 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 
 func (fs *fuseFS) OpenFile(ctx context.Context, op *fuseops.OpenFileOp) error {
 	//log.Printf("OpenFile(op=%+v)", op)
+
+	op.KeepPageCache = true // no modifications are happening in immutable images
+
 	return nil // allow opening any file
 }
 
