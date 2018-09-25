@@ -141,7 +141,7 @@ type squashfsReader struct {
 	*squashfs.Reader
 
 	dircacheMu sync.Mutex
-	dircache   map[squashfs.Inode][]os.FileInfo
+	dircache   map[squashfs.Inode]map[string]os.FileInfo
 }
 
 // TODO: does fuseFS need a mutex? is there concurrency in FUSE at all?
@@ -182,7 +182,7 @@ func (fs *fuseFS) mountImage(image int) error {
 	}
 	fs.readers[image] = &squashfsReader{
 		Reader:   rd,
-		dircache: make(map[squashfs.Inode][]os.FileInfo),
+		dircache: make(map[squashfs.Inode]map[string]os.FileInfo),
 	}
 	return nil
 }
@@ -308,11 +308,14 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 	fis, ok := rd.dircache[squashfsInode]
 	rd.dircacheMu.Unlock()
 	if !ok {
-		var err error
-		fis, err = rd.Readdir(squashfsInode)
+		fis = make(map[string]os.FileInfo)
+		dfis, err := rd.Readdir(squashfsInode)
 		if err != nil {
 			//log.Printf("Readdir: %v", err)
 			return fuse.EIO // TODO: what happens if we pass err?
+		}
+		for _, fi := range dfis {
+			fis[fi.Name()] = fi
 		}
 		// It is okay if another goroutine races us to getting this lock: the
 		// contents will be the same, and an extra write doesn’t hurt.
@@ -321,17 +324,13 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		rd.dircacheMu.Unlock()
 	}
 
-	for _, fi := range fis {
-		if fi.Name() != op.Name {
-			continue
-		}
-		op.Entry.Child = fs.fuseInode(image, fi.Sys().(*squashfs.FileInfo).Inode)
-		op.Entry.Attributes = fs.fuseAttributes(fi)
-		// TODO: fill in caching times
-		return nil
+	fi, ok := fis[op.Name]
+	if !ok {
+		return fuse.ENOENT
 	}
-
-	return fuse.ENOENT
+	op.Entry.Child = fs.fuseInode(image, fi.Sys().(*squashfs.FileInfo).Inode)
+	op.Entry.Attributes = fs.fuseAttributes(fi)
+	return nil
 }
 
 func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAttributesOp) error {
