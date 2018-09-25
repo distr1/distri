@@ -92,6 +92,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			link := &symlink{
 				name:   name,
 				target: filepath.Join("..", pkg, line),
+				idx:    len(farm.links),
 			}
 			farm.links = append(farm.links, link)
 			farm.byName[name] = link
@@ -126,6 +127,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 type symlink struct {
 	name   string
 	target string
+	idx    int
 }
 
 type farm struct {
@@ -283,25 +285,19 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 			return fuse.ENOENT
 		} else if wkidx == 0 { // farm root directory (e.g. /ro/bin)
 			farm := fs.farms[wellKnown[linkidx-2]]
-			for lidx, link := range farm.links {
-				if link == nil {
-					continue // tombstone
-				}
-				if link.name != op.Name {
-					continue
-				}
-
-				op.Entry.Child = fs.fuseInode(-1, squashfs.Inode(linkidx)<<32|squashfs.Inode(lidx))
-				op.Entry.Attributes = fuseops.InodeAttributes{
-					Nlink: 1, // TODO: number of incoming hard links to this inode
-					Mode:  os.ModeSymlink | 0444,
-					Atime: time.Now(), // TODO
-					Mtime: time.Now(), // TODO
-					Ctime: time.Now(), // TODO
-				}
-				return nil
+			link := farm.byName[op.Name]
+			if link == nil {
+				return fuse.ENOENT // tombstone or not found
 			}
-			return fuse.ENOENT
+			op.Entry.Child = fs.fuseInode(-1, squashfs.Inode(linkidx)<<32|squashfs.Inode(link.idx))
+			op.Entry.Attributes = fuseops.InodeAttributes{
+				Nlink: 1, // TODO: number of incoming hard links to this inode
+				Mode:  os.ModeSymlink | 0444,
+				Atime: time.Now(), // TODO
+				Mtime: time.Now(), // TODO
+				Ctime: time.Now(), // TODO
+			}
+			return nil
 		}
 		//log.Printf("return EIO")
 		return fuse.EIO
