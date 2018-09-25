@@ -37,7 +37,7 @@ var wellKnown = []string{
 	// TODO: usr/include -> buildoutput/include (or just include?)
 }
 
-func mountfuse(args []string) error {
+func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
@@ -45,7 +45,7 @@ func mountfuse(args []string) error {
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
-		return fmt.Errorf("syntax: fuse <mountpoint>")
+		return nil, fmt.Errorf("syntax: fuse <mountpoint>")
 	}
 	mountpoint := fset.Arg(0)
 	//log.Printf("mounting FUSE file system at %q", mountpoint)
@@ -53,7 +53,7 @@ func mountfuse(args []string) error {
 	// TODO: use inotify to efficiently get updates to the store
 	fis, err := ioutil.ReadDir(*imgDir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	farms := make(map[string]*farm)
@@ -76,7 +76,7 @@ func mountfuse(args []string) error {
 		unsquashfs.Stderr = os.Stderr
 		out, err := unsquashfs.Output()
 		if err != nil {
-			return fmt.Errorf("%v: %v", unsquashfs.Args, err)
+			return nil, fmt.Errorf("%v: %v", unsquashfs.Args, err)
 		}
 		for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
 			line = strings.TrimPrefix(line, "squashfs-root/")
@@ -118,9 +118,9 @@ func mountfuse(args []string) error {
 		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return mfs.Join(context.Background())
+	return mfs.Join, nil
 }
 
 type symlink struct {

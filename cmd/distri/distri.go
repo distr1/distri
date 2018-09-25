@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -115,7 +116,11 @@ func main() {
 		}
 
 	case "fuse":
-		if err := mountfuse(args); err != nil {
+		join, err := mountfuse(args)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := join(context.Background()); err != nil {
 			log.Fatal(err)
 		}
 

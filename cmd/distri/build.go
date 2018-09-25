@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/jacobsa/fuse"
 	"github.com/stapelberg/zi/internal/squashfs"
 	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sys/unix"
@@ -38,10 +39,11 @@ type buildctx struct {
 	Prefix    string    // e.g. /ro/busybox-1.29.2
 	Hermetic  bool
 	Debug     bool
+	FUSE      bool
 	ChrootDir string // only set if Hermetic is enabled
 }
 
-func buildpkg(hermetic, debug bool) error {
+func buildpkg(hermetic, debug, fuse bool) error {
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
 		return err
@@ -62,6 +64,7 @@ func buildpkg(hermetic, debug bool) error {
 		Pkg:      filepath.Base(pwd),
 		Version:  buildProto.GetVersion(),
 		Hermetic: hermetic,
+		FUSE:     fuse,
 		Debug:    debug,
 	}
 
@@ -425,18 +428,24 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			return nil, err
 		}
 
-		deps, err := builddeps(b.Proto)
-		if err != nil {
-			return nil, err
-		}
-		for _, dep := range deps {
-			cleanup, err := mount([]string{"-root=" + depsdir, dep})
+		if b.FUSE {
+			if _, err = mountfuse([]string{depsdir}); err != nil {
+				return nil, err
+			}
+			defer fuse.Unmount(depsdir)
+		} else {
+			deps, err := builddeps(b.Proto)
 			if err != nil {
 				return nil, err
 			}
-			defer cleanup()
+			for _, dep := range deps {
+				cleanup, err := mount([]string{"-root=" + depsdir, dep})
+				if err != nil {
+					return nil, err
+				}
+				defer cleanup()
+			}
 		}
-
 		serialized, err := b.serialize()
 		if err != nil {
 			return nil, err
@@ -591,8 +600,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				return nil, err
 			}
 
-			if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
-				return nil, err
+			if !b.FUSE {
+				if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+					return nil, err
+				}
 			}
 
 			for _, bin := range []string{"bin", "usr/bin", "sbin"} {
@@ -1073,6 +1084,10 @@ func build(args []string) error {
 		debug = fset.Bool("debug",
 			false,
 			"query to start an interactive shell during the build")
+
+		fuse = fset.Bool("fuse",
+			false,
+			"Use FUSE file system instead of kernel mounts")
 	)
 	fset.Parse(args)
 
@@ -1087,7 +1102,7 @@ func build(args []string) error {
 		return err
 	}
 
-	if err := buildpkg(*hermetic, *debug); err != nil {
+	if err := buildpkg(*hermetic, *debug, *fuse); err != nil {
 		return err
 	}
 
