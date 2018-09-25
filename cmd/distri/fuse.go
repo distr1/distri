@@ -104,10 +104,11 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	// }
 
 	server := fuseutil.NewFileSystemServer(&fuseFS{
-		imgDir:  *imgDir,
-		pkgs:    pkgs,
-		readers: make([]*squashfsReader, len(pkgs)),
-		farms:   farms,
+		imgDir:      *imgDir,
+		pkgs:        pkgs,
+		readers:     make([]*squashfsReader, len(pkgs)),
+		farms:       farms,
+		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
 	})
 
 	mfs, err := fuse.Mount(mountpoint, server, &fuse.MountConfig{
@@ -157,6 +158,9 @@ type fuseFS struct {
 	readers []*squashfsReader
 
 	farms map[string]*farm
+
+	fileReadersMu sync.Mutex
+	fileReaders   map[fuseops.InodeID]*io.SectionReader
 }
 
 func (fs *fuseFS) mountImage(image int) error {
@@ -518,17 +522,25 @@ func (fs *fuseFS) OpenFile(ctx context.Context, op *fuseops.OpenFileOp) error {
 
 func (fs *fuseFS) ReadFile(ctx context.Context, op *fuseops.ReadFileOp) error {
 	//log.Printf("ReadFile(inode %d, handle %d, offset %d)", op.Inode, op.Handle, op.Offset) // skip op.Dst, which is large
+	fs.fileReadersMu.Lock()
+	r, ok := fs.fileReaders[op.Inode]
+	fs.fileReadersMu.Unlock()
+	if !ok {
+		image, squashfsInode, err := fs.squashfsInode(op.Inode)
+		if err != nil {
+			log.Println(err)
+			return fuse.EIO
+		}
 
-	image, squashfsInode, err := fs.squashfsInode(op.Inode)
-	if err != nil {
-		log.Println(err)
-		return fuse.EIO
+		r, err = fs.readers[image].FileReader(squashfsInode)
+		if err != nil {
+			return err
+		}
+		fs.fileReadersMu.Lock()
+		fs.fileReaders[op.Inode] = r
+		fs.fileReadersMu.Unlock()
 	}
-
-	r, err := fs.readers[image].FileReader(squashfsInode)
-	if err != nil {
-		return err
-	}
+	var err error
 	op.BytesRead, err = r.ReadAt(op.Dst, op.Offset)
 	if err == io.EOF {
 		err = nil // FUSE does not want io.EOF
