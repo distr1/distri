@@ -7,6 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
+	"runtime/trace"
+)
+
+var (
+	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
+	tracefile  = flag.String("tracefile", "", "path to store a trace at")
 )
 
 // Environment
@@ -25,6 +32,24 @@ func findDistriRoot() string {
 
 func main() {
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+	if *tracefile != "" {
+		f, err := os.Create(*tracefile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		trace.Start(f)
+		defer trace.Stop()
+	}
 
 	if os.Getpid() == 1 {
 		if err := pid1(); err != nil {
