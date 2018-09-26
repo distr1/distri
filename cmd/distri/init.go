@@ -1,11 +1,11 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"syscall"
-	"time"
 )
 
 func pid1() error {
@@ -32,8 +32,13 @@ func pid1() error {
 		return err
 	}
 
-	// TODO: readiness notification, see dcs-localdcs
-	fuse := exec.Command("/init", "fuse", "-imgdir=/roimg", "/ro")
+	r, w, err := os.Pipe() // for readiness notification
+	if err != nil {
+		return err
+	}
+
+	fuse := exec.Command("/init", "fuse", "-imgdir=/roimg", "-readiness=3", "/ro")
+	fuse.ExtraFiles = []*os.File{w}
 	fuse.Env = []string{"PATH=/ro/fuse-3.2.6/buildoutput/bin"}
 	fuse.Stderr = os.Stderr
 	fuse.Stdout = os.Stdout
@@ -41,8 +46,15 @@ func pid1() error {
 		return err
 	}
 
-	log.Printf("waiting for fuse to start...")
-	time.Sleep(2 * time.Second)
+	// Close the write end of the pipe in the parent process.
+	if err := w.Close(); err != nil {
+		return err
+	}
+
+	// Wait until the read end of the pipe returns EOF
+	if _, err := ioutil.ReadAll(r); err != nil {
+		return err
+	}
 
 	log.Printf("starting systemd")
 

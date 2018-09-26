@@ -91,7 +91,8 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
-		imgDir = fset.String("imgdir", defaultImgDir, "TODO")
+		imgDir    = fset.String("imgdir", defaultImgDir, "TODO")
+		readiness = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
@@ -150,7 +151,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 				}
 				link := &symlink{
 					name:   name,
-					target: filepath.Join("..", pkg, filepath.Join(wk, name)),
+					target: filepath.Join("..", pkg, wk, name),
 					idx:    len(farm.links),
 				}
 				farm.links = append(farm.links, link)
@@ -181,6 +182,9 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+	if *readiness != -1 {
+		os.NewFile(uintptr(*readiness), "").Close()
 	}
 	return mfs.Join, nil
 }
