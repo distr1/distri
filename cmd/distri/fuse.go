@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -35,6 +34,57 @@ var wellKnown = []string{
 	"buildoutput/lib/pkgconfig",
 	// TODO: lib -> buildoutput/lib
 	// TODO: usr/include -> buildoutput/include (or just include?)
+}
+
+type fileNotFoundError struct {
+	path string
+}
+
+func (e *fileNotFoundError) Error() string {
+	return fmt.Sprintf("%q not found", e.path)
+}
+
+func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component string) (squashfs.Inode, error) {
+	rfis, err := rd.Readdir(parent)
+	if err != nil {
+		return 0, err
+	}
+	for _, rfi := range rfis {
+		if rfi.Name() == component {
+			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
+		}
+	}
+	return 0, &fileNotFoundError{path: component}
+}
+
+func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
+	inode := rd.RootInode()
+	parts := strings.Split(path, string(os.PathSeparator))
+	for idx, part := range parts {
+		var err error
+		inode, err = lookupComponent(rd, inode, part)
+		if err != nil {
+			if _, ok := err.(*fileNotFoundError); ok {
+				return 0, &fileNotFoundError{path: path}
+			}
+			return 0, err
+		}
+		fi, err := rd.Stat("", inode)
+		if err != nil {
+			return 0, fmt.Errorf("Stat(%d): %v", inode, err)
+		}
+		if fi.Mode()&os.ModeSymlink > 0 {
+			target, err := rd.ReadLink(inode)
+			if err != nil {
+				return 0, err
+			}
+			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
+			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
+			//log.Printf("-> %s", target)
+			return lookupPath(rd, target)
+		}
+	}
+	return inode, nil
 }
 
 func mountfuse(args []string) (join func(context.Context) error, _ error) {
@@ -71,34 +121,44 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
 		pkgs = append(pkgs, pkg)
 
-		// TODO: list contents using pure Go
-		unsquashfs := exec.Command("unsquashfs", "-l", filepath.Join(*imgDir, fi.Name()))
-		unsquashfs.Stderr = os.Stderr
-		out, err := unsquashfs.Output()
+		f, err := os.Open(filepath.Join(*imgDir, fi.Name()))
 		if err != nil {
-			return nil, fmt.Errorf("%v: %v", unsquashfs.Args, err)
+			return nil, err
 		}
-		for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
-			line = strings.TrimPrefix(line, "squashfs-root/")
-			farm, ok := farms[filepath.Dir(line)]
-			if !ok {
-				continue
+		rd, err := squashfs.NewReader(f)
+		if err != nil {
+			return nil, err
+		}
+		for _, wk := range wellKnown {
+			inode, err := lookupPath(rd, wk)
+			if err != nil {
+				if _, ok := err.(*fileNotFoundError); ok {
+					continue
+				}
+				return nil, err
 			}
-			name := filepath.Base(line)
-			if _, ok := farm.byName[name]; ok {
-				//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
-				continue
+			sfis, err := rd.Readdir(inode)
+			if err != nil {
+				return nil, fmt.Errorf("Readdir(%s, %s): %v", fi.Name(), wk, err)
 			}
-			link := &symlink{
-				name:   name,
-				target: filepath.Join("..", pkg, line),
-				idx:    len(farm.links),
+			farm := farms[wk]
+			for _, sfi := range sfis {
+				name := sfi.Name()
+				if _, ok := farm.byName[name]; ok {
+					//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
+					continue
+				}
+				link := &symlink{
+					name:   name,
+					target: filepath.Join("..", pkg, filepath.Join(wk, name)),
+					idx:    len(farm.links),
+				}
+				farm.links = append(farm.links, link)
+				farm.byName[name] = link
 			}
-			farm.links = append(farm.links, link)
-			farm.byName[name] = link
 		}
 	}
-	//log.Printf("farm: ")
+	// log.Printf("farm: ")
 	// for _, link := range farms["bin"].links {
 	// 	log.Printf("  %s -> %s", link.name, link.target)
 	// }
