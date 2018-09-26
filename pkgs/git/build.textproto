@@ -5,6 +5,7 @@ version: "2.9.5"
 cbuilder: <
   copy_to_builddir: true
   extra_configure_flag: "--without-tcltk"
+  extra_make_flag: "NO_INSTALL_HARDLINKS=1" # TODO: remove once our SquashFS writer supports hard links
 >
 
 # build dependencies:

@@ -27,12 +27,12 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string, buildLog io.Writer) e
 	}
 	steps = append(steps, [][]string{
 		// TODO: the problem with V=1 is that it typically doesn’t apply to recursive make invocations (e.g. mesa)
-		[]string{"make", "-j8", "V=1"},
+		append([]string{"make", "-j8", "V=1"}, opts.GetExtraMakeFlag()...),
 		// e.g. help2man doesn’t pick up the environment variable
-		[]string{"make", "install",
+		append([]string{"make", "install",
 			"DESTDIR=${ZI_DESTDIR}",
 			"PREFIX=${ZI_PREFIX}", // e.g. for iputils
-		},
+		}, opts.GetExtraMakeFlag()...),
 	}...)
 
 	for idx, step := range steps {

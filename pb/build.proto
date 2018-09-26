@@ -14,6 +14,8 @@ message CBuilder {
   // Packages which don’t support separate builddirs need to use this
   // kludge. Bugs should be reported with the respective upstream authors.
   optional bool copy_to_builddir = 2;
+
+  repeated string extra_make_flag = 4;
 }
 
 message PerlBuilder {
