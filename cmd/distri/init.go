@@ -20,12 +20,21 @@ func pid1() error {
 		return err
 	}
 
-	if _, err := mount([]string{"-imgdir=/ro", "squashfs-4.3"}); err != nil {
+	for _, pkg := range []string{"fuse-3.2.6", "glibc-2.27"} {
+		if err := os.Symlink("/roimg/"+pkg+".squashfs", "/ro/"+pkg+".squashfs"); err != nil && !os.IsExist(err) {
+			return err
+		}
+		if err := os.Symlink("/roimg/"+pkg+".meta.textproto", "/ro/"+pkg+".meta.textproto"); err != nil && !os.IsExist(err) {
+			return err
+		}
+	}
+	if _, err := mount([]string{"-imgdir=/ro", "fuse-3.2.6"}); err != nil {
 		return err
 	}
 
+	// TODO: readiness notification, see dcs-localdcs
 	fuse := exec.Command("/init", "fuse", "-imgdir=/roimg", "/ro")
-	fuse.Env = []string{"PATH=/ro/bin"}
+	fuse.Env = []string{"PATH=/ro/fuse-3.2.6/buildoutput/bin"}
 	fuse.Stderr = os.Stderr
 	fuse.Stdout = os.Stdout
 	if err := fuse.Start(); err != nil {

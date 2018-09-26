@@ -14,6 +14,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
 )
 
@@ -130,10 +131,6 @@ func pack(args []string) error {
 		return err
 	}
 
-	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "ro", "lib")); err != nil {
-		return err
-	}
-
 	// We run systemd in non-split mode, so /usr needs to point to /
 	if err := os.Symlink("/", filepath.Join(*root, "usr")); err != nil && !os.IsExist(err) {
 		return err
@@ -153,12 +150,6 @@ func pack(args []string) error {
 
 	// TODO: de-duplicate with build.go
 	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "lib64")); err != nil && !os.IsExist(err) {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(*root, "ro", "bin"), 0755); err != nil {
-		return err
-	}
-	if err := os.Symlink("/ro/bin/bash", filepath.Join(*root, "ro", "bin", "sh")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
@@ -221,14 +212,6 @@ func pack(args []string) error {
 
 	for _, pkg := range basePkgs {
 		log.Printf("copying %s", pkg)
-		if err := copyFile(filepath.Join(*imgDir, pkg+".squashfs"), filepath.Join(*root, "ro", pkg+".squashfs")); err != nil {
-			return err
-		}
-		if err := copyFile(filepath.Join(*imgDir, pkg+".meta.textproto"), filepath.Join(*root, "ro", pkg+".meta.textproto")); err != nil {
-			return err
-		}
-
-		// TODO: get rid of the double copy
 		if err := copyFile(filepath.Join(*imgDir, pkg+".squashfs"), filepath.Join(*root, "roimg", pkg+".squashfs")); err != nil {
 			return err
 		}
@@ -238,13 +221,10 @@ func pack(args []string) error {
 
 	}
 
-	for _, pkg := range basePkgs {
-		cleanup, err := mount([]string{"-root=" + filepath.Join(*root, "ro"), pkg})
-		if err != nil {
-			return err
-		}
-		defer cleanup()
+	if _, err = mountfuse([]string{"-imgdir=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
+		return err
 	}
+	defer fuse.Unmount(filepath.Join(*root, "ro"))
 
 	// This is an initial installation of all packages, so copy their
 	// /ro/<pkg>-<version>/etc directory contents to /etc (if any):
@@ -387,6 +367,8 @@ veth
 `), 0644); err != nil {
 		return err
 	}
+
+	fuse.Unmount(filepath.Join(*root, "ro"))
 
 	if *diskImg != "" {
 		if err := writeDiskImg(*diskImg, *root); err != nil {
