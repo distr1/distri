@@ -7,17 +7,22 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/jacobsa/fuse"
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
 
 	"github.com/stapelberg/zi/internal/squashfs"
+	"github.com/stapelberg/zi/pb"
 )
 
 const fuseHelp = `TODO
@@ -164,21 +169,37 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	// 	log.Printf("  %s -> %s", link.name, link.target)
 	// }
 
-	server := fuseutil.NewFileSystemServer(&fuseFS{
+	fs := &fuseFS{
 		imgDir:      *imgDir,
 		pkgs:        pkgs,
 		readers:     make([]*squashfsReader, len(pkgs)),
 		farms:       farms,
 		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
-	})
+	}
+	server := fuseutil.NewFileSystemServer(fs)
 
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGHUP)
+		for range c {
+			log.Printf("updating packages upon SIGHUP")
+			if err := fs.updatePackages(); err != nil {
+				log.Printf("updatePackages: %v", err)
+			}
+		}
+	}()
+
+	// logf, err := os.Create("/tmp/fuse.log")
+	// if err != nil {
+	// 	return nil, err
+	// }
 	mfs, err := fuse.Mount(mountpoint, server, &fuse.MountConfig{
 		FSName:   "distri",
 		ReadOnly: true,
 		Options: map[string]string{
 			"allow_other": "", // allow all users to read files
 		},
-		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
+		//DebugLogger: log.New(logf, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
 		return nil, err
@@ -209,45 +230,132 @@ type squashfsReader struct {
 	dircache   map[squashfs.Inode]map[string]os.FileInfo
 }
 
-// TODO: does fuseFS need a mutex? is there concurrency in FUSE at all?
 type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
 	imgDir string
 
+	mu sync.Mutex
 	// pkgs is only ever appended to (empty strings are tombstones), because the
 	// inode for /<pkg> is an index into pkgs.
 	pkgs []string
-
+	// readers contains one SquashFS reader for every package, or nil if the
+	// package has not yet been accessed.
 	readers []*squashfsReader
-
+	// farms contains symbolic link farms, keyed by path from wellKnown.
 	farms map[string]*farm
 
 	fileReadersMu sync.Mutex
 	fileReaders   map[fuseops.InodeID]*io.SectionReader
 }
 
+func (fs *fuseFS) reader(image int) *squashfsReader {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	return fs.readers[image]
+}
+
+func (fs *fuseFS) farm(path string) (*farm, bool) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	farm, ok := fs.farms[path]
+	return farm, ok
+}
+
+// TODO: read this from a config file, remove trailing slash if any (always added by caller)
+const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export"
+
+func (fs *fuseFS) updatePackages() error {
+	resp, err := http.Get(remote + "/meta.binaryproto")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if got, want := resp.StatusCode, http.StatusOK; got != want {
+		return fmt.Errorf("HTTP status %v", resp.Status)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("reading meta.binaryproto: %v", err)
+	}
+	var mm pb.MirrorMeta
+	if err := proto.Unmarshal(b, &mm); err != nil {
+		return err
+	}
+	log.Printf("%d remote packages", len(mm.GetPackage()))
+
+	pkgs := make(map[string]bool)
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	for _, pkg := range fs.pkgs {
+		pkgs[pkg] = true
+	}
+	for _, pkg := range mm.GetPackage() {
+		if pkgs[pkg.GetName()] {
+			continue
+		}
+		fs.pkgs = append(fs.pkgs, pkg.GetName())
+		for _, p := range pkg.GetWellKnownPath() {
+			dir := filepath.Dir(p)
+			name := filepath.Base(p)
+			farm, ok := fs.farms[dir]
+			if !ok {
+				continue
+			}
+			if _, ok := farm.byName[name]; ok {
+				//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
+				continue
+			}
+			link := &symlink{
+				name:   name,
+				target: filepath.Join("..", pkg.GetName(), dir, name),
+				idx:    len(farm.links),
+			}
+			farm.links = append(farm.links, link)
+			farm.byName[name] = link
+		}
+	}
+	// Increase capacity to hold as many readers as we now have packages:
+	readers := make([]*squashfsReader, len(fs.pkgs))
+	copy(readers, fs.readers)
+	fs.readers = readers
+
+	return nil
+}
+
 func (fs *fuseFS) mountImage(image int) error {
 	//log.Printf("mountImage(%d)", image)
-	if fs.readers[image] != nil {
+	if fs.reader(image) != nil {
 		return nil // already mounted
 	}
 
-	// f, err := updateAndOpen("/tmp/imgdir" /*fs.imgDir*/, "http://localhost:7080/"+fs.pkgs[image]+".squashfs")
-	// if err != nil {
-	// 	return err
-	// }
+	fs.mu.Lock()
+	pkg := fs.pkgs[image]
+	fs.mu.Unlock()
+	log.Printf("mounting %s", pkg)
 
 	// var err error
-	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + fs.pkgs[image] + ".squashfs"}
-	f, err := os.Open(filepath.Join(fs.imgDir, fs.pkgs[image]+".squashfs"))
+	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + pkg + ".squashfs"}
+	var (
+		f   io.ReaderAt
+		err error
+	)
+	f, err = os.Open(filepath.Join(fs.imgDir, pkg+".squashfs"))
 	if err != nil {
-		return err
+		if !os.IsNotExist(err) {
+			return err
+		}
+		f, err = updateAndOpen("/tmp/imgdir" /*fs.imgDir*/, remote+"/"+pkg+".squashfs")
+		if err != nil {
+			return err
+		}
 	}
 	rd, err := squashfs.NewReader(f)
 	if err != nil {
 		return err
 	}
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
 	fs.readers[image] = &squashfsReader{
 		Reader:   rd,
 		dircache: make(map[squashfs.Inode]map[string]os.FileInfo),
@@ -268,7 +376,7 @@ func (fs *fuseFS) squashfsInode(i fuseops.InodeID) (int, squashfs.Inode, error) 
 		if err := fs.mountImage(image); err != nil {
 			return 0, 0, err
 		}
-		return image, fs.readers[image].RootInode(), nil
+		return image, fs.reader(image).RootInode(), nil
 	}
 
 	return image, squashfs.Inode(i), nil
@@ -322,20 +430,6 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		wkidx, linkidx := fs.farmInode(squashfsInode)
 		//log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
 		if wkidx == 0 && linkidx == 1 { // root directory (e.g. /ro)
-			for idx, pkg := range fs.pkgs {
-				if pkg != op.Name {
-					continue
-				}
-				op.Entry.Child = fs.fuseInode(idx, 1 /* root */)
-				op.Entry.Attributes = fuseops.InodeAttributes{
-					Nlink: 1, // TODO: number of incoming hard links to this inode
-					Mode:  os.ModeDir | 0555,
-					Atime: time.Now(), // TODO
-					Mtime: time.Now(), // TODO
-					Ctime: time.Now(), // TODO
-				}
-				return nil
-			}
 			for idx, wk := range wellKnown {
 				if filepath.Base(wk) != op.Name {
 					continue
@@ -350,9 +444,25 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 				}
 				return nil
 			}
+			fs.mu.Lock()
+			defer fs.mu.Unlock()
+			for idx, pkg := range fs.pkgs {
+				if pkg != op.Name {
+					continue
+				}
+				op.Entry.Child = fs.fuseInode(idx, 1 /* root */)
+				op.Entry.Attributes = fuseops.InodeAttributes{
+					Nlink: 1, // TODO: number of incoming hard links to this inode
+					Mode:  os.ModeDir | 0555,
+					Atime: time.Now(), // TODO
+					Mtime: time.Now(), // TODO
+					Ctime: time.Now(), // TODO
+				}
+				return nil
+			}
 			return fuse.ENOENT
 		} else if wkidx == 0 { // farm root directory (e.g. /ro/bin)
-			farm := fs.farms[wellKnown[linkidx-2]]
+			farm, _ := fs.farm(wellKnown[linkidx-2])
 			link := farm.byName[op.Name]
 			if link == nil {
 				return fuse.ENOENT // tombstone or not found
@@ -371,7 +481,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		return fuse.EIO
 	}
 
-	rd := fs.readers[image]
+	rd := fs.reader(image)
 	rd.dircacheMu.Lock()
 	fis, ok := rd.dircache[squashfsInode]
 	rd.dircacheMu.Unlock()
@@ -439,7 +549,7 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 			}
 			return nil
 		}
-		//farm := fs.farms[wellKnown[wkidx-1]]
+		//farm, _ := fs.farm(wellKnown[wkidx-1])
 		//link := farm.links[linkidx]
 		op.Attributes = fuseops.InodeAttributes{
 			Nlink: 1, // TODO: number of incoming hard links to this inode
@@ -452,7 +562,7 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 		return nil
 	}
 
-	fi, err := fs.readers[image].Stat("", squashfsInode)
+	fi, err := fs.reader(image).Stat("", squashfsInode)
 	if err != nil {
 		//log.Printf("Stat: %v", err)
 		return fuse.ENOENT // TODO
@@ -495,6 +605,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 	if image == -1 { // (virtual) root directory
 		var entries []fuseutil.Dirent
 		if squashfsInode == 1 {
+			fs.mu.Lock()
 			for idx, pkg := range fs.pkgs {
 				if pkg == "" {
 					continue // tombstone
@@ -506,6 +617,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 					Type:   fuseutil.DT_Directory,
 				})
 			}
+			fs.mu.Unlock()
 			for idx, wk := range wellKnown {
 				entries = append(entries, fuseutil.Dirent{
 					Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
@@ -519,7 +631,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 			if idx >= len(wellKnown) {
 				return fuse.ENOENT
 			}
-			farm := fs.farms[wellKnown[idx]] // TODO: store farms not by name, but by index?
+			farm, _ := fs.farm(wellKnown[idx]) // TODO: store farms not by name, but by index?
 			for lidx, link := range farm.links {
 				if link == nil {
 					continue // tombstone
@@ -547,7 +659,7 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 		return nil
 	}
 
-	fis, err := fs.readers[image].Readdir(squashfsInode)
+	fis, err := fs.reader(image).Readdir(squashfsInode)
 	if err != nil {
 		//log.Printf("Readdir: %v", err)
 		return fuse.EIO // TODO: what happens if we pass err?
@@ -599,7 +711,7 @@ func (fs *fuseFS) ReadFile(ctx context.Context, op *fuseops.ReadFileOp) error {
 			return fuse.EIO
 		}
 
-		r, err = fs.readers[image].FileReader(squashfsInode)
+		r, err = fs.reader(image).FileReader(squashfsInode)
 		if err != nil {
 			return err
 		}
@@ -631,13 +743,13 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 			return fuse.EIO // no symlinks in root
 		}
 		// TODO: bounds checks
-		farm := fs.farms[wellKnown[wkidx-2]]
+		farm, _ := fs.farm(wellKnown[wkidx-2])
 		link := farm.links[linkidx]
 		op.Target = link.target
 		return nil
 	}
 
-	target, err := fs.readers[image].ReadLink(squashfsInode)
+	target, err := fs.reader(image).ReadLink(squashfsInode)
 	if err != nil {
 		return err
 	}
