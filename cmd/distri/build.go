@@ -429,7 +429,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=bin,buildoutput/lib/pkgconfig,buildoutput/include", depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -602,6 +602,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 			if !b.FUSE {
 				if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+					return nil, err
+				}
+			} else {
+				if err := os.Symlink("/ro/include", filepath.Join(b.ChrootDir, "usr", "include")); err != nil {
 					return nil, err
 				}
 			}

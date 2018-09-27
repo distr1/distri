@@ -34,6 +34,10 @@ dep: "tar-1.30"
 # requires /ro/glibc-2.27/buildoutput/include to be a system include, which we
 # achieve by symlinking /usr/include to it.
 build_step: <
+  argv: "rm"
+  argv: "/usr/include"
+>
+build_step: <
   argv: "ln"
   argv: "-s"
   argv: "/ro/glibc-2.27/buildoutput/include"
@@ -62,4 +66,8 @@ build_step: <
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${ZI_DESTDIR}"
+>
+
+install: <
+  symlink: < oldname: "gcc" newname: "bin/cc" >
 >

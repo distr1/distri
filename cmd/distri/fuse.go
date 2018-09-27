@@ -37,8 +37,7 @@ var wellKnown = []string{
 	"buildoutput/lib",
 	"buildoutput/lib/systemd/system",
 	"buildoutput/lib/pkgconfig",
-	// TODO: lib -> buildoutput/lib
-	// TODO: usr/include -> buildoutput/include (or just include?)
+	"buildoutput/include",
 }
 
 type fileNotFoundError struct {
@@ -98,6 +97,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	var (
 		imgDir    = fset.String("imgdir", defaultImgDir, "TODO")
 		readiness = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
+		overlays  = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
@@ -105,6 +105,24 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	}
 	mountpoint := fset.Arg(0)
 	//log.Printf("mounting FUSE file system at %q", mountpoint)
+
+	if *overlays != "" {
+		var filtered []string
+		permitted := make(map[string]bool)
+		for _, overlay := range strings.Split(strings.TrimSpace(*overlays), ",") {
+			if overlay == "" {
+				continue
+			}
+			permitted[overlay] = true
+		}
+		for _, wk := range wellKnown {
+			if !permitted[wk] {
+				continue
+			}
+			filtered = append(filtered, wk)
+		}
+		wellKnown = filtered
+	}
 
 	// TODO: use inotify to efficiently get updates to the store
 	fis, err := ioutil.ReadDir(*imgDir)
@@ -168,6 +186,23 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	// for _, link := range farms["bin"].links {
 	// 	log.Printf("  %s -> %s", link.name, link.target)
 	// }
+	if _, ok := farms["lib"]; !ok {
+		// Even if the lib overlay was not requested, we still need to provide a
+		// symlink to ld-linux.so, which is used as the .interp of our ELF
+		// binaries.
+		link := &symlink{
+			name:   "ld-linux-x86-64.so.2",
+			target: "../glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2",
+			idx:    0,
+		}
+		farms["lib"] = &farm{
+			links: []*symlink{link},
+			byName: map[string]*symlink{
+				link.name: link,
+			},
+		}
+		wellKnown = append(wellKnown, "lib")
+	}
 
 	fs := &fuseFS{
 		imgDir:      *imgDir,

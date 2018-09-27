@@ -11,30 +11,3 @@ dep: "nettle-3.4"
 dep: "libtasn1-4.13"
 dep: "libunistring-0.9.10"
 dep: "zlib-1.2.11"
-
-# TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
-  argv: "/usr/include"
->
-
-build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
-  argv: "--without-p11-kit"
->
-
-build_step: <
-  argv: "make"
-  argv: "-j8"
-  argv: "V=1"
->
-
-build_step: <
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
->

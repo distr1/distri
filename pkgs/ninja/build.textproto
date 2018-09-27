@@ -8,21 +8,6 @@ cbuilder: <>
 dep: "python3-3.7.0"
 
 build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "python3"
-  argv: "/bin/python"
->
-
-# TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
-  argv: "/usr/include"
->
-
-build_step: <
   argv: "${ZI_SOURCEDIR}/configure.py"
 #  argv: "--prefix=${ZI_PREFIX}"
   argv: "--bootstrap"

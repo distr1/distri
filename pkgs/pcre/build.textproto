@@ -5,29 +5,3 @@ version: "8.42"
 cbuilder: <>
 
 # build dependencies:
-
-# TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
-  argv: "/usr/include"
->
-
-build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
->
-
-build_step: <
-  argv: "make"
-  argv: "-j8"
-  argv: "V=1"
->
-
-build_step: <
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
->

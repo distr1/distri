@@ -6,14 +6,6 @@ cbuilder: <>
 
 # build dependencies:
 
-# TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
-  argv: "/usr/include"
->
-
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
