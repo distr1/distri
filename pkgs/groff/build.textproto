@@ -1,0 +1,27 @@
+source: "https://ftp.gnu.org/gnu/groff/groff-1.22.3.tar.gz"
+hash: "3a48a9d6c97750bfbd535feeb5be0111db6406ddb7bb79fc680809cda6d828a5"
+version: "1.22.3"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "perl-5.28.0"
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j1" # TODO: build fails with -j8
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+>
+
