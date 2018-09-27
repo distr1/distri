@@ -1,3 +1,3 @@
 package pb
 
-//go:generate protoc --go_out=. build.proto meta.proto
+//go:generate protoc --go_out=. build.proto meta.proto mirrormeta.proto
