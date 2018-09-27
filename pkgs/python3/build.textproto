@@ -16,10 +16,9 @@ build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
   argv: "--with-openssl=/ro/openssl-1.0.2p/buildoutput"
-#  argv: "LIBFFI_INCLUDEDIR=/ro/libffi-3.2.1/buildoutput/include/"
 >
 
-# HACK: remove once we make available all lib directories under /lib (or /lib64)
+# https://bugs.python.org/issue34823
 build_step: <
   argv: "ln"
   argv: "-s"
@@ -37,11 +36,15 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/ro/gcc-8.2.0/buildoutput/lib64 LIBRARY_PATH=$LIBRARY_PATH:/ro/gcc-8.2.0/buildoutput/lib64 make -j8" # TODO: put this into {,LD_}LIBRARY_PATH in zi
+  argv: "make -j8"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${ZI_DESTDIR} make install DESTDIR=${ZI_DESTDIR}"
+>
+
+install: <
+  symlink: < oldname: "python3" newname: "bin/python" >
 >
