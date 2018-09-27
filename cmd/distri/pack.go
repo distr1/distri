@@ -202,7 +202,6 @@ func pack(args []string) error {
 		"sed-4.5",
 		"gawk-4.2.1",
 		// end of grub deps
-		"emacs-26.1",
 		"squashfs-4.3",
 		"fuse-3.2.6",
 	})
