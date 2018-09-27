@@ -98,6 +98,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		imgDir    = fset.String("imgdir", defaultImgDir, "TODO")
 		readiness = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
 		overlays  = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
+		pkgsList  = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -imgdir will be provided")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
@@ -125,10 +126,6 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	}
 
 	// TODO: use inotify to efficiently get updates to the store
-	fis, err := ioutil.ReadDir(*imgDir)
-	if err != nil {
-		return nil, err
-	}
 
 	farms := make(map[string]*farm)
 	for _, wk := range wellKnown {
@@ -137,15 +134,27 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			byName: make(map[string]*symlink),
 		}
 	}
-	var pkgs []string
-	for _, fi := range fis {
-		if !strings.HasSuffix(fi.Name(), ".squashfs") {
-			continue
-		}
-		pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
-		pkgs = append(pkgs, pkg)
 
-		f, err := os.Open(filepath.Join(*imgDir, fi.Name()))
+	var pkgs []string
+	if *pkgsList != "" {
+		pkgs = strings.Split(strings.TrimSpace(*pkgsList), ",")
+	} else {
+		fis, err := ioutil.ReadDir(*imgDir)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, fi := range fis {
+			if !strings.HasSuffix(fi.Name(), ".squashfs") {
+				continue
+			}
+			pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
+			pkgs = append(pkgs, pkg)
+		}
+	}
+
+	for _, pkg := range pkgs {
+		f, err := os.Open(filepath.Join(*imgDir, pkg+".squashfs"))
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +172,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			}
 			sfis, err := rd.Readdir(inode)
 			if err != nil {
-				return nil, fmt.Errorf("Readdir(%s, %s): %v", fi.Name(), wk, err)
+				return nil, fmt.Errorf("Readdir(%s, %s): %v", pkg, wk, err)
 			}
 			farm := farms[wk]
 			for _, sfi := range sfis {

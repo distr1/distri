@@ -428,16 +428,17 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			return nil, err
 		}
 
+		deps, err := builddeps(b.Proto)
+		if err != nil {
+			return nil, err
+		}
+
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=bin,buildoutput/lib/pkgconfig,buildoutput/include", depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=bin,buildoutput/lib/pkgconfig,buildoutput/include", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
 		} else {
-			deps, err := builddeps(b.Proto)
-			if err != nil {
-				return nil, err
-			}
 			for _, dep := range deps {
 				cleanup, err := mount([]string{"-root=" + depsdir, dep})
 				if err != nil {
@@ -560,9 +561,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		{
 			// Make available b.DestDir as /dest/<pkg>-<version>:
 			prefix := filepath.Join(b.ChrootDir, "ro", b.Pkg+"-"+b.Version)
-			if err := os.MkdirAll(prefix, 0755); err != nil {
-				return nil, err
-			}
 			b.Prefix = strings.TrimPrefix(prefix, b.ChrootDir)
 
 			dst := filepath.Join(b.ChrootDir, "dest", "tmp")
@@ -1090,7 +1088,7 @@ func build(args []string) error {
 			"query to start an interactive shell during the build")
 
 		fuse = fset.Bool("fuse",
-			false,
+			true,
 			"Use FUSE file system instead of kernel mounts")
 	)
 	fset.Parse(args)
