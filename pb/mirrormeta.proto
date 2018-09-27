@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package pb;
+
+message MirrorMeta {
+  message Package {
+    optional string name = 1;
+    repeated string well_known_path = 2;
+  }
+  repeated Package package = 1;
+}

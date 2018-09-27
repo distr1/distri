@@ -81,6 +81,7 @@ func main() {
 			"fuse":     {fuseHelp, func() { mountfuse(helpFlag) }},
 			"export":   {exportHelp, func() { export(helpFlag) }},
 			"env":      {envHelp, func() { env(helpFlag) }},
+			"mirror":   {mirrorHelp, func() { mirror(helpFlag) }},
 		}
 		if len(args) != 1 {
 			fmt.Fprintf(os.Stderr, "syntax: %s help <verb>\n", os.Args[0])
@@ -156,6 +157,11 @@ func main() {
 
 	case "env":
 		if err := env(args); err != nil {
+			log.Fatal(err)
+		}
+
+	case "mirror":
+		if err := mirror(args); err != nil {
 			log.Fatal(err)
 		}
 
