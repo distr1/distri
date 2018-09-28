@@ -6,5 +6,4 @@ cbuilder: <
   extra_configure_flag: "--includedir=${ZI_PREFIX}/include/security"
   extra_configure_flag: "--enable-static"
   extra_configure_flag: "--enable-shared"
-  extra_configure_flag: "--enable-debug"
 >
