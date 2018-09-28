@@ -299,14 +299,6 @@ func pack(args []string) error {
 		return err
 	}
 
-	const pamdLogin = `account  sufficient  pam_permit.so
-auth  sufficient  pam_permit.so
-`
-
-	if err := ioutil.WriteFile(filepath.Join(pamd, "login"), []byte(pamdLogin), 0644); err != nil {
-		return err
-	}
-
 	const pamdOther = `auth	required	pam_unix.so
 auth	required	pam_warn.so
 account	required	pam_unix.so
