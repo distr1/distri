@@ -340,8 +340,14 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
 		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
 		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/lib/pkgconfig")
-		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
-		includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
+		// Exclude glibc from CPATH: it needs to come last (as /usr/include),
+		// and gcc doesn’t recognize that the non-system directory glibc-2.27
+		// duplicates the system directory /usr/include because we only symlink
+		// the contents, not the whole directory.
+		if dep != "glibc-2.27" {
+			includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
+			includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
+		}
 		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
 	}
 
