@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/jacobsa/fuse"
@@ -108,6 +108,7 @@ func pack(args []string) error {
 	for _, dir := range []string{
 		"etc",
 		"root",
+		"boot",        // grub
 		"dev",         // udev
 		"ro",          // read-only package directory (mountpoint)
 		"roimg",       // read-only package store
@@ -485,20 +486,86 @@ name=root`)
 	}
 
 	if err := syscall.Mount(root, "/mnt", "ext4", syscall.MS_MGC_VAL, ""); err != nil {
-		return err
+		return fmt.Errorf("mount %s /mnt: %v", root, err)
 	}
+	defer syscall.Unmount("/mnt", 0)
 
 	// TODO: get rid of this copying step
 	cp := exec.Command("sudo", "sh", "-c", "cp -r "+filepath.Join(src, "*")+" /mnt/")
 	cp.Stdout = os.Stdout
 	cp.Stderr = os.Stderr
 	if err := cp.Run(); err != nil {
-		syscall.Unmount("/mnt", 0)
 		return fmt.Errorf("%v: %v", cp.Args, err)
 	}
 
-	if err := syscall.Unmount("/mnt", 0); err != nil {
+	if err := syscall.Mount(boot, "/mnt/boot", "ext2", syscall.MS_MGC_VAL, ""); err != nil {
+		return fmt.Errorf("mount %s /mnt/boot: %v", boot, err)
+	}
+	defer syscall.Unmount("/mnt/boot", 0)
+
+	if err := syscall.Mount("/dev", "/mnt/dev", "", syscall.MS_MGC_VAL|syscall.MS_BIND, ""); err != nil {
+		return fmt.Errorf("mount /dev /mnt/dev: %v", err)
+	}
+	defer syscall.Unmount("/mnt/dev", 0)
+
+	if err := syscall.Mount("/sys", "/mnt/sys", "", syscall.MS_MGC_VAL|syscall.MS_BIND, ""); err != nil {
+		return fmt.Errorf("mount /sys /mnt/sys: %v", err)
+	}
+	defer syscall.Unmount("/mnt/sys", 0)
+
+	chown := exec.Command("sudo", "chown", os.Getenv("USER"), "/mnt/ro")
+	chown.Stderr = os.Stderr
+	chown.Stdout = os.Stdout
+	if err := chown.Run(); err != nil {
+		return fmt.Errorf("%v: %v", chown.Args, err)
+	}
+	join, err := mountfuse([]string{"-imgdir=/mnt/roimg", "/mnt/ro"})
+	if err != nil {
 		return err
+	}
+	defer fuse.Unmount("/mnt/ro")
+
+	if err := os.MkdirAll("/mnt/boot/grub", 0755); err != nil {
+		return err
+	}
+
+	if err := copyFile(filepath.Join(distriRoot, "linux-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
+		return err
+	}
+
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/vda2 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	mkconfig.Stderr = os.Stderr
+	mkconfig.Stdout = os.Stdout
+	if err := mkconfig.Run(); err != nil {
+		return fmt.Errorf("%v: %v", mkconfig.Args, err)
+	}
+
+	install := exec.Command("sudo", "chroot", "/mnt", "grub-install", "--target=i386-pc", base)
+	install.Stderr = os.Stderr
+	install.Stdout = os.Stdout
+	if err := install.Run(); err != nil {
+		return fmt.Errorf("%v: %v", install.Args, err)
+	}
+
+	if err := fuse.Unmount("/mnt/ro"); err != nil {
+		return fmt.Errorf("unmount /mnt/ro: %v", err)
+	}
+
+	if err := join(context.Background()); err != nil {
+		return fmt.Errorf("fuse: %v", err)
+	}
+
+	chown = exec.Command("sudo", "chown", "root", "/mnt/ro")
+	chown.Stderr = os.Stderr
+	chown.Stdout = os.Stdout
+	if err := chown.Run(); err != nil {
+		return fmt.Errorf("%v: %v", chown.Args, err)
+	}
+
+	for _, m := range []string{"sys", "dev", "boot", ""} {
+		if err := syscall.Unmount(filepath.Join("/mnt", m), 0); err != nil {
+			return fmt.Errorf("unmount /mnt/%s: %v", m, err)
+		}
 	}
 
 	losetup = exec.Command("sudo", "losetup", "-d", base)
