@@ -457,40 +457,18 @@ name=root`)
 		return fmt.Errorf("%v: %v", sfdisk.Args, err)
 	}
 
-	kpartx := exec.Command("sudo", "kpartx", "-av", dest)
-	kpartx.Stderr = os.Stderr
-	out, err := kpartx.Output()
+	losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", dest)
+	losetup.Stderr = os.Stderr
+	out, err := losetup.Output()
 	if err != nil {
-		return fmt.Errorf("%v: %v", kpartx.Args, err)
+		return fmt.Errorf("%v: %v", losetup.Args, err)
 	}
 
-	var partitions []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
-		if !strings.HasPrefix(line, "add map ") {
-			continue
-		}
-		parts := strings.Split(line, " ")
-		if len(parts) < 3 {
-			continue
-		}
-		partitions = append(partitions, parts[2])
-	}
+	base := strings.TrimSpace(string(out))
+	log.Printf("base: %q", base)
 
-	if got, want := len(partitions), 2; got != want {
-		return fmt.Errorf("unexpected number of partitions: got %d, want %d", got, want)
-	}
-
-	if !strings.HasSuffix(partitions[0], "p1") ||
-		!strings.HasSuffix(partitions[1], "p2") {
-		return fmt.Errorf("unexpected kpartx output: expected *p1 and *p2, got partitions %q", partitions)
-	}
-
-	log.Printf("partitions: %q", partitions)
-
-	time.Sleep(1 * time.Second) // is this for udev?
-
-	boot := "/dev/mapper/" + partitions[0]
-	root := "/dev/mapper/" + partitions[1]
+	boot := base + "p1"
+	root := base + "p2"
 
 	mkfs := exec.Command("sudo", "mkfs.ext2", boot)
 	mkfs.Stdout = os.Stdout
@@ -523,11 +501,11 @@ name=root`)
 		return err
 	}
 
-	kpartx = exec.Command("sudo", "kpartx", "-d", dest)
-	kpartx.Stdout = os.Stdout
-	kpartx.Stderr = os.Stderr
-	if err := kpartx.Run(); err != nil {
-		return fmt.Errorf("%v: %v", kpartx.Args, err)
+	losetup = exec.Command("sudo", "losetup", "-d", base)
+	losetup.Stdout = os.Stdout
+	losetup.Stderr = os.Stderr
+	if err := losetup.Run(); err != nil {
+		return fmt.Errorf("%v: %v", losetup.Args, err)
 	}
 
 	return nil
