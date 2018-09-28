@@ -401,6 +401,8 @@ func builddeps(p *pb.Build) ([]string, error) {
 			"glibc-2.27",
 			"linux-4.18.7",
 			"findutils-4.6.0", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+
+			"patchelf-0.9", // for shrinking the RPATH
 		}
 
 		switch builder.(type) {
@@ -837,6 +839,12 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 		if !bytes.Equal(buf[:], []byte("\x7fELF")) {
 			return nil
+		}
+		patchelf := exec.Command("patchelf", "--shrink-rpath", path)
+		patchelf.Stdout = os.Stdout
+		patchelf.Stderr = os.Stderr
+		if err := patchelf.Run(); err != nil {
+			return fmt.Errorf("%v: %v", patchelf.Args, err)
 		}
 		pkgs, err := findShlibDeps(path)
 		if err != nil {
