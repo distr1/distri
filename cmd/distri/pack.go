@@ -327,6 +327,12 @@ session	required	pam_warn.so
 	if err := addgroup(*root, "systemd-network:x:103:"); err != nil {
 		return err
 	}
+	if err := adduser(*root, "systemd-resolve:x:105:105:resolve:/run/systemd/resolve:/bin/false"); err != nil {
+		return err
+	}
+	if err := addgroup(*root, "systemd-resolve:x:105:"); err != nil {
+		return err
+	}
 
 	if err := adduser(*root, "sshd:x:102:102:sshd:/:/bin/false"); err != nil {
 		return err
