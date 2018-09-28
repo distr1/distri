@@ -270,6 +270,8 @@ type farm struct {
 type squashfsReader struct {
 	*squashfs.Reader
 
+	file *os.File // for closing it in Destroy
+
 	dircacheMu sync.Mutex
 	dircache   map[squashfs.Inode]map[string]os.FileInfo
 }
@@ -380,11 +382,7 @@ func (fs *fuseFS) mountImage(image int) error {
 
 	// var err error
 	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + pkg + ".squashfs"}
-	var (
-		f   io.ReaderAt
-		err error
-	)
-	f, err = os.Open(filepath.Join(fs.imgDir, pkg+".squashfs"))
+	f, err := os.Open(filepath.Join(fs.imgDir, pkg+".squashfs"))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -401,6 +399,7 @@ func (fs *fuseFS) mountImage(image int) error {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
 	fs.readers[image] = &squashfsReader{
+		file:     f,
 		Reader:   rd,
 		dircache: make(map[squashfs.Inode]map[string]os.FileInfo),
 	}
@@ -799,4 +798,13 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 	}
 	op.Target = target
 	return nil
+}
+
+func (fs *fuseFS) Destroy() {
+	for _, rd := range fs.readers {
+		if rd == nil {
+			continue
+		}
+		rd.file.Close()
+	}
 }

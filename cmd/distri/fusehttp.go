@@ -51,7 +51,7 @@ func (hr *httpReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func updateAndOpen(imgDir, fileurl string) (io.ReaderAt, error) {
+func updateAndOpen(imgDir, fileurl string) (*os.File, error) {
 	// TODO: use etags (?) or if-modified-since for skipping the download if the file is unchanged
 
 	resp, err := http.Get(fileurl)
