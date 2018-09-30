@@ -488,7 +488,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if err := proto.Unmarshal(b, &meta); err != nil {
 			return nil, err
 		}
-		return meta.GetRuntimeDep(), nil
+		return meta.GetRuntimeDep(), cmd.Wait()
 	}
 
 	logDir := filepath.Dir(b.SourceDir) // TODO: introduce a struct field
