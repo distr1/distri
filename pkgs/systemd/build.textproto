@@ -18,6 +18,8 @@ dep: "ninja-1.8.2"
 dep: "python3-3.7.0"
 dep: "kmod-25"
 
+dep: "systemd-239" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
+
 build_step: <
   argv: "/bin/sh"
   argv: "-c"

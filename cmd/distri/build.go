@@ -814,8 +814,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	// patchelf will leave e.g. /ro/systemd-239/buildoutput/lib/systemd/ in the
 	// RPATH.
 	if _, err := os.Stat(filepath.Join(b.DestDir, "ro")); err == nil {
-		if err := syscall.Mount("overlay", "/ro", "overlay", 0, "lowerdir="+filepath.Join(b.DestDir, "ro")+":/ro"); err != nil {
-			return nil, err
+		if _, err := os.Stat(b.Prefix); err == nil {
+			if err := syscall.Mount(filepath.Join(b.DestDir, b.Prefix), b.Prefix, "none", syscall.MS_BIND, ""); err != nil {
+				return nil, err
+			}
 		}
 	}
 
