@@ -4,7 +4,6 @@ version: "26.1"
 
 cbuilder: <
   extra_configure_flag: "--with-gnutls=no" # TODO: why doesn’t configure locate gnutls?
-  extra_ldflag: "-Wl,--dynamic-linker=/ro/lib/ld-linux-x86-64.so.2"
 >
 
 # build dependencies:
