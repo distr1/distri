@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"flag"
 	"fmt"
@@ -96,8 +98,9 @@ func pack(args []string) error {
 		root = fset.String("root",
 			"",
 			"TODO")
-		imgDir  = fset.String("imgdir", defaultImgDir, "TODO")
-		diskImg = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
+		imgDir     = fset.String("imgdir", defaultImgDir, "TODO")
+		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
+		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
 	fset.Parse(args)
@@ -368,9 +371,63 @@ veth
 
 	fuse.Unmount(filepath.Join(*root, "ro"))
 
+	if *gcsDiskImg != "" && *diskImg == "" {
+		// Creating a Google Cloud disk image requires creating a disk image
+		// first, so use a temporary file:
+		tmp, err := ioutil.TempFile("", "distriimg")
+		if err != nil {
+			return err
+		}
+		tmp.Close()
+		defer os.Remove(tmp.Name())
+		*diskImg = tmp.Name()
+	}
+
 	if *diskImg != "" {
 		if err := writeDiskImg(*diskImg, *root); err != nil {
 			return fmt.Errorf("writeDiskImg: %v", err)
+		}
+	}
+
+	if *gcsDiskImg != "" {
+		log.Printf("Writing Google Cloud disk image to %s", *gcsDiskImg)
+		img, err := os.Open(*diskImg)
+		if err != nil {
+			return err
+		}
+		defer img.Close()
+		st, err := img.Stat()
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Create(*gcsDiskImg)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		gw, err := gzip.NewWriterLevel(f, gzip.BestSpeed)
+		if err != nil {
+			return err
+		}
+		tw := tar.NewWriter(gw)
+		if err := tw.WriteHeader(&tar.Header{
+			Name: "disk.raw",
+			Size: st.Size(),
+		}); err != nil {
+			return err
+		}
+		if _, err := io.Copy(tw, img); err != nil {
+			return err
+		}
+		if err := tw.Close(); err != nil {
+			return err
+		}
+		if err := gw.Close(); err != nil {
+			return err
+		}
+		if err := f.Close(); err != nil {
+			return err
 		}
 	}
 
