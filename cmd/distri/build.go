@@ -149,87 +149,6 @@ func buildpkg(hermetic, debug, fuse bool) error {
 		return err
 	}
 
-	// TODO: do this only once, not also in b.build()
-	deps, err := builddeps(b.Proto)
-	if err != nil {
-		return err
-	}
-	env := b.env(deps, false)
-
-	// TODO: create binary wrappers for runtime deps (symlinks for now)
-	if err := os.MkdirAll(filepath.Join(destDir, "bin"), 0755); err != nil {
-		return err
-	}
-	for _, dir := range []string{"bin", "sbin"} {
-		dir = filepath.Join(destDir, "buildoutput", dir)
-		// TODO(performance): read directories directly, don’t care about sorting
-		fis, err := ioutil.ReadDir(dir)
-		if err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return err
-		}
-		for _, fi := range fis {
-			newname := filepath.Join(destDir, "bin", fi.Name())
-			wrapper := filepath.Join(b.PkgDir, "wrappers", fi.Name())
-			if _, err := os.Stat(wrapper); err == nil {
-				c, err := ioutil.ReadFile(wrapper)
-				if err != nil {
-					return err
-				}
-				c = []byte(b.substitute(string(c)))
-				if err := ioutil.WriteFile(newname, c, 0755); err != nil {
-					return err
-				}
-			} else {
-				oldname := filepath.Join(dir, fi.Name())
-
-				if b.Pkg == "bash" && fi.Name() == "sh" {
-					// prevent creation of a wrapper script for /bin/sh
-					// (wrappers execute /bin/sh) by using a symlink instead:
-					oldname, err = filepath.Rel(filepath.Join(destDir, "bin"), oldname)
-					if err != nil {
-						return err
-					}
-					if err := os.Symlink(oldname, newname); err != nil {
-						return err
-					}
-					continue
-				}
-
-				oldname, err = filepath.Rel(destDir, oldname)
-				if err != nil {
-					return err
-				}
-				var runtimeEnv []string
-				for _, e := range env {
-					if strings.HasPrefix(e, "PATH=") ||
-						strings.HasPrefix(e, "LD_LIBRARY_PATH=") ||
-						strings.HasPrefix(e, "PERL5LIB=") {
-						runtimeEnv = append(runtimeEnv, e)
-					}
-				}
-				var buf bytes.Buffer
-				if err := wrapperTmpl.Execute(&buf, struct {
-					Bin    string
-					Prefix string
-					Env    []string
-				}{
-					Bin:    oldname,
-					Prefix: b.Prefix,
-					Env:    runtimeEnv,
-				}); err != nil {
-					return err
-				}
-
-				if err := ioutil.WriteFile(newname, buf.Bytes(), 0755); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
 	if err := b.pkg(); err != nil {
 		return err
 	}
@@ -557,6 +476,15 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				return nil, fmt.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
 			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
+
+			// Make available b.PkgDir/wrappers as /usr/src/wrappers (read-only):
+			wrappers := filepath.Join(b.ChrootDir, "usr", "src", "wrappers")
+			if err := os.MkdirAll(wrappers, 0755); err != nil {
+				return nil, err
+			}
+			if err := syscall.Mount(filepath.Join(b.PkgDir, "wrappers"), wrappers, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
+				return nil, fmt.Errorf("bind mount %s %s: %v", filepath.Join(b.PkgDir, "wrappers"), wrappers, err)
+			}
 		}
 
 		{
@@ -572,21 +500,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				return nil, fmt.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
 			}
 			b.DestDir = strings.TrimPrefix(dst, b.ChrootDir)
-
-			// // Install build dependencies into /ro
-			// deps := filepath.Join(b.ChrootDir, "ro")
-			// if err := os.MkdirAll(deps, 0755); err != nil {
-			// 	return nil, err
-			// }
-			// flag.Set("root", deps) // TODO: make install() take an arg
-
-			// // TODO: the builder should likely install dependencies as required
-			// // (e.g. if autotools is detected, bash+coreutils+sed+grep+gawk need to
-			// // be installed as runtime env, and gcc+binutils+make for building)
-
-			// if err := install(b.Proto.GetDep()); err != nil {
-			// 	return nil, err
-			// }
 
 			// Symlinks:
 			//   /bin → /ro/bin
@@ -810,6 +723,80 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
+	// create binary wrappers for runtime deps (symlinks for now)
+	var runtimeEnv []string
+	for _, e := range env {
+		if strings.HasPrefix(e, "PATH=") ||
+			strings.HasPrefix(e, "LD_LIBRARY_PATH=") ||
+			strings.HasPrefix(e, "PERL5LIB=") {
+			runtimeEnv = append(runtimeEnv, e)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(b.DestDir, b.Prefix, "bin"), 0755); err != nil {
+		return nil, err
+	}
+	for _, dir := range []string{"bin", "sbin"} {
+		dir = filepath.Join(b.DestDir, b.Prefix, "buildoutput", dir)
+		// TODO(performance): read directories directly, don’t care about sorting
+		fis, err := ioutil.ReadDir(dir)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, err
+		}
+		for _, fi := range fis {
+			newname := filepath.Join(b.DestDir, b.Prefix, "bin", fi.Name())
+			wrapper := filepath.Join("/usr/src/wrappers", fi.Name())
+			if _, err := os.Stat(wrapper); err == nil {
+				c, err := ioutil.ReadFile(wrapper)
+				if err != nil {
+					return nil, err
+				}
+				c = []byte(b.substitute(string(c)))
+				if err := ioutil.WriteFile(newname, c, 0755); err != nil {
+					return nil, err
+				}
+			} else {
+				oldname := filepath.Join(dir, fi.Name())
+
+				if b.Pkg == "bash" && fi.Name() == "sh" {
+					// prevent creation of a wrapper script for /bin/sh
+					// (wrappers execute /bin/sh) by using a symlink instead:
+					oldname, err = filepath.Rel(filepath.Join(b.DestDir, b.Prefix, "bin"), oldname)
+					if err != nil {
+						return nil, err
+					}
+					if err := os.Symlink(oldname, newname); err != nil {
+						return nil, err
+					}
+					continue
+				}
+
+				oldname, err = filepath.Rel(filepath.Join(b.DestDir, b.Prefix), oldname)
+				if err != nil {
+					return nil, err
+				}
+				var buf bytes.Buffer
+				if err := wrapperTmpl.Execute(&buf, struct {
+					Bin    string
+					Prefix string
+					Env    []string
+				}{
+					Bin:    oldname,
+					Prefix: b.Prefix,
+					Env:    runtimeEnv,
+				}); err != nil {
+					return nil, err
+				}
+
+				if err := ioutil.WriteFile(newname, buf.Bytes(), 0755); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
 	// Make the finished package available at /ro/<pkg>-<version>, so that
 	// patchelf will leave e.g. /ro/systemd-239/buildoutput/lib/systemd/ in the
 	// RPATH.
@@ -844,11 +831,14 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if !bytes.Equal(buf[:], []byte("\x7fELF")) {
 			return nil
 		}
-		patchelf := exec.Command("patchelf", "--shrink-rpath", path)
-		patchelf.Stdout = os.Stdout
-		patchelf.Stderr = os.Stderr
-		if err := patchelf.Run(); err != nil {
-			return fmt.Errorf("%v: %v", patchelf.Args, err)
+		// TODO: make patchelf able to operate on itself
+		if b.Pkg != "patchelf" {
+			patchelf := exec.Command("patchelf", "--shrink-rpath", path)
+			patchelf.Stdout = os.Stdout
+			patchelf.Stderr = os.Stderr
+			if err := patchelf.Run(); err != nil {
+				return fmt.Errorf("%v: %v", patchelf.Args, err)
+			}
 		}
 		pkgs, err := findShlibDeps(path)
 		if err != nil {
