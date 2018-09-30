@@ -412,8 +412,10 @@ veth
 		}
 		tw := tar.NewWriter(gw)
 		if err := tw.WriteHeader(&tar.Header{
-			Name: "disk.raw",
-			Size: st.Size(),
+			Name:   "disk.raw",
+			Size:   st.Size(),
+			Mode:   0644,
+			Format: tar.FormatGNU,
 		}); err != nil {
 			return err
 		}
