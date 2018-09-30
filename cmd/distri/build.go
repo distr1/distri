@@ -392,6 +392,7 @@ func builddeps(p *pb.Build) ([]string, error) {
 			"pkg-config-0.29.2",
 
 			// C build environment:
+			"gcc-libs-8.2.0",
 			"gcc-8.2.0",
 			"mpc-1.1.0",  // TODO: remove once gcc binaries find these via their rpath
 			"mpfr-4.0.1", // TODO: remove once gcc binaries find these via their rpath
