@@ -590,7 +590,7 @@ name=root`)
 		return err
 	}
 
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/vda2 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/sda2 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
