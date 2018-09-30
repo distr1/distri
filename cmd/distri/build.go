@@ -477,13 +477,16 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
 
-			// Make available b.PkgDir/wrappers as /usr/src/wrappers (read-only):
-			wrappers := filepath.Join(b.ChrootDir, "usr", "src", "wrappers")
-			if err := os.MkdirAll(wrappers, 0755); err != nil {
-				return nil, err
-			}
-			if err := syscall.Mount(filepath.Join(b.PkgDir, "wrappers"), wrappers, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				return nil, fmt.Errorf("bind mount %s %s: %v", filepath.Join(b.PkgDir, "wrappers"), wrappers, err)
+			wrappersSrc := filepath.Join(b.PkgDir, "wrappers")
+			if _, err := os.Stat(wrappersSrc); err == nil {
+				// Make available b.PkgDir/wrappers as /usr/src/wrappers (read-only):
+				wrappers := filepath.Join(b.ChrootDir, "usr", "src", "wrappers")
+				if err := os.MkdirAll(wrappers, 0755); err != nil {
+					return nil, err
+				}
+				if err := syscall.Mount(wrappersSrc, wrappers, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
+					return nil, fmt.Errorf("bind mount %s %s: %v", wrappersSrc, wrappers, err)
+				}
 			}
 		}
 
