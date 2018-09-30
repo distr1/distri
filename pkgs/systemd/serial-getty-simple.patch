@@ -1,0 +1,13 @@
+diff --git i/units/serial-getty@.service.m4 w/units/serial-getty@.service.m4
+index 8ab8e0e..f9d4615 100644
+--- i/units/serial-getty@.service.m4
++++ w/units/serial-getty@.service.m4
+@@ -34,7 +34,7 @@ Before=rescue.service
+ # option to preserve environment (-p), followed by '--' for safety, and then
+ # the entered username.
+ ExecStart=-/ro/util-linux-2.32/buildoutput/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
+-Type=idle
++Type=simple
+ Restart=always
+ UtmpIdentifier=%I
+ TTYPath=/dev/%I

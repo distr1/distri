@@ -1,0 +1,52 @@
+diff --git i/units/console-getty.service.m4 w/units/console-getty.service.m4
+index 3c55324..9ad3915 100644
+--- i/units/console-getty.service.m4
++++ w/units/console-getty.service.m4
+@@ -23,7 +23,7 @@ ConditionPathExists=/dev/console
+ # The '-o' option value tells agetty to replace 'login' arguments with an
+ # option to preserve environment (-p), followed by '--' for safety, and then
+ # the entered username.
+-ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear --keep-baud console 115200,38400,9600 $TERM
++ExecStart=-/ro/util-linux-2.32/buildoutput/sbin/agetty -o '-p -- \\u' --noclear --keep-baud console 115200,38400,9600 $TERM
+ Type=idle
+ Restart=always
+ UtmpIdentifier=cons
+diff --git i/units/container-getty@.service.m4 w/units/container-getty@.service.m4
+index 087ab7f..0f0048f 100644
+--- i/units/container-getty@.service.m4
++++ w/units/container-getty@.service.m4
+@@ -28,7 +28,7 @@ Before=rescue.service
+ # The '-o' option value tells agetty to replace 'login' arguments with an
+ # option to preserve environment (-p), followed by '--' for safety, and then
+ # the entered username.
+-ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear --keep-baud pts/%I 115200,38400,9600 $TERM
++ExecStart=-/ro/util-linux-2.32/buildoutput/sbin/agetty -o '-p -- \\u' --noclear --keep-baud pts/%I 115200,38400,9600 $TERM
+ Type=idle
+ Restart=always
+ RestartSec=0
+diff --git i/units/getty@.service.m4 w/units/getty@.service.m4
+index 80e793b..d433d8d 100644
+--- i/units/getty@.service.m4
++++ w/units/getty@.service.m4
+@@ -38,7 +38,7 @@ ConditionPathExists=/dev/tty0
+ # The '-o' option value tells agetty to replace 'login' arguments with an
+ # option to preserve environment (-p), followed by '--' for safety, and then
+ # the entered username.
+-ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM
++ExecStart=-/ro/util-linux-2.32/buildoutput/sbin/agetty -o '-p -- \\u' --noclear %I $TERM
+ Type=idle
+ Restart=always
+ RestartSec=0
+diff --git i/units/serial-getty@.service.m4 w/units/serial-getty@.service.m4
+index 757b86a..8ab8e0e 100644
+--- i/units/serial-getty@.service.m4
++++ w/units/serial-getty@.service.m4
+@@ -33,7 +33,7 @@ Before=rescue.service
+ # The '-o' option value tells agetty to replace 'login' arguments with an
+ # option to preserve environment (-p), followed by '--' for safety, and then
+ # the entered username.
+-ExecStart=-/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
++ExecStart=-/ro/util-linux-2.32/buildoutput/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
+ Type=idle
+ Restart=always
+ UtmpIdentifier=%I

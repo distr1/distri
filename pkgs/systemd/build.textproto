@@ -2,6 +2,9 @@ source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
 hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
 version: "239"
 
+cherry_pick: "getty-paths.patch"
+cherry_pick: "serial-getty-simple.patch"
+
 cbuilder: <>
 
 # build dependencies:
@@ -64,12 +67,6 @@ build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "sed -i 's,/sbin/agetty,/ro/util-linux-2.32/buildoutput/sbin/agetty,g' ${ZI_DESTDIR}/${ZI_PREFIX}/lib/systemd/system/*getty*"
 >
 
 install: <
