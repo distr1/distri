@@ -208,6 +208,7 @@ func pack(args []string) error {
 		// end of grub deps
 		"squashfs-4.3",
 		"fuse-3.2.6",
+		"haveged-1.9.4", // for gathering entropy on e.g. Google Cloud
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
@@ -290,7 +291,8 @@ func pack(args []string) error {
 		"systemd-networkd",
 		"containerd",
 		"docker",
-		"ssh")
+		"ssh",
+		"haveged")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

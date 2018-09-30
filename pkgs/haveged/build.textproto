@@ -1,0 +1,11 @@
+source: "https://github.com/jirka-h/haveged/archive/1.9.4.tar.gz"
+hash: "c4959d3cb1fa6391d16a3aa1ba4d82cd3a0d497206ae4b87d638088c0664e5aa"
+version: "1.9.4"
+
+cbuilder: <
+  extra_configure_flag: "--enable-init=service.forking"
+  extra_configure_flag: "--enable-initdir=${ZI_PREFIX}/lib/systemd/system"
+>
+
+# build dependencies:
+dep: "haveged-1.9.4" # so that distri build can bind-mount the build result to /ro/haveged-1.9.4, resulting in /ro/haveged-1.9.4/buildoutput/lib/ surviving a patchelf --shrink-rpath
