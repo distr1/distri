@@ -447,7 +447,12 @@ func (fs *fuseFS) fuseAttributes(fi os.FileInfo) fuseops.InodeAttributes {
 
 func (fs *fuseFS) StatFS(ctx context.Context, op *fuseops.StatFSOp) error {
 	//log.Printf("StatFS(op=%+v)", op)
-	return fuse.ENOSYS
+	op.BlockSize = 4096
+	op.Blocks = 1 // TODO: sum up package size once we need it
+	op.BlocksFree = 0
+	op.BlocksAvailable = 0
+	op.IoSize = 65536 // preferred size of reads
+	return nil
 }
 
 // never is used for FUSE expiration timestamps. Since the package store is

@@ -296,14 +296,6 @@ func (b *buildctx) pkg() error {
 		return err
 	}
 
-	// rel := b.Pkg + "-" + b.Version
-	// cmd := exec.Command("tar", "czf", dest, rel)
-	// cmd.Dir = filepath.Dir(b.DestDir)
-	// cmd.Stderr = os.Stderr
-	// if err := cmd.Run(); err != nil {
-	// 	return fmt.Errorf("%v: %v", cmd.Args, err)
-	// }
-
 	log.Printf("package successfully created in %s", dest)
 	return nil
 }
@@ -814,6 +806,15 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			return nil, err
 		}
 		if err := os.Symlink(oldname, filepath.Join(dest, newname)); err != nil {
+			return nil, err
+		}
+	}
+
+	// Make the finished package available at /ro/<pkg>-<version>, so that
+	// patchelf will leave e.g. /ro/systemd-239/buildoutput/lib/systemd/ in the
+	// RPATH.
+	if _, err := os.Stat(filepath.Join(b.DestDir, "ro")); err == nil {
+		if err := syscall.Mount("overlay", "/ro", "overlay", 0, "lowerdir="+filepath.Join(b.DestDir, "ro")+":/ro"); err != nil {
 			return nil, err
 		}
 	}
