@@ -140,7 +140,7 @@ func pack(args []string) error {
 		return err
 	}
 
-	if err := os.Symlink("/ro/system", filepath.Join(*root, "lib", "systemd", "system")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/lib/systemd/system", filepath.Join(*root, "lib", "systemd", "system")); err != nil && !os.IsExist(err) {
 		return err
 	}
 

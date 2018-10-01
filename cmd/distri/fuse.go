@@ -32,12 +32,14 @@ const fuseHelp = `TODO
 // /ro. E.g., /ro/bin will contain symlinks to all package’s bin directories, or
 // /ro/system will contain symlinks to all package’s
 // buildoutput/lib/systemd/system directories.
-var wellKnown = []string{
-	"bin",
-	"buildoutput/lib",
-	"buildoutput/lib/systemd/system",
-	"buildoutput/lib/pkgconfig",
-	"buildoutput/include",
+var exchangeDirs = []string{
+	"/bin",
+	"/buildoutput/lib",
+	"/buildoutput/lib/systemd/system",
+	"/buildoutput/lib/pkgconfig",
+	"/buildoutput/include",
+	"/buildoutput/include/X11",
+	"/buildoutput/share/man/man1",
 }
 
 type fileNotFoundError struct {
@@ -63,7 +65,7 @@ func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component strin
 
 func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
 	inode := rd.RootInode()
-	parts := strings.Split(path, string(os.PathSeparator))
+	parts := strings.Split(path, "/")
 	for idx, part := range parts {
 		var err error
 		inode, err = lookupComponent(rd, inode, part)
@@ -116,24 +118,16 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			}
 			permitted[overlay] = true
 		}
-		for _, wk := range wellKnown {
-			if !permitted[wk] {
+		for _, dir := range exchangeDirs {
+			if !permitted[dir] {
 				continue
 			}
-			filtered = append(filtered, wk)
+			filtered = append(filtered, dir)
 		}
-		wellKnown = filtered
+		exchangeDirs = filtered
 	}
 
 	// TODO: use inotify to efficiently get updates to the store
-
-	farms := make(map[string]*farm)
-	for _, wk := range wellKnown {
-		// map from path underneath wk to target (symlinks)
-		farms[wk] = &farm{
-			byName: make(map[string]*symlink),
-		}
-	}
 
 	var pkgs []string
 	if *pkgsList != "" {
@@ -153,6 +147,27 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		}
 	}
 
+	fs := &fuseFS{
+		imgDir:      *imgDir,
+		pkgs:        pkgs,
+		readers:     make([]*squashfsReader, len(pkgs)),
+		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
+		inodeCnt:    1, // root inode
+		dirs:        make(map[string]*dir),
+		inodes:      make(map[fuseops.InodeID]interface{}),
+	}
+	dir := &dir{
+		byName: make(map[string]*dirent),
+	}
+	fs.dirs["/"] = dir
+	fs.inodes[fs.inodeCnt] = dir
+
+	// TODO: move into a function
+	// TODO: iterate over packages once, calling mkdir for all exchange dirs
+	for _, dir := range exchangeDirs {
+		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
+	}
+
 	for _, pkg := range pkgs {
 		f, err := os.Open(filepath.Join(*imgDir, pkg+".squashfs"))
 		if err != nil {
@@ -162,8 +177,13 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, wk := range wellKnown {
-			inode, err := lookupPath(rd, wk)
+		for _, path := range exchangeDirs {
+			exchangePath := strings.TrimPrefix(path, "/buildoutput")
+			dir, ok := fs.dirs[exchangePath]
+			if !ok {
+				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", path))
+			}
+			inode, err := lookupPath(rd, strings.TrimPrefix(path, "/"))
 			if err != nil {
 				if _, ok := err.(*fileNotFoundError); ok {
 					continue
@@ -172,54 +192,33 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			}
 			sfis, err := rd.Readdir(inode)
 			if err != nil {
-				return nil, fmt.Errorf("Readdir(%s, %s): %v", pkg, wk, err)
+				return nil, fmt.Errorf("Readdir(%s, %s): %v", pkg, dir, err)
 			}
-			farm := farms[wk]
 			for _, sfi := range sfis {
-				name := sfi.Name()
-				if _, ok := farm.byName[name]; ok {
-					//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
-					continue
+				rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
+				if err != nil {
+					return nil, err
 				}
-				link := &symlink{
-					name:   name,
-					target: filepath.Join("..", pkg, wk, name),
-					idx:    len(farm.links),
-				}
-				farm.links = append(farm.links, link)
-				farm.byName[name] = link
+				fs.symlink(dir, rel)
 			}
 		}
-	}
-	// log.Printf("farm: ")
-	// for _, link := range farms["bin"].links {
-	// 	log.Printf("  %s -> %s", link.name, link.target)
-	// }
-	if _, ok := farms["lib"]; !ok {
-		// Even if the lib overlay was not requested, we still need to provide a
-		// symlink to ld-linux.so, which is used as the .interp of our ELF
-		// binaries.
-		link := &symlink{
-			name:   "ld-linux-x86-64.so.2",
-			target: "../glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2",
-			idx:    0,
-		}
-		farms["lib"] = &farm{
-			links: []*symlink{link},
-			byName: map[string]*symlink{
-				link.name: link,
-			},
-		}
-		wellKnown = append(wellKnown, "lib")
 	}
 
-	fs := &fuseFS{
-		imgDir:      *imgDir,
-		pkgs:        pkgs,
-		readers:     make([]*squashfsReader, len(pkgs)),
-		farms:       farms,
-		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
+	var libRequested bool
+	for _, dir := range exchangeDirs {
+		if dir == "/lib" {
+			libRequested = true
+			break
+		}
 	}
+	if !libRequested {
+		// Even if the /lib exchange dir was not requested, we still need to
+		// provide a symlink to ld-linux.so, which is used as the .interp of our
+		// ELF binaries.
+		fs.mkExchangeDirAll("/lib")
+		fs.symlink(fs.dirs["/lib"], "../glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2")
+	}
+
 	server := fuseutil.NewFileSystemServer(fs)
 
 	go func() {
@@ -264,17 +263,34 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	return mfs.Join, nil
 }
 
-type symlink struct {
-	name   string
-	target string
-	idx    int
+// dirent is a directory entry.
+// * ReadDir returns name, inode and typ()
+// * LookUpInode returns inode and mode()
+// * GetInodeAttributes returns mode()
+// * ReadSymlink returns linkTarget
+type dirent struct {
+	name       string // e.g. "xterm"
+	linkTarget string // e.g. "../../xterm-23/bin/xterm". Empty for directories
+	inode      fuseops.InodeID
 }
 
-type farm struct {
-	// links is only ever appended to (nil entries are tombstones), because inodes.
-	links []*symlink
+func (d *dirent) typ() fuseutil.DirentType {
+	if d.linkTarget != "" {
+		return fuseutil.DT_File
+	}
+	return fuseutil.DT_Directory
+}
 
-	byName map[string]*symlink
+func (d *dirent) mode() os.FileMode {
+	if d.linkTarget != "" {
+		return os.ModeSymlink | 0444
+	}
+	return os.ModeDir | 0555
+}
+
+type dir struct {
+	entries []*dirent          // ReadDir requires deterministic iteration order
+	byName  map[string]*dirent // LookUpInode profits from fast access by name
 }
 
 type squashfsReader struct {
@@ -291,15 +307,16 @@ type fuseFS struct {
 
 	imgDir string
 
-	mu sync.Mutex
+	mu       sync.Mutex
+	inodeCnt fuseops.InodeID
+	dirs     map[string]*dir
+	inodes   map[fuseops.InodeID]interface{} // *dirent (file) or *dir (dir)
 	// pkgs is only ever appended to (empty strings are tombstones), because the
 	// inode for /<pkg> is an index into pkgs.
 	pkgs []string
 	// readers contains one SquashFS reader for every package, or nil if the
 	// package has not yet been accessed.
 	readers []*squashfsReader
-	// farms contains symbolic link farms, keyed by path from wellKnown.
-	farms map[string]*farm
 
 	fileReadersMu sync.Mutex
 	fileReaders   map[fuseops.InodeID]*io.SectionReader
@@ -311,11 +328,61 @@ func (fs *fuseFS) reader(image int) *squashfsReader {
 	return fs.readers[image]
 }
 
-func (fs *fuseFS) farm(path string) (*farm, bool) {
+func (fs *fuseFS) allocateInodeLocked() fuseops.InodeID {
+	fs.inodeCnt++
+	return fs.inodeCnt
+}
+
+func (fs *fuseFS) mkExchangeDirAll(path string) {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
-	farm, ok := fs.farms[path]
-	return farm, ok
+	components := strings.Split(path, "/")
+	for idx, component := range components[1:] {
+		path := strings.Join(components[:idx+2], "/")
+		if fs.dirs[path] != nil {
+			continue
+		}
+		dir := &dir{
+			byName: make(map[string]*dirent),
+		}
+		fs.dirs[path] = dir
+		parentPath := filepath.Clean("/" + strings.Join(components[:idx+1], "/"))
+		parent, ok := fs.dirs[parentPath]
+		if !ok {
+			panic(fmt.Sprintf("BUG: %q not found", parentPath))
+		}
+		dirent := &dirent{
+			name:  component,
+			inode: fs.allocateInodeLocked(),
+		}
+		parent.entries = append(parent.entries, dirent)
+		parent.byName[dirent.name] = dirent // might shadow an old symlink dirent
+		fs.inodes[dirent.inode] = dir
+	}
+}
+
+func (fs *fuseFS) symlink(dir *dir, target string) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	base := filepath.Base(target)
+	dirent := &dirent{
+		name:       base,
+		linkTarget: target,
+		inode:      fs.allocateInodeLocked(),
+	}
+	for idx, entry := range dir.entries {
+		if entry == nil || entry.name != base {
+			continue
+		}
+		if entry.linkTarget == "" {
+			return // do not shadow exchange directories
+		}
+		dir.entries[idx] = nil // tombstone
+		break
+	}
+	dir.entries = append(dir.entries, dirent)
+	dir.byName[base] = dirent
+	fs.inodes[dirent.inode] = dirent
 }
 
 // TODO: read this from a config file, remove trailing slash if any (always added by caller)
@@ -340,41 +407,41 @@ func (fs *fuseFS) updatePackages() error {
 	}
 	log.Printf("%d remote packages", len(mm.GetPackage()))
 
-	pkgs := make(map[string]bool)
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
-	for _, pkg := range fs.pkgs {
-		pkgs[pkg] = true
-	}
-	for _, pkg := range mm.GetPackage() {
-		if pkgs[pkg.GetName()] {
-			continue
-		}
-		fs.pkgs = append(fs.pkgs, pkg.GetName())
-		for _, p := range pkg.GetWellKnownPath() {
-			dir := filepath.Dir(p)
-			name := filepath.Base(p)
-			farm, ok := fs.farms[dir]
-			if !ok {
-				continue
-			}
-			if _, ok := farm.byName[name]; ok {
-				//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
-				continue
-			}
-			link := &symlink{
-				name:   name,
-				target: filepath.Join("..", pkg.GetName(), dir, name),
-				idx:    len(farm.links),
-			}
-			farm.links = append(farm.links, link)
-			farm.byName[name] = link
-		}
-	}
-	// Increase capacity to hold as many readers as we now have packages:
-	readers := make([]*squashfsReader, len(fs.pkgs))
-	copy(readers, fs.readers)
-	fs.readers = readers
+	// pkgs := make(map[string]bool)
+	// fs.mu.Lock()
+	// defer fs.mu.Unlock()
+	// for _, pkg := range fs.pkgs {
+	// 	pkgs[pkg] = true
+	// }
+	// for _, pkg := range mm.GetPackage() {
+	// 	if pkgs[pkg.GetName()] {
+	// 		continue
+	// 	}
+	// 	fs.pkgs = append(fs.pkgs, pkg.GetName())
+	// 	for _, p := range pkg.GetWellKnownPath() {
+	// 		dir := filepath.Dir(p)
+	// 		name := filepath.Base(p)
+	// 		farm, ok := fs.farms[dir]
+	// 		if !ok {
+	// 			continue
+	// 		}
+	// 		if _, ok := farm.byName[name]; ok {
+	// 			//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
+	// 			continue
+	// 		}
+	// 		link := &symlink{
+	// 			name:   name,
+	// 			target: filepath.Join("..", pkg.GetName(), dir, name),
+	// 			idx:    len(farm.links),
+	// 		}
+	// 		farm.links = append(farm.links, link)
+	// 		farm.byName[name] = link
+	// 	}
+	// }
+	// // Increase capacity to hold as many readers as we now have packages:
+	// readers := make([]*squashfsReader, len(fs.pkgs))
+	// copy(readers, fs.readers)
+	// fs.readers = readers
 
 	return nil
 }
@@ -440,10 +507,6 @@ func (fs *fuseFS) fuseInode(image int, i squashfs.Inode) fuseops.InodeID {
 	return fuseops.InodeID(uint16(image+1))<<48 | fuseops.InodeID(i)
 }
 
-func (fs *fuseFS) farmInode(i squashfs.Inode) (wkidx int, linkidx int) {
-	return int(i >> 32), int(i & 0xFFFFFFFF)
-}
-
 func (fs *fuseFS) fuseAttributes(fi os.FileInfo) fuseops.InodeAttributes {
 	return fuseops.InodeAttributes{
 		Size:  uint64(fi.Size()),
@@ -485,25 +548,23 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 	}
 
 	if image == -1 { // (virtual) root directory
-		wkidx, linkidx := fs.farmInode(squashfsInode)
-		//log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
-		if wkidx == 0 && linkidx == 1 { // root directory (e.g. /ro)
-			for idx, wk := range wellKnown {
-				if filepath.Base(wk) != op.Name {
+		if squashfsInode == 1 { // root directory (e.g. /ro)
+			fs.mu.Lock()
+			defer fs.mu.Unlock()
+			for _, dirent := range fs.dirs["/"].entries {
+				if dirent.name != op.Name {
 					continue
 				}
-				op.Entry.Child = fs.fuseInode(-1, squashfs.Inode(2+idx))
+				op.Entry.Child = dirent.inode
 				op.Entry.Attributes = fuseops.InodeAttributes{
 					Nlink: 1, // TODO: number of incoming hard links to this inode
-					Mode:  os.ModeDir | 0555,
+					Mode:  dirent.mode(),
 					Atime: time.Now(), // TODO
 					Mtime: time.Now(), // TODO
 					Ctime: time.Now(), // TODO
 				}
 				return nil
 			}
-			fs.mu.Lock()
-			defer fs.mu.Unlock()
 			for idx, pkg := range fs.pkgs {
 				if pkg != op.Name {
 					continue
@@ -519,16 +580,21 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 				return nil
 			}
 			return fuse.ENOENT
-		} else if wkidx == 0 { // farm root directory (e.g. /ro/bin)
-			farm, _ := fs.farm(wellKnown[linkidx-2])
-			link := farm.byName[op.Name]
-			if link == nil {
-				return fuse.ENOENT // tombstone or not found
+		} else { // overlay directory
+			fs.mu.Lock()
+			defer fs.mu.Unlock()
+			dir, ok := fs.inodes[op.Parent].(*dir)
+			if !ok {
+				return fuse.EIO // not a directory
 			}
-			op.Entry.Child = fs.fuseInode(-1, squashfs.Inode(linkidx)<<32|squashfs.Inode(link.idx))
+			dirent, ok := dir.byName[op.Name]
+			if !ok {
+				return fuse.ENOENT
+			}
+			op.Entry.Child = dirent.inode
 			op.Entry.Attributes = fuseops.InodeAttributes{
 				Nlink: 1, // TODO: number of incoming hard links to this inode
-				Mode:  os.ModeSymlink | 0444,
+				Mode:  dirent.mode(),
 				Atime: time.Now(), // TODO
 				Mtime: time.Now(), // TODO
 				Ctime: time.Now(), // TODO
@@ -590,14 +656,14 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 	}
 
 	if image == -1 {
-		wkidx, _ := fs.farmInode(squashfsInode)
-		//log.Printf("wkidx %d, linkidx %d", wkidx, linkidx)
-		if wkidx == 0 { // root directory of a farm
-			idx := int(squashfsInode - 2)
-			//log.Printf("well-known idx %d", idx)
-			if idx >= len(wellKnown) {
-				return fuse.ENOENT
-			}
+		fs.mu.Lock()
+		defer fs.mu.Unlock()
+		x, ok := fs.inodes[op.Inode]
+		if !ok {
+			return fuse.ENOENT
+		}
+		switch x := x.(type) {
+		case *dir:
 			op.Attributes = fuseops.InodeAttributes{
 				Nlink: 1, // TODO: number of incoming hard links to this inode
 				Mode:  os.ModeDir | 0555,
@@ -606,17 +672,15 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 				Ctime: time.Now(), // TODO
 			}
 			return nil
+		case *dirent:
+			op.Attributes = fuseops.InodeAttributes{
+				Nlink: 1, // TODO: number of incoming hard links to this inode
+				Mode:  x.mode(),
+				Atime: time.Now(), // TODO
+				Mtime: time.Now(), // TODO
+				Ctime: time.Now(), // TODO
+			}
 		}
-		//farm, _ := fs.farm(wellKnown[wkidx-1])
-		//link := farm.links[linkidx]
-		op.Attributes = fuseops.InodeAttributes{
-			Nlink: 1, // TODO: number of incoming hard links to this inode
-			Mode:  os.ModeSymlink | 0444,
-			Atime: time.Now(), // TODO
-			Mtime: time.Now(), // TODO
-			Ctime: time.Now(), // TODO
-		}
-		//log.Printf("return nil")
 		return nil
 	}
 
@@ -642,10 +706,10 @@ func (fs *fuseFS) OpenDir(ctx context.Context, op *fuseops.OpenDirOp) error {
 }
 
 /*
-  /ro                       inode img=0 wk=0 1
-  /ro/bin                   inode img=0 wk=0 2
-  /ro/system                inode img=0 wk=0 3
-  /ro/system/docker.service inode img=0 wk=2 link=0
+  /ro                       inode img=0 1
+  /ro/bin                   inode img=0 2
+  /ro/system                inode img=0 7
+  /ro/system/docker.service inode img=0 8
   /ro/glibc-2.27            inode img=1 1
 */
 
@@ -675,32 +739,33 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 					Type:   fuseutil.DT_Directory,
 				})
 			}
-			fs.mu.Unlock()
-			for idx, wk := range wellKnown {
+			for _, dirent := range fs.dirs["/"].entries {
 				entries = append(entries, fuseutil.Dirent{
 					Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
-					Inode:  fs.fuseInode(-1, squashfs.Inode(2+idx)),
-					Name:   filepath.Base(wk),
+					Inode:  dirent.inode,
+					Name:   dirent.name,
 					Type:   fuseutil.DT_Directory,
 				})
 			}
-		} else { // well-known union directory
-			idx := int(squashfsInode - 2)
-			if idx >= len(wellKnown) {
-				return fuse.ENOENT
+			fs.mu.Unlock()
+		} else { // exchange directory
+			fs.mu.Lock()
+			dir, ok := fs.inodes[op.Inode].(*dir)
+			if !ok {
+				return fuse.EIO
 			}
-			farm, _ := fs.farm(wellKnown[idx]) // TODO: store farms not by name, but by index?
-			for lidx, link := range farm.links {
-				if link == nil {
+			for _, dirent := range dir.entries {
+				if dirent == nil {
 					continue // tombstone
 				}
 				entries = append(entries, fuseutil.Dirent{
 					Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
-					Inode:  fs.fuseInode(-1, squashfs.Inode(1+idx)<<32|squashfs.Inode(lidx)),
-					Name:   link.name,
-					Type:   fuseutil.DT_File,
+					Inode:  dirent.inode,
+					Name:   dirent.name,
+					Type:   dirent.typ(),
 				})
 			}
+			fs.mu.Unlock()
 		}
 		if op.Offset > fuseops.DirOffset(len(entries)) {
 			return fuse.EIO
@@ -795,15 +860,13 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 	}
 
 	if image == -1 {
-		wkidx, linkidx := fs.farmInode(squashfsInode)
-		//log.Printf("wkidx=%d, linkidx=%d", wkidx, linkidx)
-		if wkidx == 0 {
-			return fuse.EIO // no symlinks in root
+		fs.mu.Lock()
+		defer fs.mu.Unlock()
+		dirent, ok := fs.inodes[op.Inode].(*dirent)
+		if !ok {
+			return fuse.EIO // not a symlink
 		}
-		// TODO: bounds checks
-		farm, _ := fs.farm(wellKnown[wkidx-2])
-		link := farm.links[linkidx]
-		op.Target = link.target
+		op.Target = dirent.linkTarget
 		return nil
 	}
 

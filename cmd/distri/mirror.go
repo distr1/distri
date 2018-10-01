@@ -48,7 +48,7 @@ func mirror(args []string) error {
 		if err != nil {
 			return err
 		}
-		for _, wk := range wellKnown {
+		for _, wk := range exchangeDirs {
 			inode, err := lookupPath(rd, wk)
 			if err != nil {
 				if _, ok := err.(*fileNotFoundError); ok {
