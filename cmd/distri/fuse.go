@@ -42,6 +42,7 @@ var exchangeDirs = []string{
 	"/buildoutput/include",
 	"/buildoutput/include/X11",
 	"/buildoutput/share/man/man1",
+	"/buildoutput/share/dbus-1/system.d",
 }
 
 type fileNotFoundError struct {

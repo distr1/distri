@@ -322,6 +322,16 @@ session	required	pam_warn.so
 		return err
 	}
 
+	const dbusSystemLocal = `<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <includedir>/ro/share/dbus-1/system.d</includedir>
+</busconfig>
+`
+	if err := ioutil.WriteFile(filepath.Join(*root, "etc", "dbus-1", "system-local.conf"), []byte(dbusSystemLocal), 0644); err != nil {
+		return err
+	}
+
 	// TODO: implement adduser and addgroup function
 	if err := adduser(*root, "systemd-network:x:101:101:network:/run/systemd/netif:/bin/false"); err != nil {
 		return err
