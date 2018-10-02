@@ -1,0 +1,122 @@
+# distri package format
+:toc:
+
+This document describes the distri package format.
+
+TODO: add a reference to the package building doc
+
+## Design Goals
+
+* package installation should be as quick as possible, i.e. require as little work as possible
+* package contents are immutable, i.e. provided read-only
+* packages should not be able to conflict with each other, i.e. can be installed side-by-side
+
+## Terminology
+
+package build instructions::
+references the contents of a directory underneath the `pkgs` directory in the distri root, e.g. `distri/pkgs/bash`. At a minimum, a `build.textproto` file declares how the package should be built. Some packages require patches and custom wrapper scripts, see e.g. `openssh`.
+
+package metadata file::
+is a textproto file which contains metadata necessary to work with the package, e.g. the transitive run-time dependency closure so that the package management tool can install the package.
+
+package::
+references a read-only SquashFS image and an accompanying package metadata file, e.g. `bash-4.4.18.squashfs` and `bash-4.4.18.meta.textproto`.
+
+wrapper script::
+is an auto-generated shell script for every binary,footnoteref:[binsh,To break a circular dependency, `bin/sh` does not point to a wrapper script. It is a symbolic link to the `bash` binary, which does not need any environment variables.] which sets up the required environment variables for the wrapped binary to function correctly. This includes setting `PATH` such that all binaries will be found in the correct versions, setting `PERL5LIB` such that all Perl modules will be found in the correct versions, etc.
+
+custom wrapper script::
+is an executable program (the build process only allows for scripts) contained in the package build instructions which performs package-specific setup. E.g., `distri/pkgs/openssh/wrappers/sshd` wraps the `sshd` binary, creating SSH host keys when they don’t exist.
+
+### Exchange Directories
+
+Many pieces of software exchange data by placing files in well-known file system locations. For example, C library packages place their header files in `/usr/include` so that the C compiler can find them. Here are a couple of examples:
+
+[options="header"]
+|===
+| Location | Contents | Consumers
+| `/bin` | programs | shell, other programs
+| `/include` | contains C header files | compilers
+| `/lib` | contains libraries | compilers and https://manpages.debian.org/stretch/manpages/ld-linux.8[`ld.so`]
+| `/lib/pkgconfig` | contains pkgconfig files | pkg-config
+| `/lib/systemd/system` | contains systemd service files | systemd
+| `/share/man` | contains manual pages | man
+| … | … | …
+|===
+
+Packages can declare one or more exchange directories in their metadata file. All loaded exchange directories will be listed in all available packages. In other words: if you don’t have the `man` package installed, even though many other packages will ship man pages, the `/ro/share/man` exchange directory will not be filled.
+
+[NOTE]
+Nested overlays are supported: some exchange directories are hierarchical. For example, several Xorg libraries ship files not in `/usr/include`, but in `/usr/include/X11`.
+
+TODO: what about package-local exchange directories? e.g. /ro/irssi-8.1.11/exchange/plugins, because plugins are tightly coupled to the ABI, and would otherwise interfere with side-by-side installation?
+
+## Package Contents
+
+### SquashFS Image
+
+[NOTE]
+Our SquashFS images do not use compression. This way, we need to decompress at most once (when downloading over compressing transports), not on every usage, giving us faster program starts at the expense of more disk usage.
+
+Our SquashFS images contain the following directories:
+
+buildoutput::
+The result of building and installing the software, e.g. lib, share, …
+etc::
+Files which the software installed to /etc, if any. These live in a special location because they are copied over to `/etc` on first installation.
+bin::
+One wrapper script for each binary in `buildoutput/bin` and `buildoutput/sbin`.
+
+Empty directories are omitted from the package, e.g. `bin` will not be present for a C library package such as `libx11`.
+
+To achieve this directory structure, we instruct the build system by using an invocation such as the following autotools command: `configure --prefix=/ro/haveged-1.9.4/buildoutput --sysconfdir=/etc`
+
+As an example, here are the image contents of `haveged`:
+
+.Output of `unsquashfs -l haveged-1.9.4.squashfs`:
+--------------------------------------------------------------------------------
+squashfs-root
+squashfs-root/bin
+squashfs-root/bin/haveged
+squashfs-root/buildoutput
+squashfs-root/buildoutput/include
+squashfs-root/buildoutput/include/haveged
+squashfs-root/buildoutput/include/haveged/havege.h
+squashfs-root/buildoutput/include/haveged/havegecmd.h
+squashfs-root/buildoutput/lib
+squashfs-root/buildoutput/lib/libhavege.a
+squashfs-root/buildoutput/lib/libhavege.la
+squashfs-root/buildoutput/lib/libhavege.so
+squashfs-root/buildoutput/lib/libhavege.so.1
+squashfs-root/buildoutput/lib/libhavege.so.1.1.0
+squashfs-root/buildoutput/lib/systemd
+squashfs-root/buildoutput/lib/systemd/system
+squashfs-root/buildoutput/lib/systemd/system/haveged.service
+squashfs-root/buildoutput/sbin
+squashfs-root/buildoutput/sbin/haveged
+squashfs-root/buildoutput/share
+squashfs-root/buildoutput/share/man
+squashfs-root/buildoutput/share/man/man3
+squashfs-root/buildoutput/share/man/man3/libhavege.3
+squashfs-root/buildoutput/share/man/man8
+squashfs-root/buildoutput/share/man/man8/haveged.8
+--------------------------------------------------------------------------------
+
+### Metadata File
+
+The metadata file contains the following information about a package:
+
+run-time dependency::
+The transitive closure (dependencies, their dependencies, and so on) of run-time dependencies, i.e. other packages which need to be present for this package to work after installation.
+
+## Intentionally Left Out
+
+### Hooks And Triggers
+
+There are no hooks (e.g. post-installation scripts) or triggers (e.g. man database updates). This ensures that package installation and package upgrades are fast and do not require sequencing, i.e. can happen in any order and with maximum concurrency.
+
+All package-specific work required for upgrading old state (e.g. databases) must be done by the program when starting (if the program doesn’t do that, a custom wrapper script can be used) or manually by the user (think https://manpages.debian.org/stretch/postgresql-common/pg_upgradecluster.1[`pg_upgradecluster`]). This eliminates unnecessary work for packages which are installed, but not actually used.
+
+A small number of special cases which legitimately require post-installation work are hard-coded in the package management tool: the bootloader must be copied to the hard disk.
+
+TODO: what about the initrd, once we have it? how do we know what influences the build results, how do we build it? also for grub-install, in what sort of environment do we run it?
