@@ -127,6 +127,10 @@ func pack(args []string) error {
 		}
 	}
 
+	if err := os.Symlink("/run", filepath.Join(*root, "var", "run")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
 	if err := os.Symlink("/ro/bin", filepath.Join(*root, "bin")); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -209,6 +213,7 @@ func pack(args []string) error {
 		"squashfs-4.3",
 		"fuse-3.2.6",
 		"haveged-1.9.4", // for gathering entropy on e.g. Google Cloud
+		"dbus-1.13.6",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
@@ -238,10 +243,10 @@ func pack(args []string) error {
 			continue // package has no etc directory
 		}
 		// TODO: do this copy in pure Go
-		cp := exec.Command("cp", "-r", pkgetc, *root)
+		cp := exec.Command("cp", "--no-preserve=mode", "-r", pkgetc, *root)
 		cp.Stderr = os.Stderr
 		if err := cp.Run(); err != nil {
-			return err
+			return fmt.Errorf("%v: %v", cp.Args, err)
 		}
 	}
 
@@ -335,7 +340,15 @@ session	required	pam_warn.so
 		return err
 	}
 
+	if err := adduser(*root, "messagebus:x:106:106:messagebus:/var/run/dbus:/bin/false"); err != nil {
+		return err
+	}
+
 	if err := addgroup(*root, "docker:x:104:"); err != nil {
+		return err
+	}
+
+	if err := addgroup(*root, "messagebus:x:106:"); err != nil {
 		return err
 	}
 

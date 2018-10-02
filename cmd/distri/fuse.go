@@ -36,6 +36,8 @@ var exchangeDirs = []string{
 	"/bin",
 	"/buildoutput/lib",
 	"/buildoutput/lib/systemd/system",
+	"/buildoutput/lib/sysusers.d",
+	"/buildoutput/lib/tmpfiles.d",
 	"/buildoutput/lib/pkgconfig",
 	"/buildoutput/include",
 	"/buildoutput/include/X11",
