@@ -10,7 +10,13 @@ version: "2.27"
 
 cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
 
-cbuilder: <>
+cbuilder: <
+  # Contrary to what is stated in ld.so(8), glibc does not seem to search /lib
+  # and /usr/lib (or /lib64 and /usr/lib64, respectively), resulting in the
+  # nsswitch mechanism not finding e.g. libnss_myhostname.so. Hence, we tell
+  # glibc explicitly to search /ro/lib:
+  extra_make_flag: "user-defined-trusted-dirs=/ro/lib"
+>
 
 # build dependencies:
 dep: "bison-3.0.5"

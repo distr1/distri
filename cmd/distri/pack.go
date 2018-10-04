@@ -332,6 +332,24 @@ session	required	pam_warn.so
 		return err
 	}
 
+	const nsswitch = `passwd:         compat mymachines systemd
+group:          compat mymachines systemd
+shadow:         compat
+
+hosts:          files mymachines resolve [!UNAVAIL=return] dns  myhostname
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+`
+	if err := ioutil.WriteFile(filepath.Join(*root, "etc", "nsswitch.conf"), []byte(nsswitch), 0644); err != nil {
+		return err
+	}
+
 	// TODO: implement adduser and addgroup function
 	if err := adduser(*root, "systemd-network:x:101:101:network:/run/systemd/netif:/bin/false"); err != nil {
 		return err
