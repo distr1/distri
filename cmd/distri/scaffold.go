@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/stapelberg/zi/internal/env"
 	"github.com/stapelberg/zi/pb"
 )
 
@@ -69,7 +70,7 @@ func scaffold(args []string) error {
 			Source: proto.String(u),
 		},
 	}
-	builddir := filepath.Join(distriRoot, "build", name)
+	builddir := filepath.Join(env.DistriRoot, "build", name)
 	if err := os.MkdirAll(builddir, 0755); err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func scaffold(args []string) error {
 		return err
 	}
 
-	pkgdir := filepath.Join(distriRoot, "pkgs", name)
+	pkgdir := filepath.Join(env.DistriRoot, "pkgs", name)
 	if err := os.MkdirAll(pkgdir, 0755); err != nil {
 		return err
 	}

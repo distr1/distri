@@ -17,6 +17,7 @@ import (
 	"unsafe"
 
 	"github.com/jacobsa/fuse"
+	"github.com/stapelberg/zi/internal/env"
 	"golang.org/x/sys/unix"
 )
 
@@ -625,7 +626,7 @@ name=root`)
 		return err
 	}
 
-	if err := copyFile(filepath.Join(distriRoot, "linux-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
+	if err := copyFile(filepath.Join(env.DistriRoot, "linux-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
 		return err
 	}
 

@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/stapelberg/zi/internal/env"
 	"github.com/stapelberg/zi/pb"
 )
 
@@ -32,7 +33,7 @@ func ninja(args []string) error {
 	fset := flag.NewFlagSet("ninja", flag.ExitOnError)
 	fset.Parse(args)
 
-	pkgsDir := filepath.Join(distriRoot, "pkgs")
+	pkgsDir := filepath.Join(env.DistriRoot, "pkgs")
 	fis, err := ioutil.ReadDir(pkgsDir)
 	if err != nil {
 		return err
@@ -88,7 +89,7 @@ func ninja(args []string) error {
 		}
 	}
 
-	f, err := ioutil.TempFile(distriRoot, "distri-ninja")
+	f, err := ioutil.TempFile(env.DistriRoot, "distri-ninja")
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,7 @@ func ninja(args []string) error {
 	}); err != nil {
 		return err
 	}
-	ninjaFile := filepath.Join(distriRoot, "build.ninja")
+	ninjaFile := filepath.Join(env.DistriRoot, "build.ninja")
 	if err := os.Rename(f.Name(), ninjaFile); err != nil {
 		return err
 	}

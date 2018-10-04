@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"runtime/pprof"
 	"runtime/trace"
+
+	"github.com/stapelberg/zi/internal/env"
 )
 
 var (
@@ -18,17 +20,8 @@ var (
 
 // Environment
 var (
-	distriRoot    = findDistriRoot()
-	defaultImgDir = filepath.Join(distriRoot, "build/distri/pkg")
+	defaultImgDir = filepath.Join(env.DistriRoot, "build/distri/pkg")
 )
-
-func findDistriRoot() string {
-	env := os.Getenv("DISTRIROOT")
-	if env != "" {
-		return env
-	}
-	return os.ExpandEnv("$HOME/distri") // default
-}
 
 func main() {
 	flag.Parse()
@@ -80,7 +73,7 @@ func main() {
 			"install":  {installHelp, func() { install(helpFlag) }},
 			"fuse":     {fuseHelp, func() { mountfuse(helpFlag) }},
 			"export":   {exportHelp, func() { export(helpFlag) }},
-			"env":      {envHelp, func() { env(helpFlag) }},
+			"env":      {envHelp, func() { printenv(helpFlag) }},
 			"mirror":   {mirrorHelp, func() { mirror(helpFlag) }},
 		}
 		if len(args) != 1 {
@@ -156,7 +149,7 @@ func main() {
 		}
 
 	case "env":
-		if err := env(args); err != nil {
+		if err := printenv(args); err != nil {
 			log.Fatal(err)
 		}
 
