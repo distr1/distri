@@ -208,6 +208,8 @@ func pack(args []string) error {
 		"fuse-3.2.6",
 		"haveged-1.9.4", // for gathering entropy on e.g. Google Cloud
 		"dbus-1.13.6",
+		"binutils-2.31", // for debugging (e.g. readelf)
+		"curl-7.61.1",
 	})
 	if err != nil {
 		return fmt.Errorf("resolve: %v", err)
