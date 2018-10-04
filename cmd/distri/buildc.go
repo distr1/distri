@@ -17,12 +17,12 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string, buildLog io.Writer) e
 	if opts.GetCopyToBuilddir() {
 		steps = [][]string{
 			[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
-			append([]string{"./configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc"}, opts.GetExtraConfigureFlag()...),
+			append([]string{"./configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc", "--disable-dependency-tracking"}, opts.GetExtraConfigureFlag()...),
 		}
 	} else {
 		steps = [][]string{
 			// TODO: set --disable-silent-rules if found in configure help output
-			append([]string{"${ZI_SOURCEDIR}/configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc"}, opts.GetExtraConfigureFlag()...),
+			append([]string{"${ZI_SOURCEDIR}/configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc", "--disable-dependency-tracking"}, opts.GetExtraConfigureFlag()...),
 		}
 	}
 	steps = append(steps, [][]string{
