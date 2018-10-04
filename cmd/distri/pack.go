@@ -119,7 +119,6 @@ func pack(args []string) error {
 		"sys",     // sysfs
 		"tmp",     // tmpfs
 		"var/tmp", // systemd (e.g. systemd-networkd)
-		"etc/ssl", // openssl
 	} {
 		if err := os.MkdirAll(filepath.Join(*root, dir), 0755); err != nil {
 			return err
@@ -148,10 +147,6 @@ func pack(args []string) error {
 	}
 
 	if err := os.Symlink("/ro/share", filepath.Join(*root, "share")); err != nil && !os.IsExist(err) {
-		return err
-	}
-
-	if err := os.Symlink("/ro/ca-certificates-3.39/buildoutput/etc/ssl/certs", filepath.Join(*root, "etc", "ssl", "certs")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
