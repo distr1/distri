@@ -111,16 +111,15 @@ func pack(args []string) error {
 	for _, dir := range []string{
 		"etc",
 		"root",
-		"boot",        // grub
-		"dev",         // udev
-		"ro",          // read-only package directory (mountpoint)
-		"roimg",       // read-only package store
-		"proc",        // procfs
-		"sys",         // sysfs
-		"tmp",         // tmpfs
-		"var/tmp",     // systemd (e.g. systemd-networkd)
-		"lib/systemd", // systemd
-		"etc/ssl",     // openssl
+		"boot",    // grub
+		"dev",     // udev
+		"ro",      // read-only package directory (mountpoint)
+		"roimg",   // read-only package store
+		"proc",    // procfs
+		"sys",     // sysfs
+		"tmp",     // tmpfs
+		"var/tmp", // systemd (e.g. systemd-networkd)
+		"etc/ssl", // openssl
 	} {
 		if err := os.MkdirAll(filepath.Join(*root, dir), 0755); err != nil {
 			return err
@@ -144,11 +143,11 @@ func pack(args []string) error {
 		return err
 	}
 
-	if err := os.Symlink("/ro/lib/systemd/system", filepath.Join(*root, "lib", "systemd", "system")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/lib", filepath.Join(*root, "lib")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
-	if err := os.Symlink("/ro/linux-4.18.7/buildoutput/lib/modules", filepath.Join(*root, "lib", "modules")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/share", filepath.Join(*root, "share")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
