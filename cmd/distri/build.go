@@ -834,21 +834,33 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if !bytes.Equal(buf[:], []byte("\x7fELF")) {
 			return nil
 		}
+		// TODO: detect whether the binary is statically or dynamically linked (the latter has an INTERP section)
+		pkgs, err := findShlibDeps(path)
+		if err != nil {
+			if err == errLddFailed {
+				return nil // skip patchelf
+			}
+			return err
+		}
+		for _, pkg := range pkgs {
+			depPkgs[pkg] = true
+		}
+
 		// TODO: make patchelf able to operate on itself
-		if b.Pkg != "patchelf" {
+		if b.Pkg != "patchelf" &&
+			filepath.Base(path) != "Mcrt1.o" &&
+			filepath.Base(path) != "Scrt1.o" &&
+			filepath.Base(path) != "crti.o" &&
+			filepath.Base(path) != "crtn.o" &&
+			filepath.Base(path) != "gcrt1.o" &&
+			filepath.Base(path) != "crt1.o" &&
+			!strings.HasSuffix(path, ".a") {
 			patchelf := exec.Command("patchelf", "--shrink-rpath", path)
 			patchelf.Stdout = os.Stdout
 			patchelf.Stderr = os.Stderr
 			if err := patchelf.Run(); err != nil {
 				return fmt.Errorf("%v: %v", patchelf.Args, err)
 			}
-		}
-		pkgs, err := findShlibDeps(path)
-		if err != nil {
-			return err
-		}
-		for _, pkg := range pkgs {
-			depPkgs[pkg] = true
 		}
 		return nil
 	})

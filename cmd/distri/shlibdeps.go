@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 	"os/exec"
@@ -10,6 +11,8 @@ import (
 
 var lddRe = regexp.MustCompile(`^\t([^ ]+) => /ro/([^/]+)`)
 
+var errLddFailed = errors.New("ldd failed") // sentinel
+
 func findShlibDeps(fn string) ([]string, error) {
 	cmd := exec.Command("ldd", fn)
 	// TODO: lack of cmd.Env means that pre-built binaries (e.g. google-chrome)
@@ -18,7 +21,7 @@ func findShlibDeps(fn string) ([]string, error) {
 	out, err := cmd.Output()
 	if err != nil {
 		log.Printf("TODO: exclude file %s", fn)
-		return nil, nil // TODO: fix
+		return nil, errLddFailed // TODO: fix
 		return nil, err
 	}
 	var pkgs []string
