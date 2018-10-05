@@ -286,6 +286,47 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	return env
 }
 
+func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
+	resolved := []string{pkg}
+	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
+	if err != nil {
+		return nil, err
+	}
+	for _, dep := range meta.GetRuntimeDep() {
+		if dep == pkg {
+			continue // skip circular dependencies, e.g. gcc depends on itself
+		}
+		if seen[dep] {
+			continue
+		}
+		seen[dep] = true
+		r, err := resolve1(imgDir, dep, seen)
+		if err != nil {
+			return nil, err
+		}
+		resolved = append(resolved, r...)
+	}
+	return resolved, nil
+}
+
+// resolve returns the transitive closure of runtime dependencies for the
+// specified packages.
+//
+// E.g., if iptables depends on libnftnl, which depends on libmnl,
+// resolve("iptables") will return ["iptables", "libnftnl", "libmnl"].
+func resolve(imgDir string, pkgs []string) ([]string, error) {
+	var resolved []string
+	seen := make(map[string]bool)
+	for _, pkg := range pkgs {
+		r, err := resolve1(imgDir, pkg, seen)
+		if err != nil {
+			return nil, err
+		}
+		resolved = append(resolved, r...)
+	}
+	return resolved, nil
+}
+
 func builddeps(p *pb.Build) ([]string, error) {
 	deps := p.GetDep()
 	if builder := p.Builder; builder != nil {

@@ -6,5 +6,11 @@ github.com/jacobsa/oglematchers v0.0.0-20150720000706-141901ea67cd h1:9GCSedGjMc
 github.com/jacobsa/oglematchers v0.0.0-20150720000706-141901ea67cd/go.mod h1:TlmyIZDpGmwRoTWiakdr+HA1Tukze6C6XbRVidYq02M=
 github.com/jacobsa/timeutil v0.0.0-20170205232429-577e5acbbcf6 h1:XKHJmHcgU9glxk3eLPiRZT5VFSHJitVTnMj/EgIoXC4=
 github.com/jacobsa/timeutil v0.0.0-20170205232429-577e5acbbcf6/go.mod h1:JEWKD6V8xETMW+DEv+IQVz++f8Cn8O/X0HPeDY3qNis=
+golang.org/x/exp v0.0.0-20180907224206-e88728d35e99 h1:7IN8+ZMp04l/19EF+wsr7NM1jyvcadKINimAtWRyQk8=
+golang.org/x/exp v0.0.0-20180907224206-e88728d35e99/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
+golang.org/x/net v0.0.0-20181003013248-f5e5bdd77824 h1:MkjFNbaZJyH98M67Q3umtwZ+EdVdrNJLqSwZp5vcv60=
+golang.org/x/net v0.0.0-20181003013248-f5e5bdd77824/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f h1:wMNYb4v58l5UBM7MYRLPG6ZhfOqbKu7X5eyFl8ZhKvA=
+golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20180821140842-3b58ed4ad339 h1:0w2EXzxbB03VAzqwe3csbadu4CPhMRtxCz/rjw9gkic=
 golang.org/x/sys v0.0.0-20180821140842-3b58ed4ad339/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

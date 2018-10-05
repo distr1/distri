@@ -52,47 +52,6 @@ func copyFile(src, dest string) error {
 	return nil
 }
 
-func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
-	resolved := []string{pkg}
-	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
-	if err != nil {
-		return nil, err
-	}
-	for _, dep := range meta.GetRuntimeDep() {
-		if dep == pkg {
-			continue // skip circular dependencies, e.g. gcc depends on itself
-		}
-		if seen[dep] {
-			continue
-		}
-		seen[dep] = true
-		r, err := resolve1(imgDir, dep, seen)
-		if err != nil {
-			return nil, err
-		}
-		resolved = append(resolved, r...)
-	}
-	return resolved, nil
-}
-
-// resolve returns the transitive closure of runtime dependencies for the
-// specified packages.
-//
-// E.g., if iptables depends on libnftnl, which depends on libmnl,
-// resolve("iptables") will return ["iptables", "libnftnl", "libmnl"].
-func resolve(imgDir string, pkgs []string) ([]string, error) {
-	var resolved []string
-	seen := make(map[string]bool)
-	for _, pkg := range pkgs {
-		r, err := resolve1(imgDir, pkg, seen)
-		if err != nil {
-			return nil, err
-		}
-		resolved = append(resolved, r...)
-	}
-	return resolved, nil
-}
-
 func pack(args []string) error {
 	fset := flag.NewFlagSet("pack", flag.ExitOnError)
 	var (
@@ -175,7 +134,7 @@ func pack(args []string) error {
 		return err
 	}
 
-	basePkgs, err := resolve(*imgDir, []string{
+	basePkgs := []string{
 		"systemd-239",
 		"glibc-2.27",
 		"coreutils-8.30",
@@ -211,41 +170,19 @@ func pack(args []string) error {
 		"dbus-1.13.6",
 		"binutils-2.31", // for debugging (e.g. readelf)
 		"curl-7.61.1",
-	})
-	if err != nil {
-		return fmt.Errorf("resolve: %v", err)
 	}
 
-	for _, pkg := range basePkgs {
-		log.Printf("copying %s", pkg)
-		if err := copyFile(filepath.Join(*imgDir, pkg+".squashfs"), filepath.Join(*root, "roimg", pkg+".squashfs")); err != nil {
-			return err
-		}
-		if err := copyFile(filepath.Join(*imgDir, pkg+".meta.textproto"), filepath.Join(*root, "roimg", pkg+".meta.textproto")); err != nil {
-			return err
-		}
-
+	if err := install(append([]string{
+		"-root=" + *root,
+		"-store=" + *imgDir,
+	}, basePkgs...)); err != nil {
+		return err
 	}
 
-	if _, err = mountfuse([]string{"-imgdir=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
+	if _, err := mountfuse([]string{"-imgdir=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
 		return err
 	}
 	defer fuse.Unmount(filepath.Join(*root, "ro"))
-
-	// This is an initial installation of all packages, so copy their
-	// /ro/<pkg>-<version>/etc directory contents to /etc (if any):
-	for _, pkg := range basePkgs {
-		pkgetc := filepath.Join(*root, "ro", pkg, "etc")
-		if _, err := os.Stat(pkgetc); err != nil {
-			continue // package has no etc directory
-		}
-		// TODO: do this copy in pure Go
-		cp := exec.Command("cp", "--no-preserve=mode", "-r", pkgetc, *root)
-		cp.Stderr = os.Stderr
-		if err := cp.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cp.Args, err)
-		}
-	}
 
 	// XXX: this is required for systemd-firstboot
 	cmdline := filepath.Join(*root, "proc", "cmdline")
