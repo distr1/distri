@@ -1,5 +1,12 @@
-all:
+.PHONY: install
+
+all: install
+
+install:
 	CGO_ENABLED=0 go install ./cmd/distri && sudo setcap CAP_SYS_ADMIN,CAP_DAC_OVERRIDE=ep ~/go/bin/distri
+
+test: install
+	DISTRIROOT=$$PWD go test -v ./integration/...
 
 image:
 	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4
