@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/stapelberg/zi/internal/env"
+	"github.com/stapelberg/zi/pb"
 )
 
 func TestInstall(t *testing.T) {
@@ -31,15 +33,16 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("%v: %v", install.Args, err)
 	}
 
-	for _, pkg := range []string{
-		pkg,
-		// TODO: read the following from the .meta.textproto
-		"glibc-2.27",
-		"libcap-2.25",
-		"util-linux-2.32",
-		"pam-1.3.1",
-		"kmod-25",
-	} {
+	b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "build", "distri", "pkg", pkg+".meta.textproto"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m pb.Meta
+	if err := proto.UnmarshalText(string(b), &m); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, pkg := range append([]string{pkg}, m.GetRuntimeDep()...) {
 		t.Run("VerifyPackageInstalled/"+pkg, func(t *testing.T) {
 			if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".squashfs")); err != nil {
 				t.Fatal(err)
