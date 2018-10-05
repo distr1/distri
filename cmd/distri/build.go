@@ -904,6 +904,8 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
+	delete(depPkgs, b.Pkg+"-"+b.Version) // prevent circular runtime dependencies
+
 	log.Printf("run-time dependencies: %+v", depPkgs)
 	deps = make([]string, 0, len(depPkgs))
 	for pkg := range depPkgs {
