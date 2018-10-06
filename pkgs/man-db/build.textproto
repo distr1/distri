@@ -11,3 +11,5 @@ dep: "libpipeline-1.5.0"
 dep: "gdbm-1.18"
 dep: "groff-1.22.3" # NOTE: man-db doesn’t compile without groff
 dep: "gzip-1.9" # NOTE: man-db doesn’t compile if no compressors are found
+
+runtime_dep: "groff-1.22.3"
