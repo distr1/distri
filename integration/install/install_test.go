@@ -32,7 +32,7 @@ func installHTTP(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 	export := exec.CommandContext(ctx, "distri",
 		"-addrfd=3", // Go dup2()s ExtraFiles to 3 and onwards
 		"export",
-		"-listen=:0",
+		"-listen=localhost:0",
 	)
 	r, w, err := os.Pipe()
 	export.Stderr = os.Stderr
