@@ -4,17 +4,37 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/stapelberg/zi/internal/squashfs"
+	"github.com/stapelberg/zi/pb"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
 )
 
 const installHelp = `TODO
 `
+
+func storeReader(store, fn string) (io.ReadCloser, error) {
+	if strings.HasPrefix(store, "http://") ||
+		strings.HasPrefix(store, "https://") {
+		resp, err := http.Get(store + "/" + fn) // TODO: sanitize slashes
+		if err != nil {
+			return nil, err
+		}
+		if got, want := resp.StatusCode, http.StatusOK; got != want {
+			return nil, fmt.Errorf("HTTP status %v", resp.Status)
+		}
+		return resp.Body, nil
+	}
+	return os.Open(filepath.Join(store, fn))
+}
 
 func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	if err := os.MkdirAll(dest, 0755); err != nil {
@@ -63,16 +83,6 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 }
 
 func install1(root, store, pkg string, first bool) error {
-	// TODO: http download
-	// resp, err := http.Get(file)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer resp.Body.Close()
-	// if got, want := resp.StatusCode, http.StatusOK; got != want {
-	// 	return fmt.Errorf("HTTP status %v", resp.Status)
-	// }
-
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -92,7 +102,7 @@ func install1(root, store, pkg string, first bool) error {
 		if err != nil {
 			return err
 		}
-		in, err := os.Open(filepath.Join(store, fn))
+		in, err := storeReader(store, fn)
 		if err != nil {
 			return err
 		}
@@ -100,6 +110,7 @@ func install1(root, store, pkg string, first bool) error {
 		if _, err := io.Copy(f, in); err != nil {
 			return err
 		}
+		in.Close()
 		if err := f.Close(); err != nil {
 			return err
 		}
@@ -150,11 +161,20 @@ func install1(root, store, pkg string, first bool) error {
 }
 
 func installTransitively1(root, store, pkg string) error {
-	meta := filepath.Join(store, pkg+".meta.textproto")
-	pm, err := readMeta(meta)
+	rd, err := storeReader(store, pkg+".meta.textproto")
 	if err != nil {
 		return err
 	}
+	b, err := ioutil.ReadAll(rd)
+	rd.Close()
+	if err != nil {
+		return err
+	}
+	var pm pb.Meta
+	if err := proto.UnmarshalText(string(b), &pm); err != nil {
+		return err
+	}
+
 	// TODO(later): we could write out b here and save 1 HTTP request
 	pkgs := append([]string{pkg}, pm.GetRuntimeDep()...)
 	log.Printf("resolved %s to %v", pkg, pkgs)
