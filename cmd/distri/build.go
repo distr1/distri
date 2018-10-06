@@ -287,6 +287,33 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	return env
 }
 
+func (b *buildctx) runtimeEnv(deps []string) []string {
+	// TODO: this should go into the C builder once the C builder is used by all packages
+	var (
+		binDirs   []string
+		libDirs   []string
+		perl5Dirs []string
+	)
+	// add the package itself, not just its dependencies: the package might
+	// install a shared library which it also uses (e.g. systemd).
+	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
+		// TODO: these need to be the bindirs of the runtime deps. move wrapper
+		// script creation and runtimeEnv call down to when we know runtimeDeps
+		binDirs = append(binDirs, "/ro/"+dep+"/bin")
+		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
+		// TODO: should we try to make programs install to /lib instead? examples: libffi
+		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
+		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
+	}
+
+	env := []string{
+		"PATH=" + strings.Join(binDirs, ":") + ":$PATH",                       // for finding binaries
+		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":") + ":$LD_LIBRARY_PATH", // for ld
+		"PERL5LIB=" + strings.Join(perl5Dirs, ":") + ":$PERL5LIB",             // for perl
+	}
+	return env
+}
+
 func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
 	resolved := []string{pkg}
 	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
@@ -664,6 +691,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	}
 
 	env := b.env(deps, true)
+	runtimeEnv := b.runtimeEnv(deps)
 
 	steps := b.Proto.GetBuildStep()
 	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
@@ -768,15 +796,6 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
-	// create binary wrappers for runtime deps (symlinks for now)
-	var runtimeEnv []string
-	for _, e := range env {
-		if strings.HasPrefix(e, "PATH=") ||
-			strings.HasPrefix(e, "LD_LIBRARY_PATH=") ||
-			strings.HasPrefix(e, "PERL5LIB=") {
-			runtimeEnv = append(runtimeEnv, e)
-		}
-	}
 	if err := os.MkdirAll(filepath.Join(b.DestDir, b.Prefix, "bin"), 0755); err != nil {
 		return nil, err
 	}
