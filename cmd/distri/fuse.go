@@ -139,19 +139,6 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	var pkgs []string
 	if *pkgsList != "" {
 		pkgs = strings.Split(strings.TrimSpace(*pkgsList), ",")
-	} else {
-		fis, err := ioutil.ReadDir(*repo)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, fi := range fis {
-			if !strings.HasSuffix(fi.Name(), ".squashfs") {
-				continue
-			}
-			pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
-			pkgs = append(pkgs, pkg)
-		}
 	}
 
 	fs := &fuseFS{
@@ -169,46 +156,8 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	fs.dirs["/"] = dir
 	fs.inodes[fs.inodeCnt] = dir
 
-	// TODO: move into a function
-	// TODO: iterate over packages once, calling mkdir for all exchange dirs
-	for _, dir := range exchangeDirs {
-		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
-	}
-
-	for _, pkg := range pkgs {
-		f, err := os.Open(filepath.Join(*repo, pkg+".squashfs"))
-		if err != nil {
-			return nil, err
-		}
-		rd, err := squashfs.NewReader(f)
-		if err != nil {
-			return nil, err
-		}
-		for _, path := range exchangeDirs {
-			exchangePath := strings.TrimPrefix(path, "/buildoutput")
-			dir, ok := fs.dirs[exchangePath]
-			if !ok {
-				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", path))
-			}
-			inode, err := lookupPath(rd, strings.TrimPrefix(path, "/"))
-			if err != nil {
-				if _, ok := err.(*fileNotFoundError); ok {
-					continue
-				}
-				return nil, err
-			}
-			sfis, err := rd.Readdir(inode)
-			if err != nil {
-				return nil, fmt.Errorf("Readdir(%s, %s): %v", pkg, dir, err)
-			}
-			for _, sfi := range sfis {
-				rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
-				if err != nil {
-					return nil, err
-				}
-				fs.symlink(dir, rel)
-			}
-		}
+	if err := fs.scanPackagesLocked(); err != nil {
+		return nil, err
 	}
 
 	var libRequested bool
@@ -238,6 +187,25 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			}
 		}
 	}()
+
+	// Set up signal handler for rescanning the repo, but only if the package
+	// list is not filtered:
+	if *pkgsList == "" {
+		go func() {
+			c := make(chan os.Signal, 1)
+			signal.Notify(c, syscall.SIGUSR1)
+			for range c {
+				log.Printf("scanning packages upon SIGUSR1")
+				fs.mu.Lock()
+				err := fs.scanPackagesLocked()
+				fs.mu.Unlock()
+				if err != nil {
+					log.Printf("scanPackages: %v", err)
+				}
+				log.Printf("scan done")
+			}
+		}()
+	}
 
 	// logf, err := os.Create("/tmp/fuse.log")
 	// if err != nil {
@@ -341,8 +309,6 @@ func (fs *fuseFS) allocateInodeLocked() fuseops.InodeID {
 }
 
 func (fs *fuseFS) mkExchangeDirAll(path string) {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
 	components := strings.Split(path, "/")
 	for idx, component := range components[1:] {
 		path := strings.Join(components[:idx+2], "/")
@@ -369,8 +335,6 @@ func (fs *fuseFS) mkExchangeDirAll(path string) {
 }
 
 func (fs *fuseFS) symlink(dir *dir, target string) {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
 	base := filepath.Base(target)
 	dirent := &dirent{
 		name:       base,
@@ -390,6 +354,79 @@ func (fs *fuseFS) symlink(dir *dir, target string) {
 	dir.entries = append(dir.entries, dirent)
 	dir.byName[base] = dirent
 	fs.inodes[dirent.inode] = dirent
+}
+
+func (fs *fuseFS) scanPackagesLocked() error {
+	// TODO: iterate over packages once, calling mkdir for all exchange dirs
+	for _, dir := range exchangeDirs {
+		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
+	}
+
+	existing := make(map[string]bool)
+	for _, pkg := range fs.pkgs {
+		existing[pkg] = true
+	}
+
+	fis, err := ioutil.ReadDir(fs.repo)
+	if err != nil {
+		return err
+	}
+
+	var pkgs []string
+	for _, fi := range fis {
+		if !strings.HasSuffix(fi.Name(), ".squashfs") {
+			continue
+		}
+		pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
+		pkgs = append(pkgs, pkg)
+	}
+
+	for _, pkg := range pkgs {
+		if existing[pkg] {
+			continue
+		}
+		fs.pkgs = append(fs.pkgs, pkg)
+		f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
+		if err != nil {
+			return err
+		}
+		rd, err := squashfs.NewReader(f)
+		if err != nil {
+			return err
+		}
+		for _, path := range exchangeDirs {
+			exchangePath := strings.TrimPrefix(path, "/buildoutput")
+			dir, ok := fs.dirs[exchangePath]
+			if !ok {
+				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
+			}
+			inode, err := lookupPath(rd, strings.TrimPrefix(path, "/"))
+			if err != nil {
+				if _, ok := err.(*fileNotFoundError); ok {
+					continue
+				}
+				return err
+			}
+			sfis, err := rd.Readdir(inode)
+			if err != nil {
+				return fmt.Errorf("Readdir(%s, %s): %v", pkg, dir, err)
+			}
+			for _, sfi := range sfis {
+				rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
+				if err != nil {
+					return err
+				}
+				fs.symlink(dir, rel)
+			}
+		}
+	}
+
+	// Increase capacity to hold as many readers as we now have packages:
+	readers := make([]*squashfsReader, len(fs.pkgs))
+	copy(readers, fs.readers)
+	fs.readers = readers
+
+	return nil
 }
 
 // TODO: read this from a config file, remove trailing slash if any (always added by caller)
