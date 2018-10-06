@@ -28,7 +28,6 @@ func installFile(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 	return nil, func() {}
 }
 
-// TODO(https://github.com/golang/go/issues/28039): kill the cleanup func
 func installHTTP(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func()) {
 	export := exec.CommandContext(ctx, "distri",
 		"-addrfd=3", // Go dup2()s ExtraFiles to 3 and onwards
