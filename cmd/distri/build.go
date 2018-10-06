@@ -20,6 +20,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/jacobsa/fuse"
+	"github.com/stapelberg/zi/internal/env"
 	"github.com/stapelberg/zi/internal/squashfs"
 	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sys/unix"
@@ -370,7 +371,7 @@ func builddeps(p *pb.Build) ([]string, error) {
 		}
 	}
 
-	return resolve(defaultImgDir, deps)
+	return resolve(env.DefaultRepo, deps)
 }
 
 func (b *buildctx) build() (runtimedeps []string, _ error) {

@@ -28,7 +28,7 @@ func pid1() error {
 			return err
 		}
 	}
-	if _, err := mount([]string{"-imgdir=/ro", "fuse-3.2.6"}); err != nil {
+	if _, err := mount([]string{"-repo=/ro", "fuse-3.2.6"}); err != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func pid1() error {
 		return err
 	}
 
-	fuse := exec.Command("/init", "fuse", "-imgdir=/roimg", "-readiness=3", "/ro")
+	fuse := exec.Command("/init", "fuse", "-repo=/roimg", "-readiness=3", "/ro")
 	fuse.ExtraFiles = []*os.File{w}
 	fuse.Env = []string{
 		"PATH=/ro/fuse-3.2.6/buildoutput/bin",
@@ -73,7 +73,7 @@ func pid1() error {
 	// 	log.Printf("mounting package %d of %d: %q", idx, len(matches), m)
 	// 	// m is the full path to a squashfs image, e.g. /ro/strace-4.24.squashfs
 	// 	pkg := strings.TrimSuffix(filepath.Base(m), ".squashfs")
-	// 	if _, err := mount([]string{"-imgdir=/ro", pkg}); err != nil {
+	// 	if _, err := mount([]string{"-repo=/ro", pkg}); err != nil {
 	// 		return err
 	// 	}
 	// }

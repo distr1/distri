@@ -8,6 +8,7 @@ import (
 
 	"github.com/lpar/gzipped"
 	"github.com/stapelberg/zi/internal/addrfd"
+	"github.com/stapelberg/zi/internal/env"
 )
 
 const exportHelp = `TODO
@@ -32,14 +33,15 @@ func export(args []string) error {
 	var (
 		listen = fset.String("listen", ":7080", "[host]:port listen address for exporting the distri store")
 		gzip   = fset.Bool("gzip", true, "serve .gz files (if they exist). Typically desired on all networks but local loopback")
+		repo   = fset.String("repo", env.DefaultRepo, "repository to serve")
 	)
 	fset.Parse(args)
-	log.Printf("exporting %s on %s", defaultImgDir, *listen)
+	log.Printf("exporting %s on %s", *repo, *listen)
 
 	if *gzip {
-		http.Handle("/", gzipped.FileServer(http.Dir(defaultImgDir)))
+		http.Handle("/", gzipped.FileServer(http.Dir(*repo)))
 	} else {
-		http.Handle("/", http.FileServer(http.Dir(defaultImgDir)))
+		http.Handle("/", http.FileServer(http.Dir(*repo)))
 	}
 
 	server := &http.Server{Addr: *listen}

@@ -58,7 +58,7 @@ func pack(args []string) error {
 		root = fset.String("root",
 			"",
 			"TODO")
-		imgDir     = fset.String("imgdir", defaultImgDir, "TODO")
+		repo       = fset.String("repo", env.DefaultRepo, "TODO")
 		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
@@ -174,12 +174,12 @@ func pack(args []string) error {
 
 	if err := install(append([]string{
 		"-root=" + *root,
-		"-repo=" + *imgDir,
+		"-repo=" + *repo,
 	}, basePkgs...)); err != nil {
 		return err
 	}
 
-	if _, err := mountfuse([]string{"-imgdir=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
+	if _, err := mountfuse([]string{"-repo=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
 		return err
 	}
 	defer fuse.Unmount(filepath.Join(*root, "ro"))
@@ -553,7 +553,7 @@ name=root`)
 	if err := chown.Run(); err != nil {
 		return fmt.Errorf("%v: %v", chown.Args, err)
 	}
-	join, err := mountfuse([]string{"-imgdir=/mnt/roimg", "/mnt/ro"})
+	join, err := mountfuse([]string{"-repo=/mnt/roimg", "/mnt/ro"})
 	if err != nil {
 		return err
 	}

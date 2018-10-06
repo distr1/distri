@@ -18,7 +18,7 @@ func installFile(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 	install := exec.Command("distri",
 		"install",
 		"-root="+tmpdir,
-		"-repo="+filepath.Join(env.DistriRoot, "build", "distri", "pkg"),
+		"-repo="+env.DefaultRepo,
 		pkg)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
@@ -105,7 +105,7 @@ func TestInstall(t *testing.T) {
 			}
 			defer cleanup()
 
-			b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "build", "distri", "pkg", pkg+".meta.textproto"))
+			b, err := ioutil.ReadFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
 			if err != nil {
 				t.Fatal(err)
 			}

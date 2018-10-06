@@ -12,6 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/stapelberg/zi/internal/env"
 	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sys/unix"
 )
@@ -128,7 +129,7 @@ func mount(args []string) (cleanup func(), _ error) {
 		root = fset.String("root",
 			"/ro",
 			"TODO")
-		imgDir = fset.String("imgdir", defaultImgDir, "TODO")
+		repo = fset.String("repo", env.DefaultRepo, "TODO")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
 	fset.Parse(args)
@@ -140,7 +141,7 @@ func mount(args []string) (cleanup func(), _ error) {
 	// TODO: glob package so that users can use “mount systemd” instead of
 	// “mount systemd-239”? alternatively: tab completion
 
-	meta, err := readMeta(filepath.Join(*imgDir, pkg+".meta.textproto"))
+	meta, err := readMeta(filepath.Join(*repo, pkg+".meta.textproto"))
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +152,7 @@ func mount(args []string) (cleanup func(), _ error) {
 		}
 		if !mountpoint(filepath.Join(*root, dep)) {
 			mountpoint := filepath.Join(*root, dep)
-			src := filepath.Join(*imgDir, dep+".squashfs")
+			src := filepath.Join(*repo, dep+".squashfs")
 			if err := mount1(mountpoint, dep, src); err != nil {
 				return nil, err
 			}
@@ -161,7 +162,7 @@ func mount(args []string) (cleanup func(), _ error) {
 	}
 
 	mountpoint := filepath.Join(*root, pkg)
-	src := filepath.Join(*imgDir, pkg+".squashfs")
+	src := filepath.Join(*repo, pkg+".squashfs")
 	if err := mount1(mountpoint, pkg, src); err != nil {
 		return nil, err
 	}

@@ -21,6 +21,7 @@ import (
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
 
+	"github.com/stapelberg/zi/internal/env"
 	"github.com/stapelberg/zi/internal/squashfs"
 	"github.com/stapelberg/zi/pb"
 )
@@ -103,10 +104,10 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
-		imgDir    = fset.String("imgdir", defaultImgDir, "TODO")
+		repo      = fset.String("repo", env.DefaultRepo, "TODO")
 		readiness = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
 		overlays  = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
-		pkgsList  = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -imgdir will be provided")
+		pkgsList  = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -repo will be provided")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
@@ -139,7 +140,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	if *pkgsList != "" {
 		pkgs = strings.Split(strings.TrimSpace(*pkgsList), ",")
 	} else {
-		fis, err := ioutil.ReadDir(*imgDir)
+		fis, err := ioutil.ReadDir(*repo)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +155,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	}
 
 	fs := &fuseFS{
-		imgDir:      *imgDir,
+		repo:        *repo,
 		pkgs:        pkgs,
 		readers:     make([]*squashfsReader, len(pkgs)),
 		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
@@ -175,7 +176,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	}
 
 	for _, pkg := range pkgs {
-		f, err := os.Open(filepath.Join(*imgDir, pkg+".squashfs"))
+		f, err := os.Open(filepath.Join(*repo, pkg+".squashfs"))
 		if err != nil {
 			return nil, err
 		}
@@ -311,7 +312,7 @@ type squashfsReader struct {
 type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
-	imgDir string
+	repo string
 
 	mu       sync.Mutex
 	inodeCnt fuseops.InodeID
@@ -465,12 +466,12 @@ func (fs *fuseFS) mountImage(image int) error {
 
 	// var err error
 	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + pkg + ".squashfs"}
-	f, err := os.Open(filepath.Join(fs.imgDir, pkg+".squashfs"))
+	f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		f, err = updateAndOpen("/tmp/imgdir" /*fs.imgDir*/, remote+"/"+pkg+".squashfs")
+		f, err = updateAndOpen("/tmp/imgdir" /*fs.repo*/, remote+"/"+pkg+".squashfs")
 		if err != nil {
 			return err
 		}

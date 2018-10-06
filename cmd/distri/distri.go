@@ -6,21 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"runtime/pprof"
 	"runtime/trace"
-
-	"github.com/stapelberg/zi/internal/env"
 )
 
 var (
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
-)
-
-// Environment
-var (
-	defaultImgDir = filepath.Join(env.DistriRoot, "build/distri/pkg")
 )
 
 func main() {

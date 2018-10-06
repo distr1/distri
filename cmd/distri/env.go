@@ -14,6 +14,6 @@ func printenv(args []string) error {
 	fset := flag.NewFlagSet("env", flag.ExitOnError)
 	fset.Parse(args)
 	fmt.Printf("DISTRIROOT=%q\n", env.DistriRoot)
-	fmt.Printf("IMGDIR=%q\n", defaultImgDir)
+	fmt.Printf("DEFAULTREPO=%q\n", env.DefaultRepo)
 	return nil
 }
