@@ -21,10 +21,10 @@ import (
 const installHelp = `TODO
 `
 
-func storeReader(store, fn string) (io.ReadCloser, error) {
-	if strings.HasPrefix(store, "http://") ||
-		strings.HasPrefix(store, "https://") {
-		resp, err := http.Get(store + "/" + fn) // TODO: sanitize slashes
+func repoReader(repo, fn string) (io.ReadCloser, error) {
+	if strings.HasPrefix(repo, "http://") ||
+		strings.HasPrefix(repo, "https://") {
+		resp, err := http.Get(repo + "/" + fn) // TODO: sanitize slashes
 		if err != nil {
 			return nil, err
 		}
@@ -33,7 +33,7 @@ func storeReader(store, fn string) (io.ReadCloser, error) {
 		}
 		return resp.Body, nil
 	}
-	return os.Open(filepath.Join(store, fn))
+	return os.Open(filepath.Join(repo, fn))
 }
 
 func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
@@ -82,7 +82,7 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
-func install1(root, store, pkg string, first bool) error {
+func install1(root, repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -102,7 +102,7 @@ func install1(root, store, pkg string, first bool) error {
 		if err != nil {
 			return err
 		}
-		in, err := storeReader(store, fn)
+		in, err := repoReader(repo, fn)
 		if err != nil {
 			return err
 		}
@@ -160,8 +160,8 @@ func install1(root, store, pkg string, first bool) error {
 	return nil
 }
 
-func installTransitively1(root, store, pkg string) error {
-	rd, err := storeReader(store, pkg+".meta.textproto")
+func installTransitively1(root, repo, pkg string) error {
+	rd, err := repoReader(repo, pkg+".meta.textproto")
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func installTransitively1(root, store, pkg string) error {
 	for _, pkg := range pkgs {
 		pkg := pkg //copy
 		eg.Go(func() error {
-			if err := install1(root, store, pkg, first); err != nil {
+			if err := install1(root, repo, pkg, first); err != nil {
 				return fmt.Errorf("installing %s: %v", pkg, err)
 			}
 			return nil
@@ -210,7 +210,7 @@ func install(args []string) error {
 			"/",
 			"root directory for optionally installing into a chroot")
 
-		store = fset.String("store", "", "where to install packages from (file system path)")
+		repo = fset.String("repo", "", "repository from which to install packages from. path (default TODO) or HTTP URL (e.g. TODO)")
 
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
@@ -235,7 +235,7 @@ func install(args []string) error {
 	var eg errgroup.Group
 	for _, pkg := range fset.Args() {
 		pkg := pkg // copy
-		eg.Go(func() error { return installTransitively1(*root, *store, pkg) })
+		eg.Go(func() error { return installTransitively1(*root, *repo, pkg) })
 	}
 	if err := eg.Wait(); err != nil {
 		return err

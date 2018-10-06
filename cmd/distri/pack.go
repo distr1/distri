@@ -174,7 +174,7 @@ func pack(args []string) error {
 
 	if err := install(append([]string{
 		"-root=" + *root,
-		"-store=" + *imgDir,
+		"-repo=" + *imgDir,
 	}, basePkgs...)); err != nil {
 		return err
 	}

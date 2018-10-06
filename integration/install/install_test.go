@@ -18,7 +18,7 @@ func installFile(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 	install := exec.Command("distri",
 		"install",
 		"-root="+tmpdir,
-		"-store="+filepath.Join(env.DistriRoot, "build", "distri", "pkg"),
+		"-repo="+filepath.Join(env.DistriRoot, "build", "distri", "pkg"),
 		pkg)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
@@ -61,7 +61,7 @@ func installHTTP(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 	install := exec.Command("distri",
 		"install",
 		"-root="+tmpdir,
-		"-store=http://"+addr,
+		"-repo=http://"+addr,
 		pkg)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
