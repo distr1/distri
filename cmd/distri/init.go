@@ -39,7 +39,13 @@ func pid1() error {
 
 	fuse := exec.Command("/init", "fuse", "-imgdir=/roimg", "-readiness=3", "/ro")
 	fuse.ExtraFiles = []*os.File{w}
-	fuse.Env = []string{"PATH=/ro/fuse-3.2.6/buildoutput/bin"}
+	fuse.Env = []string{
+		"PATH=/ro/fuse-3.2.6/buildoutput/bin",
+		// Set TZ= so that the time package does not try to open /etc/localtime,
+		// which is a symlink into /ro, which would deadlock when called from
+		// the FUSE request handler.
+		"TZ=",
+	}
 	fuse.Stderr = os.Stderr
 	fuse.Stdout = os.Stdout
 	if err := fuse.Start(); err != nil {
