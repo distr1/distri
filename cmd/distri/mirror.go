@@ -49,6 +49,7 @@ func mirror(args []string) error {
 			return err
 		}
 		for _, wk := range exchangeDirs {
+			wk = strings.TrimPrefix(wk, "/")
 			inode, err := lookupPath(rd, wk)
 			if err != nil {
 				if _, ok := err.(*fileNotFoundError); ok {
