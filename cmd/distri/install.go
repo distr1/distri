@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stapelberg/zi/internal/squashfs"
@@ -20,6 +22,10 @@ import (
 
 const installHelp = `TODO
 `
+
+// totalBytes counts the number of bytes written to the disk for this install
+// operation.
+var totalBytes int64
 
 func repoReader(repo, fn string) (io.ReadCloser, error) {
 	if strings.HasPrefix(repo, "http://") ||
@@ -69,9 +75,11 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 			if err != nil {
 				return err
 			}
-			if _, err := io.Copy(f, fr); err != nil {
+			n, err := io.Copy(f, fr)
+			if err != nil {
 				return err
 			}
+			atomic.AddInt64(&totalBytes, n)
 			if err := f.Close(); err != nil {
 				return err
 			}
@@ -107,9 +115,11 @@ func install1(root, repo, pkg string, first bool) error {
 			return err
 		}
 		defer in.Close()
-		if _, err := io.Copy(f, in); err != nil {
+		n, err := io.Copy(f, in)
+		if err != nil {
 			return err
 		}
+		atomic.AddInt64(&totalBytes, n)
 		in.Close()
 		if err := f.Close(); err != nil {
 			return err
@@ -232,6 +242,8 @@ func install(args []string) error {
 		return err
 	}
 
+	start := time.Now()
+
 	var eg errgroup.Group
 	for _, pkg := range fset.Args() {
 		pkg := pkg // copy
@@ -240,6 +252,11 @@ func install(args []string) error {
 	if err := eg.Wait(); err != nil {
 		return err
 	}
+
+	dur := time.Since(start)
+
+	total := atomic.LoadInt64(&totalBytes)
+	log.Printf("done, %.2f MB/s (%v bytes in %v)", float64(total)/1024/1024/(float64(dur)/float64(time.Second)), total, dur)
 
 	return nil
 }
