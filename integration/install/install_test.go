@@ -33,6 +33,9 @@ func installHTTP(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func
 		"-addrfd=3", // Go dup2()s ExtraFiles to 3 and onwards
 		"export",
 		"-listen=localhost:0",
+		// Disable gzip: the gzipped.FileServer package is already tested, and
+		// uncompressing these files makes the test run significantly slower.
+		"-gzip=false",
 	)
 	r, w, err := os.Pipe()
 	export.Stderr = os.Stderr
