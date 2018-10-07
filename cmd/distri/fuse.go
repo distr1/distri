@@ -136,15 +136,8 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 
 	// TODO: use inotify to efficiently get updates to the store
 
-	var pkgs []string
-	if *pkgsList != "" {
-		pkgs = strings.Split(strings.TrimSpace(*pkgsList), ",")
-	}
-
 	fs := &fuseFS{
 		repo:        *repo,
-		pkgs:        pkgs,
-		readers:     make([]*squashfsReader, len(pkgs)),
 		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
 		inodeCnt:    1, // root inode
 		dirs:        make(map[string]*dir),
@@ -156,7 +149,18 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	fs.dirs["/"] = dir
 	fs.inodes[fs.inodeCnt] = dir
 
-	if err := fs.scanPackagesLocked(); err != nil {
+	var pkgs []string
+	if *pkgsList != "" {
+		pkgs = strings.Split(strings.TrimSpace(*pkgsList), ",")
+	} else {
+		var err error
+		pkgs, err = fs.findPackages()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := fs.scanPackagesLocked(pkgs); err != nil {
 		return nil, err
 	}
 
@@ -196,8 +200,13 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			signal.Notify(c, syscall.SIGUSR1)
 			for range c {
 				log.Printf("scanning packages upon SIGUSR1")
+				pkgs, err := fs.findPackages()
+				if err != nil {
+					log.Printf("findPackages: %v", err)
+					continue
+				}
 				fs.mu.Lock()
-				err := fs.scanPackagesLocked()
+				err = fs.scanPackagesLocked(pkgs)
 				fs.mu.Unlock()
 				if err != nil {
 					log.Printf("scanPackages: %v", err)
@@ -356,20 +365,10 @@ func (fs *fuseFS) symlink(dir *dir, target string) {
 	fs.inodes[dirent.inode] = dirent
 }
 
-func (fs *fuseFS) scanPackagesLocked() error {
-	// TODO: iterate over packages once, calling mkdir for all exchange dirs
-	for _, dir := range exchangeDirs {
-		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
-	}
-
-	existing := make(map[string]bool)
-	for _, pkg := range fs.pkgs {
-		existing[pkg] = true
-	}
-
+func (fs *fuseFS) findPackages() ([]string, error) {
 	fis, err := ioutil.ReadDir(fs.repo)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var pkgs []string
@@ -379,6 +378,19 @@ func (fs *fuseFS) scanPackagesLocked() error {
 		}
 		pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
 		pkgs = append(pkgs, pkg)
+	}
+	return pkgs, nil
+}
+
+func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
+	// TODO: iterate over packages once, calling mkdir for all exchange dirs
+	for _, dir := range exchangeDirs {
+		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
+	}
+
+	existing := make(map[string]bool)
+	for _, pkg := range fs.pkgs {
+		existing[pkg] = true
 	}
 
 	for _, pkg := range pkgs {
