@@ -346,6 +346,10 @@ func resolve(imgDir string, pkgs []string) ([]string, error) {
 	var resolved []string
 	seen := make(map[string]bool)
 	for _, pkg := range pkgs {
+		if seen[pkg] {
+			continue // a recursive call might have found this package already
+		}
+		seen[pkg] = true
 		r, err := resolve1(imgDir, pkg, seen)
 		if err != nil {
 			return nil, err
