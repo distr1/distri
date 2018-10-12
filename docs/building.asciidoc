@@ -1,0 +1,286 @@
+# distri building
+:toc: left
+:toclevels: 4
+:sectnums:
+
+* TODO: how to invoke the build tool
+* TODO: how to rebuild the entire distri
+
+## build instructions
+
+The package build instructions are declared in a file called `build.textproto`. The following fields can be used:
+
+### upstream
+
+version (string)::
+The version number of this package. The name of the package is derived from the location of `build.textproto`, and the resulting package will be named `<pkg>-<version>`, e.g. `systemd-239`.
+source (string)::
+A https URL to the upstream archive that should be built.
+hash (string)::
+A SHA256 hash of the upstream archive, for verifying integrity.
+cherry_pick (repeated string)::
+The filename of a patch (relative to the directory containing `build.textproto`) to apply after extracting the upstream archive.
+
+### builder
+
+dep (repeated string)::
+Additional build dependencies over what the chosen builder requires.
++
+.Example:
+--------------------------------------------------------------------------------
+dep: "bison-3.0.5"
+--------------------------------------------------------------------------------
+build_step (repeated)::
+Overwrites the chosen builder’s default build steps.
++
+--
+argv (repeated string):::
+argv to pass to https://manpages.debian.org/stretch/manpages-dev/execve.2[`execve(2)`]
+--
++
+.Example:
+--------------------------------------------------------------------------------
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "TODO"
+>
+--------------------------------------------------------------------------------
+
+#### cbuilder
+
+extra_configure_flag (repeated string)::
+Additional flag to pass to `configure`.
++
+.Example (from ncurses):
+--------------------------------------------------------------------------------
+cbuilder: <
+  extra_configure_flag: "--disable-stripping"
+  extra_configure_flag: "--enable-pc-files"
+>
+--------------------------------------------------------------------------------
+extra_make_flag (repeated string)::
+Additional flag to pass to `make`.
++
+.Example (from glibc):
+--------------------------------------------------------------------------------
+cbuilder: <
+  extra_make_flag: "user-defined-trusted-dirs=/ro/lib"
+>
+--------------------------------------------------------------------------------
+extra_ldflag (repeated string)::
+Additional flag to append to the `LDFLAGS` environment variable when building.
++
+.Example:
+--------------------------------------------------------------------------------
+TODO
+--------------------------------------------------------------------------------
+copy_to_builddir (bool)::
+Enable if this package does not support building from a separate directory (sometimes called “out-of-tree build”). A bug should be reported with the package upstream.
+
+#### perlbuilder
+
+extra_makefile_flag (repeated string)::
+Additional flag to pass to `perl Makefile.PL`.
++
+.Example (from perl-XML-Parser):
+--------------------------------------------------------------------------------
+perlbuilder: <
+  extra_makefile_flag: "EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib"
+>
+--------------------------------------------------------------------------------
+
+### package building
+
+runtime_dep (repeated string)::
+Additional run-time dependencies which are not automatically found (see <<runtimedeps>>).
++
+.Example (from bison):
+--------------------------------------------------------------------------------
+runtime_dep: "m4-1.4.18"
+--------------------------------------------------------------------------------
+
+install::
+Additional steps to perform after the install build step completed.
+systemd_unit (repeated string):::
+Path to a systemd unit file which the build steps don’t install.
++
+.Example (from containerd):
+--------------------------------------------------------------------------------
+install: <
+  systemd_unit: "${ZI_SOURCEDIR}/containerd.service"
+>
+--------------------------------------------------------------------------------
+symlink (repeated):::
+The nomenclature comes from https://golang.org/pkg/os/#Symlink[Go’s `os.Symlink()`].
++
+--
+oldname::::
+The symbolic link target.
+newname::::
+The name of the symbolic link to create.
+--
++
+.Example (from bash):
+--------------------------------------------------------------------------------
+install: <
+  symlink: < oldname: "bash" newname: "bin/sh" >
+>
+--------------------------------------------------------------------------------
+
+## build process
+
+When running `distri build`, the following directories are involved:
+
+PkgDir::
+The current working directory (`$PWD`), containing `build.textproto`, e.g. `$DISTRIROOT/pkgs/systemd`.
+SourceDir::
+Path of the extracted sources, e.g. `$DISTRIROOT/build/systemd/v239`.
+DestDir::
+A directory named "tmp" within a temporary directory, e.g. `/tmp/distri-dest-3129384/tmp`. This directory is mounted at `/dest/tmp` in the namespace. TODO: why the tmp indirection?
+ChrootDir::
+A temporary directory providing the root for the build subprocess, e.g. `/tmp/distri-buildchroot-1938422`.
+BuildDir::
+A temporary directory created in ChrootDir (TODO). The build steps will be run in this directory.
+
+At a high level, the following steps are performed:
+
+1. The sources are downloaded, verified and extracted.
+2. The software is built.
+3. The package (SquashFS image and accompanying metadata) is created.
+
+### download
+
+The specified `source` is downloaded to SourceDir/.., provided its SHA256 hash matches `hash`. If the file already exists, no network connectivity is needed for building.
+
+Then, the `source` archive is extracted.
+
+[NOTE]
+distri assumes that the source archive contains a directory named like the archive after stripping file extensions. E.g., systemd’s `v239.tar.gz` should contain a directory called `v239`.
+
+### build
+
+The following build environment is created in ChrootDir:
+
+[options="header"]
+|===
+| Path | Contents
+| `/dev/null` | device node
+| `/etc/passwd` | minimal passwd file containing the build user
+| `/etc/group` | minimal group file containing the build group
+| `/usr/src/<pkg>-<version>` | SourceDir (e.g. `$DISTRIROOT/build/systemd/v239`)
+| `/dest/tmp` | DestDir (e.g. `/tmp/distri-dest-3129384/tmp`)
+| `/lib64` | symlink to `/ro/glibc-2.27/buildoutput/lib`
+| `/usr/include` | symlink to `/ro/include`
+| `/bin` | symlink to `/ro/bin`
+| `/sbin` | symlink to `/ro/bin`
+| `/usr/bin` | symlink to `/ro/bin`
+| `/ro` | FUSE mount of `$DISTRIROOT/build/distri/pkg`
+|===
+
+Then, a subprocess is started in a separate user and mount https://manpages.debian.org/stretch/manpages/namespaces.7[namespace]. That subprocess then:
+
+* sets up logging to `build-<version>.log`
+* changes its root to ChrootDir
+* changes its working directory to BuildDir
+* sets `PATH=/bin`
+
+before performing the following actions:
+
+#### build steps
+
+Builders (e.g. the C builder, or Perl builder) supply the default build steps:
+
+* For C, the default steps amount to `configure`, `make`, `make install`.
+* For Perl, the default steps amount to `perl Makefile.PL`, `make`, `make install`.
+* etc.
+
+For odd packages which do not adhere to the standard conventions of whichever ecosystem they live in (e.g. `libcap`), the preferred course of action is to convince upstream to change that. In the meantime, custom build steps can be defined in the build instructions, overwriting the builder default build steps.
+
+Each build step is run with the following environment variables:
+
+[options="header"]
+|===
+| Environment Variable | Contents | Consumer
+| `PATH`
+a|
+[unstyled]
+* `/ro/bin`
+* `/bin`
+| TODO
+| `PKG_CONFIG_PATH`
+a|
+[unstyled]
+* `$deps/lib/pkgconfig`
+| pkg-config
+| `LDFLAGS`
+a|
+[unstyled]
+* `-Wl,-rpath=$deps/lib`
+* `-Wl,-dynamic-linker=TODO`
+* extra_ldflag
+| gcc
+| `CPATH`
+a|
+[unstyled]
+* `$deps/include`
+* `$deps/include/x86_64-linux-gnu`
+| gcc (for libraries without pkg-config)
+| `LIBRARY_PATH`
+a|
+[unstyled]
+* `$deps/lib`
+* `$deps/lib64`
+| gcc (for libraries without pkg-config)
+| `LD_LIBRARY_PATH`
+a|
+[unstyled]
+* `$deps/lib`
+* `$deps/lib64`
+| ld
+| `PERL5LIB`
+a|
+[unstyled]
+* `$deps/lib/perl5`
+| perl
+|===
+
+The `$deps` notation means the following path is appended to the `buildoutput` directory of all build dependencies. E.g., for a package with build dependencies `bison` and `libx11`, `PKG_CONFIG_PATH` is `/ro/bison-3.0.5/buildoutput/lib/pkgconfig:/ro/libx11-1.6.6/buildoutput/lib/pkgconfig`.
+
+TODO: can we remove LD_LIBRARY_PATH? should only be required for libraries which don’t set their rpath correctly
+
+TODO: is PERL5LIB required? if so, also PYTHON etc.?
+
+#### instructions
+
+The install build instruction (if any) is processed, copying systemd unit files and creating symbolic links.
+
+#### wrapper scripts
+
+** TODO: why does this happen here as opposed to elsewhere?
+
+** create wrapper scripts for files in bin, sbin
+
+#### run-time dependencies [[runtimedeps]]
+
+[NOTE]
+For the following techniques to work, the package is made available at its destination path `/ro/<pkg>-<version>` (e.g. `/ro/systemd-239`).
+
+The following run-time dependencies are automatically found:
+
+* packages needed by dynamically linked ELF objects (binaries and libraries), found by running `ldd(1)`
+* build dependencies, e.g. the Perl builder promotes all build dependencies to run-time dependencies
+* packages referenced by `Requires:` or `Requires.private:` lines in installed pkg-config files (`.pc`)
+
+Unused paths are removed from the rpath to eliminate unnecessary lookups (which can be costly when packages are mounted remotely) by calling `patchelf --shrink-rpath` on dynamically linked ELF objects (binaries and libraries).
+
+### package creation
+
+The auto-detected and specified run-time dependencies are now persisted into `<pkg>-<version>.meta.textproto`, e.g. `systemd-239.meta.textproto`.
+
+A SquashFS image is created from `DestDir/<pkg>-<version>`, e.g. `systemd-239.squashfs` is created from `DestDir/systemd-239`.
+
+* move b.DestDir/tmp/ro/hello-1 to b.DestDir/hello-1 (TODO: why?)
+* move b.DestDir/tmp/etc to b.DestDir/hello-1/etc (TODO: why?)
+* pkg()
+** create ../distri/pkg/<pkg>-<version>.squashfs from b.DestDir/hello-1

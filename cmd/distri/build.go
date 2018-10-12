@@ -36,7 +36,7 @@ type buildctx struct {
 	Version   string    // e.g. 1.29.2
 	SourceDir string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
 	BuildDir  string    // e.g. /tmp/distri-build-8123911
-	DestDir   string    // e.g. /tmp/distri-dest-3129384
+	DestDir   string    // e.g. /tmp/distri-dest-3129384/tmp
 	Prefix    string    // e.g. /ro/busybox-1.29.2
 	Hermetic  bool
 	Debug     bool
@@ -108,6 +108,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 		b.BuildDir = tmpdir
 	}
 
+	// TODO: remove this, files are installed into b.DestDir + prefix?
 	if err := os.MkdirAll(filepath.Join(b.DestDir, "buildoutput"), 0755); err != nil {
 		return err
 	}
@@ -115,7 +116,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 	{
 		deps, err := b.build()
 		if err != nil {
-			return err
+			return fmt.Errorf("build: %v", err)
 		}
 
 		// TODO: add the transitive closure of runtime dependencies
@@ -188,7 +189,6 @@ func (b *buildctx) serialize() (string, error) {
 }
 
 func (b *buildctx) pkg() error {
-	// TODO: create the archive in pure Go
 	dest, err := filepath.Abs("../distri/pkg/" + b.Pkg + "-" + b.Version + ".squashfs")
 	if err != nil {
 		return err
@@ -419,7 +419,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 		deps, err := builddeps(b.Proto)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("builddeps: %v", err)
 		}
 
 		if b.FUSE {
@@ -1159,6 +1159,7 @@ func runJob(job string) error {
 }
 
 func build(args []string) error {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("build", flag.ExitOnError)
 	var (
 		job = fset.String("job",
