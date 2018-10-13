@@ -156,6 +156,7 @@ func batch(args []string) error {
 	s := scheduler{
 		g:      g,
 		byName: byName,
+		built:  make(map[string]bool),
 	}
 	if err := s.run(); err != nil {
 		return err
@@ -172,6 +173,7 @@ type buildResult struct {
 type scheduler struct {
 	g      graph.Directed
 	byName map[string]*node
+	built  map[string]bool
 }
 
 func (s *scheduler) run() error {
@@ -182,11 +184,10 @@ func (s *scheduler) run() error {
 	for i := 0; i < 8; i++ {
 		eg.Go(func() error {
 			for pkg := range work {
-				dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(2*time.Second)))
+				dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(100*time.Millisecond)))
 				log.Printf("build of %s is taking %v", pkg, dur)
 				time.Sleep(dur)
-				// TODO: simulate some failures, verify fallout is correct
-				done <- buildResult{name: pkg, success: true}
+				done <- buildResult{name: pkg, success: pkg != "libx11-1.6.6"}
 			}
 			return nil
 		})
@@ -201,28 +202,20 @@ func (s *scheduler) run() error {
 	}
 	go func() {
 		defer close(work)
-		built := make(map[string]bool)
-		for len(built) < numNodes { // scheduler tick
+		for len(s.built) < numNodes { // scheduler tick
 			select {
 			case result := <-done:
-				// TODO: handle result.success != true
 				log.Printf("build %s completed", result.name)
-				built[result.name] = true
 				n := s.byName[result.name]
-				for to := s.g.To(n.ID()); to.Next(); {
-					candidate := to.Node()
-					//log.Printf("  checking %s", candidate.(*node).name)
-					ready := true
-					for from := s.g.From(candidate.ID()); from.Next(); {
-						if name := from.Node().(*node).name; !built[name] {
-							//log.Printf("  dep %s not yet ready", name)
-							ready = false
-							break
+				s.built[result.name] = result.success
+				if !result.success {
+					s.markFailed(n)
+				} else {
+					for to := s.g.To(n.ID()); to.Next(); {
+						if candidate := to.Node(); s.canBuild(candidate) {
+							log.Printf("  → enqueuing %s", candidate.(*node).name)
+							work <- candidate.(*node).name
 						}
-					}
-					if ready {
-						log.Printf("  → processing %s", candidate.(*node).name)
-						work <- candidate.(*node).name
 					}
 				}
 
@@ -234,44 +227,42 @@ func (s *scheduler) run() error {
 	if err := eg.Wait(); err != nil {
 		return err
 	}
-	//log.Printf("built %d of %d packages", len(built), s.g.Nodes().Len())
+	succeeded := 0
+	for _, result := range s.built {
+		if result {
+			succeeded++
+		}
+	}
 
-	// built := make(map[string]bool)
-	// process := make(map[string]graph.Node)
-	// // Start processing all nodes which have no dependencies
-	// for nodes := s.g.Nodes(); nodes.Next(); {
-	// 	n := nodes.Node()
-	// 	if s.g.From(n.ID()).Len() == 0 {
-	// 		process[n.(*node).name] = n
-	// 	}
-	// }
-	// for len(process) > 0 {
-	// 	// Mark one build as completed
-	// 	for name, n := range process {
-	// 		log.Printf("build %s completed", name)
-	// 		built[name] = true
-	// 		delete(process, name)
-	// 		for to := s.g.To(n.ID()); to.Next(); {
-	// 			candidate := to.Node()
-	// 			//log.Printf("  checking %s", candidate.(*node).name)
-	// 			ready := true
-	// 			for from := s.g.From(candidate.ID()); from.Next(); {
-	// 				if name := from.Node().(*node).name; !built[name] {
-	// 					//log.Printf("  dep %s not yet ready", name)
-	// 					ready = false
-	// 					break
-	// 				}
-	// 			}
-	// 			if ready {
-	// 				log.Printf("  → processing %s", candidate.(*node).name)
-	// 				process[candidate.(*node).name] = candidate
-	// 			}
-	// 		}
-	// 		break
-	// 	}
-	// }
-	// log.Printf("built %d of %d packages", len(built), s.g.Nodes().Len())
+	log.Printf("%d packages succeeded, %d failed, %d total", succeeded, len(s.built)-succeeded, len(s.built))
+
 	return nil
+}
+
+func (s *scheduler) markFailed(n graph.Node) {
+	log.Printf("marking deps of %s as failed", n.(*node).name)
+	for to := s.g.To(n.ID()); to.Next(); {
+		d := to.Node()
+		log.Printf("→ %s failed", d.(*node).name)
+		if s.built[d.(*node).name] {
+			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", d.(*node).name)
+		}
+		s.built[d.(*node).name] = false // dependencies cannot be fulfilled
+		s.markFailed(d)
+	}
+}
+
+// canBuild returns whether all dependencies of candidate are built.
+func (s *scheduler) canBuild(candidate graph.Node) bool {
+	//log.Printf("  checking %s", candidate.(*node).name)
+	for from := s.g.From(candidate.ID()); from.Next(); {
+		if name := from.Node().(*node).name; !s.built[name] {
+			//log.Printf("  dep %s not yet ready", name)
+			return false
+		}
+	}
+	return true
+
 }
 
 // bison needs help2man <stage1>
