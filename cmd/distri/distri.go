@@ -67,6 +67,7 @@ func main() {
 			"export":   {exportHelp, func() { export(helpFlag) }},
 			"env":      {envHelp, func() { printenv(helpFlag) }},
 			"mirror":   {mirrorHelp, func() { mirror(helpFlag) }},
+			"batch":    {batchHelp, func() { batch(helpFlag) }},
 		}
 		if len(args) != 1 {
 			fmt.Fprintf(os.Stderr, "syntax: %s help <verb>\n", os.Args[0])
@@ -147,6 +148,11 @@ func main() {
 
 	case "mirror":
 		if err := mirror(args); err != nil {
+			log.Fatal(err)
+		}
+
+	case "batch":
+		if err := batch(args); err != nil {
 			log.Fatal(err)
 		}
 
