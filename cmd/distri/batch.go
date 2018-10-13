@@ -8,6 +8,8 @@ import (
 	"log"
 	"math/rand"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -153,10 +155,13 @@ func batch(args []string) error {
 		}
 	}
 
+	const workers = 8 // TODO: customizable
 	s := scheduler{
-		g:      g,
-		byName: byName,
-		built:  make(map[string]bool),
+		workers: workers,
+		g:       g,
+		byName:  byName,
+		built:   make(map[string]bool),
+		status:  make([]string, workers+1),
 	}
 	if err := s.run(); err != nil {
 		return err
@@ -171,9 +176,32 @@ type buildResult struct {
 }
 
 type scheduler struct {
-	g      graph.Directed
-	byName map[string]*node
-	built  map[string]bool
+	workers int
+	g       graph.Directed
+	byName  map[string]*node
+	built   map[string]bool
+
+	statusMu   sync.Mutex
+	status     []string
+	lastStatus time.Time
+}
+
+func (s *scheduler) updateStatus(idx int, newStatus string) {
+	s.statusMu.Lock()
+	defer s.statusMu.Unlock()
+	if diff := len(s.status[idx]) - len(newStatus); diff > 0 {
+		newStatus += strings.Repeat(" ", diff) // overwrite stale characters with whitespace
+	}
+	s.status[idx] = newStatus
+	if time.Since(s.lastStatus) < 100*time.Millisecond {
+		// printing status too frequently slows down the program
+		return
+	}
+	s.lastStatus = time.Now()
+	for _, line := range s.status {
+		fmt.Println(line)
+	}
+	fmt.Printf("\033[%dA", len(s.status)) // restore cursor position
 }
 
 func (s *scheduler) run() error {
@@ -181,13 +209,29 @@ func (s *scheduler) run() error {
 	work := make(chan string, numNodes)
 	done := make(chan buildResult)
 	eg, ctx := errgroup.WithContext(context.Background())
-	for i := 0; i < 8; i++ {
+	for i := 0; i < s.workers; i++ {
+		i := i // copy
 		eg.Go(func() error {
+			ticker := time.NewTicker(100 * time.Millisecond) // TODO: 1*time.Second
+			defer ticker.Stop()
 			for pkg := range work {
-				dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(100*time.Millisecond)))
-				log.Printf("build of %s is taking %v", pkg, dur)
-				time.Sleep(dur)
+				s.updateStatus(i+1, "building "+pkg)
+				dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(1000*time.Millisecond)))
+				//log.Printf("build of %s is taking %v", pkg, dur)
+				start := time.Now()
+				after := time.After(dur)
+			Build:
+				for {
+					select {
+					case <-after:
+						break Build
+					case <-ticker.C:
+						s.updateStatus(i+1, fmt.Sprintf("building %s since %v", pkg, time.Since(start)))
+					}
+				}
+
 				done <- buildResult{name: pkg, success: pkg != "libx11-1.6.6"}
+				s.updateStatus(i+1, "idle")
 			}
 			return nil
 		})
@@ -202,21 +246,27 @@ func (s *scheduler) run() error {
 	}
 	go func() {
 		defer close(work)
+		succeeded := 0
+		failed := 0
 		for len(s.built) < numNodes { // scheduler tick
 			select {
 			case result := <-done:
-				log.Printf("build %s completed", result.name)
+				//log.Printf("build %s completed", result.name)
 				n := s.byName[result.name]
 				s.built[result.name] = result.success
-				if !result.success {
-					s.markFailed(n)
-				} else {
+				s.updateStatus(0, fmt.Sprintf("%d of %d packages: %d built, %d failed", len(s.built), numNodes, succeeded, failed))
+
+				if result.success {
+					succeeded++
 					for to := s.g.To(n.ID()); to.Next(); {
 						if candidate := to.Node(); s.canBuild(candidate) {
-							log.Printf("  → enqueuing %s", candidate.(*node).name)
+							//log.Printf("  → enqueuing %s", candidate.(*node).name)
 							work <- candidate.(*node).name
 						}
 					}
+				} else {
+					log.Printf("build of %s failed, TODO: logfile", result.name)
+					failed += 1 + s.markFailed(n)
 				}
 
 			case <-ctx.Done():
@@ -239,17 +289,23 @@ func (s *scheduler) run() error {
 	return nil
 }
 
-func (s *scheduler) markFailed(n graph.Node) {
-	log.Printf("marking deps of %s as failed", n.(*node).name)
+func (s *scheduler) markFailed(n graph.Node) int {
+	failed := 0
+	//log.Printf("marking deps of %s as failed", n.(*node).name)
 	for to := s.g.To(n.ID()); to.Next(); {
 		d := to.Node()
-		log.Printf("→ %s failed", d.(*node).name)
-		if s.built[d.(*node).name] {
-			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", d.(*node).name)
+		name := d.(*node).name
+		//log.Printf("→ %s failed", name)
+		if s.built[name] {
+			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", name)
 		}
-		s.built[d.(*node).name] = false // dependencies cannot be fulfilled
-		s.markFailed(d)
+		if _, ok := s.built[name]; !ok {
+			s.built[d.(*node).name] = false // dependencies cannot be fulfilled
+			failed++
+		}
+		failed += s.markFailed(d)
 	}
+	return failed
 }
 
 // canBuild returns whether all dependencies of candidate are built.
