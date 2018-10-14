@@ -28,25 +28,24 @@ import (
 // - continuous build system:
 //   + a new commit comes in, mirror should be updated
 //   + local modification to a local tree, rebuild all affected packages
+//     → increment version numbers with a tool
 //
 // - build-all (e.g. create distri image)
 
 // milestone: -bootstrap flag: print which packages need to be bootstrapped (those which depend on themselves)
 //   needs cycle detection (e.g. pkg-config→glib→pkg-config)
-// milestone: run a single build action
-// milestone: run multiple build actions in parallel
 // milestone: run a build action on a remote machine using cpu(1)
 
 // build action
 // - input: source tarball, build.textproto, build dep images
 // - output: image
 
-// figure out what needs to be built:
-// check if the outputs are present
-
 // to rebuild the archive: increment version number of all packages (helper tool which does this and commits?)
 
 const batchHelp = `TODO
+
+Packages which are already built (i.e. their .squashfs image exists) are skipped.
+
 `
 
 type node struct {
@@ -89,11 +88,16 @@ func batch(args []string) error {
 			return err
 		}
 
+		fullname := pkg + "-" + buildProto.GetVersion()
+		if _, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
+			continue // package already built
+		}
+
 		// TODO: to conserve work, only add nodes which need to be rebuilt
 		n := &node{
 			id:       int64(idx),
 			pkg:      pkg,
-			fullname: pkg + "-" + buildProto.GetVersion(),
+			fullname: fullname,
 		}
 		byName[n.fullname] = n
 		g.AddNode(n)
@@ -114,8 +118,6 @@ func batch(args []string) error {
 		}
 		version := buildProto.GetVersion()
 
-		// TODO: use just builder deps + GetDep + GetRuntimeDep
-		//buildDeps, err := builddeps(&buildProto)
 		deps := buildProto.GetDep()
 		deps = append(deps, builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
@@ -124,6 +126,9 @@ func batch(args []string) error {
 		for _, dep := range deps {
 			if dep == pkg+"-"+version {
 				continue // TODO
+			}
+			if _, ok := byName[dep]; !ok {
+				continue // dependency already built
 			}
 			g.SetEdge(g.NewEdge(n, byName[dep]))
 		}
@@ -261,7 +266,7 @@ func (s *scheduler) run() error {
 				s.updateStatus(i+1, "building "+n.pkg)
 				start := time.Now()
 				result := make(chan error)
-				if s.dryRun || n.pkg != "make" {
+				if s.dryRun {
 					go func() {
 						if !s.buildDry(n.pkg) {
 							result <- fmt.Errorf("dry-run intentionally failed")
