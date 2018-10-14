@@ -1,0 +1,11 @@
+--- a/Makefile.in	2017-06-15 22:41:44.845035618 +0200
++++ b/Makefile.in	2018-10-14 16:02:51.300869380 +0200
+@@ -1091,7 +1091,7 @@
+ .PRECIOUS: Makefile
+ 
+ 
+-src/signames.h: src/signames.c Makefile
++src/signames.h: src/signames.c Makefile src/$(am__dirstamp)
+ 		export LC_ALL=C ; \
+ 		@CPP@ -dM $< |\
+ 		tr -s '\t ' ' ' | sort -n -k 3 | sed \
