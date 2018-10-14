@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -48,14 +50,19 @@ const batchHelp = `TODO
 `
 
 type node struct {
-	id   int64
-	name string
+	id int64
+
+	pkg      string // e.g. make
+	fullname string // package and version, e.g. make-4.2.1
 }
 
 func (n *node) ID() int64 { return n.id }
 
 func batch(args []string) error {
 	fset := flag.NewFlagSet("batch", flag.ExitOnError)
+	var (
+		dryRun = fset.Bool("dry_run", false, "simulate builds by sleeping for random times instead of actually building packages")
+	)
 	fset.Parse(args)
 
 	log.Printf("distriroot %q", env.DistriRoot)
@@ -83,8 +90,12 @@ func batch(args []string) error {
 		}
 
 		// TODO: to conserve work, only add nodes which need to be rebuilt
-		n := &node{id: int64(idx), name: pkg + "-" + buildProto.GetVersion()}
-		byName[n.name] = n
+		n := &node{
+			id:       int64(idx),
+			pkg:      pkg,
+			fullname: pkg + "-" + buildProto.GetVersion(),
+		}
+		byName[n.fullname] = n
 		g.AddNode(n)
 	}
 
@@ -155,12 +166,18 @@ func batch(args []string) error {
 		}
 	}
 
+	logDir, err := ioutil.TempDir("", "distri-batch")
+	if err != nil {
+		return err
+	}
 	const workers = 8 // TODO: customizable
 	s := scheduler{
+		logDir:  logDir,
+		dryRun:  *dryRun,
 		workers: workers,
 		g:       g,
 		byName:  byName,
-		built:   make(map[string]bool),
+		built:   make(map[string]error),
 		status:  make([]string, workers+1),
 	}
 	if err := s.run(); err != nil {
@@ -171,15 +188,17 @@ func batch(args []string) error {
 }
 
 type buildResult struct {
-	name    string
-	success bool
+	node *node
+	err  error
 }
 
 type scheduler struct {
+	logDir  string
+	dryRun  bool
 	workers int
 	g       graph.Directed
 	byName  map[string]*node
-	built   map[string]bool
+	built   map[string]error
 
 	statusMu   sync.Mutex
 	status     []string
@@ -204,9 +223,32 @@ func (s *scheduler) updateStatus(idx int, newStatus string) {
 	fmt.Printf("\033[%dA", len(s.status)) // restore cursor position
 }
 
+func (s *scheduler) buildDry(pkg string) bool {
+	dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(1000*time.Millisecond)))
+	//log.Printf("build of %s is taking %v", pkg, dur)
+	time.Sleep(dur)
+	return pkg != "libx11"
+}
+
+func (s *scheduler) build(pkg string) error {
+	logFile, err := os.Create(filepath.Join(s.logDir, pkg+".log"))
+	if err != nil {
+		return err
+	}
+	defer logFile.Close()
+	build := exec.Command("distri", "build")
+	build.Dir = filepath.Join(env.DistriRoot, "pkgs", pkg)
+	build.Stdout = logFile
+	build.Stderr = logFile
+	if err := build.Run(); err != nil {
+		return fmt.Errorf("%v: %v", build.Args, err)
+	}
+	return nil
+}
+
 func (s *scheduler) run() error {
 	numNodes := s.g.Nodes().Len()
-	work := make(chan string, numNodes)
+	work := make(chan *node, numNodes)
 	done := make(chan buildResult)
 	eg, ctx := errgroup.WithContext(context.Background())
 	for i := 0; i < s.workers; i++ {
@@ -214,23 +256,39 @@ func (s *scheduler) run() error {
 		eg.Go(func() error {
 			ticker := time.NewTicker(100 * time.Millisecond) // TODO: 1*time.Second
 			defer ticker.Stop()
-			for pkg := range work {
-				s.updateStatus(i+1, "building "+pkg)
-				dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(1000*time.Millisecond)))
-				//log.Printf("build of %s is taking %v", pkg, dur)
+			for n := range work {
+				// Kick off the build
+				s.updateStatus(i+1, "building "+n.pkg)
 				start := time.Now()
-				after := time.After(dur)
+				result := make(chan error)
+				if s.dryRun || n.pkg != "make" {
+					go func() {
+						if !s.buildDry(n.pkg) {
+							result <- fmt.Errorf("dry-run intentionally failed")
+						} else {
+							result <- nil
+						}
+					}()
+				} else {
+					go func() {
+						err := s.build(n.pkg)
+						result <- err
+					}()
+				}
+
+				// Wait for the build to complete while updating status
+				var err error
 			Build:
 				for {
 					select {
-					case <-after:
+					case err = <-result:
 						break Build
 					case <-ticker.C:
-						s.updateStatus(i+1, fmt.Sprintf("building %s since %v", pkg, time.Since(start)))
+						s.updateStatus(i+1, fmt.Sprintf("building %s since %v", n.pkg, time.Since(start)))
 					}
 				}
 
-				done <- buildResult{name: pkg, success: pkg != "libx11-1.6.6"}
+				done <- buildResult{node: n, err: err}
 				s.updateStatus(i+1, "idle")
 			}
 			return nil
@@ -241,7 +299,7 @@ func (s *scheduler) run() error {
 	for nodes := s.g.Nodes(); nodes.Next(); {
 		n := nodes.Node()
 		if s.g.From(n.ID()).Len() == 0 {
-			work <- n.(*node).name
+			work <- n.(*node)
 		}
 	}
 	go func() {
@@ -252,20 +310,20 @@ func (s *scheduler) run() error {
 			select {
 			case result := <-done:
 				//log.Printf("build %s completed", result.name)
-				n := s.byName[result.name]
-				s.built[result.name] = result.success
+				n := s.byName[result.node.fullname]
+				s.built[result.node.fullname] = result.err
 				s.updateStatus(0, fmt.Sprintf("%d of %d packages: %d built, %d failed", len(s.built), numNodes, succeeded, failed))
 
-				if result.success {
+				if result.err == nil {
 					succeeded++
 					for to := s.g.To(n.ID()); to.Next(); {
 						if candidate := to.Node(); s.canBuild(candidate) {
 							//log.Printf("  → enqueuing %s", candidate.(*node).name)
-							work <- candidate.(*node).name
+							work <- candidate.(*node)
 						}
 					}
 				} else {
-					log.Printf("build of %s failed, TODO: logfile", result.name)
+					log.Printf("build of %s failed (%v), see %s", result.node.pkg, result.err, filepath.Join(s.logDir, result.node.pkg+".log"))
 					failed += 1 + s.markFailed(n)
 				}
 
@@ -279,7 +337,7 @@ func (s *scheduler) run() error {
 	}
 	succeeded := 0
 	for _, result := range s.built {
-		if result {
+		if result == nil {
 			succeeded++
 		}
 	}
@@ -294,13 +352,13 @@ func (s *scheduler) markFailed(n graph.Node) int {
 	//log.Printf("marking deps of %s as failed", n.(*node).name)
 	for to := s.g.To(n.ID()); to.Next(); {
 		d := to.Node()
-		name := d.(*node).name
+		name := d.(*node).fullname
 		//log.Printf("→ %s failed", name)
-		if s.built[name] {
+		if err, ok := s.built[name]; ok && err == nil {
 			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", name)
 		}
 		if _, ok := s.built[name]; !ok {
-			s.built[d.(*node).name] = false // dependencies cannot be fulfilled
+			s.built[d.(*node).fullname] = fmt.Errorf("dependencies cannot be fulfilled")
 			failed++
 		}
 		failed += s.markFailed(d)
@@ -312,7 +370,8 @@ func (s *scheduler) markFailed(n graph.Node) int {
 func (s *scheduler) canBuild(candidate graph.Node) bool {
 	//log.Printf("  checking %s", candidate.(*node).name)
 	for from := s.g.From(candidate.ID()); from.Next(); {
-		if name := from.Node().(*node).name; !s.built[name] {
+		name := from.Node().(*node).fullname
+		if err, ok := s.built[name]; !ok || err != nil {
 			//log.Printf("  dep %s not yet ready", name)
 			return false
 		}
