@@ -89,8 +89,10 @@ func batch(args []string) error {
 		}
 
 		fullname := pkg + "-" + buildProto.GetVersion()
-		if _, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
-			continue // package already built
+		if !*dryRun {
+			if _, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
+				continue // package already built
+			}
 		}
 
 		// TODO: to conserve work, only add nodes which need to be rebuilt
