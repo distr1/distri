@@ -41,6 +41,7 @@ var exchangeDirs = []string{
 	"/buildoutput/lib/tmpfiles.d",
 	"/buildoutput/lib/pkgconfig",
 	"/buildoutput/include",
+	"/buildoutput/include/sys",  // libcap and glibc
 	"/buildoutput/include/scsi", // linux-4.18.7 and glibc-2.27
 	"/buildoutput/include/X11",
 	"/buildoutput/share/man/man1",
