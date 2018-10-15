@@ -47,4 +47,5 @@ build_step: <
 
 install: <
   symlink: < oldname: "python3" newname: "bin/python" >
+  symlink: < oldname: "python3-config" newname: "bin/python-config" >
 >
