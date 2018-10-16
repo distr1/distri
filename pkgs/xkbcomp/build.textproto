@@ -1,0 +1,12 @@
+source: "https://xorg.freedesktop.org/releases/individual/app/xkbcomp-1.4.2.tar.bz2"
+hash: "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"
+version: "1.4.2"
+
+cbuilder: <
+  extra_configure_flag: "--with-xkb-config-root=/ro/xkeyboard-config-2.25/buildoutput/share/X11/xkb"
+>
+
+# build dependencies:
+dep: "xorgproto-2018.4"
+dep: "libx11-1.6.6"
+dep: "libxkbfile-1.0.9"

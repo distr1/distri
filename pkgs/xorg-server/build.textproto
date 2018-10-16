@@ -17,3 +17,7 @@ dep: "libxfont2-2.0.3"
 dep: "libpciaccess-0.14"
 dep: "libepoxy-1.5.2"
 dep: "zlib-1.2.11" # TODO: configure doesn’t check for it
+dep: "xkbcomp-1.4.2"
+dep: "systemd-239" # for udev
+
+runtime_dep: "xkbcomp-1.4.2"

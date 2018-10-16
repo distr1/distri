@@ -1,0 +1,13 @@
+source: "https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz"
+hash: "67c74d94196b153b774ab9f89b2fa6c6ba79352407037c8c14d5aeb334e959cd"
+version: "0.51.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "perl-5.28.0"
+dep: "perl-XML-Parser-2.44"
+
+runtime_dep: "perl-5.28.0"
+runtime_dep: "gettext-0.19.8.1"
+runtime_dep: "perl-XML-Parser-2.44"

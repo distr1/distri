@@ -1,0 +1,12 @@
+source: "https://xorg.freedesktop.org/releases/individual/driver/xf86-input-evdev-2.10.6.tar.bz2"
+hash: "8726073e81861bc7b2321e76272cbdbd33c7e1a121535a9827977265b9033ec0"
+version: "2.10.6"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "xorg-server-1.20.1"
+dep: "xorgproto-2018.4"
+dep: "systemd-239" # for libudev
+dep: "libevdev-1.5.6"
+dep: "mtdev-1.1.5"

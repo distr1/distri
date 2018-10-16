@@ -1,0 +1,11 @@
+--- a/test/Makefile.in	2018-10-16 18:35:49.828436096 +0200
++++ b/test/Makefile.in	2018-10-16 18:36:00.400283366 +0200
+@@ -620,7 +620,7 @@
+ 	-I$(top_builddir)/libevdev $(am__append_3)
+ AM_LDFLAGS = $(am__append_4)
+ test_compile_pedantic_SOURCES = test-compile-pedantic.c
+-test_compile_pedantic_CFLAGS = $(AM_CPPFLAGS) -pedantic -Werror -std=c89
++test_compile_pedantic_CFLAGS = $(AM_CPPFLAGS) -std=c89
+ test_link_SOURCES = test-link.c
+ test_link_CFLAGS = -I$(top_srcdir)
+ test_link_LDADD = $(top_builddir)/libevdev/libevdev.la
