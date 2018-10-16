@@ -359,8 +359,8 @@ func resolve(imgDir string, pkgs []string) ([]string, error) {
 	return resolved, nil
 }
 
-func builddeps(p *pb.Build) ([]string, error) {
-	deps := p.GetDep()
+func builderdeps(p *pb.Build) []string {
+	var deps []string
 	if builder := p.Builder; builder != nil {
 		// The C builder dependencies are re-used by many other builders
 		// (anything that supports linking against C libraries).
@@ -401,7 +401,12 @@ func builddeps(p *pb.Build) ([]string, error) {
 			deps = append(deps, cdeps...)
 		}
 	}
+	return deps
+}
 
+func builddeps(p *pb.Build) ([]string, error) {
+	deps := p.GetDep()
+	deps = append(deps, builderdeps(p)...)
 	return resolve(env.DefaultRepo, deps)
 }
 
