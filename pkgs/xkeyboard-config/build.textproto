@@ -1,0 +1,10 @@
+source: "https://xorg.freedesktop.org/releases/individual/data/xkeyboard-config/xkeyboard-config-2.25.tar.bz2"
+hash: "fec6c25a8d3931bd9afca49a1653b0fa222c85610502d7b77699bb61262934b2"
+version: "2.25"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "xorgproto-2018.4"
+dep: "libx11-1.6.6"
+dep: "intltool-0.51.0"
