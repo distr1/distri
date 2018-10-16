@@ -1,0 +1,11 @@
+source: "https://xorg.freedesktop.org/releases/individual/lib/libXft-2.3.2.tar.bz2"
+hash: "f5a3c824761df351ca91827ac221090943ef28b248573486050de89f4bfcdc4c"
+version: "2.3.2"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "libx11-1.6.6"
+dep: "libxrender-0.9.10"
+dep: "freetype-2.9.1"
+dep: "fontconfig-2.13.1"
