@@ -1,0 +1,32 @@
+source: "https://i3wm.org/i3status/i3status-2.12.tar.bz2"
+hash: "6fc6881536043391ab4bed369d956f99d1088965d8bcebed18d1932de3ba791a"
+version: "2.12"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "confuse-3.2.2"
+dep: "yajl2-2.1.0"
+dep: "alsa-lib-1.1.6"
+dep: "libnl-3.4.0"
+dep: "pulseaudio-12.2"
+dep: "which-2.21"
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "${ZI_SOURCEDIR}"
+  argv: "SYSCONFDIR=/etc"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "${ZI_SOURCEDIR}"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "SYSCONFDIR=/etc"
+  argv: "V=1"
+>
+

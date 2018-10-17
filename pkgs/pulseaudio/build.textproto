@@ -1,0 +1,13 @@
+source: "https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-12.2.tar.xz"
+hash: "809668ffc296043779c984f53461c2b3987a45b7a25eb2f0a1d11d9f23ba4055"
+version: "12.2"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "m4-1.4.18"
+dep: "intltool-0.51.0"
+dep: "libtool-2.4.6"
+dep: "libcap-2.25"
+dep: "libsndfile-1.0.28"
+dep: "pulseaudio-12.2"  # so that distri build can bind-mount the build result to /ro/pulseaudio-12.2, resulting in /ro/pulseaudio-12.2/buildoutput/lib/libpulse.so surviving a patchelf --shrink-rpath

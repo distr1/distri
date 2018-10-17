@@ -1,0 +1,63 @@
+source: "https://github.com/erikd/libsndfile/archive/1.0.28.tar.gz"
+hash: "89abe87316bc9afac9e5b34b137a399286cbcd6affad409b110596e3b749c897"
+version: "1.0.28"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "cmake-3.12.2"
+dep: "autoconf-2.69"
+dep: "autogen-5.18.7"
+dep: "alsa-lib-1.1.6"
+dep: "flac-1.3.2"
+dep: "libogg-1.3.3"
+dep: "libvorbis-1.3.6"
+
+dep: "automake-1.16"
+dep: "python3-3.7.0"
+
+# sndio
+# sqlite
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+>
+
+# TODO: make /share/aclocal an exchange dir
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp /ro/pkg-config-0.29.2/buildoutput/share/aclocal/pkg.m4 M4/"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "./autogen.sh; autoreconf -fi"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "mkdir build"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "./configure --prefix=${ZI_PREFIX}"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make -j8 V=1"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make install DESTDIR=${ZI_DESTDIR} PREFIX=${ZI_PREFIX}"
+>
