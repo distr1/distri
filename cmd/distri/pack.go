@@ -484,7 +484,9 @@ func writeDiskImg(dest, src string) error {
 	}
 
 	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
-	sfdisk.Stdin = strings.NewReader(`size=250M, name=boot
+	sfdisk.Stdin = strings.NewReader(`label:gpt
+size=1M,type=21686148-6449-6E6F-744E-656564454649
+size=250M, name=boot
 name=root`)
 	sfdisk.Stdout = os.Stdout
 	sfdisk.Stderr = os.Stderr
@@ -502,8 +504,9 @@ name=root`)
 	base := strings.TrimSpace(string(out))
 	log.Printf("base: %q", base)
 
-	boot := base + "p1"
-	root := base + "p2"
+	// p1 is the GRUB BIOS boot partition
+	boot := base + "p2"
+	root := base + "p3"
 
 	mkfs := exec.Command("sudo", "mkfs.ext2", boot)
 	mkfs.Stdout = os.Stdout
@@ -567,7 +570,7 @@ name=root`)
 		return err
 	}
 
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/sda2 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/sda3 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
