@@ -72,6 +72,7 @@ func pack(args []string) error {
 		"etc",
 		"root",
 		"boot",    // grub
+		"esp",     // grub (EFI System Partition)
 		"dev",     // udev
 		"ro",      // read-only package directory (mountpoint)
 		"roimg",   // read-only package store
@@ -160,6 +161,7 @@ func pack(args []string) error {
 		"linux-4.18.7",
 		"ca-certificates-3.39",
 		"grub2-2.02",
+		"grub2-efi-2.02",
 		// TODO: make these runtime deps of grub:
 		"sed-4.5",
 		"gawk-4.2.1",
@@ -485,6 +487,7 @@ func writeDiskImg(dest, src string) error {
 
 	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
 	sfdisk.Stdin = strings.NewReader(`label:gpt
+size=550M,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 size=1M,type=21686148-6449-6E6F-744E-656564454649
 size=250M, name=boot
 name=root`)
@@ -504,11 +507,19 @@ name=root`)
 	base := strings.TrimSpace(string(out))
 	log.Printf("base: %q", base)
 
-	// p1 is the GRUB BIOS boot partition
-	boot := base + "p2"
-	root := base + "p3"
+	esp := base + "p1"
+	// p2 is the GRUB BIOS boot partition
+	boot := base + "p3"
+	root := base + "p4"
 
-	mkfs := exec.Command("sudo", "mkfs.ext2", boot)
+	mkfs := exec.Command("sudo", "mkfs.fat", "-F32", esp)
+	mkfs.Stdout = os.Stdout
+	mkfs.Stderr = os.Stderr
+	if err := mkfs.Run(); err != nil {
+		return fmt.Errorf("%v: %v", mkfs.Args, err)
+	}
+
+	mkfs = exec.Command("sudo", "mkfs.ext2", boot)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
@@ -540,6 +551,11 @@ name=root`)
 	}
 	defer syscall.Unmount("/mnt/boot", 0)
 
+	if err := syscall.Mount(esp, "/mnt/esp", "vfat", syscall.MS_MGC_VAL, ""); err != nil {
+		return fmt.Errorf("mount %s /mnt/esp: %v", esp, err)
+	}
+	defer syscall.Unmount("/mnt/esp", 0)
+
 	if err := syscall.Mount("/dev", "/mnt/dev", "", syscall.MS_MGC_VAL|syscall.MS_BIND, ""); err != nil {
 		return fmt.Errorf("mount /dev /mnt/dev: %v", err)
 	}
@@ -570,14 +586,21 @@ name=root`)
 		return err
 	}
 
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 root=/dev/sda3 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 rootdelay=2 root=/dev/sda4 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
 		return fmt.Errorf("%v: %v", mkconfig.Args, err)
 	}
 
-	install := exec.Command("sudo", "chroot", "/mnt", "grub-install", "--target=i386-pc", base)
+	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-2.02/bin/grub-install", "--target=i386-pc", base)
+	install.Stderr = os.Stderr
+	install.Stdout = os.Stdout
+	if err := install.Run(); err != nil {
+		return fmt.Errorf("%v: %v", install.Args, err)
+	}
+
+	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-2.02/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/esp", "--removable", "--no-nvram", "--boot-directory=/boot")
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
@@ -599,7 +622,7 @@ name=root`)
 		return fmt.Errorf("%v: %v", chown.Args, err)
 	}
 
-	for _, m := range []string{"sys", "dev", "boot", ""} {
+	for _, m := range []string{"sys", "dev", "boot", "esp", ""} {
 		if err := syscall.Unmount(filepath.Join("/mnt", m), 0); err != nil {
 			return fmt.Errorf("unmount /mnt/%s: %v", m, err)
 		}

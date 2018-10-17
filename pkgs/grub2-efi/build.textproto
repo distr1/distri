@@ -1,0 +1,21 @@
+source: "https://ftp.gnu.org/gnu/grub/grub-2.02.tar.xz"
+hash: "810b3798d316394f94096ec2797909dbf23c858e48f7b3830826b8daa06b7b0f"
+version: "2.02"
+
+cherry_pick: "werror.patch"
+# http://lists.openembedded.org/pipermail/openembedded-core/2018-July/153054.html
+# https://git.savannah.gnu.org/cgit/grub.git/commit/util?id=842c390469e2c2e10b5aa36700324cd3bde25875
+cherry_pick: "relocation.patch"
+
+cbuilder: <
+  extra_configure_flag: "--disable-werror"
+  extra_configure_flag: "--with-platform=efi"
+  extra_configure_flag: "--target=amd64-pe"
+>
+
+# build dependencies:
+dep: "bison-3.0.5"
+dep: "flex-2.6.4"
+dep: "m4-1.4.18" # TODO: remove (runtime-dep of flex)
+
+# TODO: runtime dep: awk, sed for grub-mkconfig
