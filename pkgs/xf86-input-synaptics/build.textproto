@@ -1,0 +1,13 @@
+source: "https://xorg.freedesktop.org/releases/individual/driver/xf86-input-synaptics-1.9.1.tar.bz2"
+hash: "7af83526eff1c76e8b9e1553b34245c203d029028d8044dd9dcf71eef1001576"
+version: "1.9.1"
+
+cbuilder: <
+  extra_configure_flag: "--with-xorg-conf-dir=/ro/xf86-input-synaptics-1.9.1/buildoutput/share/X11/xorg.conf.d"
+>
+
+# build dependencies:
+dep: "xorg-server-1.20.1"
+dep: "xorgproto-2018.4"
+dep: "libevdev-1.5.6"
+dep: "libxi-1.7.9"
