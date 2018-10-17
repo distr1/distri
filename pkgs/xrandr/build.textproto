@@ -1,0 +1,11 @@
+source: "https://xorg.freedesktop.org/releases/individual/app/xrandr-1.5.0.tar.bz2"
+hash: "c1cfd4e1d4d708c031d60801e527abc9b6d34b85f2ffa2cadd21f75ff38151cd"
+version: "1.5.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "xorgproto-2018.4"
+dep: "libx11-1.6.6"
+dep: "libxrandr-1.5.1"
+dep: "libxrender-0.9.10"
