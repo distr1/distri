@@ -1103,8 +1103,15 @@ func (b *buildctx) verify(fn string) error {
 }
 
 func (b *buildctx) download(fn string) error {
+	// We need to disable compression: with some web servers,
+	// http.DefaultTransport’s default compression handling results in an
+	// unwanted gunzip step. E.g., http://rpm5.org/files/popt/popt-1.16.tar.gz
+	// would be stored as an uncompressed tar file.
+	t := *http.DefaultTransport.(*http.Transport)
+	t.DisableCompression = true
+	c := &http.Client{Transport: &t}
 	log.Printf("downloading %s to %s", b.Proto.GetSource(), fn)
-	resp, err := http.Get(b.Proto.GetSource())
+	resp, err := c.Get(b.Proto.GetSource())
 	if err != nil {
 		return err
 	}
