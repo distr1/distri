@@ -146,13 +146,6 @@ func pack(args []string) error {
 		"containerd-1.2.0-beta.2",
 		"docker-engine-18.06.1-ce",
 		"docker-18.06.1-ce",
-		// TODO: make these runtime deps of docker:
-		"procps-ng-3.3.15",
-		"iptables-1.6.2",
-		"xzutils-5.2.4",
-		"e2fsprogs-1.44.4",
-		"kmod-25",
-		// end of docker deps
 		"runc-1.0.0-rc5",
 		"grep-3.1",
 		"openssh-7.8p1",
@@ -162,10 +155,6 @@ func pack(args []string) error {
 		"ca-certificates-3.39",
 		"grub2-2.02",
 		"grub2-efi-2.02",
-		// TODO: make these runtime deps of grub:
-		"sed-4.5",
-		"gawk-4.2.1",
-		// end of grub deps
 		"squashfs-4.3",
 		"fuse-3.2.6",
 		"haveged-1.9.4", // for gathering entropy on e.g. Google Cloud
@@ -173,7 +162,6 @@ func pack(args []string) error {
 		"binutils-2.31", // for debugging (e.g. readelf)
 		"curl-7.61.1",
 		"dracut-048",
-		"glib-2.58.0", // TODO: remove once dracut-048 gets the transitive runtime_dep on glib-2.58.0 from pkg-config
 	}
 
 	if err := install(append([]string{

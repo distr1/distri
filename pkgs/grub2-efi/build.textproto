@@ -18,4 +18,6 @@ dep: "bison-3.0.5"
 dep: "flex-2.6.4"
 dep: "m4-1.4.18" # TODO: remove (runtime-dep of flex)
 
-# TODO: runtime dep: awk, sed for grub-mkconfig
+# grub-mkconfig needs:
+runtime_dep: "sed-4.5"
+runtime_dep: "gawk-4.2.1"

@@ -9,6 +9,12 @@ dep: "golang-1.11"
 
 # build dependencies:
 
+runtime_dep: "procps-ng-3.3.15"
+runtime_dep: "iptables-1.6.2"
+runtime_dep: "xzutils-5.2.4"
+runtime_dep: "e2fsprogs-1.44.4"
+runtime_dep: "kmod-25"
+
 # TODO: map GOCACHE into the build environment
 
 build_step: <
