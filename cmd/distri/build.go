@@ -706,61 +706,65 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
 		switch v := builder.(type) {
 		case *pb.Build_Cbuilder:
-			if err := b.buildc(v.Cbuilder, env, buildLog); err != nil {
+			var err error
+			steps, env, err = b.buildc(v.Cbuilder, env)
+			if err != nil {
 				return nil, err
 			}
 		case *pb.Build_Perlbuilder:
-			if err := b.buildperl(v.Perlbuilder, env, buildLog); err != nil {
+			var err error
+			steps, env, err = b.buildperl(v.Perlbuilder, env)
+			if err != nil {
 				return nil, err
 			}
 		default:
 			return nil, fmt.Errorf("BUG: unknown builder")
 		}
-	} else {
-		if len(steps) == 0 {
-			return nil, fmt.Errorf("build.textproto does not specify Builder nor BuildSteps")
-		}
+	}
 
-		if b.Hermetic {
-			log.Printf("build environment variables:")
-			for _, kv := range env {
-				log.Printf("  %s", kv)
-			}
+	if len(steps) == 0 {
+		return nil, fmt.Errorf("build.textproto does not specify Builder nor BuildSteps")
+	}
+
+	if b.Hermetic {
+		log.Printf("build environment variables:")
+		for _, kv := range env {
+			log.Printf("  %s", kv)
 		}
-		// custom build steps
-		times := make([]time.Duration, len(steps))
-		for idx, step := range steps {
-			start := time.Now()
-			cmd := exec.Command(b.substitute(step.Argv[0]), b.substituteStrings(step.Argv[1:])...)
+	}
+	// custom build steps
+	times := make([]time.Duration, len(steps))
+	for idx, step := range steps {
+		start := time.Now()
+		cmd := exec.Command(b.substitute(step.Argv[0]), b.substituteStrings(step.Argv[1:])...)
+		if b.Hermetic {
+			cmd.Env = env
+		}
+		log.Printf("build step %d of %d: %v", idx, len(steps), cmd.Args)
+		cmd.Stdin = os.Stdin // for interactive debugging
+		// TODO: logging with io.MultiWriter results in output no longer being colored, e.g. during the systemd build. any workaround?
+		cmd.Stdout = io.MultiWriter(os.Stdout, buildLog)
+		cmd.Stderr = io.MultiWriter(os.Stderr, buildLog)
+		if err := cmd.Run(); err != nil {
+			// TODO: ask the user first if they want to debug, and only during interactive builds. detect pty?
+			// TODO: ring the bell :)
+			log.Printf("build step %v failed (%v), starting debug shell", cmd.Args, err)
+			cmd := exec.Command("bash", "-i")
 			if b.Hermetic {
 				cmd.Env = env
 			}
-			log.Printf("build step %d of %d: %v", idx, len(steps), cmd.Args)
-			cmd.Stdin = os.Stdin // for interactive debugging
-			// TODO: logging with io.MultiWriter results in output no longer being colored, e.g. during the systemd build. any workaround?
-			cmd.Stdout = io.MultiWriter(os.Stdout, buildLog)
-			cmd.Stderr = io.MultiWriter(os.Stderr, buildLog)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				// TODO: ask the user first if they want to debug, and only during interactive builds. detect pty?
-				// TODO: ring the bell :)
-				log.Printf("build step %v failed (%v), starting debug shell", cmd.Args, err)
-				cmd := exec.Command("bash", "-i")
-				if b.Hermetic {
-					cmd.Env = env
-				}
-				cmd.Stdin = os.Stdin
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				if err := cmd.Run(); err != nil {
-					log.Printf("debug command failed: %v", err)
-				}
-				return nil, err
+				log.Printf("debug command failed: %v", err)
 			}
-			times[idx] = time.Since(start)
+			return nil, err
 		}
-		for idx, step := range steps {
-			log.Printf("  step %d: %v (command: %v)", idx, times[idx], step.Argv)
-		}
+		times[idx] = time.Since(start)
+	}
+	for idx, step := range steps {
+		log.Printf("  step %d: %v (command: %v)", idx, times[idx], step.Argv)
 	}
 
 	if b.Debug {
