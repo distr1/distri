@@ -11,8 +11,6 @@ github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LE
 github.com/lpar/gzipped v1.1.0 h1:FEQnBzF06KTMh8Wnse6wNJvGwe7+vILQIFzuTq6ipGs=
 github.com/lpar/gzipped v1.1.0/go.mod h1:JBo67wiCld7AmFYfSNA75NmFG65roJiGwrVohF8uYGE=
 golang.org/x/exp v0.0.0-20180321215751-8460e604b9de/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
-golang.org/x/exp v0.0.0-20180907224206-e88728d35e99 h1:7IN8+ZMp04l/19EF+wsr7NM1jyvcadKINimAtWRyQk8=
-golang.org/x/exp v0.0.0-20180907224206-e88728d35e99/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20181011123434-d8bb7a16721e h1:zdkKJYGX6U2WGPgeMiYP6Sn3okzsC0NTea9C0+wou8o=
 golang.org/x/exp v0.0.0-20181011123434-d8bb7a16721e/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/net v0.0.0-20181003013248-f5e5bdd77824 h1:MkjFNbaZJyH98M67Q3umtwZ+EdVdrNJLqSwZp5vcv60=
@@ -22,6 +20,7 @@ golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sys v0.0.0-20180821140842-3b58ed4ad339 h1:0w2EXzxbB03VAzqwe3csbadu4CPhMRtxCz/rjw9gkic=
 golang.org/x/sys v0.0.0-20180821140842-3b58ed4ad339/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/tools v0.0.0-20180525024113-a5b4c53f6e8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
-golang.org/x/tools v0.0.0-20181012201414-c0eb142035b5/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414 h1:I9CLYgoY02/pOK+fYZ5PSRwoGafdCYnUMtiiQ8cS3Co=
 gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
+gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 h1:biGE8p3sxXv+JdArdlsXEJZBPPFk51mQHVwOv6h1gnY=
+gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=
