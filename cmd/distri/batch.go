@@ -80,7 +80,8 @@ func batch(args []string) error {
 		pkg := fi.Name()
 
 		// TODO(later): parallelize?
-		c, err := ioutil.ReadFile(filepath.Join(pkgsDir, fi.Name(), "build.textproto"))
+		buildTextprotoPath := filepath.Join(pkgsDir, fi.Name(), "build.textproto")
+		c, err := ioutil.ReadFile(buildTextprotoPath)
 		if err != nil {
 			return err
 		}
@@ -91,8 +92,15 @@ func batch(args []string) error {
 
 		fullname := pkg + "-" + buildProto.GetVersion()
 		if !*simulate {
-			if _, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
-				continue // package already built
+			if squashStat, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
+				buildStat, err := os.Stat(buildTextprotoPath)
+				if err != nil {
+					return err
+				}
+				if buildStat.ModTime().Before(squashStat.ModTime()) {
+					continue // package already built
+				}
+				// fall-through: stale package
 			}
 		}
 
@@ -107,11 +115,9 @@ func batch(args []string) error {
 	}
 
 	// add all constraints: <pkg>-<version> depends on <pkg>-<version>
-	for _, fi := range fis {
-		pkg := fi.Name()
-
+	for _, n := range byName {
 		// TODO(later): parallelize?
-		c, err := ioutil.ReadFile(filepath.Join(pkgsDir, fi.Name(), "build.textproto"))
+		c, err := ioutil.ReadFile(filepath.Join(pkgsDir, n.pkg, "build.textproto"))
 		if err != nil {
 			return err
 		}
@@ -125,9 +131,8 @@ func batch(args []string) error {
 		deps = append(deps, builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 
-		n := byName[pkg+"-"+version]
 		for _, dep := range deps {
-			if dep == pkg+"-"+version {
+			if dep == n.pkg+"-"+version {
 				continue // TODO
 			}
 			if _, ok := byName[dep]; !ok {
