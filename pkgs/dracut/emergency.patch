@@ -1,0 +1,14 @@
+diff --git i/modules.d/98dracut-systemd/dracut-emergency.sh w/modules.d/98dracut-systemd/dracut-emergency.sh
+index f17460a7..d73cb769 100755
+--- i/modules.d/98dracut-systemd/dracut-emergency.sh
++++ w/modules.d/98dracut-systemd/dracut-emergency.sh
+@@ -29,7 +29,8 @@ if getargbool 1 rd.shell -d -y rdshell || getarg rd.break -d rdbreak; then
+     [ -f "$FSTXT" ] && cat "$FSTXT"
+     [ -f /etc/profile ] && . /etc/profile
+     [ -z "$PS1" ] && export PS1="$_name:\${PWD}# "
+-    exec sh -i -l
++    echo "PATH is $PATH"
++    exec /bin/sh -i -l
+ else
+     export hook="shutdown-emergency"
+     warn "$action has failed. To debug this issue add \"rd.shell rd.debug\" to the kernel command line."

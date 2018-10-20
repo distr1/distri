@@ -1,0 +1,98 @@
+diff --git i/install/dracut-install.c w/install/dracut-install.c
+index 5f352b36..9f42f5ed 100644
+--- i/install/dracut-install.c
++++ w/install/dracut-install.c
+@@ -393,6 +393,55 @@ static int library_install(const char *src, const char *lib)
+         return ret;
+ }
+ 
++static int resolve_deps_shell(const char *src, int *done)
++{
++  int ret = 0;
++        _cleanup_free_ char *buf = NULL;
++        size_t linesize = LINE_MAX;
++	_cleanup_fclose_ FILE *fptr = NULL;
++	fptr = fopen(src, "r");
++	if (fptr == NULL)
++	  return -errno;
++	if (getline(&buf, &linesize, fptr) <= 0)
++	  return 0;
++	if (buf[0] != '#' || buf[1] != '!') {
++	  /* no shebang, not a shell script */
++	  return 0;
++	}
++	*done = 1;
++
++	/* we have a shebang */
++	char *p, *q;
++	for (p = &buf[2]; *p && isspace(*p); p++) ;
++	for (q = p; *q && (!isspace(*q)); q++) ;
++	*q = '\0';
++	log_debug("Script install: '%s'", p);
++	ret = dracut_install(p, p, false, true, false);
++	if (ret != 0) {
++	  log_error("ERROR: failed to install '%s'", p);
++	  return ret;
++	}
++
++	while (!feof(fptr)) {
++	  if (getline(&buf, &linesize, fptr) <= 0)
++	    continue;
++	  log_debug("shell line: '%s'", buf);
++	  if (strstr(buf, "exec ") == buf) {
++	    log_debug("exec line: '%s'", buf);
++	    for (p = &buf[strlen("exec ")]; *p && isspace(*p); p++) ;
++	    for (q = p; *q && (!isspace(*q)); q++) ;
++	    *q = '\0';
++	    log_debug("exec '%s'", p);
++	    ret = dracut_install(p, p, false, true, false);
++	    if (ret != 0) {
++	      log_error("ERROR: failed to install '%s'", p);
++	      return ret;
++	    }
++	  }
++	}
++	return ret;
++}
++
+ static int resolve_deps(const char *src)
+ {
+         int ret = 0;
+@@ -405,30 +454,14 @@ static int resolve_deps(const char *src)
+         buf = malloc(LINE_MAX);
+         if (buf == NULL)
+                 return -errno;
+-
++	log_debug("resolve_deps(%s)", src);
+         if (strstr(src, ".so") == 0) {
+-                _cleanup_close_ int fd = -1;
+-                fd = open(src, O_RDONLY | O_CLOEXEC);
+-                if (fd < 0)
+-                        return -errno;
+-
+-                ret = read(fd, buf, LINE_MAX);
+-                if (ret == -1)
+-                        return -errno;
+-
+-                buf[LINE_MAX - 1] = '\0';
+-                if (buf[0] == '#' && buf[1] == '!') {
+-                        /* we have a shebang */
+-                        char *p, *q;
+-                        for (p = &buf[2]; *p && isspace(*p); p++) ;
+-                        for (q = p; *q && (!isspace(*q)); q++) ;
+-                        *q = '\0';
+-                        log_debug("Script install: '%s'", p);
+-                        ret = dracut_install(p, p, false, true, false);
+-                        if (ret != 0)
+-                                log_error("ERROR: failed to install '%s'", p);
+-                        return ret;
+-                }
++	  int done = 0;
++	  ret = resolve_deps_shell(src, &done);
++	  if (ret < 0)
++	    return ret;
++	  if (done == 1)
++	    return ret;
+         }
+ 
+         /* run ldd */

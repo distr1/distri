@@ -1,0 +1,19 @@
+source: "https://mirrors.edge.kernel.org/pub/linux/utils/boot/dracut/dracut-048.tar.xz"
+hash: "0750d6b71b7f95d8dfa338404372bfeb0e5c30e7fe2a21ba55c6dbf3dbcf6a79"
+version: "048"
+
+cherry_pick: "exec.patch"
+cherry_pick: "emergency.patch"
+
+cbuilder: <
+  copy_to_builddir: true
+>
+
+# build dependencies:
+dep: "kmod-25"
+
+runtime_dep: "pkg-config-0.29.2"
+runtime_dep: "findutils-4.6.0"
+runtime_dep: "cpio-2.12"
+runtime_dep: "tar-1.30"
+runtime_dep: "gzip-1.9"
