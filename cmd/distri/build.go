@@ -282,7 +282,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
 }
