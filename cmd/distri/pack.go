@@ -588,7 +588,7 @@ name=root`)
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-239/buildoutput/share/pkgconfig/ dracut /boot/initramfs-4.18.7.img 4.18.7")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-239/buildoutput/share/pkgconfig/ dracut -o bash /boot/initramfs-4.18.7.img 4.18.7")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
