@@ -172,6 +172,8 @@ func pack(args []string) error {
 		"dbus-1.13.6",
 		"binutils-2.31", // for debugging (e.g. readelf)
 		"curl-7.61.1",
+		"dracut-048",
+		"glib-2.58.0", // TODO: remove once dracut-048 gets the transitive runtime_dep on glib-2.58.0 from pkg-config
 	}
 
 	if err := install(append([]string{
@@ -586,7 +588,14 @@ name=root`)
 		return err
 	}
 
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 rootdelay=2 root=/dev/sda4 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-239/buildoutput/share/pkgconfig/ dracut /boot/initramfs-4.18.7.img 4.18.7")
+	dracut.Stderr = os.Stderr
+	dracut.Stdout = os.Stdout
+	if err := dracut.Run(); err != nil {
+		return fmt.Errorf("%v: %v", dracut.Args, err)
+	}
+
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
