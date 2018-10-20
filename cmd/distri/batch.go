@@ -60,7 +60,7 @@ func (n *node) ID() int64 { return n.id }
 func batch(args []string) error {
 	fset := flag.NewFlagSet("batch", flag.ExitOnError)
 	var (
-		dryRun = fset.Bool("dry_run", false, "simulate builds by sleeping for random times instead of actually building packages")
+		simulate = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
 	)
 	fset.Parse(args)
 
@@ -89,7 +89,7 @@ func batch(args []string) error {
 		}
 
 		fullname := pkg + "-" + buildProto.GetVersion()
-		if !*dryRun {
+		if !*simulate {
 			if _, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
 				continue // package already built
 			}
@@ -179,13 +179,13 @@ func batch(args []string) error {
 	}
 	const workers = 8 // TODO: customizable
 	s := scheduler{
-		logDir:  logDir,
-		dryRun:  *dryRun,
-		workers: workers,
-		g:       g,
-		byName:  byName,
-		built:   make(map[string]error),
-		status:  make([]string, workers+1),
+		logDir:   logDir,
+		simulate: *simulate,
+		workers:  workers,
+		g:        g,
+		byName:   byName,
+		built:    make(map[string]error),
+		status:   make([]string, workers+1),
 	}
 	if err := s.run(); err != nil {
 		return err
@@ -200,12 +200,12 @@ type buildResult struct {
 }
 
 type scheduler struct {
-	logDir  string
-	dryRun  bool
-	workers int
-	g       graph.Directed
-	byName  map[string]*node
-	built   map[string]error
+	logDir   string
+	simulate bool
+	workers  int
+	g        graph.Directed
+	byName   map[string]*node
+	built    map[string]error
 
 	statusMu   sync.Mutex
 	status     []string
@@ -268,10 +268,10 @@ func (s *scheduler) run() error {
 				s.updateStatus(i+1, "building "+n.pkg)
 				start := time.Now()
 				result := make(chan error)
-				if s.dryRun {
+				if s.simulate {
 					go func() {
 						if !s.buildDry(n.pkg) {
-							result <- fmt.Errorf("dry-run intentionally failed")
+							result <- fmt.Errorf("simulate intentionally failed")
 						} else {
 							result <- nil
 						}
