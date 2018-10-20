@@ -8,3 +8,6 @@ cbuilder: <
   extra_configure_flag: "FORCE_UNSAFE_CONFIGURE=1"
   extra_configure_flag: "--enable-install-program=arch"
 >
+
+dep: "attr-2.4.48"
+dep: "libcap-2.25"
