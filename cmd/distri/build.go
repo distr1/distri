@@ -1027,7 +1027,7 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 func (b *buildctx) extract() (srcdir string, _ error) {
 	fn := filepath.Base(b.Proto.GetSource())
 	dir := fn
-	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
+	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar", "tgz"} {
 		dir = strings.TrimSuffix(dir, "."+suffix)
 	}
 	_, err := os.Stat(dir)
