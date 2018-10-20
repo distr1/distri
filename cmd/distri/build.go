@@ -1179,7 +1179,7 @@ func runJob(job string) error {
 }
 
 func build(args []string) error {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("build", flag.ExitOnError)
 	var (
 		job = fset.String("job",

@@ -107,7 +107,7 @@ func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
 }
 
 func mountfuse(args []string) (join func(context.Context) error, _ error) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
 		repo      = fset.String("repo", env.DefaultRepo, "TODO")
