@@ -37,6 +37,9 @@ const (
 
 func scaffold(args []string) error {
 	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
+	var (
+		pkgName = fset.String("pkg", "", "overwrite package name. auto-detect from URL if empty")
+	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return fmt.Errorf("syntax: scaffold <url>")
@@ -51,14 +54,20 @@ func scaffold(args []string) error {
 		scaffoldType = scaffoldPerl
 	}
 
-	pkg := filepath.Base(u)
-	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
-		pkg = strings.TrimSuffix(pkg, "."+suffix)
+	var pkg string
+	if *pkgName != "" {
+		pkg = *pkgName
+	} else {
+		pkg = filepath.Base(u)
+		for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar"} {
+			pkg = strings.TrimSuffix(pkg, "."+suffix)
+		}
 	}
 	idx := strings.LastIndex(pkg, "-")
 	if idx == -1 {
 		return fmt.Errorf("could not segment %q into <name>-<version>", pkg)
 	}
+
 	name := strings.ToLower(pkg[:idx])
 	version := pkg[idx+1:]
 	if scaffoldType == scaffoldPerl {
