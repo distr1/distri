@@ -1,0 +1,11 @@
+source: "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.0/cryptsetup-2.0.4.tar.xz"
+hash: "9d3a3c7033293e0c97f0ad0501fd5b4d4913ae497cbf70cca06633ccc54b5734"
+version: "2.0.4"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "lvm2-2.03.00"
+dep: "popt-1.16"
+dep: "json-c-0.13.1"
+dep: "libgcrypt-1.8.3"
