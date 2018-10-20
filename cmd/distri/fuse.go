@@ -469,41 +469,34 @@ func (fs *fuseFS) updatePackages() error {
 	}
 	log.Printf("%d remote packages", len(mm.GetPackage()))
 
-	// pkgs := make(map[string]bool)
-	// fs.mu.Lock()
-	// defer fs.mu.Unlock()
-	// for _, pkg := range fs.pkgs {
-	// 	pkgs[pkg] = true
-	// }
-	// for _, pkg := range mm.GetPackage() {
-	// 	if pkgs[pkg.GetName()] {
-	// 		continue
-	// 	}
-	// 	fs.pkgs = append(fs.pkgs, pkg.GetName())
-	// 	for _, p := range pkg.GetWellKnownPath() {
-	// 		dir := filepath.Dir(p)
-	// 		name := filepath.Base(p)
-	// 		farm, ok := fs.farms[dir]
-	// 		if !ok {
-	// 			continue
-	// 		}
-	// 		if _, ok := farm.byName[name]; ok {
-	// 			//log.Printf("CONFLICT: %s claimed by 2 or more packages", name)
-	// 			continue
-	// 		}
-	// 		link := &symlink{
-	// 			name:   name,
-	// 			target: filepath.Join("..", pkg.GetName(), dir, name),
-	// 			idx:    len(farm.links),
-	// 		}
-	// 		farm.links = append(farm.links, link)
-	// 		farm.byName[name] = link
-	// 	}
-	// }
-	// // Increase capacity to hold as many readers as we now have packages:
-	// readers := make([]*squashfsReader, len(fs.pkgs))
-	// copy(readers, fs.readers)
-	// fs.readers = readers
+	existing := make(map[string]bool)
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	for _, pkg := range fs.pkgs {
+		existing[pkg] = true
+	}
+	for _, pkg := range mm.GetPackage() {
+		if existing[pkg.GetName()] {
+			continue
+		}
+		fs.pkgs = append(fs.pkgs, pkg.GetName())
+		for _, p := range pkg.GetWellKnownPath() {
+			exchangePath := strings.TrimPrefix(filepath.Dir(p), "buildoutput")
+			dir, ok := fs.dirs[exchangePath]
+			if !ok {
+				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
+			}
+			rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg.GetName(), p))
+			if err != nil {
+				return err
+			}
+			fs.symlink(dir, rel)
+		}
+	}
+	// Increase capacity to hold as many readers as we now have packages:
+	readers := make([]*squashfsReader, len(fs.pkgs))
+	copy(readers, fs.readers)
+	fs.readers = readers
 
 	return nil
 }
