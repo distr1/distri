@@ -6,4 +6,5 @@ cbuilder: <
   extra_configure_flag: "--without-selinux" # results in link errors when building with host deps
   # TODO: get rid of this once uid/gid are not 0 in the namespace
   extra_configure_flag: "FORCE_UNSAFE_CONFIGURE=1"
+  extra_configure_flag: "--enable-install-program=arch"
 >
