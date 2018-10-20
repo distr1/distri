@@ -41,6 +41,7 @@ var exchangeDirs = []string{
 	"/buildoutput/lib/tmpfiles.d",
 	"/buildoutput/lib/pkgconfig",
 	"/buildoutput/lib/xorg/modules",
+	"/buildoutput/lib/xorg/modules/input",
 	"/buildoutput/lib/xorg/modules/drivers",
 	"/buildoutput/include",
 	"/buildoutput/include/sys",  // libcap and glibc
@@ -51,6 +52,7 @@ var exchangeDirs = []string{
 	"/buildoutput/share/dbus-1/system-services",
 	"/buildoutput/share/dbus-1/services",
 	"/buildoutput/share/fonts/truetype",
+	"/buildoutput/share/X11/xorg.conf.d",
 }
 
 type fileNotFoundError struct {
