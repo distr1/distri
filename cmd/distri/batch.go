@@ -60,6 +60,7 @@ func (n *node) ID() int64 { return n.id }
 func batch(args []string) error {
 	fset := flag.NewFlagSet("batch", flag.ExitOnError)
 	var (
+		dryRun   = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
 		simulate = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
 	)
 	fset.Parse(args)
@@ -171,6 +172,14 @@ func batch(args []string) error {
 		if _, err := topo.Sort(g); err != nil {
 			return fmt.Errorf("could not break cycles: %v", err)
 		}
+	}
+
+	if *dryRun {
+		log.Printf("build %d pkg", g.Nodes().Len())
+		for it := g.Nodes(); it.Next(); {
+			log.Printf("  build %s", it.Node().(*node).pkg)
+		}
+		return nil
 	}
 
 	logDir, err := ioutil.TempDir("", "distri-batch")
