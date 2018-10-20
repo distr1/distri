@@ -6,9 +6,9 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/distr1/distri/internal/addrfd"
+	"github.com/distr1/distri/internal/env"
 	"github.com/lpar/gzipped"
-	"github.com/stapelberg/zi/internal/addrfd"
-	"github.com/stapelberg/zi/internal/env"
 )
 
 const exportHelp = `TODO

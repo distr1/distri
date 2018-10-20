@@ -13,9 +13,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/stapelberg/zi/internal/env"
-	"github.com/stapelberg/zi/pb"
 )
 
 const scaffoldHelp = `TODO

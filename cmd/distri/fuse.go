@@ -21,9 +21,9 @@ import (
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
 
-	"github.com/stapelberg/zi/internal/env"
-	"github.com/stapelberg/zi/internal/squashfs"
-	"github.com/stapelberg/zi/pb"
+	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/squashfs"
+	"github.com/distr1/distri/pb"
 )
 
 const fuseHelp = `TODO

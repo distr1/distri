@@ -1,4 +1,4 @@
-module github.com/stapelberg/zi
+module github.com/distr1/distri
 
 require (
 	github.com/golang/gddo v0.0.0-20180911175731-8b031907f29f // indirect

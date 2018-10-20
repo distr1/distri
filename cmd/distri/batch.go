@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/stapelberg/zi/internal/env"
-	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sync/errgroup"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"

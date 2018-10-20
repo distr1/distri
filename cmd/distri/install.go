@@ -13,9 +13,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/distr1/distri/internal/squashfs"
+	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/stapelberg/zi/internal/squashfs"
-	"github.com/stapelberg/zi/pb"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
 )

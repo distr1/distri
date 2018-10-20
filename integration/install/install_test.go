@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/stapelberg/zi/internal/env"
-	"github.com/stapelberg/zi/pb"
+	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/pb"
 )
 
 func installFile(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func()) {

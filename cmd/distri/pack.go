@@ -16,8 +16,8 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/distr1/distri/internal/env"
 	"github.com/jacobsa/fuse"
-	"github.com/stapelberg/zi/internal/env"
 	"golang.org/x/sys/unix"
 )
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stapelberg/zi/internal/squashfs"
+	"github.com/distr1/distri/internal/squashfs"
 )
 
 func cp(w *squashfs.Directory, dir string) error {

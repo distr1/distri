@@ -1,6 +1,6 @@
 package main
 
-import "github.com/stapelberg/zi/pb"
+import "github.com/distr1/distri/pb"
 
 func stepsToProto(steps [][]string) []*pb.BuildStep {
 	protoSteps := make([]*pb.BuildStep, len(steps))

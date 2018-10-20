@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/stapelberg/zi/pb"
+	"github.com/distr1/distri/pb"
 )
 
 func (b *buildctx) buildperl(opts *pb.PerlBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {

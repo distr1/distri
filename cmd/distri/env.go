@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/stapelberg/zi/internal/env"
+	"github.com/distr1/distri/internal/env"
 )
 
 const envHelp = `TODO

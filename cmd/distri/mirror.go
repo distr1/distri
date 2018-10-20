@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distr1/distri/internal/squashfs"
+	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/stapelberg/zi/internal/squashfs"
-	"github.com/stapelberg/zi/pb"
 )
 
 const mirrorHelp = `Makes a package store usable as a mirror

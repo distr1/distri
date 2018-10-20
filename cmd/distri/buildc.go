@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/stapelberg/zi/pb"
+	"github.com/distr1/distri/pb"
 )
 
 func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {

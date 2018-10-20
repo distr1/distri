@@ -18,11 +18,11 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/squashfs"
+	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jacobsa/fuse"
-	"github.com/stapelberg/zi/internal/env"
-	"github.com/stapelberg/zi/internal/squashfs"
-	"github.com/stapelberg/zi/pb"
 	"golang.org/x/sys/unix"
 )
 
