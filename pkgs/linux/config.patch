@@ -1674,7 +1674,7 @@
 +# CONFIG_DM_MQ_DEFAULT is not set
 +# CONFIG_DM_DEBUG is not set
 +# CONFIG_DM_UNSTRIPED is not set
-+# CONFIG_DM_CRYPT is not set
++CONFIG_DM_CRYPT=y
 +# CONFIG_DM_SNAPSHOT is not set
 +# CONFIG_DM_THIN_PROVISIONING is not set
 +# CONFIG_DM_CACHE is not set
@@ -4384,10 +4384,10 @@
 +# CONFIG_CRYPTO_CFB is not set
 +CONFIG_CRYPTO_CTR=y
 +# CONFIG_CRYPTO_CTS is not set
-+# CONFIG_CRYPTO_ECB is not set
++CONFIG_CRYPTO_ECB=y
 +# CONFIG_CRYPTO_LRW is not set
 +# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_XTS is not set
++CONFIG_CRYPTO_XTS=y
 +# CONFIG_CRYPTO_KEYWRAP is not set
 +
 +#

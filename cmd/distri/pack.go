@@ -62,6 +62,7 @@ func pack(args []string) error {
 		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
+		encrypt = fset.Bool("encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
 	)
 	fset.Parse(args)
 	if *root == "" {
@@ -353,7 +354,7 @@ veth
 	}
 
 	if *diskImg != "" {
-		if err := writeDiskImg(*diskImg, *root); err != nil {
+		if err := writeDiskImg(*diskImg, *root, *encrypt); err != nil {
 			return fmt.Errorf("writeDiskImg: %v", err)
 		}
 	}
@@ -405,7 +406,7 @@ veth
 	return nil
 }
 
-func writeDiskImg(dest, src string) error {
+func writeDiskImg(dest, src string, encrypt bool) error {
 	f, err := os.OpenFile(dest, os.O_CREATE|os.O_TRUNC|os.O_RDWR|unix.O_CLOEXEC, 0644)
 	if err != nil {
 		return err
@@ -516,6 +517,43 @@ name=root`)
 		return fmt.Errorf("%v: %v", mkfs.Args, err)
 	}
 
+	var luksUUID string
+	if encrypt {
+		luksFormat := exec.Command("sudo", "cryptsetup", "luksFormat", root, "-")
+		luksFormat.Stdin = strings.NewReader("bleh")
+		luksFormat.Stdout = os.Stdout
+		luksFormat.Stderr = os.Stderr
+		if err := luksFormat.Run(); err != nil {
+			return fmt.Errorf("%v: %v", luksFormat.Args, err)
+		}
+
+		lsblk := exec.Command("lsblk", root, "-no", "uuid")
+		lsblk.Stderr = os.Stderr
+		uuid, err := lsblk.Output()
+		if err != nil {
+			return fmt.Errorf("lsblk: %v", err)
+		}
+		luksUUID = strings.TrimSpace(string(uuid))
+
+		luksOpen := exec.Command("sudo", "cryptsetup", "open", "--type=luks", "--key-file=-", root, "cryptroot")
+		luksOpen.Stdin = strings.NewReader("bleh")
+		luksOpen.Stdout = os.Stdout
+		luksOpen.Stderr = os.Stderr
+		if err := luksOpen.Run(); err != nil {
+			return fmt.Errorf("%v: %v", luksOpen.Args, err)
+		}
+		defer func() {
+			luksClose := exec.Command("sudo", "cryptsetup", "close", "cryptroot")
+			luksClose.Stdout = os.Stdout
+			luksClose.Stderr = os.Stderr
+			if err := luksClose.Run(); err != nil {
+				log.Printf("%v: %v", luksClose.Args, err)
+			}
+		}()
+
+		root = "/dev/mapper/cryptroot"
+	}
+
 	mkfs = exec.Command("sudo", "mkfs.ext4", root)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
@@ -583,7 +621,11 @@ name=root`)
 		return fmt.Errorf("%v: %v", dracut.Args, err)
 	}
 
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	var luksParams string
+	if encrypt {
+		luksParams = "rd.luks=1 rd.luks.uuid=" + luksUUID + " rd.luks.name=" + luksUUID + "=cryptroot systemd.setenv=PATH=/bin"
+	}
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 "+luksParams+" init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
