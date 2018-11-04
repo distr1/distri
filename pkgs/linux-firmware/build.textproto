@@ -1,0 +1,23 @@
+source: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-1baa34868b2c0a004dc595b20678145e3fff83e7.tar.gz"
+hash: "53c941a63e453be59961d9529fc39553357b294b3c1166c67383eaea049cc5f5"
+version: "20181104"
+
+cbuilder: <>
+
+# build dependencies:
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "${ZI_SOURCEDIR}"
+  argv: "install"
+  argv: "V=1"
+  argv: "DESTDIR=${ZI_DESTDIR}/${ZI_PREFIX}"
+>
+
+# TODO: split this out into a separate package once distri can do that
+build_step: <
+  argv: "rm"
+  argv: "-rf"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/lib/firmware/netronome"
+>

@@ -163,6 +163,7 @@ func pack(args []string) error {
 		"binutils-2.31", // for debugging (e.g. readelf)
 		"curl-7.61.1",
 		"dracut-048",
+		"linux-firmware-20181104",
 	}
 
 	if err := install(append([]string{
