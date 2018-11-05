@@ -158,6 +158,9 @@ func buildpkg(hermetic, debug, fuse bool) error {
 	return nil
 }
 
+// We need to strip the path from $0 because shebang evaluation doesn’t pass the
+// invoker as $0, but passes the path to the shell script instead.
+// See also https://www.in-ulm.de/~mascheck/various/shebang/
 var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	"quoteenv": func(env string) string {
 		return strings.Replace(env, `=`, `="`, 1) + `"`
@@ -166,7 +169,7 @@ var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 {{ range $idx, $env := .Env }}
 export {{ quoteenv $env }}
 {{ end }}
-exec {{ .Prefix }}/{{ .Bin }} "$@"
+exec -a "${0##*/}" {{ .Prefix }}/{{ .Bin }} "$@"
 `))
 
 func (b *buildctx) serialize() (string, error) {
