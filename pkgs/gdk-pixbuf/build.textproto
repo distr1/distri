@@ -1,0 +1,62 @@
+source: "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38.0.tar.xz"
+hash: "dd50973c7757bcde15de6bcd3a6d462a445efd552604ae6435a0532fbbadae47"
+version: "2.38.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson-0.47.1"
+dep: "ninja-1.8.2"
+dep: "python3-3.7.0" # TODO: bring in via meson
+dep: "shared-mime-info-1.10"
+dep: "libpng-1.6.35"
+dep: "libjpeg-turbo-2.0.0"
+# TODO: mlib?
+# TODO: tiff?
+dep: "gobject-introspection-1.58.0"
+dep: "libx11-1.6.6"
+dep: "gettext-0.19.8.1"
+dep: "libxslt-1.1.32"
+
+dep: "strace-4.24"
+
+# TODO: what about loaders.cache?
+# ***
+# *** Warning: loaders.cache not built
+# ***
+# *** You should generate this file manually on the host system
+# *** using:
+# ***   gdk-pixbuf-query-loaders > /ro/gdk-pixbuf-2.38.0/buildoutput/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+# ***
+
+build_step: <
+  argv: "mkdir"
+  argv: "-p"
+  argv: "/usr/share"
+>
+
+build_step: <
+  argv: "ln"
+  argv: "-s"
+  argv: "/ro/shared-mime-info-1.10/buildoutput/share/mime"
+  argv: "/usr/share/mime"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ ninja -v install"
+>

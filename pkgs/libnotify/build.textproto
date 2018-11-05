@@ -1,0 +1,12 @@
+source: "http://ftp.gnome.org/pub/gnome/sources/libnotify/0.7/libnotify-0.7.7.tar.xz"
+hash: "9cb4ce315b2655860c524d46b56010874214ec27e854086c1a1d0260137efc04"
+version: "0.7.7"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "gdk-pixbuf-2.38.0"
+dep: "shared-mime-info-1.10" # TODO: should be pulled in via gdk-pixbuf
+dep: "gtk+-3.24.0"
+dep: "mesa-18.2.0" # TODO: should be pulled in via epoxy via gtk+
+dep: "python3-3.7.0"

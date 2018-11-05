@@ -1,0 +1,101 @@
+source: "https://w1.fi/releases/wpa_supplicant-2.6.tar.gz"
+hash: "b4936d34c4e6cdd44954beba74296d964bc2c9668ecaa5255e499636fe2b1450"
+version: "2.6"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "openssl-1.0.2p"
+dep: "libnl-3.4.0"
+dep: "dbus-1.13.6"
+
+build_step: <
+  argv: "cp"
+  argv: "-T"
+  argv: "-ar"
+  argv: "${ZI_SOURCEDIR}/"
+  argv: "."
+>
+
+build_step: <
+  argv: "cp"
+  argv: "wpa_supplicant/defconfig"
+  argv: "wpa_supplicant/.config"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo CFLAGS+=$(pkg-config --cflags libnl-3.0) >> wpa_supplicant/.config"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo LIBS+=$(pkg-config --libs libnl-3.0) >> wpa_supplicant/.config"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,#CONFIG_LIBNL32=y,CONFIG_LIBNL32=y,g' wpa_supplicant/.config"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,#CONFIG_CTRL_IFACE_DBUS_NEW=y,CONFIG_CTRL_IFACE_DBUS_NEW=y,g' wpa_supplicant/.config"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "-C"
+  argv: "wpa_supplicant"
+  argv: "V=1"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "LIBDIR=${ZI_PREFIX}/lib"
+  argv: "INCDIR=${ZI_PREFIX}/include"
+  argv: "BINDIR=${ZI_PREFIX}/sbin"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "wpa_supplicant"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "LIBDIR=${ZI_PREFIX}/lib"
+  argv: "INCDIR=${ZI_PREFIX}/include"
+  argv: "BINDIR=${ZI_PREFIX}/sbin"
+>
+
+build_step: <
+  argv: "mkdir"
+  argv: "-p"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/share/dbus-1/system-services"
+>
+
+build_step: <
+  argv: "cp"
+  argv: "wpa_supplicant/dbus/fi.w1.wpa_supplicant1.service"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service"
+>
+
+build_step: <
+  argv: "mkdir"
+  argv: "-p"
+  argv: "${ZI_DESTDIR}/etc/dbus-1/system.d"
+>
+
+build_step: <
+  argv: "cp"
+  argv: "wpa_supplicant/dbus/dbus-wpa_supplicant.conf"
+  argv: "${ZI_DESTDIR}/etc/dbus-1/system.d/wpa_supplicant.conf"
+>
+
+install: <
+  systemd_unit: "wpa_supplicant/systemd/wpa_supplicant.service"
+>
