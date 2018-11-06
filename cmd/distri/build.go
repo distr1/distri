@@ -319,6 +319,50 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	return env
 }
 
+func glob1(imgDir, pkg string) (string, error) {
+	if _, err := os.Stat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil {
+		return pkg, nil // pkg already contains the version
+	}
+	matches, err := filepath.Glob(filepath.Join(imgDir, pkg+"-*.meta.textproto"))
+	if err != nil {
+		return "", err
+	}
+	var candidates []string
+	var meta pb.Meta
+	for _, m := range matches {
+		c, err := ioutil.ReadFile(m)
+		if err != nil {
+			return "", err
+		}
+		if err := proto.UnmarshalText(string(c), &meta); err != nil {
+			return "", err
+		}
+		if meta.GetSourcePkg() != pkg {
+			continue // false positive: e.g. linux-firmware-3 for pattern linux-*
+		}
+		candidates = append(candidates, strings.TrimSuffix(filepath.Base(m), ".meta.textproto"))
+	}
+	if len(candidates) > 1 {
+		return "", fmt.Errorf("specify the package version to disambiguate between %q", candidates)
+	}
+	if len(candidates) == 0 {
+		return "", fmt.Errorf("package %q not found", pkg)
+	}
+	return candidates[0], nil
+}
+
+func glob(imgDir string, pkgs []string) ([]string, error) {
+	globbed := make([]string, len(pkgs))
+	for idx, pkg := range pkgs {
+		var err error
+		globbed[idx], err = glob1(imgDir, pkg)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return globbed, nil
+}
+
 func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
 	resolved := []string{pkg}
 	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
@@ -412,6 +456,11 @@ func builderdeps(p *pb.Build) []string {
 func builddeps(p *pb.Build) ([]string, error) {
 	deps := p.GetDep()
 	deps = append(deps, builderdeps(p)...)
+	var err error
+	deps, err = glob(env.DefaultRepo, deps)
+	if err != nil {
+		return nil, err
+	}
 	return resolve(env.DefaultRepo, deps)
 }
 
@@ -482,15 +531,24 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if err := w.Close(); err != nil {
 			return nil, err
 		}
-		b, err := ioutil.ReadAll(r)
+		c, err := ioutil.ReadAll(r)
 		if err != nil {
 			return nil, err
 		}
 		var meta pb.Meta
-		if err := proto.Unmarshal(b, &meta); err != nil {
+		if err := proto.Unmarshal(c, &meta); err != nil {
 			return nil, err
 		}
-		resolved, err := resolve(env.DefaultRepo, meta.GetRuntimeDep())
+		deps = meta.GetRuntimeDep()
+
+		runtimeDeps, err := glob(env.DefaultRepo, b.Proto.GetRuntimeDep())
+		if err != nil {
+			return nil, err
+		}
+
+		deps = append(deps, runtimeDeps...)
+
+		resolved, err := resolve(env.DefaultRepo, deps)
 		if err != nil {
 			return nil, err
 		}
@@ -1171,7 +1229,7 @@ func runJob(job string) error {
 
 	{
 		b, err := proto.Marshal(&pb.Meta{
-			RuntimeDep: append(deps, b.Proto.GetRuntimeDep()...),
+			RuntimeDep: deps,
 		})
 		if err != nil {
 			return err
