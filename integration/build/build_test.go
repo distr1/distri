@@ -20,6 +20,7 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 var buildTextprotoTmpl = template.Must(template.New("").Parse(`
@@ -169,7 +170,12 @@ func TestBuild(t *testing.T) {
 			"pam-1.3.1",         // from util-linux-2.32
 			"libffi-3.2.1",      // from glib-2.58.0
 		}
-		if diff := cmp.Diff(want, meta.GetRuntimeDep()); diff != "" {
+		opts := []cmp.Option{
+			cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			}),
+		}
+		if diff := cmp.Diff(want, meta.GetRuntimeDep(), opts...); diff != "" {
 			t.Fatalf("unexpected runtime deps: (-want +got)\n%s", diff)
 		}
 	})
@@ -278,7 +284,12 @@ func TestUnversionedBuild(t *testing.T) {
 			"pam-1.3.1",         // from util-linux-2.32
 			"libffi-3.2.1",      // from glib-2.58.0
 		}
-		if diff := cmp.Diff(want, meta.GetRuntimeDep()); diff != "" {
+		opts := []cmp.Option{
+			cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			}),
+		}
+		if diff := cmp.Diff(want, meta.GetRuntimeDep(), opts...); diff != "" {
 			t.Fatalf("unexpected runtime deps: (-want +got)\n%s", diff)
 		}
 	})
