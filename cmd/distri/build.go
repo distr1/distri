@@ -125,6 +125,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 
 		c := proto.MarshalTextString(&pb.Meta{
 			RuntimeDep: deps,
+			SourcePkg:  proto.String(b.Pkg),
 		})
 		if err := ioutil.WriteFile(filepath.Join("../distri/pkg/"+b.Pkg+"-"+b.Version+".meta.textproto"), []byte(c), 0644); err != nil {
 			return err

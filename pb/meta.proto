@@ -6,4 +6,8 @@ message Meta {
   // Transitive closure of runtime dependency package names. E.g.:
   // ["glibc-2.27", "pam-1.3.1"]
   repeated string runtime_dep = 1;
+
+  // The source package from which this package was built. Useful to tie
+  // multiple binaries back to their source, and for globbing versions.
+  optional string source_pkg = 2;
 }
