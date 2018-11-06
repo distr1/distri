@@ -20,4 +20,4 @@ dep: "zlib" # TODO: configure doesn’t check for it
 dep: "xkbcomp"
 dep: "systemd" # for udev
 
-runtime_dep: "xkbcomp-1.4.2"
+runtime_dep: "xkbcomp"

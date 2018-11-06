@@ -11,4 +11,4 @@ dep: "m4"
 dep: "perl"
 dep: "help2man"
 
-runtime_dep: "m4-1.4.18"
+runtime_dep: "m4"

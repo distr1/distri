@@ -6,4 +6,4 @@ cbuilder: <>
 
 # build dependencies:
 dep: "xorgproto"
-runtime_dep: "xorgproto-2018.4" # TODO: remove once pkgconfig detection works
+runtime_dep: "xorgproto" # TODO: remove once pkgconfig detection works

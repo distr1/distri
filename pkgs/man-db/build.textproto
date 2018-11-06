@@ -12,4 +12,4 @@ dep: "gdbm"
 dep: "groff" # NOTE: man-db doesn’t compile without groff
 dep: "gzip" # NOTE: man-db doesn’t compile if no compressors are found
 
-runtime_dep: "groff-1.22.3"
+runtime_dep: "groff"

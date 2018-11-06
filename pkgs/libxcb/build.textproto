@@ -11,4 +11,4 @@ dep: "libpthread-stubs"
 dep: "libxau"
 dep: "xorgproto"
 
-runtime_dep: "libpthread-stubs-0.4" # TODO: remove once pkgconfig detection works
+runtime_dep: "libpthread-stubs" # TODO: remove once pkgconfig detection works

@@ -8,5 +8,5 @@ cbuilder: <>
 dep: "m4"
 dep: "perl"
 
-runtime_dep: "m4-1.4.18"
-runtime_dep: "perl-5.28.0"
+runtime_dep: "m4"
+runtime_dep: "perl"

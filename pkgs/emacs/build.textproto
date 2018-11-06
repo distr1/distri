@@ -14,9 +14,9 @@ dep: "gnupg" # only so that it ends up in PATH
 dep: "git" # only so that it ends up in PATH
 dep: "gzip"
 
-runtime_dep: "bash-4.4.18" # for M-x shell
-runtime_dep: "coreutils-8.30" # for M-x dired
-runtime_dep: "ncurses-6.1"
-runtime_dep: "gnutls-3.5.18" # for gnutls-cli
-runtime_dep: "gnupg-2.2.10" # used by package.el
-runtime_dep: "git-2.9.5" # used by package.el
+runtime_dep: "bash" # for M-x shell
+runtime_dep: "coreutils" # for M-x dired
+runtime_dep: "ncurses"
+runtime_dep: "gnutls" # for gnutls-cli
+runtime_dep: "gnupg" # used by package.el
+runtime_dep: "git" # used by package.el

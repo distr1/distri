@@ -19,5 +19,5 @@ dep: "flex"
 dep: "m4" # TODO: remove (runtime-dep of flex)
 
 # grub-mkconfig needs:
-runtime_dep: "sed-4.5"
-runtime_dep: "gawk-4.2.1"
+runtime_dep: "sed"
+runtime_dep: "gawk"

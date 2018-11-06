@@ -8,4 +8,4 @@ cbuilder: <>
 dep: "openssl"
 dep: "ncurses"
 
-runtime_dep: "ncurses-6.1"
+runtime_dep: "ncurses"

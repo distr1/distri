@@ -13,9 +13,9 @@ cbuilder: <
 # build dependencies:
 dep: "kmod"
 
-runtime_dep: "pkg-config-0.29.2"
-runtime_dep: "findutils-4.6.0"
-runtime_dep: "cpio-2.12"
-runtime_dep: "tar-1.30"
-runtime_dep: "gzip-1.9"
-runtime_dep: "sed-4.5"
+runtime_dep: "pkg-config"
+runtime_dep: "findutils"
+runtime_dep: "cpio"
+runtime_dep: "tar"
+runtime_dep: "gzip"
+runtime_dep: "sed"
