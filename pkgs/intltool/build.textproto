@@ -5,8 +5,8 @@ version: "0.51.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
-dep: "perl-XML-Parser-2.44"
+dep: "perl"
+dep: "perl-XML-Parser"
 
 runtime_dep: "perl-5.28.0"
 runtime_dep: "gettext-0.19.8.1"

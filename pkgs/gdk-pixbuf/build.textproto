@@ -5,20 +5,20 @@ version: "2.38.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "meson-0.47.1"
-dep: "ninja-1.8.2"
-dep: "python3-3.7.0" # TODO: bring in via meson
-dep: "shared-mime-info-1.10"
-dep: "libpng-1.6.35"
-dep: "libjpeg-turbo-2.0.0"
+dep: "meson"
+dep: "ninja"
+dep: "python3" # TODO: bring in via meson
+dep: "shared-mime-info"
+dep: "libpng"
+dep: "libjpeg-turbo"
 # TODO: mlib?
 # TODO: tiff?
-dep: "gobject-introspection-1.58.0"
-dep: "libx11-1.6.6"
-dep: "gettext-0.19.8.1"
-dep: "libxslt-1.1.32"
+dep: "gobject-introspection"
+dep: "libx11"
+dep: "gettext"
+dep: "libxslt"
 
-dep: "strace-4.24"
+dep: "strace"
 
 # TODO: what about loaders.cache?
 # ***

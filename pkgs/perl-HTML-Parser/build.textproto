@@ -5,4 +5,4 @@ version: "3.72"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-HTML-Tagset-3.20"
+dep: "perl-HTML-Tagset"

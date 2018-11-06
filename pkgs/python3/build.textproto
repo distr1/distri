@@ -8,9 +8,9 @@ cbuilder: <>
 cherry_pick: "http://t.zekjur.net/py.patch"
 
 # build dependencies:
-dep: "zlib-1.2.11"
-dep: "openssl-1.0.2p"
-dep: "libffi-3.2.1"
+dep: "zlib"
+dep: "openssl"
+dep: "libffi"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

@@ -8,16 +8,16 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "zlib-1.2.11"
-dep: "libdrm-2.4.94"
-dep: "libx11-1.6.6"
-dep: "libxext-1.3.3"
-dep: "libxfixes-5.0.3"
-dep: "libxdamage-1.1.4"
-dep: "libxshmfence-1.3"
-dep: "libxrandr-1.5.1"
-dep: "expat-2.2.6"
-dep: "python3-3.7.0"
+dep: "zlib"
+dep: "libdrm"
+dep: "libx11"
+dep: "libxext"
+dep: "libxfixes"
+dep: "libxdamage"
+dep: "libxshmfence"
+dep: "libxrandr"
+dep: "expat"
+dep: "python3"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

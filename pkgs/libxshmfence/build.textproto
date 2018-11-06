@@ -5,4 +5,4 @@ version: "1.3"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorgproto-2018.4"
+dep: "xorgproto"

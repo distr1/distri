@@ -5,4 +5,4 @@ version: "0.014"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-Try-Tiny-0.30"
+dep: "perl-Try-Tiny"

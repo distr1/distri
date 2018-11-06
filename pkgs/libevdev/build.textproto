@@ -21,4 +21,4 @@ cbuilder: <>
 cherry_pick: "error.patch"
 
 # build dependencies:
-dep: "python3-3.7.0"
+dep: "python3"

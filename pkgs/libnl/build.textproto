@@ -5,5 +5,5 @@ version: "3.4.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "bison-3.0.5"
-dep: "flex-2.6.4"
+dep: "bison"
+dep: "flex"

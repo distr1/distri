@@ -9,11 +9,11 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "libcap-2.25"
-dep: "libidn2-2.0.5"
-dep: "iconv-1.15" # TODO: remove this libidn2 dep
-dep: "libunistring-0.9.10" # TODO: remove this libidn2 dep
-dep: "nettle-3.4"
+dep: "libcap"
+dep: "libidn2"
+dep: "iconv" # TODO: remove this libidn2 dep
+dep: "libunistring" # TODO: remove this libidn2 dep
+dep: "nettle"
 
 # build_step: <
 #   argv: "/bin/sh"

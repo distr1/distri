@@ -5,7 +5,7 @@ version: "1.1.5"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorgproto-2018.4"
-dep: "libx11-1.6.6"
-dep: "libice-1.0.9"
-dep: "libsm-1.2.3"
+dep: "xorgproto"
+dep: "libx11"
+dep: "libice"
+dep: "libsm"

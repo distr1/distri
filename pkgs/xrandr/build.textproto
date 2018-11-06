@@ -5,7 +5,7 @@ version: "1.5.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorgproto-2018.4"
-dep: "libx11-1.6.6"
-dep: "libxrandr-1.5.1"
-dep: "libxrender-0.9.10"
+dep: "xorgproto"
+dep: "libx11"
+dep: "libxrandr"
+dep: "libxrender"

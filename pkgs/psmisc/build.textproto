@@ -5,6 +5,6 @@ version: "23.1"
 cherry_pick: "dirstamp.patch" # https://gitlab.com/psmisc/psmisc/merge_requests/17
 
 # build dependencies:
-dep: "ncurses-6.1"
+dep: "ncurses"
 
 cbuilder: <>

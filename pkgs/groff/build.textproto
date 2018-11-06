@@ -5,7 +5,7 @@ version: "1.22.3"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
+dep: "perl"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

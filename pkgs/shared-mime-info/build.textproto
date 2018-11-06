@@ -5,11 +5,11 @@ version: "1.10"
 cbuilder: <>
 
 # build dependencies:
-dep: "intltool-0.51.0"
-dep: "perl-5.28.0" # TODO: bring in via intltool
-dep: "perl-XML-Parser-2.44" # TODO: bring in via intltool
-dep: "gettext-0.19.8.1"
-dep: "libxml2-2.9.8"
+dep: "intltool"
+dep: "perl" # TODO: bring in via intltool
+dep: "perl-XML-Parser" # TODO: bring in via intltool
+dep: "gettext"
+dep: "libxml2"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

@@ -7,16 +7,16 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "gdk-pixbuf-2.38.0"
-dep: "shared-mime-info-1.10" # TODO: bring in via gdk-pixbuf
-dep: "pango-1.42.4"
-dep: "cairo-1.14.12"
-dep: "atk-2.30.0"
-dep: "libxinerama-1.1.4"
-dep: "libxi-1.7.9"
-dep: "libepoxy-1.5.2"
-dep: "mesa-18.2.0"
-dep: "atk-2.30.0"
-dep: "at-spi2-atk-2.30.0"
-dep: "python3-3.7.0"
-dep: "perl-5.28.0"
+dep: "gdk-pixbuf"
+dep: "shared-mime-info" # TODO: bring in via gdk-pixbuf
+dep: "pango"
+dep: "cairo"
+dep: "atk"
+dep: "libxinerama"
+dep: "libxi"
+dep: "libepoxy"
+dep: "mesa"
+dep: "atk"
+dep: "at-spi2-atk"
+dep: "python3"
+dep: "perl"

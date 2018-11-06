@@ -5,4 +5,4 @@ version: "6.02"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-URI-1.74"
+dep: "perl-URI"

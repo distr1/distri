@@ -5,4 +5,4 @@ version: "1.6.35"
 cbuilder: <>
 
 # build dependencies:
-dep: "zlib-1.2.11"
+dep: "zlib"

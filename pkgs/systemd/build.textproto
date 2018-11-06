@@ -8,18 +8,18 @@ cherry_pick: "serial-getty-simple.patch"
 cbuilder: <>
 
 # build dependencies:
-dep: "m4-1.4.18"
-dep: "gperf-3.1"
-dep: "libcap-2.25"
-dep: "util-linux-2.32"
-dep: "gettext-0.19.8.1"
-dep: "meson-0.47.1"
-dep: "ninja-1.8.2"
-dep: "python3-3.7.0"
-dep: "kmod-25"
-dep: "cryptsetup-2.0.4"
+dep: "m4"
+dep: "gperf"
+dep: "libcap"
+dep: "util-linux"
+dep: "gettext"
+dep: "meson"
+dep: "ninja"
+dep: "python3"
+dep: "kmod"
+dep: "cryptsetup"
 
-dep: "systemd-239" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
+dep: "systemd" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
 
 build_step: <
   argv: "/bin/sh"

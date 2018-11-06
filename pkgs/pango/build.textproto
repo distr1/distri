@@ -5,10 +5,10 @@ version: "1.42.4"
 cbuilder: <>
 
 # build dependencies:
-dep: "cairo-1.14.12"
-dep: "harfbuzz-1.9.0"
-dep: "fontconfig-2.13.1"
-dep: "glib-2.58.0"
-dep: "fribidi-1.0.5"
-dep: "python3-3.7.0"
+dep: "cairo"
+dep: "harfbuzz"
+dep: "fontconfig"
+dep: "glib"
+dep: "fribidi"
+dep: "python3"
 

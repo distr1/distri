@@ -5,7 +5,7 @@ version: "1.0.2p"
 cbuilder: <>
 
 # build dep:
-dep: "perl-5.28.0"
+dep: "perl"
 
 build_step: <
   argv: "/bin/sh"

@@ -7,8 +7,8 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "xorgproto-2018.4"
-dep: "libx11-1.6.6"
-dep: "libxkbfile-1.0.9"
+dep: "xorgproto"
+dep: "libx11"
+dep: "libxkbfile"
 
 runtime_dep: "xkeyboard-config-2.25"

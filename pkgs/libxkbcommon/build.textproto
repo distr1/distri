@@ -7,7 +7,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "bison-3.0.5"
-dep: "libxcb-1.13"
+dep: "bison"
+dep: "libxcb"
 
 runtime_dep: "xkeyboard-config-2.25"

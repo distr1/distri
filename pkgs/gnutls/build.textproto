@@ -7,7 +7,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "nettle-3.4"
-dep: "libtasn1-4.13"
-dep: "libunistring-0.9.10"
-dep: "zlib-1.2.11"
+dep: "nettle"
+dep: "libtasn1"
+dep: "libunistring"
+dep: "zlib"

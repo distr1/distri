@@ -5,4 +5,4 @@ version: "6.5"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
+dep: "perl"

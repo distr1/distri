@@ -14,12 +14,12 @@ cherry_pick: "available.patch"
 # TODO: patch ProtectSystem=false, as otherwise sub-directories under /run cannot be created
 
 # build dependencies:
-dep: "systemd-239" # for udev
-dep: "intltool-0.51.0"
-dep: "nss-3.39"
-dep: "iptables-1.6.2"
-dep: "curl-7.61.1"
-dep: "libndp-1.7"
-dep: "readline-7.0"
-dep: "ncurses-6.1"
-dep: "python3-3.7.0"
+dep: "systemd" # for udev
+dep: "intltool"
+dep: "nss"
+dep: "iptables"
+dep: "curl"
+dep: "libndp"
+dep: "readline"
+dep: "ncurses"
+dep: "python3"

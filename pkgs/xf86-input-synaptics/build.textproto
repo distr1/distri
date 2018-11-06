@@ -7,7 +7,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "xorg-server-1.20.1"
-dep: "xorgproto-2018.4"
-dep: "libevdev-1.5.6"
-dep: "libxi-1.7.9"
+dep: "xorg-server"
+dep: "xorgproto"
+dep: "libevdev"
+dep: "libxi"

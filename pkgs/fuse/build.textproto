@@ -5,10 +5,10 @@ version: "3.2.6"
 cbuilder: <>
 
 # build dependencies:
-dep: "meson-0.47.1"
-dep: "ninja-1.8.2"
-dep: "python3-3.7.0"
-dep: "systemd-239"
+dep: "meson"
+dep: "ninja"
+dep: "python3"
+dep: "systemd"
 
 # build_step: <
 #   argv: "/bin/sh"

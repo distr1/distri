@@ -5,6 +5,6 @@ version: "6.01"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-LWP-MediaTypes-6.02"
-dep: "perl-HTTP-Date-6.02"
-dep: "perl-HTTP-Message-6.18"
+dep: "perl-LWP-MediaTypes"
+dep: "perl-HTTP-Date"
+dep: "perl-HTTP-Message"

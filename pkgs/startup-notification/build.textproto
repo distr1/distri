@@ -5,5 +5,5 @@ version: "0.12"
 cbuilder: <>
 
 # build dependencies:
-dep: "libx11-1.6.6"
-dep: "xcb-util-0.4.0"
+dep: "libx11"
+dep: "xcb-util"

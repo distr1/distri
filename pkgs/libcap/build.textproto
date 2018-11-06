@@ -5,8 +5,8 @@ version: "2.25"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
-dep: "gperf-3.1" # NOTE that libcap fails silently without gperf :(
+dep: "perl"
+dep: "gperf" # NOTE that libcap fails silently without gperf :(
 
 build_step: <
   argv: "make"

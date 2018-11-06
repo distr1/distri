@@ -3,7 +3,7 @@ hash: "ae7a42df026550b85daca8389b6a60ba6313b0567f374392e54918588a411e94"
 version: "3.4"
 
 # build dependencies:
-dep: "m4-1.4.18"
-dep: "gmp-6.1.2"
+dep: "m4"
+dep: "gmp"
 
 cbuilder: <>

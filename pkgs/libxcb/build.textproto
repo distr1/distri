@@ -5,10 +5,10 @@ version: "1.13"
 cbuilder: <>
 
 # build dependencies:
-dep: "python3-3.7.0"
-dep: "xcb-proto-1.13"
-dep: "libpthread-stubs-0.4"
-dep: "libxau-1.0.8"
-dep: "xorgproto-2018.4"
+dep: "python3"
+dep: "xcb-proto"
+dep: "libpthread-stubs"
+dep: "libxau"
+dep: "xorgproto"
 
 runtime_dep: "libpthread-stubs-0.4" # TODO: remove once pkgconfig detection works

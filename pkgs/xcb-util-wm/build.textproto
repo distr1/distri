@@ -5,6 +5,6 @@ version: "0.4.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "libxcb-1.13"
-dep: "xorgproto-2018.4"
-dep: "m4-1.4.18"
+dep: "libxcb"
+dep: "xorgproto"
+dep: "m4"

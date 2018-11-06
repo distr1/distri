@@ -7,6 +7,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "openssl-1.0.2p"
+dep: "openssl"
 
 runtime_dep: "ca-certificates-3.39"

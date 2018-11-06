@@ -5,4 +5,4 @@ version: "4.0.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "gmp-6.1.2"
+dep: "gmp"

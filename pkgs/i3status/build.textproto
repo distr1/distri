@@ -5,12 +5,12 @@ version: "2.12"
 cbuilder: <>
 
 # build dependencies:
-dep: "confuse-3.2.2"
-dep: "yajl2-2.1.0"
-dep: "alsa-lib-1.1.6"
-dep: "libnl-3.4.0"
-dep: "pulseaudio-12.2"
-dep: "which-2.21"
+dep: "confuse"
+dep: "yajl2"
+dep: "alsa-lib"
+dep: "libnl"
+dep: "pulseaudio"
+dep: "which"
 
 build_step: <
   argv: "make"

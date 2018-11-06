@@ -7,5 +7,5 @@ perlbuilder: <
 >
 
 # build dependencies:
-dep: "expat-2.2.6"
-dep: "perl-libwww-perl-6.35"
+dep: "expat"
+dep: "perl-libwww-perl"

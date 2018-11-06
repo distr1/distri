@@ -8,7 +8,7 @@ cherry_pick: "service-execstart.patch"
 cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
 
 # Go build environment:
-dep: "golang-1.11"
+dep: "golang"
 
 # build dependencies:
 

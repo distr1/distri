@@ -5,4 +5,4 @@ version: "1.8.3"
 cbuilder: <>
 
 # build dependencies:
-dep: "libgpg-error-1.32"
+dep: "libgpg-error"

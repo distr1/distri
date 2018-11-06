@@ -5,7 +5,7 @@ version: "1.11"
 cbuilder: <>
 
 # build dependencies:
-dep: "golang14-1.4.3"
+dep: "golang14"
 
 build_step: <
   argv: "/bin/sh"

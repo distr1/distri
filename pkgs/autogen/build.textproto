@@ -5,6 +5,6 @@ version: "5.18.7"
 cbuilder: <>
 
 # build dependencies:
-dep: "guile-2.0.14"
-dep: "which-2.21"
-dep: "perl-5.28.0"
+dep: "guile"
+dep: "which"
+dep: "perl"

@@ -5,4 +5,4 @@ version: "4.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "python3-3.7.0"
+dep: "python3"

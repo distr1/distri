@@ -19,6 +19,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "bison-3.0.5"
-dep: "m4-1.4.18" # TODO: remove once m4 is declared a runtime-dep of bison
-dep: "gzip-1.9"
+dep: "bison"
+dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
+dep: "gzip"

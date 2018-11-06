@@ -5,4 +5,4 @@ version: "6.04"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-HTTP-Date-6.02"
+dep: "perl-HTTP-Date"

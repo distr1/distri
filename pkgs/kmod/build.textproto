@@ -6,7 +6,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "findutils-4.6.0"
+dep: "findutils"
 
 install: <
   symlink: < oldname: "kmod" newname: "bin/modprobe" >

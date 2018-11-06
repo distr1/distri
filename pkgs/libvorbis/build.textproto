@@ -5,4 +5,4 @@ version: "1.3.6"
 cbuilder: <>
 
 # build dependencies:
-dep: "libogg-1.3.3"
+dep: "libogg"

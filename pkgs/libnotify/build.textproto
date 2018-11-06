@@ -5,8 +5,8 @@ version: "0.7.7"
 cbuilder: <>
 
 # build dependencies:
-dep: "gdk-pixbuf-2.38.0"
-dep: "shared-mime-info-1.10" # TODO: should be pulled in via gdk-pixbuf
-dep: "gtk+-3.24.0"
-dep: "mesa-18.2.0" # TODO: should be pulled in via epoxy via gtk+
-dep: "python3-3.7.0"
+dep: "gdk-pixbuf"
+dep: "shared-mime-info" # TODO: should be pulled in via gdk-pixbuf
+dep: "gtk+"
+dep: "mesa" # TODO: should be pulled in via epoxy via gtk+
+dep: "python3"

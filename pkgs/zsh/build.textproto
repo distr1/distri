@@ -8,6 +8,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "ncurses-6.1"
+dep: "ncurses"
 
 runtime_dep: "ncurses-6.1"

@@ -7,12 +7,12 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "gnutls-3.5.18"
-dep: "ncurses-6.1"
-dep: "tar-1.30"
-dep: "gnupg-2.2.10" # only so that it ends up in PATH
-dep: "git-2.9.5" # only so that it ends up in PATH
-dep: "gzip-1.9"
+dep: "gnutls"
+dep: "ncurses"
+dep: "tar"
+dep: "gnupg" # only so that it ends up in PATH
+dep: "git" # only so that it ends up in PATH
+dep: "gzip"
 
 runtime_dep: "bash-4.4.18" # for M-x shell
 runtime_dep: "coreutils-8.30" # for M-x dired

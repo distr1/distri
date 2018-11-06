@@ -6,11 +6,11 @@ cherry_pick: "config.patch"
 cherry_pick: "service.patch"
 
 # build dependencies:
-dep: "zlib-1.2.11"
-dep: "openssl-1.0.2p"
-dep: "pam-1.3.1"
+dep: "zlib"
+dep: "openssl"
+dep: "pam"
 
-dep: "strace-4.24"
+dep: "strace"
 
 cbuilder: <
   extra_configure_flag: "OPENSSL_SEEDS_ITSELF=yes"

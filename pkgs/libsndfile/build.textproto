@@ -5,16 +5,16 @@ version: "1.0.28"
 cbuilder: <>
 
 # build dependencies:
-dep: "cmake-3.12.2"
-dep: "autoconf-2.69"
-dep: "autogen-5.18.7"
-dep: "alsa-lib-1.1.6"
-dep: "flac-1.3.2"
-dep: "libogg-1.3.3"
-dep: "libvorbis-1.3.6"
+dep: "cmake"
+dep: "autoconf"
+dep: "autogen"
+dep: "alsa-lib"
+dep: "flac"
+dep: "libogg"
+dep: "libvorbis"
 
-dep: "automake-1.16"
-dep: "python3-3.7.0"
+dep: "automake"
+dep: "python3"
 
 # sndio
 # sqlite

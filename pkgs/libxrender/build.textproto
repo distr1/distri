@@ -5,4 +5,4 @@ version: "0.9.10"
 cbuilder: <>
 
 # build dependencies:
-dep: "libx11-1.6.6"
+dep: "libx11"

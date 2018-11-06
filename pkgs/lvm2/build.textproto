@@ -7,5 +7,5 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "libaio-0.3.111"
-dep: "which-2.21"
+dep: "libaio"
+dep: "which"

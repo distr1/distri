@@ -5,8 +5,8 @@ version: "2.10.6"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorg-server-1.20.1"
-dep: "xorgproto-2018.4"
-dep: "systemd-239" # for libudev
-dep: "libevdev-1.5.6"
-dep: "mtdev-1.1.5"
+dep: "xorg-server"
+dep: "xorgproto"
+dep: "systemd" # for libudev
+dep: "libevdev"
+dep: "mtdev"

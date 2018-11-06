@@ -5,7 +5,7 @@ version: "2.1.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "cmake-3.12.2"
+dep: "cmake"
 
 build_step: <
   argv: "/bin/cmake"

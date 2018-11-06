@@ -5,12 +5,12 @@ version: "2.58.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "meson-0.47.1"
-dep: "ninja-1.8.2"
-dep: "python3-3.7.0"
-dep: "libffi-3.2.1"
-dep: "zlib-1.2.11"
-dep: "util-linux-2.32"
+dep: "meson"
+dep: "ninja"
+dep: "python3"
+dep: "libffi"
+dep: "zlib"
+dep: "util-linux"
 
 build_step: <
   argv: "/bin/sh"

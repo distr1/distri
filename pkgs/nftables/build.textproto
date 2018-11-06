@@ -3,11 +3,11 @@ hash: "ad8181b5fcb9ca572f444bed54018749588522ee97e4c21922648bb78d7e7e91"
 version: "0.9.0"
 
 # build dependencies:
-dep: "bison-3.0.5"
-dep: "flex-2.6.4"
-dep: "libmnl-1.0.4"
-dep: "libnftnl-1.1.1"
-dep: "gmp-6.1.2"
+dep: "bison"
+dep: "flex"
+dep: "libmnl"
+dep: "libnftnl"
+dep: "gmp"
 
 cbuilder: <
   extra_configure_flag: "--disable-man-doc"

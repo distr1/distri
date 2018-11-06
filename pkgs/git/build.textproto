@@ -9,6 +9,6 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "perl-5.28.0"
-dep: "gettext-0.19.8.1"
-dep: "tar-1.30"
+dep: "perl"
+dep: "gettext"
+dep: "tar"

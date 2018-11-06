@@ -5,4 +5,4 @@ version: "0.13.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "autoconf-2.69"
+dep: "autoconf"

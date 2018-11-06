@@ -9,9 +9,9 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "bison-3.0.5"
-dep: "flex-2.6.4"
-dep: "m4-1.4.18" # TODO: remove (runtime-dep of flex)
+dep: "bison"
+dep: "flex"
+dep: "m4" # TODO: remove (runtime-dep of flex)
 
 # grub-mkconfig needs:
 runtime_dep: "sed-4.5"

@@ -5,5 +5,5 @@ version: "1.0.8"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorgproto-2018.4"
+dep: "xorgproto"
 runtime_dep: "xorgproto-2018.4" # TODO: remove once pkgconfig detection works

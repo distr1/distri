@@ -6,9 +6,9 @@ cherry_pick: "certdata2pem.py.patch"
 
 cbuilder: <>
 
-dep: "openssl-1.0.2p"
-dep: "perl-5.28.0" # TODO: remove once marked as runtime-dep of openssl
-dep: "python3-3.7.0"
+dep: "openssl"
+dep: "perl" # TODO: remove once marked as runtime-dep of openssl
+dep: "python3"
 
 
 build_step: <

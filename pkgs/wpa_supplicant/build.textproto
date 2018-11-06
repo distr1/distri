@@ -5,9 +5,9 @@ version: "2.6"
 cbuilder: <>
 
 # build dependencies:
-dep: "openssl-1.0.2p"
-dep: "libnl-3.4.0"
-dep: "dbus-1.13.6"
+dep: "openssl"
+dep: "libnl"
+dep: "dbus"
 
 build_step: <
   argv: "cp"

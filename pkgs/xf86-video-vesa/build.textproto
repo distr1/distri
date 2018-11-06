@@ -5,5 +5,5 @@ version: "2.4.0"
 cbuilder: <>
 
 # build dependencies:
-dep: "xorg-server-1.20.1"
-dep: "xorgproto-2018.4"
+dep: "xorg-server"
+dep: "xorgproto"

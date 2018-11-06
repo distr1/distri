@@ -7,4 +7,4 @@ cherry_pick: "http://t.zekjur.net/procps.patch"
 cbuilder: <>
 
 # build dependencies:
-dep: "ncurses-6.1"
+dep: "ncurses"

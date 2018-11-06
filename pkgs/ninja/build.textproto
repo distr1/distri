@@ -5,7 +5,7 @@ version: "1.8.2"
 cbuilder: <>
 
 # build dependencies:
-dep: "python3-3.7.0"
+dep: "python3"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure.py"

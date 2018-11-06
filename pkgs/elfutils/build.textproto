@@ -8,5 +8,5 @@ cherry_pick: "http://t.zekjur.net/elfutils.patch"
 cbuilder: <>
 
 # build dependencies:
-dep: "zlib-1.2.11"
-dep: "m4-1.4.18"
+dep: "zlib"
+dep: "m4"

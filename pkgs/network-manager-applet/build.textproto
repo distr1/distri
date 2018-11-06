@@ -10,12 +10,12 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "intltool-0.51.0"
-dep: "iso-codes-4.1"
-dep: "networkmanager-1.12.2"
-dep: "libsecret-0.18.6"
-dep: "libnotify-0.7.7"
-dep: "shared-mime-info-1.10" # TODO: should be pulled in via gdk-pixbuf
-dep: "gtk+-3.24.0"
-dep: "mesa-18.2.0" # TODO: should be pulled in via epoxy via gtk+
-dep: "libgudev-231"
+dep: "intltool"
+dep: "iso-codes"
+dep: "networkmanager"
+dep: "libsecret"
+dep: "libnotify"
+dep: "shared-mime-info" # TODO: should be pulled in via gdk-pixbuf
+dep: "gtk+"
+dep: "mesa" # TODO: should be pulled in via epoxy via gtk+
+dep: "libgudev"

@@ -5,11 +5,11 @@ version: "9.22"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
-dep: "libx11-1.6.6"
-dep: "libxrender-0.9.10"
-dep: "fontconfig-2.13.1"
-dep: "libxft-2.3.2"
+dep: "perl"
+dep: "libx11"
+dep: "libxrender"
+dep: "fontconfig"
+dep: "libxft"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

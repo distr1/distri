@@ -9,5 +9,5 @@ cbuilder: <
   extra_configure_flag: "--enable-install-program=arch"
 >
 
-dep: "attr-2.4.48"
-dep: "libcap-2.25"
+dep: "attr"
+dep: "libcap"

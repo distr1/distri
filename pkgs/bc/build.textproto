@@ -5,6 +5,6 @@ version: "1.07.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "ed-1.14.2"
-dep: "texinfo-6.5" # TODO: report a bug with bc as per https://ftp.gnu.org/gnu/makeinfo.README
-dep: "perl-5.28.0" # TODO: mark as runtime dep of texinfo
+dep: "ed"
+dep: "texinfo" # TODO: report a bug with bc as per https://ftp.gnu.org/gnu/makeinfo.README
+dep: "perl" # TODO: mark as runtime dep of texinfo

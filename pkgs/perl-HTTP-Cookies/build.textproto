@@ -5,7 +5,7 @@ version: "6.04"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-HTTP-Date-6.02"
-dep: "perl-HTTP-Message-6.18"
-dep: "perl-URI-1.74"
+dep: "perl-HTTP-Date"
+dep: "perl-HTTP-Message"
+dep: "perl-URI"
 

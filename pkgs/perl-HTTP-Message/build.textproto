@@ -5,9 +5,9 @@ version: "6.18"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-Encode-Locale-1.05"
-dep: "perl-HTTP-Date-6.02"
-dep: "perl-IO-HTML-1.001"
-dep: "perl-LWP-MediaTypes-6.02"
-dep: "perl-Try-Tiny-0.30"
-dep: "perl-URI-1.74"
+dep: "perl-Encode-Locale"
+dep: "perl-HTTP-Date"
+dep: "perl-IO-HTML"
+dep: "perl-LWP-MediaTypes"
+dep: "perl-Try-Tiny"
+dep: "perl-URI"

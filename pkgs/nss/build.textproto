@@ -7,10 +7,10 @@ cherry_pick: "nss-3.39-standalone-1.patch"
 cbuilder: <>
 
 # build dependencies:
-dep: "perl-5.28.0"
-dep: "nspr-4.20"
+dep: "perl"
+dep: "nspr"
 
-dep: "strace-4.24"
+dep: "strace"
 
 # TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
 build_step: <

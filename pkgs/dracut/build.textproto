@@ -11,7 +11,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "kmod-25"
+dep: "kmod"
 
 runtime_dep: "pkg-config-0.29.2"
 runtime_dep: "findutils-4.6.0"

@@ -11,7 +11,7 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "expat-2.2.6"
-dep: "systemd-239"
+dep: "expat"
+dep: "systemd"
 
-dep: "dbus-1.13.6" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
+dep: "dbus" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath

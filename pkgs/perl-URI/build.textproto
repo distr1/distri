@@ -5,4 +5,4 @@ version: "1.74"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl-Test-Needs-0.002005"
+dep: "perl-Test-Needs"

@@ -5,7 +5,7 @@ version: "2.0.4"
 cbuilder: <>
 
 # build dependencies:
-dep: "lvm2-2.03.00"
-dep: "popt-1.16"
-dep: "json-c-0.13.1"
-dep: "libgcrypt-1.8.3"
+dep: "lvm2"
+dep: "popt"
+dep: "json-c"
+dep: "libgcrypt"

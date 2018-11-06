@@ -5,7 +5,7 @@ version: "2.13.1"
 cbuilder: <>
 
 # build dependencies:
-dep: "freetype-2.9.1"
-dep: "util-linux-2.32"
-dep: "expat-2.2.6"
-dep: "gperf-3.1"
+dep: "freetype"
+dep: "util-linux"
+dep: "expat"
+dep: "gperf"

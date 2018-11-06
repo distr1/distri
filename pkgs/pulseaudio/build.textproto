@@ -5,9 +5,9 @@ version: "12.2"
 cbuilder: <>
 
 # build dependencies:
-dep: "m4-1.4.18"
-dep: "intltool-0.51.0"
-dep: "libtool-2.4.6"
-dep: "libcap-2.25"
-dep: "libsndfile-1.0.28"
-dep: "pulseaudio-12.2"  # so that distri build can bind-mount the build result to /ro/pulseaudio-12.2, resulting in /ro/pulseaudio-12.2/buildoutput/lib/libpulse.so surviving a patchelf --shrink-rpath
+dep: "m4"
+dep: "intltool"
+dep: "libtool"
+dep: "libcap"
+dep: "libsndfile"
+dep: "pulseaudio"  # so that distri build can bind-mount the build result to /ro/pulseaudio-12.2, resulting in /ro/pulseaudio-12.2/buildoutput/lib/libpulse.so surviving a patchelf --shrink-rpath
