@@ -5,5 +5,4 @@ version: "2.24"
 perlbuilder: <>
 
 # build dependencies:
-dep: "perl"
 dep: "perl-File-Next"
