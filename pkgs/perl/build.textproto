@@ -16,14 +16,6 @@ build_step: <
   argv: "./Configure -ds -e -Dprefix=${ZI_PREFIX} -Dcc=gcc"
 >
 
-# perl’s ext/Errno/Errno_pm.PL expects errno.h in /usr/include:
-build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
-  argv: "/usr"
->
-
 build_step: <
   argv: "make"
   argv: "-j8"
