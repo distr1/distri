@@ -62,6 +62,7 @@ func batch(args []string) error {
 	var (
 		dryRun   = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
 		simulate = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
+		rebuild  = fset.Bool("rebuild", false, "rebuild all packages, regardless of whether they need to be built or not")
 	)
 	fset.Parse(args)
 
@@ -97,7 +98,7 @@ func batch(args []string) error {
 				if err != nil {
 					return err
 				}
-				if buildStat.ModTime().Before(squashStat.ModTime()) {
+				if !*rebuild && buildStat.ModTime().Before(squashStat.ModTime()) {
 					continue // package already built
 				}
 				// fall-through: stale package
