@@ -59,7 +59,6 @@ func main() {
 			"build":    {buildHelp, func() { build(helpFlag) }},
 			"mount":    {mountHelp, func() { mount(helpFlag) }},
 			"umount":   {umountHelp, func() { umount(helpFlag) }},
-			"ninja":    {ninjaHelp, func() { ninja(helpFlag) }},
 			"pack":     {packHelp, func() { pack(helpFlag) }},
 			"scaffold": {scaffoldHelp, func() { scaffold(helpFlag) }},
 			"install":  {installHelp, func() { install(helpFlag) }},
@@ -104,11 +103,6 @@ func main() {
 
 	case "umount":
 		if err := umount(args); err != nil {
-			log.Fatal(err)
-		}
-
-	case "ninja":
-		if err := ninja(args); err != nil {
 			log.Fatal(err)
 		}
 
