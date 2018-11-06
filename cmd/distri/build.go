@@ -320,7 +320,8 @@ func glob1(imgDir, pkg string) (string, error) {
 	if _, err := os.Stat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil {
 		return pkg, nil // pkg already contains the version
 	}
-	matches, err := filepath.Glob(filepath.Join(imgDir, pkg+"-*.meta.textproto"))
+	pattern := filepath.Join(imgDir, pkg+"-*.meta.textproto")
+	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		return "", err
 	}
@@ -343,7 +344,7 @@ func glob1(imgDir, pkg string) (string, error) {
 		return "", fmt.Errorf("specify the package version to disambiguate between %q", candidates)
 	}
 	if len(candidates) == 0 {
-		return "", fmt.Errorf("package %q not found", pkg)
+		return "", fmt.Errorf("package %q not found (pattern %s)", pkg, pattern)
 	}
 	return candidates[0], nil
 }
@@ -536,14 +537,12 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if err := proto.Unmarshal(c, &meta); err != nil {
 			return nil, err
 		}
-		deps = meta.GetRuntimeDep()
+		deps = append(meta.GetRuntimeDep(), b.Proto.GetRuntimeDep()...)
 
-		runtimeDeps, err := glob(env.DefaultRepo, b.Proto.GetRuntimeDep())
+		deps, err = glob(env.DefaultRepo, deps)
 		if err != nil {
 			return nil, err
 		}
-
-		deps = append(deps, runtimeDeps...)
 
 		resolved, err := resolve(env.DefaultRepo, deps)
 		if err != nil {
@@ -1042,7 +1041,9 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 	}
 
-	delete(depPkgs, b.Pkg+"-"+b.Version) // prevent circular runtime dependencies
+	// prevent circular runtime dependencies
+	delete(depPkgs, b.Pkg)
+	delete(depPkgs, b.Pkg+"-"+b.Version)
 
 	log.Printf("run-time dependencies: %+v", depPkgs)
 	deps = make([]string, 0, len(depPkgs))
