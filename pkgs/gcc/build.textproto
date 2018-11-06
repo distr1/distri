@@ -22,6 +22,7 @@ dep: "make"
 dep: "glibc"
 dep: "linux"
 dep: "findutils" # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+dep: "patchelf"
 
 # build dependencies:
 dep: "gmp"
