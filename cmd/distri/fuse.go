@@ -32,28 +32,28 @@ const fuseHelp = `TODO
 // wellKnown lists paths which should be created as a union overlay underneath
 // /ro. E.g., /ro/bin will contain symlinks to all package’s bin directories, or
 // /ro/system will contain symlinks to all package’s
-// buildoutput/lib/systemd/system directories.
+// out/lib/systemd/system directories.
 var exchangeDirs = []string{
 	"/bin",
-	"/buildoutput/lib",
-	"/buildoutput/lib/firmware", // linux
-	"/buildoutput/lib/systemd/system",
-	"/buildoutput/lib/sysusers.d",
-	"/buildoutput/lib/tmpfiles.d",
-	"/buildoutput/lib/pkgconfig",
-	"/buildoutput/lib/xorg/modules",
-	"/buildoutput/lib/xorg/modules/input",
-	"/buildoutput/lib/xorg/modules/drivers",
-	"/buildoutput/include",
-	"/buildoutput/include/sys",  // libcap and glibc
-	"/buildoutput/include/scsi", // linux-4.18.7 and glibc-2.27
-	"/buildoutput/include/X11",
-	"/buildoutput/share/man/man1",
-	"/buildoutput/share/dbus-1/system.d",
-	"/buildoutput/share/dbus-1/system-services",
-	"/buildoutput/share/dbus-1/services",
-	"/buildoutput/share/fonts/truetype",
-	"/buildoutput/share/X11/xorg.conf.d",
+	"/out/lib",
+	"/out/lib/firmware", // linux
+	"/out/lib/systemd/system",
+	"/out/lib/sysusers.d",
+	"/out/lib/tmpfiles.d",
+	"/out/lib/pkgconfig",
+	"/out/lib/xorg/modules",
+	"/out/lib/xorg/modules/input",
+	"/out/lib/xorg/modules/drivers",
+	"/out/include",
+	"/out/include/sys",  // libcap and glibc
+	"/out/include/scsi", // linux-4.18.7 and glibc-2.27
+	"/out/include/X11",
+	"/out/share/man/man1",
+	"/out/share/dbus-1/system.d",
+	"/out/share/dbus-1/system-services",
+	"/out/share/dbus-1/services",
+	"/out/share/fonts/truetype",
+	"/out/share/X11/xorg.conf.d",
 }
 
 type fileNotFoundError struct {
@@ -183,7 +183,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		// provide a symlink to ld-linux.so, which is used as the .interp of our
 		// ELF binaries.
 		fs.mkExchangeDirAll("/lib")
-		fs.symlink(fs.dirs["/lib"], "../glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2")
+		fs.symlink(fs.dirs["/lib"], "../glibc-2.27/out/lib/ld-linux-x86-64.so.2")
 	}
 
 	server := fuseutil.NewFileSystemServer(fs)
@@ -392,7 +392,7 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 	// TODO: iterate over packages once, calling mkdir for all exchange dirs
 	for _, dir := range exchangeDirs {
-		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/buildoutput"))
+		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
 	}
 
 	existing := make(map[string]bool)
@@ -414,7 +414,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 			return err
 		}
 		for _, path := range exchangeDirs {
-			exchangePath := strings.TrimPrefix(path, "/buildoutput")
+			exchangePath := strings.TrimPrefix(path, "/out")
 			dir, ok := fs.dirs[exchangePath]
 			if !ok {
 				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
@@ -482,7 +482,7 @@ func (fs *fuseFS) updatePackages() error {
 		}
 		fs.pkgs = append(fs.pkgs, pkg.GetName())
 		for _, p := range pkg.GetWellKnownPath() {
-			exchangePath := strings.TrimPrefix(filepath.Dir(p), "buildoutput")
+			exchangePath := strings.TrimPrefix(filepath.Dir(p), "out")
 			dir, ok := fs.dirs[exchangePath]
 			if !ok {
 				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))

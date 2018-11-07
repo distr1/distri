@@ -8,4 +8,4 @@ cbuilder: <
 >
 
 # build dependencies:
-dep: "haveged" # so that distri build can bind-mount the build result to /ro/haveged-1.9.4, resulting in /ro/haveged-1.9.4/buildoutput/lib/ surviving a patchelf --shrink-rpath
+dep: "haveged" # so that distri build can bind-mount the build result to /ro/haveged-1.9.4, resulting in /ro/haveged-1.9.4/out/lib/ surviving a patchelf --shrink-rpath

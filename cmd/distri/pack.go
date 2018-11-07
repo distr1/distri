@@ -113,7 +113,7 @@ func pack(args []string) error {
 	}
 
 	// TODO: de-duplicate with build.go
-	if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(*root, "lib64")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/glibc-2.27/out/lib", filepath.Join(*root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
@@ -206,8 +206,8 @@ func pack(args []string) error {
 		"--mount",
 		"--",
 		"chroot", *root, "/ro/systemd-239/bin/systemd-sysusers",
-		"/ro/systemd-239/buildoutput/lib/sysusers.d/basic.conf",
-		"/ro/systemd-239/buildoutput/lib/sysusers.d/systemd.conf")
+		"/ro/systemd-239/out/lib/sysusers.d/basic.conf",
+		"/ro/systemd-239/out/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -615,7 +615,7 @@ name=root`)
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-239/buildoutput/share/pkgconfig/ dracut -o bash /boot/initramfs-4.18.7.img 4.18.7")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-239/out/share/pkgconfig/ dracut -o bash /boot/initramfs-4.18.7.img 4.18.7")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {

@@ -86,7 +86,7 @@ Additional flag to pass to `perl Makefile.PL`.
 .Example (from perl-XML-Parser):
 --------------------------------------------------------------------------------
 perlbuilder: <
-  extra_makefile_flag: "EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib"
+  extra_makefile_flag: "EXPATLIBPATH=/ro/expat-2.2.6/out/lib"
 >
 --------------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ The following build environment is created in ChrootDir:
 | `/etc/group` | minimal group file containing the build group
 | `/usr/src/<pkg>-<version>` | SourceDir (e.g. `$DISTRIROOT/build/systemd/v239`)
 | `/dest/tmp` | DestDir (e.g. `/tmp/distri-dest-3129384/tmp`)
-| `/lib64` | symlink to `/ro/glibc-2.27/buildoutput/lib`
+| `/lib64` | symlink to `/ro/glibc-2.27/out/lib`
 | `/usr/include` | symlink to `/ro/include`
 | `/bin` | symlink to `/ro/bin`
 | `/sbin` | symlink to `/ro/bin`
@@ -245,7 +245,7 @@ a|
 | perl
 |===
 
-The `$deps` notation means the following path is appended to the `buildoutput` directory of all build dependencies. E.g., for a package with build dependencies `bison` and `libx11`, `PKG_CONFIG_PATH` is `/ro/bison-3.0.5/buildoutput/lib/pkgconfig:/ro/libx11-1.6.6/buildoutput/lib/pkgconfig`.
+The `$deps` notation means the following path is appended to the `out` directory of all build dependencies. E.g., for a package with build dependencies `bison` and `libx11`, `PKG_CONFIG_PATH` is `/ro/bison-3.0.5/out/lib/pkgconfig:/ro/libx11-1.6.6/out/lib/pkgconfig`.
 
 TODO: can we remove LD_LIBRARY_PATH? should only be required for libraries which don’t set their rpath correctly
 

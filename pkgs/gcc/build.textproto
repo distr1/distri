@@ -31,8 +31,8 @@ dep: "mpc"
 dep: "tar"
 
 # kludge: the C++ header cstdlib uses the #include_next pragma, which requires
-# that /ro/glibc-2.27/buildoutput/include comes _after_ the g++ includes. This
-# requires /ro/glibc-2.27/buildoutput/include to be a system include, which we
+# that /ro/glibc-2.27/out/include comes _after_ the g++ includes. This
+# requires /ro/glibc-2.27/out/include to be a system include, which we
 # achieve by symlinking /usr/include to it.
 build_step: <
   argv: "rm"
@@ -41,7 +41,7 @@ build_step: <
 build_step: <
   argv: "ln"
   argv: "-s"
-  argv: "/ro/glibc-2.27/buildoutput/include"
+  argv: "/ro/glibc-2.27/out/include"
   argv: "/usr/include"
 >
 # TODO: the g++ search path needs to be changed.

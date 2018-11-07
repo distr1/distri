@@ -14,4 +14,4 @@ cbuilder: <
 dep: "expat"
 dep: "systemd"
 
-dep: "dbus" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
+dep: "dbus" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/out/lib/systemd/ surviving a patchelf --shrink-rpath

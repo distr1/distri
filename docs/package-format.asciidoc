@@ -60,16 +60,16 @@ Our SquashFS images do not use compression. This way, we need to decompress at m
 
 Our SquashFS images contain the following directories:
 
-buildoutput::
+out::
 The result of building and installing the software, e.g. lib, share, …
 etc::
 Files which the software installed to /etc, if any. These live in a special location because they are copied over to `/etc` on first installation.
 bin::
-One wrapper script for each binary in `buildoutput/bin` and `buildoutput/sbin`.
+One wrapper script for each binary in `out/bin` and `out/sbin`.
 
 Empty directories are omitted from the package, e.g. `bin` will not be present for a C library package such as `libx11`.
 
-To achieve this directory structure, we instruct the build system by using an invocation such as the following autotools command: `configure --prefix=/ro/haveged-1.9.4/buildoutput --sysconfdir=/etc`
+To achieve this directory structure, we instruct the build system by using an invocation such as the following autotools command: `configure --prefix=/ro/haveged-1.9.4/out --sysconfdir=/etc`
 
 As an example, here are the image contents of `haveged`:
 
@@ -78,28 +78,28 @@ As an example, here are the image contents of `haveged`:
 squashfs-root
 squashfs-root/bin
 squashfs-root/bin/haveged
-squashfs-root/buildoutput
-squashfs-root/buildoutput/include
-squashfs-root/buildoutput/include/haveged
-squashfs-root/buildoutput/include/haveged/havege.h
-squashfs-root/buildoutput/include/haveged/havegecmd.h
-squashfs-root/buildoutput/lib
-squashfs-root/buildoutput/lib/libhavege.a
-squashfs-root/buildoutput/lib/libhavege.la
-squashfs-root/buildoutput/lib/libhavege.so
-squashfs-root/buildoutput/lib/libhavege.so.1
-squashfs-root/buildoutput/lib/libhavege.so.1.1.0
-squashfs-root/buildoutput/lib/systemd
-squashfs-root/buildoutput/lib/systemd/system
-squashfs-root/buildoutput/lib/systemd/system/haveged.service
-squashfs-root/buildoutput/sbin
-squashfs-root/buildoutput/sbin/haveged
-squashfs-root/buildoutput/share
-squashfs-root/buildoutput/share/man
-squashfs-root/buildoutput/share/man/man3
-squashfs-root/buildoutput/share/man/man3/libhavege.3
-squashfs-root/buildoutput/share/man/man8
-squashfs-root/buildoutput/share/man/man8/haveged.8
+squashfs-root/out
+squashfs-root/out/include
+squashfs-root/out/include/haveged
+squashfs-root/out/include/haveged/havege.h
+squashfs-root/out/include/haveged/havegecmd.h
+squashfs-root/out/lib
+squashfs-root/out/lib/libhavege.a
+squashfs-root/out/lib/libhavege.la
+squashfs-root/out/lib/libhavege.so
+squashfs-root/out/lib/libhavege.so.1
+squashfs-root/out/lib/libhavege.so.1.1.0
+squashfs-root/out/lib/systemd
+squashfs-root/out/lib/systemd/system
+squashfs-root/out/lib/systemd/system/haveged.service
+squashfs-root/out/sbin
+squashfs-root/out/sbin/haveged
+squashfs-root/out/share
+squashfs-root/out/share/man
+squashfs-root/out/share/man/man3
+squashfs-root/out/share/man/man3/libhavege.3
+squashfs-root/out/share/man/man8
+squashfs-root/out/share/man/man8/haveged.8
 --------------------------------------------------------------------------------
 
 ### Metadata File

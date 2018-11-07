@@ -19,13 +19,13 @@ dep: "systemd"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" meson ${ZI_SOURCEDIR} --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX}"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/out/lib/systemd\" meson ${ZI_SOURCEDIR} --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX}"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ninja -v"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/out/lib/systemd\" ninja -v"
 >
 
 # ensure the install script doesn’t try to create /dev/fuse, for which we don’t have permission
@@ -38,7 +38,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} ninja -v install"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} ninja -v install"
 >
 
 build_step: <

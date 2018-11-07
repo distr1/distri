@@ -19,7 +19,7 @@ dep: "python3"
 dep: "kmod"
 dep: "cryptsetup"
 
-dep: "systemd" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/buildoutput/lib/systemd/ surviving a patchelf --shrink-rpath
+dep: "systemd" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/out/lib/systemd/ surviving a patchelf --shrink-rpath
 
 build_step: <
   argv: "/bin/sh"
@@ -30,7 +30,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ./configure --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/out/lib/systemd\" ./configure --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
 #  argv: "LDFLAGS=-static"
 >
 
@@ -58,18 +58,18 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/buildoutput/lib/systemd\" ninja -C build -v"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-239/out/lib/systemd\" ninja -C build -v"
 >
 
 # TODO: glibc bug: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sys/mount.h;h=ce2838e3a79caf1f49c9aceacb143ff5e403e50e;hb=HEAD#l85 should read 1UL, not 1:
-# /ro/glibc-2.27/buildoutput/include/sys/mount.h:85:17: error: result of '1 << 31' requires 33 bits to represent, but 'int' only has 32 bits [-Werror=shift-overflow=]
+# /ro/glibc-2.27/out/include/sys/mount.h:85:17: error: result of '1 << 31' requires 33 bits to represent, but 'int' only has 32 bits [-Werror=shift-overflow=]
 #   MS_NOUSER = 1 << 31
 #                 ^~
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-0.47.1/buildoutput//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
+  argv: "PYTHONPATH=/ro/meson-0.47.1/out//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
 >
 
 install: <

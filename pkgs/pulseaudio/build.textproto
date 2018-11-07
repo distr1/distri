@@ -10,4 +10,4 @@ dep: "intltool"
 dep: "libtool"
 dep: "libcap"
 dep: "libsndfile"
-dep: "pulseaudio"  # so that distri build can bind-mount the build result to /ro/pulseaudio-12.2, resulting in /ro/pulseaudio-12.2/buildoutput/lib/libpulse.so surviving a patchelf --shrink-rpath
+dep: "pulseaudio"  # so that distri build can bind-mount the build result to /ro/pulseaudio-12.2, resulting in /ro/pulseaudio-12.2/out/lib/libpulse.so surviving a patchelf --shrink-rpath

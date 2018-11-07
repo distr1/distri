@@ -5,17 +5,17 @@ version: "1.5.6"
 cbuilder: <>
 
 # gcc -DHAVE_CONFIG_H -I. -I/usr/src/libevdev-1.5.6/test -I..  -I/usr/src/libevdev-1.5.6 -I/usr/src/libevdev-1.5.6/include -I../libevdev   -I/usr/src/libevdev-1.5.6 -g -O2 -c -o test_static_link-test-link.o `test -f 'test-link.c' || echo '/usr/src/libevdev-1.5.6/test/'`test-link.c
-# In file included from /ro/linux-4.18.7/buildoutput/include/asm/posix_types_64.h:18,
-#                  from /ro/linux-4.18.7/buildoutput/include/asm/posix_types.h:7,
-#                  from /ro/linux-4.18.7/buildoutput/include/linux/posix_types.h:36,
-#                  from /ro/linux-4.18.7/buildoutput/include/linux/types.h:9,
+# In file included from /ro/linux-4.18.7/out/include/asm/posix_types_64.h:18,
+#                  from /ro/linux-4.18.7/out/include/asm/posix_types.h:7,
+#                  from /ro/linux-4.18.7/out/include/linux/posix_types.h:36,
+#                  from /ro/linux-4.18.7/out/include/linux/types.h:9,
 #                  from /usr/src/libevdev-1.5.6/include/linux/input.h:15,
 #                  from /usr/src/libevdev-1.5.6/libevdev/libevdev.h:30,
 #                  from /usr/src/libevdev-1.5.6/test/test-compile-pedantic.c:1:
-# /ro/linux-4.18.7/buildoutput/include/asm-generic/posix_types.h:88:14: error: ISO C90 does not support 'long long' [-Werror=long-long]
+# /ro/linux-4.18.7/out/include/asm-generic/posix_types.h:88:14: error: ISO C90 does not support 'long long' [-Werror=long-long]
 #  typedef long long __kernel_loff_t;
 #               ^~~~
-# /ro/linux-4.18.7/buildoutput/include/asm-generic/posix_types.h:90:14: error: ISO C90 does not support 'long long' [-Werror=long-long]
+# /ro/linux-4.18.7/out/include/asm-generic/posix_types.h:90:14: error: ISO C90 does not support 'long long' [-Werror=long-long]
 #  typedef long long __kernel_time64_t;
 #               ^~~~
 cherry_pick: "error.patch"

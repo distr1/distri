@@ -7,7 +7,7 @@ index 14f9787..048faab 100644
  TEXTDOMAINDIR=@TEXTDOMAINDIR@
  
 -RTLDLIST=@RTLD@
-+RTLDLIST=/ro/glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2
++RTLDLIST=/ro/glibc-2.27/out/lib/ld-linux-x86-64.so.2
  warn=
  bind_now=
  verbose=

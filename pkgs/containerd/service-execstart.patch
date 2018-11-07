@@ -5,7 +5,7 @@
  [Service]
  ExecStartPre=/sbin/modprobe overlay
 -ExecStart=/usr/local/bin/containerd
-+ExecStart=/ro/containerd-1.2.0-beta.2/buildoutput/bin/docker-containerd
++ExecStart=/ro/containerd-1.2.0-beta.2/out/bin/docker-containerd
  Delegate=yes
  KillMode=process
  LimitNOFILE=1048576

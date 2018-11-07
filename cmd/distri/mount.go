@@ -170,7 +170,7 @@ func mount(args []string) (cleanup func(), _ error) {
 	if err := symlinkfarm(*root, pkg, "bin"); err != nil {
 		return nil, err
 	}
-	if err := symlinkfarm(*root, pkg, "buildoutput/lib/systemd/system"); err != nil {
+	if err := symlinkfarm(*root, pkg, "out/lib/systemd/system"); err != nil {
 		return nil, err
 	}
 

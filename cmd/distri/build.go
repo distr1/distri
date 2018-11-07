@@ -109,7 +109,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 	}
 
 	// TODO: remove this, files are installed into b.DestDir + prefix?
-	if err := os.MkdirAll(filepath.Join(b.DestDir, "buildoutput"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(b.DestDir, "out"), 0755); err != nil {
 		return err
 	}
 
@@ -224,7 +224,7 @@ func (b *buildctx) pkg() error {
 func (b *buildctx) substitute(s string) string {
 	// TODO: different format? this might be mistaken for environment variables
 	s = strings.Replace(s, "${ZI_DESTDIR}", b.DestDir, -1)
-	s = strings.Replace(s, "${ZI_PREFIX}", filepath.Join(b.Prefix, "buildoutput"), -1)
+	s = strings.Replace(s, "${ZI_PREFIX}", filepath.Join(b.Prefix, "out"), -1)
 	s = strings.Replace(s, "${ZI_BUILDDIR}", b.BuildDir, -1)
 	s = strings.Replace(s, "${ZI_SOURCEDIR}", b.SourceDir, -1)
 	return s
@@ -249,20 +249,20 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
 	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
+		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
-		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/lib/pkgconfig")
-		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/buildoutput/share/pkgconfig")
+		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
+		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/out/lib/pkgconfig")
+		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/out/share/pkgconfig")
 		// Exclude glibc from CPATH: it needs to come last (as /usr/include),
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
 		if dep != "glibc-2.27" {
-			includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include")
-			includeDirs = append(includeDirs, "/ro/"+dep+"/buildoutput/include/x86_64-linux-gnu")
+			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
+			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
-		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
+		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
 	}
 
 	ifNotHermetic := func(val string) string {
@@ -284,7 +284,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-2.27/buildoutput/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-2.27/out/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
 }
@@ -302,10 +302,10 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 		// TODO: these need to be the bindirs of the runtime deps. move wrapper
 		// script creation and runtimeEnv call down to when we know runtimeDeps
 		binDirs = append(binDirs, "/ro/"+dep+"/bin")
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib")
+		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
-		libDirs = append(libDirs, "/ro/"+dep+"/buildoutput/lib64")
-		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/buildoutput/lib/perl5")
+		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
+		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
 	}
 
 	env := []string{
@@ -484,7 +484,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/buildoutput/lib/pkgconfig,/buildoutput/include,/buildoutput/include/scsi,/buildoutput/include/sys", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/include/scsi,/out/include/sys", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -649,15 +649,15 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			//   /bin → /ro/bin
 			//   /usr/bin → /ro/bin (for e.g. /usr/bin/env)
 			//   /sbin → /ro/bin (for e.g. linux, which hard-codes /sbin/depmod)
-			//   /lib64 → /ro/glibc-2.27/buildoutput/lib for ld-linux.so
+			//   /lib64 → /ro/glibc-2.27/out/lib for ld-linux.so
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
-			if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
+			if err := os.Symlink("/ro/glibc-2.27/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err
 			}
 
 			if !b.FUSE {
-				if err := os.Symlink("/ro/glibc-2.27/buildoutput/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+				if err := os.Symlink("/ro/glibc-2.27/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
 					return nil, err
 				}
 			} else {
@@ -849,7 +849,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if _, err := os.Stat(fn); err != nil {
 			return nil, fmt.Errorf("unit %q: %v", unit, err)
 		}
-		dest := filepath.Join(b.DestDir, b.Prefix, "buildoutput", "lib", "systemd", "system")
+		dest := filepath.Join(b.DestDir, b.Prefix, "out", "lib", "systemd", "system")
 		log.Printf("installing systemd unit %q: cp %s %s/", unit, fn, dest)
 		if err := os.MkdirAll(dest, 0755); err != nil {
 			return nil, err
@@ -863,7 +863,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		oldname := link.GetOldname()
 		newname := link.GetNewname()
 		log.Printf("symlinking %s → %s", newname, oldname)
-		dest := filepath.Join(b.DestDir, b.Prefix, "buildoutput")
+		dest := filepath.Join(b.DestDir, b.Prefix, "out")
 		if err := os.MkdirAll(filepath.Dir(filepath.Join(dest, newname)), 0755); err != nil {
 			return nil, err
 		}
@@ -876,7 +876,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		return nil, err
 	}
 	for _, dir := range []string{"bin", "sbin"} {
-		dir = filepath.Join(b.DestDir, b.Prefix, "buildoutput", dir)
+		dir = filepath.Join(b.DestDir, b.Prefix, "out", dir)
 		// TODO(performance): read directories directly, don’t care about sorting
 		fis, err := ioutil.ReadDir(dir)
 		if err != nil {
@@ -938,7 +938,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	}
 
 	// Make the finished package available at /ro/<pkg>-<version>, so that
-	// patchelf will leave e.g. /ro/systemd-239/buildoutput/lib/systemd/ in the
+	// patchelf will leave e.g. /ro/systemd-239/out/lib/systemd/ in the
 	// RPATH.
 	if _, err := os.Stat(filepath.Join(b.DestDir, "ro")); err == nil {
 		if _, err := os.Stat(b.Prefix); err == nil {
@@ -1007,7 +1007,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 	// TODO(optimization): these could be build-time dependencies, as they are
 	// only required when building against the library, not when using it.
-	pkgconfig := filepath.Join(destDir, "buildoutput", "lib", "pkgconfig")
+	pkgconfig := filepath.Join(destDir, "out", "lib", "pkgconfig")
 	fis, err := ioutil.ReadDir(pkgconfig)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
