@@ -900,9 +900,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			} else {
 				oldname := filepath.Join(dir, fi.Name())
 
-				if b.Pkg == "bash" && fi.Name() == "sh" {
+				if b.Pkg == "bash" && (fi.Name() == "sh" || fi.Name() == "bash") {
 					// prevent creation of a wrapper script for /bin/sh
-					// (wrappers execute /bin/sh) by using a symlink instead:
+					// (wrappers execute /bin/sh) and /bin/bash (dracut uses
+					// /bin/bash) by using a symlink instead:
 					oldname, err = filepath.Rel(filepath.Join(b.DestDir, b.Prefix, "bin"), oldname)
 					if err != nil {
 						return nil, err
