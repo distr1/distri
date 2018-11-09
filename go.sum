@@ -4,6 +4,8 @@ github.com/golang/protobuf v1.1.0 h1:0iH4Ffd/meGoXqF2lSAhZHt8X+cPgkfn/cb6Cce5Vpc
 github.com/golang/protobuf v1.1.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/go-cmp v0.2.0 h1:+dTQ8DZQJz0Mb/HjFlkptS1FeQ4cWSnN941F8aEG4SQ=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
+github.com/google/renameio v0.0.0-20181108174601-76365acd908f h1:lhDFIjvRqIJDmEHDSeRSiWee4a0oDr0vPpvdFviPcEo=
+github.com/google/renameio v0.0.0-20181108174601-76365acd908f/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/jacobsa/fuse v0.0.0-20180417054321-cd3959611bcb h1:TRAjtOoio6kvnrIMLeXesGT9IydfO+zQoioKWrv40nI=
 github.com/jacobsa/fuse v0.0.0-20180417054321-cd3959611bcb/go.mod h1:9Aml1MG17JVeXrN4D2mtJvYHtHklJH5bESjCKNzVjFU=
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 h1:MtvEpTB6LX3vkb4ax0b5D2DHbNAUsen0Gx5wZoq3lV4=

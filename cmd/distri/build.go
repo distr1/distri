@@ -22,6 +22,7 @@ import (
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
 )
@@ -195,11 +196,11 @@ func (b *buildctx) pkg() error {
 		return err
 	}
 
-	f, err := os.Create(dest)
+	f, err := renameio.TempFile("", dest)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Cleanup()
 	w, err := squashfs.NewWriter(f, time.Now())
 	if err != nil {
 		return err
@@ -213,7 +214,7 @@ func (b *buildctx) pkg() error {
 		return err
 	}
 
-	if err := f.Close(); err != nil {
+	if err := f.CloseAtomicallyReplace(); err != nil {
 		return err
 	}
 

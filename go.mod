@@ -4,6 +4,7 @@ require (
 	github.com/golang/gddo v0.0.0-20180911175731-8b031907f29f // indirect
 	github.com/golang/protobuf v1.1.0
 	github.com/google/go-cmp v0.2.0
+	github.com/google/renameio v0.0.0-20181108174601-76365acd908f
 	github.com/jacobsa/fuse v0.0.0-20180417054321-cd3959611bcb
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 // indirect
 	github.com/lpar/gzipped v1.1.0
