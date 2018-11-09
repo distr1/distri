@@ -136,34 +136,38 @@ func pack(args []string) error {
 		return err
 	}
 
-	basePkgs := []string{
-		"systemd-239",
-		"glibc-2.27",
-		"coreutils-8.30",
-		"strace-4.24",
-		"bash-4.4.18",
-		"psmisc-23.1",
-		"ncurses-6.1", // TODO: why does psmisc not link against it?
-		"containerd-1.2.0-beta.2",
-		"docker-engine-18.06.1-ce",
-		"docker-18.06.1-ce",
-		"runc-1.0.0-rc5",
-		"grep-3.1",
-		"openssh-7.8p1",
-		"iproute2-4.18.0",
-		"iputils-20180629",
-		"linux-4.18.7",
-		"ca-certificates-3.39",
-		"grub2-2.02",
-		"grub2-efi-2.02",
-		"squashfs-4.3",
-		"fuse-3.2.6",
-		"haveged-1.9.4", // for gathering entropy on e.g. Google Cloud
-		"dbus-1.13.6",
-		"binutils-2.31", // for debugging (e.g. readelf)
-		"curl-7.61.1",
-		"dracut-048",
-		"linux-firmware-20181104",
+	basePkgs, err := glob(*repo, []string{
+		"systemd",
+		"glibc",
+		"coreutils",
+		"strace",
+		"bash",
+		"psmisc",
+		"ncurses", // TODO: why does psmisc not link against it?
+		"containerd",
+		"docker-engine",
+		"docker",
+		"runc",
+		"grep",
+		"openssh",
+		"iproute2",
+		"iputils",
+		"linux",
+		"ca-certificates",
+		"grub2",
+		"grub2-efi",
+		"squashfs",
+		"fuse",
+		"haveged", // for gathering entropy on e.g. Google Cloud
+		"dbus",
+		"binutils", // for debugging (e.g. readelf)
+		"curl",
+		"dracut",
+		"linux-firmware",
+		"cryptsetup",
+	})
+	if err != nil {
+		return err
 	}
 
 	if err := install(append([]string{
