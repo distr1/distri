@@ -62,7 +62,9 @@ func pack(args []string) error {
 		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
-		encrypt = fset.Bool("encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
+		encrypt    = fset.Bool("encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
+		serialOnly = fset.Bool("serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
+		bootDebug  = fset.Bool("bootdebug", false, "Whether to debug early boot, i.e. add systemd.log_level=debug systemd.log_target=console")
 	)
 	fset.Parse(args)
 	if *root == "" {
@@ -359,7 +361,7 @@ veth
 	}
 
 	if *diskImg != "" {
-		if err := writeDiskImg(*diskImg, *root, *encrypt); err != nil {
+		if err := writeDiskImg(*diskImg, *root, *encrypt, *serialOnly, *bootDebug); err != nil {
 			return fmt.Errorf("writeDiskImg: %v", err)
 		}
 	}
@@ -411,7 +413,7 @@ veth
 	return nil
 }
 
-func writeDiskImg(dest, src string, encrypt bool) error {
+func writeDiskImg(dest, src string, encrypt, serialOnly, bootDebug bool) error {
 	f, err := os.OpenFile(dest, os.O_CREATE|os.O_TRUNC|os.O_RDWR|unix.O_CLOEXEC, 0644)
 	if err != nil {
 		return err
@@ -626,11 +628,17 @@ name=root`)
 		return fmt.Errorf("%v: %v", dracut.Args, err)
 	}
 
-	var luksParams string
-	if encrypt {
-		luksParams = "rd.luks=1 rd.luks.uuid=" + luksUUID + " rd.luks.name=" + luksUUID + "=cryptroot systemd.setenv=PATH=/bin"
+	var params []string
+	if !serialOnly {
+		params = append(params, "console=tty1")
 	}
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 console=tty1 "+luksParams+" init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	if encrypt {
+		params = append(params, "rd.luks=1 rd.luks.uuid="+luksUUID+" rd.luks.name="+luksUUID+"=cryptroot systemd.setenv=PATH=/bin")
+	}
+	if bootDebug {
+		params = append(params, "systemd.log_level=debug systemd.log_target=console")
+	}
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 "+strings.Join(params, " ")+" init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
