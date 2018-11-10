@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -63,6 +64,7 @@ func batch(args []string) error {
 		dryRun   = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
 		simulate = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
 		rebuild  = fset.Bool("rebuild", false, "rebuild all packages, regardless of whether they need to be built or not")
+		jobs     = fset.Int("jobs", runtime.NumCPU(), "number of parallel jobs to run")
 	)
 	fset.Parse(args)
 
@@ -76,7 +78,8 @@ func batch(args []string) error {
 	if err != nil {
 		return err
 	}
-	byName := make(map[string]*node)
+	byFullname := make(map[string]*node) // e.g. gcc-8.2.0
+	byPkg := make(map[string]*node)      // e.g. gcc
 	for idx, fi := range fis {
 		pkg := fi.Name()
 
@@ -111,12 +114,13 @@ func batch(args []string) error {
 			pkg:      pkg,
 			fullname: fullname,
 		}
-		byName[n.fullname] = n
+		byPkg[n.pkg] = n
+		byFullname[n.fullname] = n
 		g.AddNode(n)
 	}
 
 	// add all constraints: <pkg>-<version> depends on <pkg>-<version>
-	for _, n := range byName {
+	for _, n := range byFullname {
 		// TODO(later): parallelize?
 		c, err := ioutil.ReadFile(filepath.Join(pkgsDir, n.pkg, "build.textproto"))
 		if err != nil {
@@ -133,13 +137,17 @@ func batch(args []string) error {
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 
 		for _, dep := range deps {
-			if dep == n.pkg+"-"+version {
+			if dep == n.pkg+"-"+version ||
+				dep == n.pkg {
 				continue // TODO
 			}
-			if _, ok := byName[dep]; !ok {
-				continue // dependency already built
+			if d, ok := byFullname[dep]; ok {
+				g.SetEdge(g.NewEdge(n, d))
 			}
-			g.SetEdge(g.NewEdge(n, byName[dep]))
+			if d, ok := byPkg[dep]; ok {
+				g.SetEdge(g.NewEdge(n, d))
+			}
+			// dependency already built
 		}
 	}
 
@@ -192,15 +200,14 @@ func batch(args []string) error {
 	if err != nil {
 		return err
 	}
-	const workers = 8 // TODO: customizable
 	s := scheduler{
-		logDir:   logDir,
-		simulate: *simulate,
-		workers:  workers,
-		g:        g,
-		byName:   byName,
-		built:    make(map[string]error),
-		status:   make([]string, workers+1),
+		logDir:     logDir,
+		simulate:   *simulate,
+		workers:    *jobs,
+		g:          g,
+		byFullname: byFullname,
+		built:      make(map[string]error),
+		status:     make([]string, *jobs+1),
 	}
 	if err := s.run(); err != nil {
 		return err
@@ -215,12 +222,12 @@ type buildResult struct {
 }
 
 type scheduler struct {
-	logDir   string
-	simulate bool
-	workers  int
-	g        graph.Directed
-	byName   map[string]*node
-	built    map[string]error
+	logDir     string
+	simulate   bool
+	workers    int
+	g          graph.Directed
+	byFullname map[string]*node
+	built      map[string]error
 
 	statusMu   sync.Mutex
 	status     []string
@@ -332,7 +339,7 @@ func (s *scheduler) run() error {
 			select {
 			case result := <-done:
 				//log.Printf("build %s completed", result.name)
-				n := s.byName[result.node.fullname]
+				n := s.byFullname[result.node.fullname]
 				s.built[result.node.fullname] = result.err
 				s.updateStatus(0, fmt.Sprintf("%d of %d packages: %d built, %d failed", len(s.built), numNodes, succeeded, failed))
 
