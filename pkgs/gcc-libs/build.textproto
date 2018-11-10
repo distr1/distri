@@ -9,3 +9,12 @@ build_step: <
   argv: "-c"
   argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib64; mkdir -p $d; cp -d /ro/gcc-8.2.0/out/lib64/{libgcc_s.so,libstdc++}* /ro/gcc-8.2.0/out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt* $d"
 >
+
+# Delete the .la files as they contain full paths. If we don’t do this, packages
+# such as pcre will end up with a gcc dependency instead of a gcc-libs
+# dependency.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib64; rm $d/*.la"
+>
