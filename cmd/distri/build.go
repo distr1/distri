@@ -414,34 +414,34 @@ func builderdeps(p *pb.Build) []string {
 		// (anything that supports linking against C libraries).
 		cdeps := []string{
 			// configure runtime dependencies:
-			"bash-4.4.18",
-			"coreutils-8.30",
-			"sed-4.5",
-			"grep-3.1",
-			"gawk-4.2.1",
-			"diffutils-3.6",
-			"file-5.34",
-			"pkg-config-0.29.2",
+			"bash",
+			"coreutils",
+			"sed",
+			"grep",
+			"gawk",
+			"diffutils",
+			"file",
+			"pkg-config",
 
 			// C build environment:
-			"gcc-libs-8.2.0",
-			"gcc-8.2.0",
-			"mpc-1.1.0",  // TODO: remove once gcc binaries find these via their rpath
-			"mpfr-4.0.1", // TODO: remove once gcc binaries find these via their rpath
-			"gmp-6.1.2",  // TODO: remove once gcc binaries find these via their rpath
-			"binutils-2.31",
-			"make-4.2.1",
-			"glibc-2.27",
-			"linux-4.18.7",
-			"findutils-4.6.0", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+			"gcc-libs",
+			"gcc",
+			"mpc",  // TODO: remove once gcc binaries find these via their rpath
+			"mpfr", // TODO: remove once gcc binaries find these via their rpath
+			"gmp",  // TODO: remove once gcc binaries find these via their rpath
+			"binutils",
+			"make",
+			"glibc",
+			"linux",
+			"findutils", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 
-			"patchelf-0.10+git20181016", // for shrinking the RPATH
+			"patchelf", // for shrinking the RPATH
 		}
 
 		switch builder.(type) {
 		case *pb.Build_Perlbuilder:
 			deps = append(deps, []string{
-				"perl-5.28.0",
+				"perl",
 			}...)
 			deps = append(deps, cdeps...)
 
