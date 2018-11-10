@@ -453,8 +453,9 @@ func builderdeps(p *pb.Build) []string {
 }
 
 func builddeps(p *pb.Build) ([]string, error) {
-	deps := p.GetDep()
-	deps = append(deps, builderdeps(p)...)
+	// builderdeps must come first so that their ordering survives the resolve
+	// call below.
+	deps := append(builderdeps(p), p.GetDep()...)
 	var err error
 	deps, err = glob(env.DefaultRepo, deps)
 	if err != nil {
