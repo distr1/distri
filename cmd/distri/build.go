@@ -1291,11 +1291,27 @@ func build(args []string) error {
 		fuse = fset.Bool("fuse",
 			true,
 			"Use FUSE file system instead of kernel mounts")
+
+		ignoreGov = fset.Bool("dont_set_governor",
+			false,
+			"Don’t automatically set the “performance” CPU frequency scaling governor. Why wouldn’t you?")
 	)
 	fset.Parse(args)
 
 	if *job != "" {
 		return runJob(*job)
+	}
+
+	if !*ignoreGov {
+		cleanup, err := setGovernor("performance")
+		if err != nil {
+			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
+		} else {
+			onInterruptMu.Lock()
+			onInterrupt = append(onInterrupt, cleanup)
+			onInterruptMu.Unlock()
+			defer cleanup()
+		}
 	}
 
 	if _, err := os.Stat("build.textproto"); err != nil {

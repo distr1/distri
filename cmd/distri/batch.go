@@ -61,12 +61,27 @@ func (n *node) ID() int64 { return n.id }
 func batch(args []string) error {
 	fset := flag.NewFlagSet("batch", flag.ExitOnError)
 	var (
-		dryRun   = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
-		simulate = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
-		rebuild  = fset.Bool("rebuild", false, "rebuild all packages, regardless of whether they need to be built or not")
-		jobs     = fset.Int("jobs", runtime.NumCPU(), "number of parallel jobs to run")
+		dryRun    = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
+		simulate  = fset.Bool("simulate", false, "simulate builds by sleeping for random times instead of actually building packages")
+		rebuild   = fset.Bool("rebuild", false, "rebuild all packages, regardless of whether they need to be built or not")
+		jobs      = fset.Int("jobs", runtime.NumCPU(), "number of parallel jobs to run")
+		ignoreGov = fset.Bool("dont_set_governor",
+			false,
+			"Don’t automatically set the “performance” CPU frequency scaling governor. Why wouldn’t you?")
 	)
 	fset.Parse(args)
+
+	if !*ignoreGov {
+		cleanup, err := setGovernor("performance")
+		if err != nil {
+			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
+		} else {
+			onInterruptMu.Lock()
+			onInterrupt = append(onInterrupt, cleanup)
+			onInterruptMu.Unlock()
+			defer cleanup()
+		}
+	}
 
 	log.Printf("distriroot %q", env.DistriRoot)
 
