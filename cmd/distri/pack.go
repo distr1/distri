@@ -617,7 +617,7 @@ name=root`)
 		return err
 	}
 
-	if err := copyFile(filepath.Join(env.DistriRoot, "linux-amd64-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
+	if err := copyFile(filepath.Join(env.DistriRoot, "linux-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
 		return err
 	}
 
