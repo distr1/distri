@@ -3,7 +3,7 @@ hash: "7af83526eff1c76e8b9e1553b34245c203d029028d8044dd9dcf71eef1001576"
 version: "1.9.1"
 
 cbuilder: <
-  extra_configure_flag: "--with-xorg-conf-dir=/ro/xf86-input-synaptics-1.9.1/out/share/X11/xorg.conf.d"
+  extra_configure_flag: "--with-xorg-conf-dir=/ro/xf86-input-synaptics-amd64-1.9.1/out/share/X11/xorg.conf.d"
 >
 
 # build dependencies:

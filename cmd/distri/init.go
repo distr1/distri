@@ -20,7 +20,7 @@ func pid1() error {
 		log.Printf("mounting /proc failed: %v", err)
 	}
 
-	for _, pkg := range []string{"fuse-3.2.6", "glibc-2.27"} {
+	for _, pkg := range []string{"fuse-amd64-3.2.6", "glibc-amd64-2.27"} {
 		if err := os.Symlink("/roimg/"+pkg+".squashfs", "/ro/"+pkg+".squashfs"); err != nil && !os.IsExist(err) {
 			return err
 		}
@@ -28,7 +28,7 @@ func pid1() error {
 			return err
 		}
 	}
-	if _, err := mount([]string{"-repo=/ro", "fuse-3.2.6"}); err != nil {
+	if _, err := mount([]string{"-repo=/ro", "fuse-amd64-3.2.6"}); err != nil {
 		return err
 	}
 
@@ -40,7 +40,7 @@ func pid1() error {
 	fuse := exec.Command("/init", "fuse", "-repo=/roimg", "-readiness=3", "/ro")
 	fuse.ExtraFiles = []*os.File{w}
 	fuse.Env = []string{
-		"PATH=/ro/fuse-3.2.6/out/bin",
+		"PATH=/ro/fuse-amd64-3.2.6/out/bin",
 		// Set TZ= so that the time package does not try to open /etc/localtime,
 		// which is a symlink into /ro, which would deadlock when called from
 		// the FUSE request handler.
@@ -78,6 +78,6 @@ func pid1() error {
 	// 	}
 	// }
 
-	const systemd = "/ro/systemd-239/out/lib/systemd/systemd" // TODO(later): glob?
+	const systemd = "/ro/systemd-amd64-239/out/lib/systemd/systemd" // TODO(later): glob?
 	return syscall.Exec(systemd, []string{systemd}, nil)
 }

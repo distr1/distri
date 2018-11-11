@@ -34,6 +34,7 @@ type buildctx struct {
 	Proto     *pb.Build `json:"-"`
 	PkgDir    string    // e.g. /home/michael/distri/pkgs/busybox
 	Pkg       string    // e.g. busybox
+	Arch      string    // e.g. amd64
 	Version   string    // e.g. 1.29.2
 	SourceDir string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
 	BuildDir  string    // e.g. /tmp/distri-build-8123911
@@ -64,6 +65,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 		Proto:    &buildProto,
 		PkgDir:   pwd,
 		Pkg:      filepath.Base(pwd),
+		Arch:     "amd64", // TODO: configurable / auto-detect
 		Version:  buildProto.GetVersion(),
 		Hermetic: hermetic,
 		FUSE:     fuse,
@@ -88,7 +90,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 		return err
 	}
 
-	log.Printf("building %s-%s", b.Pkg, b.Version)
+	log.Printf("building %s-%s-%s", b.Pkg, b.Arch, b.Version)
 
 	b.SourceDir, err = b.extract()
 	if err != nil {
@@ -136,7 +138,7 @@ func buildpkg(hermetic, debug, fuse bool) error {
 	// b.DestDir is /tmp/distri-dest123/tmp
 	// package installs into b.DestDir/ro/hello-1
 
-	rel := b.Pkg + "-" + b.Version
+	rel := b.fullName()
 	// Set fields from the perspective of an installed package so that variable
 	// substitution works within wrapper scripts.
 	b.Prefix = "/ro/" + rel // e.g. /ro/hello-1
@@ -171,6 +173,10 @@ export {{ quoteenv $env }}
 exec {{ .Prefix }}/{{ .Bin }} "$@"
 `))
 
+func (b *buildctx) fullName() string {
+	return b.Pkg + "-" + b.Arch + "-" + b.Version
+}
+
 func (b *buildctx) serialize() (string, error) {
 	// TODO: exempt the proto field from marshaling, it needs jsonpb once you use oneofs
 	enc, err := json.Marshal(b)
@@ -191,7 +197,7 @@ func (b *buildctx) serialize() (string, error) {
 }
 
 func (b *buildctx) pkg() error {
-	dest, err := filepath.Abs("../distri/pkg/" + b.Pkg + "-" + b.Version + ".squashfs")
+	dest, err := filepath.Abs("../distri/pkg/" + b.fullName() + ".squashfs")
 	if err != nil {
 		return err
 	}
@@ -206,7 +212,7 @@ func (b *buildctx) pkg() error {
 		return err
 	}
 
-	if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.Pkg+"-"+b.Version)); err != nil {
+	if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.fullName())); err != nil {
 		return err
 	}
 
@@ -249,7 +255,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
+	for _, dep := range append(deps, b.fullName()) {
 		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
 		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
@@ -259,7 +265,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
-		if dep != "glibc-2.27" {
+		if dep != "glibc-amd64-2.27" {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
@@ -285,7 +291,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-2.27/out/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
 }
@@ -299,7 +305,7 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(deps, b.Pkg+"-"+b.Version) {
+	for _, dep := range append(deps, b.fullName()) {
 		// TODO: these need to be the bindirs of the runtime deps. move wrapper
 		// script creation and runtimeEnv call down to when we know runtimeDeps
 		binDirs = append(binDirs, "/ro/"+dep+"/bin")
@@ -317,11 +323,31 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	return env
 }
 
+var archs = map[string]bool{
+	"amd64": true,
+	"i386":  true,
+}
+
+func hasArchSuffix(pkg string) bool {
+	for a := range archs {
+		// unversioned, but ending in an architecture already (e.g. emacs-amd64)
+		if strings.HasSuffix(pkg, "-"+a) {
+			return true
+		}
+	}
+	return false
+}
+
 func glob1(imgDir, pkg string) (string, error) {
 	if _, err := os.Stat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil {
 		return pkg, nil // pkg already contains the version
 	}
-	pattern := filepath.Join(imgDir, pkg+"-*.meta.textproto")
+	pkgPattern := pkg
+	if !hasArchSuffix(pkg) {
+		pkgPattern = pkgPattern + "-amd64" // TODO: configurable / auto-detect
+	}
+
+	pattern := filepath.Join(imgDir, pkgPattern+"-*.meta.textproto")
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		return "", err
@@ -611,7 +637,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		// We are running in a separate mount namespace now.
 		{
 			// Make available b.SourceDir as /usr/src/<pkg>-<version> (read-only):
-			src := filepath.Join(b.ChrootDir, "usr", "src", b.Pkg+"-"+b.Version)
+			src := filepath.Join(b.ChrootDir, "usr", "src", b.fullName())
 			if err := os.MkdirAll(src, 0755); err != nil {
 				return nil, err
 			}
@@ -635,7 +661,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 		{
 			// Make available b.DestDir as /dest/<pkg>-<version>:
-			prefix := filepath.Join(b.ChrootDir, "ro", b.Pkg+"-"+b.Version)
+			prefix := filepath.Join(b.ChrootDir, "ro", b.fullName())
 			b.Prefix = strings.TrimPrefix(prefix, b.ChrootDir)
 
 			dst := filepath.Join(b.ChrootDir, "dest", "tmp")
@@ -654,12 +680,12 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			//   /lib64 → /ro/glibc-2.27/out/lib for ld-linux.so
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
-			if err := os.Symlink("/ro/glibc-2.27/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
+			if err := os.Symlink("/ro/glibc-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err
 			}
 
 			if !b.FUSE {
-				if err := os.Symlink("/ro/glibc-2.27/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+				if err := os.Symlink("/ro/glibc-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
 					return nil, err
 				}
 			} else {
@@ -692,7 +718,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		// We are running in a separate mount namespace now.
 		{
 			// Make available b.SourceDir as /usr/src/<pkg>-<version> (read-only):
-			src := filepath.Join("/usr/src", b.Pkg+"-"+b.Version)
+			src := filepath.Join("/usr/src", b.fullName())
 			if err := syscall.Mount("tmpfs", "/usr/src", "tmpfs", 0, ""); err != nil {
 				return nil, fmt.Errorf("mount tmpfs /usr/src: %v", err)
 			}
@@ -720,7 +746,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			}
 			b.DestDir = dst
 
-			prefix := filepath.Join("/ro", b.Pkg+"-"+b.Version)
+			prefix := filepath.Join("/ro", b.fullName())
 			if err := os.MkdirAll(prefix, 0755); err != nil {
 				return nil, err
 			}
@@ -1033,7 +1059,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		switch builder.(type) {
 		case *pb.Build_Cbuilder:
 		case *pb.Build_Perlbuilder:
-			depPkgs["perl-5.28.0"] = true
+			depPkgs["perl-amd64-5.28.0"] = true
 			// pass through all deps to run-time deps
 			// TODO: distinguish test-only deps from actual deps based on Makefile.PL
 			for _, pkg := range b.Proto.GetDep() {
@@ -1046,7 +1072,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 	// prevent circular runtime dependencies
 	delete(depPkgs, b.Pkg)
-	delete(depPkgs, b.Pkg+"-"+b.Version)
+	delete(depPkgs, b.fullName())
 
 	log.Printf("run-time dependencies: %+v", depPkgs)
 	deps = make([]string, 0, len(depPkgs))

@@ -46,7 +46,7 @@ var exchangeDirs = []string{
 	"/out/lib/xorg/modules/drivers",
 	"/out/include",
 	"/out/include/sys",  // libcap and glibc
-	"/out/include/scsi", // linux-4.18.7 and glibc-2.27
+	"/out/include/scsi", // linux-amd64-4.18.7 and glibc-amd64-2.27
 	"/out/include/X11",
 	"/out/share/man/man1",
 	"/out/share/dbus-1/system.d",
@@ -183,7 +183,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		// provide a symlink to ld-linux.so, which is used as the .interp of our
 		// ELF binaries.
 		fs.mkExchangeDirAll("/lib")
-		fs.symlink(fs.dirs["/lib"], "../glibc-2.27/out/lib/ld-linux-x86-64.so.2")
+		fs.symlink(fs.dirs["/lib"], "../glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2")
 	}
 
 	server := fuseutil.NewFileSystemServer(fs)
@@ -261,7 +261,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 // * ReadSymlink returns linkTarget
 type dirent struct {
 	name       string // e.g. "xterm"
-	linkTarget string // e.g. "../../xterm-23/bin/xterm". Empty for directories
+	linkTarget string // e.g. "../../xterm-amd64-23/bin/xterm". Empty for directories
 	inode      fuseops.InodeID
 }
 

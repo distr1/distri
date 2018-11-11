@@ -15,14 +15,14 @@ dep: "libffi"
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
-  argv: "--with-openssl=/ro/openssl-1.0.2p/out"
+  argv: "--with-openssl=/ro/openssl-amd64-1.0.2p/out"
 >
 
 # https://bugs.python.org/issue34823
 build_step: <
   argv: "ln"
   argv: "-s"
-  argv: "/ro/libffi-3.2.1/out/lib64"
+  argv: "/ro/libffi-amd64-3.2.1/out/lib64"
   argv: "/usr/"
 >
 

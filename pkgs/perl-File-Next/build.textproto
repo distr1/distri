@@ -16,7 +16,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "perl Makefile.PL INSTALL_BASE=${ZI_PREFIX} EXPATLIBPATH=/ro/expat-2.2.6/out/lib PREREQ_FATAL=true"
+  argv: "perl Makefile.PL INSTALL_BASE=${ZI_PREFIX} EXPATLIBPATH=/ro/expat-amd64-2.2.6/out/lib PREREQ_FATAL=true"
 >
 
 build_step: <

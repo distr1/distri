@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
+	"github.com/golang/protobuf/proto"
 )
 
 func installFile(ctx context.Context, tmpdir, pkg string) (_ error, cleanup func()) {
@@ -97,7 +97,7 @@ func TestInstall(t *testing.T) {
 			}
 			defer os.RemoveAll(tmpdir)
 
-			const pkg = "systemd-239"
+			const pkg = "systemd-amd64-239"
 
 			err, cleanup := tt.installFunc(ctx, tmpdir, pkg)
 			if err != nil {

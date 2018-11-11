@@ -7,7 +7,7 @@ cbuilder: <>
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib64; mkdir -p $d; cp -d /ro/gcc-8.2.0/out/lib64/{libgcc_s.so,libstdc++,libgomp}* /ro/gcc-8.2.0/out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt* $d"
+  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib64; mkdir -p $d; cp -d /ro/gcc-amd64-8.2.0/out/lib64/{libgcc_s.so,libstdc++,libgomp}* /ro/gcc-amd64-8.2.0/out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt* $d"
 >
 
 # Delete the .la files as they contain full paths. If we don’t do this, packages

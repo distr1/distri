@@ -29,7 +29,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp /ro/pkg-config-0.29.2/out/share/aclocal/pkg.m4 M4/"
+  argv: "cp /ro/pkg-config-amd64-0.29.2/out/share/aclocal/pkg.m4 M4/"
 >
 
 build_step: <

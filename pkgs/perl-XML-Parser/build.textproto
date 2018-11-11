@@ -3,7 +3,7 @@ hash: "1ae9d07ee9c35326b3d9aad56eae71a6730a73a116b9fe9e8a4758b7cc033216"
 version: "2.44"
 
 perlbuilder: <
-  extra_makefile_flag: "EXPATLIBPATH=/ro/expat-2.2.6/out/lib"
+  extra_makefile_flag: "EXPATLIBPATH=/ro/expat-amd64-2.2.6/out/lib"
 >
 
 # build dependencies:

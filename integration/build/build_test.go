@@ -28,9 +28,9 @@ source: "{{ .Source }}"
 hash: "{{ .Hash }}"
 version: "1"
 
-dep: "bash-4.4.18"
+dep: "bash-amd64-4.4.18"
 
-runtime_dep: "pkg-config-0.29.2"
+runtime_dep: "pkg-config-amd64-0.29.2"
 
 build_step: <
   argv: "/bin/sh"
@@ -97,17 +97,17 @@ func TestBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range []string{
-		"bash-4.4.18",
+		"bash-amd64-4.4.18",
 		// TODO: remove once bash-4.4.18’s runtime_deps are resolved:
-		"glibc-2.27",
+		"glibc-amd64-2.27",
 
-		"pkg-config-0.29.2",
+		"pkg-config-amd64-0.29.2",
 		// TODO: remove once pkg-config-0.29.2’s runtime_deps are resolved:
-		"glib-2.58.0",
-		"zlib-1.2.11",
-		"util-linux-2.32",
-		"pam-1.3.1",
-		"libffi-3.2.1",
+		"glib-amd64-2.58.0",
+		"zlib-amd64-1.2.11",
+		"util-linux-amd64-2.32",
+		"pam-amd64-1.3.1",
+		"libffi-amd64-3.2.1",
 	} {
 		cp := exec.Command("cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
@@ -154,7 +154,7 @@ func TestBuild(t *testing.T) {
 
 	t.Run("VerifyRuntimeDep", func(t *testing.T) {
 		var meta pb.Meta
-		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-1.meta.textproto"))
+		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -162,13 +162,13 @@ func TestBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-0.29.2", // from hello-1 (direct)
-			"glib-2.58.0",       // from pkg-config (transitive)
-			"glibc-2.27",        // from glib-2.58.0
-			"zlib-1.2.11",       // from glib-2.58.0
-			"util-linux-2.32",   // from glib-2.58.0
-			"pam-1.3.1",         // from util-linux-2.32
-			"libffi-3.2.1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2", // from hello-1 (direct)
+			"glib-amd64-2.58.0",       // from pkg-config (transitive)
+			"glibc-amd64-2.27",        // from glib-2.58.0
+			"zlib-amd64-1.2.11",       // from glib-2.58.0
+			"util-linux-amd64-2.32",   // from glib-2.58.0
+			"pam-amd64-1.3.1",         // from util-linux-2.32
+			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -208,20 +208,20 @@ func TestUnversionedBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range []string{
-		"bash-4.4.18",
+		"bash-amd64-4.4.18",
 		// TODO: remove once bash-4.4.18’s runtime_deps are resolved:
-		"glibc-2.27",
+		"glibc-amd64-2.27",
 
-		"linux-4.18.7",
-		"linux-firmware-20181104",
+		"linux-amd64-4.18.7",
+		"linux-firmware-amd64-20181104",
 
-		"pkg-config-0.29.2",
+		"pkg-config-amd64-0.29.2",
 		// TODO: remove once pkg-config-0.29.2’s runtime_deps are resolved:
-		"glib-2.58.0",
-		"zlib-1.2.11",
-		"util-linux-2.32",
-		"pam-1.3.1",
-		"libffi-3.2.1",
+		"glib-amd64-2.58.0",
+		"zlib-amd64-1.2.11",
+		"util-linux-amd64-2.32",
+		"pam-amd64-1.3.1",
+		"libffi-amd64-3.2.1",
 	} {
 		cp := exec.Command("cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
@@ -268,7 +268,7 @@ func TestUnversionedBuild(t *testing.T) {
 
 	t.Run("VerifyRuntimeDep", func(t *testing.T) {
 		var meta pb.Meta
-		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-1.meta.textproto"))
+		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -276,13 +276,13 @@ func TestUnversionedBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-0.29.2", // from hello-1 (direct)
-			"glib-2.58.0",       // from pkg-config (transitive)
-			"glibc-2.27",        // from glib-2.58.0
-			"zlib-1.2.11",       // from glib-2.58.0
-			"util-linux-2.32",   // from glib-2.58.0
-			"pam-1.3.1",         // from util-linux-2.32
-			"libffi-3.2.1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2", // from hello-1 (direct)
+			"glib-amd64-2.58.0",       // from pkg-config (transitive)
+			"glibc-amd64-2.27",        // from glib-2.58.0
+			"zlib-amd64-1.2.11",       // from glib-2.58.0
+			"util-linux-amd64-2.32",   // from glib-2.58.0
+			"pam-amd64-1.3.1",         // from util-linux-2.32
+			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {

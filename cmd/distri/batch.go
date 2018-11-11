@@ -73,12 +73,14 @@ func batch(args []string) error {
 	// TODO: use simple.NewDirectedMatrix instead?
 	g := simple.NewDirectedGraph()
 
+	const arch = "amd64" // TODO: configurable / auto-detect
+
 	pkgsDir := filepath.Join(env.DistriRoot, "pkgs")
 	fis, err := ioutil.ReadDir(pkgsDir)
 	if err != nil {
 		return err
 	}
-	byFullname := make(map[string]*node) // e.g. gcc-8.2.0
+	byFullname := make(map[string]*node) // e.g. gcc-amd64-8.2.0
 	byPkg := make(map[string]*node)      // e.g. gcc
 	for idx, fi := range fis {
 		pkg := fi.Name()
@@ -94,7 +96,7 @@ func batch(args []string) error {
 			return err
 		}
 
-		fullname := pkg + "-" + buildProto.GetVersion()
+		fullname := pkg + "-" + arch + "-" + buildProto.GetVersion()
 		if !*simulate {
 			if squashStat, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
 				buildStat, err := os.Stat(buildTextprotoPath)
@@ -137,7 +139,7 @@ func batch(args []string) error {
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 
 		for _, dep := range deps {
-			if dep == n.pkg+"-"+version ||
+			if dep == n.pkg+"-"+arch+"-"+version ||
 				dep == n.pkg {
 				continue // TODO
 			}

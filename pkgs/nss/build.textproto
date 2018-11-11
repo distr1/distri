@@ -20,7 +20,7 @@ build_step: <
 build_step: <
   argv: "ln"
   argv: "-s"
-  argv: "/ro/glibc-2.27/out/include"
+  argv: "/ro/glibc-amd64-2.27/out/include"
   argv: "/usr/include"
 >
 
@@ -29,7 +29,7 @@ build_step: <
   argv: "-C"
   argv: "${ZI_SOURCEDIR}/nss"
   argv: "USE_64=1"
-  argv: "NSPR_INCLUDE_DIR=/ro/nspr-4.20/out/include/nspr/"
+  argv: "NSPR_INCLUDE_DIR=/ro/nspr-amd64-4.20/out/include/nspr/"
   argv: "CROSS_COMPILE=1" # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
   # TODO: USE_SYSTEM_ZLIB=1
   # TODO: NSS_USE_SYSTEM_SQLITE=1
