@@ -1,0 +1,82 @@
+# glibc-i686-host is used for bootstrapping glibc-i686:
+# 1. build gcc-i686-host
+# 2. build glibc-i686-host using gcc-i686-host
+# 3. build gcc-i686 using glibc-i686-host
+# 4. build glibc-i686 using gcc-i686
+
+# stick with 2.27 for the time being:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1573342
+source: "https://ftp.gnu.org/gnu/glibc/glibc-2.27.tar.gz"
+hash: "881ca905e6b5eec724de7948f14d66a07d97bdee8013e1b2a7d021ff5d540522"
+version: "2.27"
+
+# source: "https://ftp.gnu.org/gnu/glibc/glibc-2.28.tar.bz2"
+# hash: "da9e45260c0cd3dbf6a585082a602521092ae7b3ecb17092cd7347603ef1e2cb"
+# version: "2.28"
+
+#cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
+
+cbuilder: <>
+
+# build dependencies:
+dep: "bison"
+dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
+dep: "gzip"
+dep: "gcc-i686-host"
+dep: "binutils-i686"
+dep: "linux-i686"
+
+dep: "strace"
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}/i686-pc-linux-gnu"
+  argv: "--host=i686-pc-linux-gnu"
+  argv: "--with-headers=/ro/linux-i686-amd64-4.18.7/out/include"
+  argv: "--disable-werror"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install-bootstrap-headers=yes"
+  argv: "install-headers"
+  argv: "-j8"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+>
+
+build_step: <
+  argv: "touch"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/i686-pc-linux-gnu/include/gnu/stubs.h"
+>
+
+build_step: <
+  argv: "make"
+  argv: "csu/subdir_lib"
+  argv: "-j8"
+>
+
+build_step: <
+  argv: "mkdir"
+  argv: "-p"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/i686-pc-linux-gnu/lib"
+>
+
+build_step: <
+  argv: "install"
+  argv: "csu/crt1.o"
+  argv: "csu/crti.o"
+  argv: "csu/crtn.o"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/i686-pc-linux-gnu/lib"
+>
+
+build_step: <
+  argv: "i686-pc-linux-gnu-gcc"
+  argv: "-nostdlib"
+  argv: "-nostartfiles"
+  argv: "-shared"
+  argv: "-x"
+  argv: "c"
+  argv: "/dev/null"
+  argv: "-o"
+  argv: "${ZI_DESTDIR}/${ZI_PREFIX}/i686-pc-linux-gnu/lib/libc.so"
+>
