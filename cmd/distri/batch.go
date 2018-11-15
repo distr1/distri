@@ -195,7 +195,7 @@ func batch(args []string) error {
 		for _, component := range uo { // cyclic component
 			//log.Printf("uo %d", idx)
 			for _, n := range component {
-				//log.Printf("  n %v", n)
+				log.Printf("  bootstrap %v", n.(*node).pkg)
 				from := g.From(n.ID())
 				for from.Next() {
 					g.RemoveEdge(n.ID(), from.Node().ID())
