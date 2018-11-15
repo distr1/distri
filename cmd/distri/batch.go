@@ -136,6 +136,8 @@ func batch(args []string) error {
 		g.AddNode(n)
 	}
 
+	b := &buildctx{Arch: "amd64"} // TODO
+
 	// add all constraints: <pkg>-<version> depends on <pkg>-<version>
 	for _, n := range byFullname {
 		// TODO(later): parallelize?
@@ -150,7 +152,7 @@ func batch(args []string) error {
 		version := buildProto.GetVersion()
 
 		deps := buildProto.GetDep()
-		deps = append(deps, builderdeps(&buildProto)...)
+		deps = append(deps, b.builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 
 		for _, dep := range deps {

@@ -1,0 +1,25 @@
+source: "http://repo.steamstatic.com/steam/pool/steam/s/steam/steam_1.0.0.56.tar.gz"
+hash: "da15bb347bd286c3a8818c3c910dc5bdbc43a744604d5372260ec79540ba4f06"
+version: "1.0.0.56"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "glibc-i686-amd64"    # steam links against librt.so.1, libdl.so.2, libm.so.6, libc.so.6
+dep: "gcc-libs-i686-amd64" # steam links against libstdc++.so.6 and libgcc_s.so.1
+dep: "libx11-i686"         # steam links against libX11.so.6
+
+runtime_dep: "python3"
+# TODO: unpack the steam executable so that shlibdeps can find these?
+runtime_dep: "glibc-i686-amd64"
+runtime_dep: "gcc-libs-i686-amd64"
+runtime_dep: "libx11-i686"
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "${ZI_SOURCEDIR}"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+>

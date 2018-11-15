@@ -1,8 +1,9 @@
-# glibc-i686-host is used for bootstrapping glibc-i686:
+# gcc-i686-host is used for bootstrapping glibc-i686 and gcc-i686:
 # 1. build gcc-i686-host
 # 2. build glibc-i686-host using gcc-i686-host
-# 3. build gcc-i686 using glibc-i686-host
-# 4. build glibc-i686 using gcc-i686
+# 3. build gcc-i686-c using glibc-i686-host
+# 4. build glibc-i686 using gcc-i686-c
+# 5. build gcc-i686 using glibc-i686
 
 source: "http://mirror.koddos.net/gcc/releases/gcc-8.2.0/gcc-8.2.0.tar.xz"
 hash: "196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080"
@@ -23,7 +24,7 @@ dep: "file"
 
 # C build environment:
 dep: "gcc"
-dep: "binutils-i686" # for the target, listed first so that the wrapper script prefers it
+dep: "binutils-i686-amd64" # for the target, listed first so that the wrapper script prefers it
 dep: "binutils" # for the host
 dep: "make"
 dep: "glibc"

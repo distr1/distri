@@ -138,7 +138,8 @@ func pack(args []string) error {
 		return err
 	}
 
-	basePkgs, err := glob(*repo, []string{
+	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+	basePkgs, err := b.glob(*repo, []string{
 		"systemd",
 		"glibc",
 		"coreutils",

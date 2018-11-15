@@ -4,20 +4,39 @@ import (
 	"github.com/distr1/distri/pb"
 )
 
+var configureTarget = map[string]string{
+	"amd64": "x86_64-pc-linux-gnu",
+	"i686":  "i686-pc-linux-gnu",
+}
+
 func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
 	env = append(env, b.substitute("DESTDIR=${ZI_DESTDIR}"))
+
+	target := configureTarget[b.Arch]
 
 	var steps [][]string
 	if opts.GetCopyToBuilddir() {
 		steps = [][]string{
 			[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
-			append([]string{"./configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc", "--disable-dependency-tracking"}, opts.GetExtraConfigureFlag()...),
+			append([]string{
+				"./configure",
+				"--host=" + target,
+				"--prefix=${ZI_PREFIX}",
+				"--sysconfdir=/etc",
+				"--disable-dependency-tracking",
+			}, opts.GetExtraConfigureFlag()...),
 		}
 	} else {
 		steps = [][]string{
 			// TODO: set --disable-silent-rules if found in configure help output
-			append([]string{"${ZI_SOURCEDIR}/configure", "--prefix=${ZI_PREFIX}", "--sysconfdir=/etc", "--disable-dependency-tracking"}, opts.GetExtraConfigureFlag()...),
+			append([]string{
+				"${ZI_SOURCEDIR}/configure",
+				"--host=" + target,
+				"--prefix=${ZI_PREFIX}",
+				"--sysconfdir=/etc",
+				"--disable-dependency-tracking",
+			}, opts.GetExtraConfigureFlag()...),
 		}
 	}
 	steps = append(steps, [][]string{

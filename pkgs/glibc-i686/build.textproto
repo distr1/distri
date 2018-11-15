@@ -13,7 +13,7 @@ version: "2.27"
 cbuilder: <
   extra_configure_flag: "--build=x86_64-unknown-linux-gnu"
   extra_configure_flag: "--host=i686-pc-linux-gnu"
-  #extra_configure_flag: "CFLAGS=-O2 -Wno-attribute-alias -Wno-format"
+  extra_configure_flag: "--with-headers=/ro/linux-i686-amd64-4.18.7/out/include"
   # Contrary to what is stated in ld.so(8), glibc does not seem to search /lib
   # and /usr/lib (or /lib64 and /usr/lib64, respectively), resulting in the
   # nsswitch mechanism not finding e.g. libnss_myhostname.so. Hence, we tell
@@ -25,7 +25,6 @@ cbuilder: <
 dep: "bison"
 dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
-dep: "gcc-i686"
-dep: "binutils-i686"
-
-dep: "strace"
+dep: "gcc-i686-c"
+dep: "binutils-i686-amd64"
+dep: "linux-i686-amd64"

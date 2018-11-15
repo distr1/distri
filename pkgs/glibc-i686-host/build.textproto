@@ -1,8 +1,9 @@
-# glibc-i686-host is used for bootstrapping glibc-i686:
+# glibc-i686-host is used for bootstrapping glibc-i686 and gcc-i686:
 # 1. build gcc-i686-host
 # 2. build glibc-i686-host using gcc-i686-host
-# 3. build gcc-i686 using glibc-i686-host
-# 4. build glibc-i686 using gcc-i686
+# 3. build gcc-i686-c using glibc-i686-host
+# 4. build glibc-i686 using gcc-i686-c
+# 5. build gcc-i686 using glibc-i686
 
 # stick with 2.27 for the time being:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1573342
@@ -23,10 +24,8 @@ dep: "bison"
 dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
 dep: "gcc-i686-host"
-dep: "binutils-i686"
-dep: "linux-i686"
-
-dep: "strace"
+dep: "binutils-i686-amd64"
+dep: "linux-i686-amd64"
 
 build_step: <
   argv: "${ZI_SOURCEDIR}/configure"

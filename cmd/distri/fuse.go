@@ -46,6 +46,7 @@ var exchangeDirs = []string{
 	"/out/lib/xorg/modules/drivers",
 	"/out/include",
 	"/out/include/sys",  // libcap and glibc
+	"/out/include/gnu",  // glibc-amd64 and glibc-i686-amd64
 	"/out/include/scsi", // linux-amd64-4.18.7 and glibc-amd64-2.27
 	"/out/include/X11",
 	"/out/share/man/man1",

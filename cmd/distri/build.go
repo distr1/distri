@@ -46,7 +46,7 @@ type buildctx struct {
 	ChrootDir string // only set if Hermetic is enabled
 }
 
-func buildpkg(hermetic, debug, fuse bool) error {
+func buildpkg(hermetic, debug, fuse bool, cross string) error {
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
 		return err
@@ -61,11 +61,15 @@ func buildpkg(hermetic, debug, fuse bool) error {
 		return err
 	}
 
+	if cross == "" {
+		cross = "amd64" // TODO: configurable / auto-detect
+	}
+
 	b := &buildctx{
 		Proto:    &buildProto,
 		PkgDir:   pwd,
 		Pkg:      filepath.Base(pwd),
-		Arch:     "amd64", // TODO: configurable / auto-detect
+		Arch:     cross,
 		Version:  buildProto.GetVersion(),
 		Hermetic: hermetic,
 		FUSE:     fuse,
@@ -265,7 +269,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
-		if dep != "glibc-amd64-2.27" {
+		if dep != "glibc-amd64-2.27" && dep != "glibc-i686-amd64-2.27" {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
@@ -290,7 +294,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	}
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
-	if b.Pkg != "glibc" {
+	if b.Pkg != "glibc" && b.Pkg != "glibc-i686" {
 		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
@@ -325,26 +329,28 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 
 var archs = map[string]bool{
 	"amd64": true,
-	"i386":  true,
+	"i686":  true,
 }
 
-func hasArchSuffix(pkg string) bool {
+func hasArchSuffix(pkg string) (suffix string, ok bool) {
 	for a := range archs {
 		// unversioned, but ending in an architecture already (e.g. emacs-amd64)
 		if strings.HasSuffix(pkg, "-"+a) {
-			return true
+			return a, true
 		}
 	}
-	return false
+	return "", false
 }
 
-func glob1(imgDir, pkg string) (string, error) {
+func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 	if _, err := os.Stat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil {
 		return pkg, nil // pkg already contains the version
 	}
 	pkgPattern := pkg
-	if !hasArchSuffix(pkg) {
-		pkgPattern = pkgPattern + "-amd64" // TODO: configurable / auto-detect
+	if suffix, ok := hasArchSuffix(pkg); !ok {
+		pkgPattern = pkgPattern + "-" + b.Arch
+	} else {
+		pkg = strings.TrimSuffix(pkg, "-"+suffix)
 	}
 
 	pattern := filepath.Join(imgDir, pkgPattern+"-*.meta.textproto")
@@ -376,11 +382,11 @@ func glob1(imgDir, pkg string) (string, error) {
 	return candidates[0], nil
 }
 
-func glob(imgDir string, pkgs []string) ([]string, error) {
+func (b *buildctx) glob(imgDir string, pkgs []string) ([]string, error) {
 	globbed := make([]string, len(pkgs))
 	for idx, pkg := range pkgs {
 		var err error
-		globbed[idx], err = glob1(imgDir, pkg)
+		globbed[idx], err = b.glob1(imgDir, pkg)
 		if err != nil {
 			return nil, err
 		}
@@ -433,12 +439,13 @@ func resolve(imgDir string, pkgs []string) ([]string, error) {
 	return resolved, nil
 }
 
-func builderdeps(p *pb.Build) []string {
+func (b *buildctx) builderdeps(p *pb.Build) []string {
 	var deps []string
 	if builder := p.Builder; builder != nil {
+		const native = "amd64" // TODO: configurable / auto-detect
 		// The C builder dependencies are re-used by many other builders
 		// (anything that supports linking against C libraries).
-		cdeps := []string{
+		nativeDeps := []string{
 			// configure runtime dependencies:
 			"bash",
 			"coreutils",
@@ -451,23 +458,43 @@ func builderdeps(p *pb.Build) []string {
 
 			// C build environment:
 			"gcc-libs",
-			"gcc",
 			"mpc",  // TODO: remove once gcc binaries find these via their rpath
 			"mpfr", // TODO: remove once gcc binaries find these via their rpath
 			"gmp",  // TODO: remove once gcc binaries find these via their rpath
-			"binutils",
 			"make",
 			"glibc",
 			"linux",
 			"findutils", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 
 			"patchelf", // for shrinking the RPATH
+
+			"strace", // useful for interactive debugging
+		}
+
+		// TODO: check for native
+		if b.Arch == "amd64" {
+			nativeDeps = append(nativeDeps, "gcc", "binutils")
+		} else {
+			nativeDeps = append(nativeDeps,
+				"gcc-"+b.Arch,
+				"binutils-"+b.Arch,
+				// Also make available the native compiler for generating code
+				// at build-time, which e.g. libx11 does (via autoconf’s
+				// AX_PROG_CC_FOR_BUILD):
+				"gcc",
+				"binutils",
+			)
+		}
+
+		cdeps := make([]string, len(nativeDeps))
+		for idx, dep := range nativeDeps {
+			cdeps[idx] = dep + "-" + native
 		}
 
 		switch builder.(type) {
 		case *pb.Build_Perlbuilder:
 			deps = append(deps, []string{
-				"perl",
+				"perl-" + native,
 			}...)
 			deps = append(deps, cdeps...)
 
@@ -478,12 +505,12 @@ func builderdeps(p *pb.Build) []string {
 	return deps
 }
 
-func builddeps(p *pb.Build) ([]string, error) {
+func (b *buildctx) builddeps(p *pb.Build) ([]string, error) {
 	// builderdeps must come first so that their ordering survives the resolve
 	// call below.
-	deps := append(builderdeps(p), p.GetDep()...)
+	deps := append(b.builderdeps(p), p.GetDep()...)
 	var err error
-	deps, err = glob(env.DefaultRepo, deps)
+	deps, err = b.glob(env.DefaultRepo, deps)
 	if err != nil {
 		return nil, err
 	}
@@ -506,13 +533,13 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			return nil, err
 		}
 
-		deps, err := builddeps(b.Proto)
+		deps, err := b.builddeps(b.Proto)
 		if err != nil {
 			return nil, fmt.Errorf("builddeps: %v", err)
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/include/scsi,/out/include/sys", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/include/scsi,/out/include/sys,/out/include/gnu", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -567,7 +594,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 		deps = append(meta.GetRuntimeDep(), b.Proto.GetRuntimeDep()...)
 
-		deps, err = glob(env.DefaultRepo, deps)
+		deps, err = b.glob(env.DefaultRepo, deps)
 		if err != nil {
 			return nil, err
 		}
@@ -588,7 +615,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 
 	// Resolve build dependencies before we chroot, so that we still have access
 	// to the meta files.
-	deps, err := builddeps(b.Proto)
+	deps, err := b.builddeps(b.Proto)
 	if err != nil {
 		return nil, err
 	}
@@ -677,11 +704,24 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			//   /bin → /ro/bin
 			//   /usr/bin → /ro/bin (for e.g. /usr/bin/env)
 			//   /sbin → /ro/bin (for e.g. linux, which hard-codes /sbin/depmod)
-			//   /lib64 → /ro/glibc-2.27/out/lib for ld-linux.so
+			//   /lib64 → /ro/glibc-amd64-2.27/out/lib for ld-linux-x86-64.so.2
+			//   /lib → /ro/glibc-i686-amd64-2.27/out/lib for ld-linux.so.2
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
+			// TODO: do we still need this for native builds?
 			if err := os.Symlink("/ro/glibc-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err
+			}
+
+			// TODO: test for cross
+			if b.Arch != "amd64" {
+				// gcc-i686 and binutils-i686 are built with --sysroot=/,
+				// meaning they will search for startup files (e.g. crt1.o) in
+				// $(sysroot)/lib.
+				// TODO: try compiling with --sysroot pointing to /ro/glibc-i686-amd64-2.27/out/lib directly?
+				if err := os.Symlink("/ro/glibc-i686-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "lib")); err != nil {
+					return nil, err
+				}
 			}
 
 			if !b.FUSE {
@@ -758,7 +798,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 			// (e.g. if autotools is detected, bash+coreutils+sed+grep+gawk need to
 			// be installed as runtime env, and gcc+binutils+make for building)
 
-			deps, err := builddeps(b.Proto)
+			deps, err := b.builddeps(b.Proto)
 			if err != nil {
 				return nil, err
 			}
@@ -1295,6 +1335,10 @@ func build(args []string) error {
 		ignoreGov = fset.Bool("dont_set_governor",
 			false,
 			"Don’t automatically set the “performance” CPU frequency scaling governor. Why wouldn’t you?")
+
+		cross = fset.String("cross",
+			"",
+			"If non-empty, cross-build for the specified architecture (e.g. i686)")
 	)
 	fset.Parse(args)
 
@@ -1321,7 +1365,7 @@ func build(args []string) error {
 		return err
 	}
 
-	if err := buildpkg(*hermetic, *debug, *fuse); err != nil {
+	if err := buildpkg(*hermetic, *debug, *fuse, *cross); err != nil {
 		return err
 	}
 

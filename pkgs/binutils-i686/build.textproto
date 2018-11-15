@@ -8,6 +8,8 @@ build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
   argv: "--target=i686-pc-linux-gnu"
+# https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1508564
+  argv: "--with-sysroot=/"
 #  argv: "LDFLAGS=-static"
 >
 
