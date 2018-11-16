@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,6 +21,7 @@ import (
 	"github.com/jacobsa/fuse"
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
+	"google.golang.org/grpc"
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
@@ -56,6 +58,11 @@ var exchangeDirs = []string{
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
 }
+
+const (
+	rootInode = 1
+	ctlInode  = 2
+)
 
 type fileNotFoundError struct {
 	path string
@@ -147,7 +154,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	fs := &fuseFS{
 		repo:        *repo,
 		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
-		inodeCnt:    1, // root inode
+		inodeCnt:    2, // root + ctl inode
 		dirs:        make(map[string]*dir),
 		inodes:      make(map[fuseops.InodeID]interface{}),
 	}
@@ -239,6 +246,31 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	if err != nil {
 		return nil, err
 	}
+	join = mfs.Join
+
+	{
+		tempdir, err := ioutil.TempDir("", "distri-fuse")
+		if err != nil {
+			return nil, err
+		}
+		join = func(ctx context.Context) error {
+			defer os.RemoveAll(tempdir)
+			return mfs.Join(ctx)
+		}
+		fs.ctl = filepath.Join(tempdir, "distri-fuse-ctl")
+		ln, err := net.Listen("unix", fs.ctl)
+		if err != nil {
+			return nil, err
+		}
+		srv := grpc.NewServer()
+		pb.RegisterFUSEServer(srv, fs)
+		go func() {
+			if err := srv.Serve(ln); err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
 	if *readiness != -1 {
 		os.NewFile(uintptr(*readiness), "").Close()
 	}
@@ -252,7 +284,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		os.Exit(128 + int(syscall.SIGINT))
 	}()
 
-	return mfs.Join, nil
+	return join, nil
 }
 
 // dirent is a directory entry.
@@ -298,6 +330,7 @@ type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
 	repo string
+	ctl  string
 
 	mu       sync.Mutex
 	inodeCnt fuseops.InodeID
@@ -626,10 +659,21 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 				if pkg != op.Name {
 					continue
 				}
-				op.Entry.Child = fs.fuseInode(idx, 1 /* root */)
+				op.Entry.Child = fs.fuseInode(idx, rootInode)
 				op.Entry.Attributes = fuseops.InodeAttributes{
 					Nlink: 1, // TODO: number of incoming hard links to this inode
 					Mode:  os.ModeDir | 0555,
+					Atime: time.Now(), // TODO
+					Mtime: time.Now(), // TODO
+					Ctime: time.Now(), // TODO
+				}
+				return nil
+			}
+			if op.Name == "ctl" {
+				op.Entry.Child = ctlInode
+				op.Entry.Attributes = fuseops.InodeAttributes{
+					Nlink: 1, // TODO: number of incoming hard links to this inode
+					Mode:  os.ModeSymlink | 0444,
 					Atime: time.Now(), // TODO
 					Mtime: time.Now(), // TODO
 					Ctime: time.Now(), // TODO
@@ -791,11 +835,19 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 				}
 				entries = append(entries, fuseutil.Dirent{
 					Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
-					Inode:  fs.fuseInode(idx, 1 /* root */),
+					Inode:  fs.fuseInode(idx, rootInode),
 					Name:   pkg,
 					Type:   fuseutil.DT_Directory,
 				})
 			}
+
+			entries = append(entries, fuseutil.Dirent{
+				Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
+				Inode:  fs.fuseInode(-1, ctlInode),
+				Name:   "ctl",
+				Type:   fuseutil.DT_File,
+			})
+
 			for _, dirent := range fs.dirs["/"].entries {
 				entries = append(entries, fuseutil.Dirent{
 					Offset: fuseops.DirOffset(len(entries) + 1), // (opaque) offset of the next entry
@@ -919,6 +971,10 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 	if image == -1 {
 		fs.mu.Lock()
 		defer fs.mu.Unlock()
+		if op.Inode == ctlInode {
+			op.Target = fs.ctl
+			return nil
+		}
 		dirent, ok := fs.inodes[op.Inode].(*dirent)
 		if !ok {
 			return fuse.EIO // not a symlink
@@ -942,4 +998,8 @@ func (fs *fuseFS) Destroy() {
 		}
 		rd.file.Close()
 	}
+}
+
+func (fs *fuseFS) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingReply, error) {
+	return &pb.PingReply{}, nil
 }

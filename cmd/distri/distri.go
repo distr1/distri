@@ -89,6 +89,7 @@ func main() {
 			"scaffold": {scaffoldHelp, func() { scaffold(helpFlag) }},
 			"install":  {installHelp, func() { install(helpFlag) }},
 			"fuse":     {fuseHelp, func() { mountfuse(helpFlag) }},
+			"fusectl":  {fusectlHelp, func() { fusectl(helpFlag) }},
 			"export":   {exportHelp, func() { export(helpFlag) }},
 			"env":      {envHelp, func() { printenv(helpFlag) }},
 			"mirror":   {mirrorHelp, func() { mirror(helpFlag) }},
@@ -154,6 +155,11 @@ func main() {
 			log.Fatal(err)
 		}
 		if err := join(context.Background()); err != nil {
+			log.Fatal(err)
+		}
+
+	case "fusectl":
+		if err := fusectl(args); err != nil {
 			log.Fatal(err)
 		}
 

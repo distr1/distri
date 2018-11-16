@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package pb;
+
+message PingRequest {
+}
+
+message PingReply {
+}
+
+service FUSE {
+  rpc Ping(PingRequest) returns (PingReply) {}
+}
