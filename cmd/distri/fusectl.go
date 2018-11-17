@@ -15,7 +15,9 @@ const fusectlHelp = `TODO
 
 func fusectl(args []string) error {
 	fset := flag.NewFlagSet("fusectl", flag.ExitOnError)
-	var ()
+	var (
+		mkdirAll = fset.String("mkdirall", "", "if non-empty, sends a MkdirAll request")
+	)
 	fset.Parse(args)
 
 	ctl, err := os.Readlink("/ro/ctl")
@@ -30,11 +32,17 @@ func fusectl(args []string) error {
 		return err
 	}
 	cl := pb.NewFUSEClient(conn)
-	resp, err := cl.Ping(ctx, &pb.PingRequest{})
-	if err != nil {
-		return err
+	if *mkdirAll != "" {
+		if _, err := cl.MkdirAll(ctx, &pb.MkdirAllRequest{Dir: mkdirAll}); err != nil {
+			return err
+		}
+	} else {
+		resp, err := cl.Ping(ctx, &pb.PingRequest{})
+		if err != nil {
+			return err
+		}
+		log.Printf("resp: %+v", resp)
 	}
-	log.Printf("resp: %+v", resp)
 
 	return nil
 }

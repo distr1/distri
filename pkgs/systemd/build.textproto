@@ -19,8 +19,6 @@ dep: "python3"
 dep: "kmod"
 dep: "cryptsetup"
 
-dep: "systemd" # so that distri build can bind-mount the build result to /ro/systemd-239, resulting in /ro/systemd-239/out/lib/systemd/ surviving a patchelf --shrink-rpath
-
 build_step: <
   argv: "/bin/sh"
   argv: "-c"

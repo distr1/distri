@@ -33,7 +33,7 @@ func (m *PingRequest) Reset()         { *m = PingRequest{} }
 func (m *PingRequest) String() string { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()    {}
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_b691f2a58f4b6923, []int{0}
+	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{0}
 }
 func (m *PingRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingRequest.Unmarshal(m, b)
@@ -63,7 +63,7 @@ func (m *PingReply) Reset()         { *m = PingReply{} }
 func (m *PingReply) String() string { return proto.CompactTextString(m) }
 func (*PingReply) ProtoMessage()    {}
 func (*PingReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_b691f2a58f4b6923, []int{1}
+	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{1}
 }
 func (m *PingReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingReply.Unmarshal(m, b)
@@ -83,9 +83,79 @@ func (m *PingReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PingReply proto.InternalMessageInfo
 
+type MkdirAllRequest struct {
+	Dir                  *string  `protobuf:"bytes,1,opt,name=dir" json:"dir,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MkdirAllRequest) Reset()         { *m = MkdirAllRequest{} }
+func (m *MkdirAllRequest) String() string { return proto.CompactTextString(m) }
+func (*MkdirAllRequest) ProtoMessage()    {}
+func (*MkdirAllRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{2}
+}
+func (m *MkdirAllRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MkdirAllRequest.Unmarshal(m, b)
+}
+func (m *MkdirAllRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MkdirAllRequest.Marshal(b, m, deterministic)
+}
+func (dst *MkdirAllRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MkdirAllRequest.Merge(dst, src)
+}
+func (m *MkdirAllRequest) XXX_Size() int {
+	return xxx_messageInfo_MkdirAllRequest.Size(m)
+}
+func (m *MkdirAllRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MkdirAllRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MkdirAllRequest proto.InternalMessageInfo
+
+func (m *MkdirAllRequest) GetDir() string {
+	if m != nil && m.Dir != nil {
+		return *m.Dir
+	}
+	return ""
+}
+
+type MkdirAllReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MkdirAllReply) Reset()         { *m = MkdirAllReply{} }
+func (m *MkdirAllReply) String() string { return proto.CompactTextString(m) }
+func (*MkdirAllReply) ProtoMessage()    {}
+func (*MkdirAllReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{3}
+}
+func (m *MkdirAllReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MkdirAllReply.Unmarshal(m, b)
+}
+func (m *MkdirAllReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MkdirAllReply.Marshal(b, m, deterministic)
+}
+func (dst *MkdirAllReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MkdirAllReply.Merge(dst, src)
+}
+func (m *MkdirAllReply) XXX_Size() int {
+	return xxx_messageInfo_MkdirAllReply.Size(m)
+}
+func (m *MkdirAllReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_MkdirAllReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MkdirAllReply proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*PingRequest)(nil), "pb.PingRequest")
 	proto.RegisterType((*PingReply)(nil), "pb.PingReply")
+	proto.RegisterType((*MkdirAllRequest)(nil), "pb.MkdirAllRequest")
+	proto.RegisterType((*MkdirAllReply)(nil), "pb.MkdirAllReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -101,6 +171,10 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type FUSEClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingReply, error)
+	// MkdirAll creates the specified directory in the root of the mountpoint
+	// (e.g. /ro/systemd-amd64-239). This is useful for bind-mounting
+	// DESTDIR/PREFIX to PREFIX when building packages.
+	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllReply, error)
 }
 
 type fUSEClient struct {
@@ -120,9 +194,22 @@ func (c *fUSEClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *fUSEClient) MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllReply, error) {
+	out := new(MkdirAllReply)
+	err := c.cc.Invoke(ctx, "/pb.FUSE/MkdirAll", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FUSEServer is the server API for FUSE service.
 type FUSEServer interface {
 	Ping(context.Context, *PingRequest) (*PingReply, error)
+	// MkdirAll creates the specified directory in the root of the mountpoint
+	// (e.g. /ro/systemd-amd64-239). This is useful for bind-mounting
+	// DESTDIR/PREFIX to PREFIX when building packages.
+	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllReply, error)
 }
 
 func RegisterFUSEServer(s *grpc.Server, srv FUSEServer) {
@@ -147,6 +234,24 @@ func _FUSE_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FUSE_MkdirAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MkdirAllRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FUSEServer).MkdirAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.FUSE/MkdirAll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FUSEServer).MkdirAll(ctx, req.(*MkdirAllRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _FUSE_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.FUSE",
 	HandlerType: (*FUSEServer)(nil),
@@ -155,20 +260,27 @@ var _FUSE_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Ping",
 			Handler:    _FUSE_Ping_Handler,
 		},
+		{
+			MethodName: "MkdirAll",
+			Handler:    _FUSE_MkdirAll_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fusectl.proto",
 }
 
-func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_fusectl_b691f2a58f4b6923) }
+func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_fusectl_f7e2aa7280095b51) }
 
-var fileDescriptor_fusectl_b691f2a58f4b6923 = []byte{
-	// 98 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_fusectl_f7e2aa7280095b51 = []byte{
+	// 153 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x2b, 0x2d, 0x4e,
 	0x4d, 0x2e, 0xc9, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0xe2, 0xe5,
 	0xe2, 0x0e, 0xc8, 0xcc, 0x4b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0xe2, 0xe6, 0xe2,
-	0x84, 0x70, 0x0b, 0x72, 0x2a, 0x8d, 0x0c, 0xb8, 0x58, 0xdc, 0x42, 0x83, 0x5d, 0x85, 0x34, 0xb8,
-	0x58, 0x40, 0x82, 0x42, 0xfc, 0x7a, 0x05, 0x49, 0x7a, 0x48, 0xaa, 0xa5, 0x78, 0x11, 0x02, 0x05,
-	0x39, 0x95, 0x4a, 0x0c, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x61, 0xb3, 0x83, 0x30, 0x61, 0x00,
-	0x00, 0x00,
+	0x84, 0x70, 0x0b, 0x72, 0x2a, 0x95, 0x94, 0xb9, 0xf8, 0x7d, 0xb3, 0x53, 0x32, 0x8b, 0x1c, 0x73,
+	0x72, 0xa0, 0xf2, 0x42, 0x02, 0x5c, 0xcc, 0x29, 0x99, 0x45, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c,
+	0x41, 0x20, 0xa6, 0x12, 0x3f, 0x17, 0x2f, 0x42, 0x51, 0x41, 0x4e, 0xa5, 0x51, 0x1a, 0x17, 0x8b,
+	0x5b, 0x68, 0xb0, 0xab, 0x90, 0x06, 0x17, 0x0b, 0xc8, 0x28, 0x21, 0x7e, 0xbd, 0x82, 0x24, 0x3d,
+	0x24, 0x3b, 0xa4, 0x78, 0x11, 0x02, 0x20, 0x5b, 0x18, 0x84, 0x4c, 0xb8, 0x38, 0x60, 0x46, 0x08,
+	0x09, 0x83, 0x24, 0xd1, 0x6c, 0x95, 0x12, 0x44, 0x15, 0x04, 0xeb, 0x02, 0x04, 0x00, 0x00, 0xff,
+	0xff, 0xfe, 0x78, 0xb0, 0x51, 0xcd, 0x00, 0x00, 0x00,
 }

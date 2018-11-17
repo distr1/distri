@@ -1003,3 +1003,21 @@ func (fs *fuseFS) Destroy() {
 func (fs *fuseFS) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingReply, error) {
 	return &pb.PingReply{}, nil
 }
+
+func (fs *fuseFS) MkdirAll(ctx context.Context, req *pb.MkdirAllRequest) (*pb.MkdirAllReply, error) {
+	if req.GetDir() == "" {
+		return nil, fmt.Errorf("MkdirAll: dir must not be empty")
+	}
+	if strings.Contains(req.GetDir(), "/") {
+		return nil, fmt.Errorf("MkdirAll: dir must not contain slashes")
+	}
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	for _, pkg := range fs.pkgs {
+		if pkg == req.GetDir() {
+			return &pb.MkdirAllReply{}, nil
+		}
+	}
+	fs.mkExchangeDirAll("/" + req.GetDir())
+	return &pb.MkdirAllReply{}, nil
+}

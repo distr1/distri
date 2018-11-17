@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"flag"
@@ -25,6 +26,7 @@ import (
 	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
+	"google.golang.org/grpc"
 )
 
 const buildHelp = `TODO
@@ -517,6 +519,25 @@ func (b *buildctx) builddeps(p *pb.Build) ([]string, error) {
 	return resolve(env.DefaultRepo, deps)
 }
 
+func fuseMkdirAll(ctl string, dir string) error {
+	ctl, err := os.Readlink(ctl)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("connecting to %s", ctl)
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	cl := pb.NewFUSEClient(conn)
+	if _, err := cl.MkdirAll(ctx, &pb.MkdirAllRequest{Dir: proto.String(dir)}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *buildctx) build() (runtimedeps []string, _ error) {
 	if os.Getenv("ZI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
@@ -687,10 +708,10 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 
 		{
-			// Make available b.DestDir as /dest/<pkg>-<version>:
 			prefix := filepath.Join(b.ChrootDir, "ro", b.fullName())
 			b.Prefix = strings.TrimPrefix(prefix, b.ChrootDir)
 
+			// Make available b.DestDir as /dest/tmp:
 			dst := filepath.Join(b.ChrootDir, "dest", "tmp")
 			if err := os.MkdirAll(dst, 0755); err != nil {
 				return nil, err
@@ -699,6 +720,18 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 				return nil, fmt.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
 			}
 			b.DestDir = strings.TrimPrefix(dst, b.ChrootDir)
+
+			if _, err := os.Stat(prefix); os.IsNotExist(err) {
+				// Bind /dest/tmp to prefix (e.g. /ro/systemd-amd64-239) so that
+				// shlibdeps works for binaries which depend on libraries they
+				// install.
+				if err := fuseMkdirAll(filepath.Join(b.ChrootDir, "ro", "ctl"), b.fullName()); err != nil {
+					return nil, err
+				}
+				if err := syscall.Mount(dst, prefix, "none", syscall.MS_BIND, ""); err != nil {
+					return nil, fmt.Errorf("bind mount %s %s: %v", dst, prefix, err)
+				}
+			}
 
 			// Symlinks:
 			//   /bin → /ro/bin
