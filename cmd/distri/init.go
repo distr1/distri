@@ -45,6 +45,7 @@ func pid1() error {
 		// which is a symlink into /ro, which would deadlock when called from
 		// the FUSE request handler.
 		"TZ=",
+		"TMPDIR=/ro-tmp",
 	}
 	fuse.Stderr = os.Stderr
 	fuse.Stdout = os.Stdout

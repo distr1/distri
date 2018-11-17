@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -18,6 +19,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 const installHelp = `TODO
@@ -208,7 +210,9 @@ func installTransitively1(root, repo, pkg string) error {
 		return err
 	}
 
-	// ** TODO signal fuse daemon that a new package is now present
+	// TODO(later): tell the FUSE daemon that a (single) new package is
+	// available so that new packages can be used while a bunch of them are
+	// being installed?
 
 	return nil
 }
@@ -250,6 +254,24 @@ func install(args []string) error {
 		eg.Go(func() error { return installTransitively1(*root, *repo, pkg) })
 	}
 	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	// Make the FUSE daemon update its packages.
+	ctl, err := os.Readlink(filepath.Join(*root, "ro", "ctl"))
+	if err != nil {
+		log.Printf("not updating FUSE daemon: %v", err)
+		return nil // no FUSE daemon running?
+	}
+
+	log.Printf("connecting to %s", ctl)
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	cl := pb.NewFUSEClient(conn)
+	if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
 		return err
 	}
 

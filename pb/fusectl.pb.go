@@ -33,7 +33,7 @@ func (m *PingRequest) Reset()         { *m = PingRequest{} }
 func (m *PingRequest) String() string { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()    {}
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{0}
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{0}
 }
 func (m *PingRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingRequest.Unmarshal(m, b)
@@ -63,7 +63,7 @@ func (m *PingReply) Reset()         { *m = PingReply{} }
 func (m *PingReply) String() string { return proto.CompactTextString(m) }
 func (*PingReply) ProtoMessage()    {}
 func (*PingReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{1}
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{1}
 }
 func (m *PingReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingReply.Unmarshal(m, b)
@@ -94,7 +94,7 @@ func (m *MkdirAllRequest) Reset()         { *m = MkdirAllRequest{} }
 func (m *MkdirAllRequest) String() string { return proto.CompactTextString(m) }
 func (*MkdirAllRequest) ProtoMessage()    {}
 func (*MkdirAllRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{2}
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{2}
 }
 func (m *MkdirAllRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MkdirAllRequest.Unmarshal(m, b)
@@ -131,7 +131,7 @@ func (m *MkdirAllReply) Reset()         { *m = MkdirAllReply{} }
 func (m *MkdirAllReply) String() string { return proto.CompactTextString(m) }
 func (*MkdirAllReply) ProtoMessage()    {}
 func (*MkdirAllReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_f7e2aa7280095b51, []int{3}
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{3}
 }
 func (m *MkdirAllReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MkdirAllReply.Unmarshal(m, b)
@@ -151,11 +151,73 @@ func (m *MkdirAllReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MkdirAllReply proto.InternalMessageInfo
 
+type ScanPackagesRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ScanPackagesRequest) Reset()         { *m = ScanPackagesRequest{} }
+func (m *ScanPackagesRequest) String() string { return proto.CompactTextString(m) }
+func (*ScanPackagesRequest) ProtoMessage()    {}
+func (*ScanPackagesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{4}
+}
+func (m *ScanPackagesRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ScanPackagesRequest.Unmarshal(m, b)
+}
+func (m *ScanPackagesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ScanPackagesRequest.Marshal(b, m, deterministic)
+}
+func (dst *ScanPackagesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScanPackagesRequest.Merge(dst, src)
+}
+func (m *ScanPackagesRequest) XXX_Size() int {
+	return xxx_messageInfo_ScanPackagesRequest.Size(m)
+}
+func (m *ScanPackagesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ScanPackagesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ScanPackagesRequest proto.InternalMessageInfo
+
+type ScanPackagesReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ScanPackagesReply) Reset()         { *m = ScanPackagesReply{} }
+func (m *ScanPackagesReply) String() string { return proto.CompactTextString(m) }
+func (*ScanPackagesReply) ProtoMessage()    {}
+func (*ScanPackagesReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{5}
+}
+func (m *ScanPackagesReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ScanPackagesReply.Unmarshal(m, b)
+}
+func (m *ScanPackagesReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ScanPackagesReply.Marshal(b, m, deterministic)
+}
+func (dst *ScanPackagesReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScanPackagesReply.Merge(dst, src)
+}
+func (m *ScanPackagesReply) XXX_Size() int {
+	return xxx_messageInfo_ScanPackagesReply.Size(m)
+}
+func (m *ScanPackagesReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_ScanPackagesReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ScanPackagesReply proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*PingRequest)(nil), "pb.PingRequest")
 	proto.RegisterType((*PingReply)(nil), "pb.PingReply")
 	proto.RegisterType((*MkdirAllRequest)(nil), "pb.MkdirAllRequest")
 	proto.RegisterType((*MkdirAllReply)(nil), "pb.MkdirAllReply")
+	proto.RegisterType((*ScanPackagesRequest)(nil), "pb.ScanPackagesRequest")
+	proto.RegisterType((*ScanPackagesReply)(nil), "pb.ScanPackagesReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -175,6 +237,9 @@ type FUSEClient interface {
 	// (e.g. /ro/systemd-amd64-239). This is useful for bind-mounting
 	// DESTDIR/PREFIX to PREFIX when building packages.
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllReply, error)
+	// ScanPackages discovers new packages in the mounted repository. This is
+	// called by “distri install”.
+	ScanPackages(ctx context.Context, in *ScanPackagesRequest, opts ...grpc.CallOption) (*ScanPackagesReply, error)
 }
 
 type fUSEClient struct {
@@ -203,6 +268,15 @@ func (c *fUSEClient) MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...
 	return out, nil
 }
 
+func (c *fUSEClient) ScanPackages(ctx context.Context, in *ScanPackagesRequest, opts ...grpc.CallOption) (*ScanPackagesReply, error) {
+	out := new(ScanPackagesReply)
+	err := c.cc.Invoke(ctx, "/pb.FUSE/ScanPackages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FUSEServer is the server API for FUSE service.
 type FUSEServer interface {
 	Ping(context.Context, *PingRequest) (*PingReply, error)
@@ -210,6 +284,9 @@ type FUSEServer interface {
 	// (e.g. /ro/systemd-amd64-239). This is useful for bind-mounting
 	// DESTDIR/PREFIX to PREFIX when building packages.
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllReply, error)
+	// ScanPackages discovers new packages in the mounted repository. This is
+	// called by “distri install”.
+	ScanPackages(context.Context, *ScanPackagesRequest) (*ScanPackagesReply, error)
 }
 
 func RegisterFUSEServer(s *grpc.Server, srv FUSEServer) {
@@ -252,6 +329,24 @@ func _FUSE_MkdirAll_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FUSE_ScanPackages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScanPackagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FUSEServer).ScanPackages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.FUSE/ScanPackages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FUSEServer).ScanPackages(ctx, req.(*ScanPackagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _FUSE_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.FUSE",
 	HandlerType: (*FUSEServer)(nil),
@@ -264,23 +359,30 @@ var _FUSE_serviceDesc = grpc.ServiceDesc{
 			MethodName: "MkdirAll",
 			Handler:    _FUSE_MkdirAll_Handler,
 		},
+		{
+			MethodName: "ScanPackages",
+			Handler:    _FUSE_ScanPackages_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fusectl.proto",
 }
 
-func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_fusectl_f7e2aa7280095b51) }
+func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_fusectl_e58e208efbc91f9b) }
 
-var fileDescriptor_fusectl_f7e2aa7280095b51 = []byte{
-	// 153 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_fusectl_e58e208efbc91f9b = []byte{
+	// 196 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x2b, 0x2d, 0x4e,
 	0x4d, 0x2e, 0xc9, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0xe2, 0xe5,
 	0xe2, 0x0e, 0xc8, 0xcc, 0x4b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0xe2, 0xe6, 0xe2,
 	0x84, 0x70, 0x0b, 0x72, 0x2a, 0x95, 0x94, 0xb9, 0xf8, 0x7d, 0xb3, 0x53, 0x32, 0x8b, 0x1c, 0x73,
 	0x72, 0xa0, 0xf2, 0x42, 0x02, 0x5c, 0xcc, 0x29, 0x99, 0x45, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c,
-	0x41, 0x20, 0xa6, 0x12, 0x3f, 0x17, 0x2f, 0x42, 0x51, 0x41, 0x4e, 0xa5, 0x51, 0x1a, 0x17, 0x8b,
-	0x5b, 0x68, 0xb0, 0xab, 0x90, 0x06, 0x17, 0x0b, 0xc8, 0x28, 0x21, 0x7e, 0xbd, 0x82, 0x24, 0x3d,
-	0x24, 0x3b, 0xa4, 0x78, 0x11, 0x02, 0x20, 0x5b, 0x18, 0x84, 0x4c, 0xb8, 0x38, 0x60, 0x46, 0x08,
-	0x09, 0x83, 0x24, 0xd1, 0x6c, 0x95, 0x12, 0x44, 0x15, 0x04, 0xeb, 0x02, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0xfe, 0x78, 0xb0, 0x51, 0xcd, 0x00, 0x00, 0x00,
+	0x41, 0x20, 0xa6, 0x12, 0x3f, 0x17, 0x2f, 0x42, 0x11, 0x48, 0x97, 0x28, 0x97, 0x70, 0x70, 0x72,
+	0x62, 0x5e, 0x40, 0x62, 0x72, 0x76, 0x62, 0x7a, 0x6a, 0x31, 0xcc, 0x64, 0x61, 0x2e, 0x41, 0x54,
+	0xe1, 0x82, 0x9c, 0x4a, 0xa3, 0x15, 0x8c, 0x5c, 0x2c, 0x6e, 0xa1, 0xc1, 0xae, 0x42, 0x1a, 0x5c,
+	0x2c, 0x20, 0x7b, 0x85, 0xf8, 0xf5, 0x0a, 0x92, 0xf4, 0x90, 0x1c, 0x24, 0xc5, 0x8b, 0x10, 0x00,
+	0x19, 0xce, 0x20, 0x64, 0xc2, 0xc5, 0x01, 0xb3, 0x4f, 0x48, 0x18, 0x24, 0x89, 0xe6, 0x44, 0x29,
+	0x41, 0x54, 0x41, 0x88, 0x2e, 0x07, 0x2e, 0x1e, 0x64, 0xdb, 0x85, 0xc4, 0x41, 0x8a, 0xb0, 0x38,
+	0x53, 0x4a, 0x14, 0x53, 0x02, 0x6c, 0x02, 0x20, 0x00, 0x00, 0xff, 0xff, 0xec, 0x83, 0x0e, 0x7e,
+	0x3c, 0x01, 0x00, 0x00,
 }

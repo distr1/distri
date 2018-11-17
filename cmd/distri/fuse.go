@@ -1021,3 +1021,13 @@ func (fs *fuseFS) MkdirAll(ctx context.Context, req *pb.MkdirAllRequest) (*pb.Mk
 	fs.mkExchangeDirAll("/" + req.GetDir())
 	return &pb.MkdirAllReply{}, nil
 }
+
+func (fs *fuseFS) ScanPackages(ctx context.Context, req *pb.ScanPackagesRequest) (*pb.ScanPackagesReply, error) {
+	pkgs, err := fs.findPackages()
+	if err != nil {
+		return nil, err
+	}
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	return &pb.ScanPackagesReply{}, fs.scanPackagesLocked(pkgs)
+}

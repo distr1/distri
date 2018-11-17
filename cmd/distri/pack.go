@@ -79,6 +79,7 @@ func pack(args []string) error {
 		"dev",     // udev
 		"ro",      // read-only package directory (mountpoint)
 		"roimg",   // read-only package store
+		"ro-tmp",  // temporary directory which is not hidden by systemd’s tmp.mount
 		"proc",    // procfs
 		"sys",     // sysfs
 		"tmp",     // tmpfs

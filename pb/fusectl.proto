@@ -15,6 +15,12 @@ message MkdirAllRequest {
 message MkdirAllReply {
 }
 
+message ScanPackagesRequest {
+}
+
+message ScanPackagesReply {
+}
+
 service FUSE {
   rpc Ping(PingRequest) returns (PingReply) {}
 
@@ -22,4 +28,8 @@ service FUSE {
   // (e.g. /ro/systemd-amd64-239). This is useful for bind-mounting
   // DESTDIR/PREFIX to PREFIX when building packages.
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllReply) {}
+
+  // ScanPackages discovers new packages in the mounted repository. This is
+  // called by “distri install”.
+  rpc ScanPackages(ScanPackagesRequest) returns (ScanPackagesReply) {}
 }
