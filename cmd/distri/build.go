@@ -135,6 +135,7 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		c := proto.MarshalTextString(&pb.Meta{
 			RuntimeDep: deps,
 			SourcePkg:  proto.String(b.Pkg),
+			Version:    proto.String(b.Version),
 		})
 		if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+b.fullName()+".meta.textproto"), []byte(c), 0644); err != nil {
 			return err

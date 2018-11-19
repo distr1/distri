@@ -10,4 +10,9 @@ message Meta {
   // The source package from which this package was built. Useful to tie
   // multiple binaries back to their source, and for globbing versions.
   optional string source_pkg = 2;
+
+  // The version of the package. In some contexts, the version is already
+  // included in the filename, but not when e.g. “distri install” is obtaining
+  // meta.textproto files by accessing a symbolic link.
+  optional string version = 3;
 }
