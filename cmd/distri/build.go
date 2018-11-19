@@ -346,7 +346,7 @@ func hasArchSuffix(pkg string) (suffix string, ok bool) {
 }
 
 func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
-	if _, err := os.Stat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil {
+	if st, err := os.Lstat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil && st.Mode().IsRegular() {
 		return pkg, nil // pkg already contains the version
 	}
 	pkgPattern := pkg
@@ -364,6 +364,9 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 	var candidates []string
 	var meta pb.Meta
 	for _, m := range matches {
+		if st, err := os.Lstat(m); err != nil || !st.Mode().IsRegular() {
+			continue
+		}
 		c, err := ioutil.ReadFile(m)
 		if err != nil {
 			return "", err
