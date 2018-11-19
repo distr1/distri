@@ -140,6 +140,9 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+b.fullName()+".meta.textproto"), []byte(c), 0644); err != nil {
 			return err
 		}
+		if err := renameio.Symlink(b.fullName()+".meta.textproto", filepath.Join("../distri/pkg/"+b.Pkg+"-"+b.Arch+".meta.textproto")); err != nil {
+			return err
+		}
 	}
 
 	// b.DestDir is /tmp/distri-dest123/tmp
