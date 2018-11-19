@@ -3,27 +3,64 @@
 package env
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/distr1/distri"
 )
 
 // DistriRoot is the root directory of where the distri repository was checked out.
-var DistriRoot = findDistriRoot()
-
-func findDistriRoot() string {
-	env := os.Getenv("DISTRIROOT")
-	if env != "" {
+var DistriRoot = func() string {
+	if env := os.Getenv("DISTRIROOT"); env != "" {
 		return env
 	}
 
 	// TODO: find the dominating distri directory, if any.
 
 	return os.ExpandEnv("$HOME/distri") // default
-}
+}()
 
-// TODO: support multiple configured repositories, read from configfile
+// DistriConfig is the directory containing distri config files (typically
+// /etc/distri).
+var DistriConfig = func() string {
+	if env := os.Getenv("DISTRICFG"); env != "" {
+		return env
+	}
+	return "/etc/distri" // default
+}()
+
+// Repos returns all configured repositories by consulting DistriConfig. It is a
+// function to avoid I/O for invocations which don’t need to deal with
+// repositories.
+func Repos() ([]distri.Repo, error) {
+	dir := filepath.Join(DistriConfig, "repos.d")
+	fis, err := ioutil.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []distri.Repo{{Path: DefaultRepo}}, nil
+		}
+		return nil, err
+	}
+	var repos []distri.Repo
+	for _, fi := range fis {
+		b, err := ioutil.ReadFile(filepath.Join(dir, fi.Name()))
+		if err != nil {
+			return nil, err
+		}
+		lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+		for _, line := range lines {
+			// We might want to append key=value pairs to a repo line later
+			if idx := strings.Index(line, " "); idx > -1 {
+				line = line[:idx]
+			}
+			repos = append(repos, distri.Repo{Path: line})
+		}
+	}
+	return repos, nil
+}
 
 // DefaultRepo is the default repository path or URL.
 var DefaultRepo = join(DistriRoot, "build/distri/pkg")

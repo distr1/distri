@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -29,19 +31,35 @@ const installHelp = `TODO
 // operation.
 var totalBytes int64
 
-func repoReader(repo, fn string) (io.ReadCloser, error) {
-	if strings.HasPrefix(repo, "http://") ||
-		strings.HasPrefix(repo, "https://") {
-		resp, err := http.Get(repo + "/" + fn) // TODO: sanitize slashes
+type errNotFound struct{}
+
+func (errNotFound) Error() string {
+	return "HTTP status 404"
+}
+
+func isNotExist(err error) bool {
+	if _, ok := err.(*errNotFound); ok {
+		return true
+	}
+	return os.IsNotExist(err)
+}
+
+func repoReader(repo distri.Repo, fn string) (io.ReadCloser, error) {
+	if strings.HasPrefix(repo.Path, "http://") ||
+		strings.HasPrefix(repo.Path, "https://") {
+		resp, err := http.Get(repo.Path + "/" + fn) // TODO: sanitize slashes
 		if err != nil {
 			return nil, err
 		}
 		if got, want := resp.StatusCode, http.StatusOK; got != want {
+			if got == http.StatusNotFound {
+				return nil, &errNotFound{}
+			}
 			return nil, fmt.Errorf("HTTP status %v", resp.Status)
 		}
 		return resp.Body, nil
 	}
-	return os.Open(filepath.Join(repo, fn))
+	return os.Open(filepath.Join(repo.Path, fn))
 }
 
 func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
@@ -92,7 +110,7 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
-func install1(root, repo, pkg string, first bool) error {
+func install1(root string, repo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -172,19 +190,37 @@ func install1(root, repo, pkg string, first bool) error {
 	return nil
 }
 
-func installTransitively1(root, repo, pkg string) error {
-	rd, err := repoReader(repo, pkg+".meta.textproto")
-	if err != nil {
-		return err
+func installTransitively1(root string, repos []distri.Repo, pkg string) error {
+	metas := make(map[*pb.Meta]distri.Repo)
+	for _, repo := range repos {
+		rd, err := repoReader(repo, pkg+".meta.textproto")
+		if err != nil {
+			if isNotExist(err) {
+				continue
+			}
+			return err
+		}
+		b, err := ioutil.ReadAll(rd)
+		rd.Close()
+		if err != nil {
+			return err
+		}
+		var pm pb.Meta
+		if err := proto.UnmarshalText(string(b), &pm); err != nil {
+			return err
+		}
+		metas[&pm] = repo
 	}
-	b, err := ioutil.ReadAll(rd)
-	rd.Close()
-	if err != nil {
-		return err
+	var pm *pb.Meta
+	var repo distri.Repo
+	// TODO: chose the latest version instead
+	for m, r := range metas {
+		pm = m
+		repo = r
+		break
 	}
-	var pm pb.Meta
-	if err := proto.UnmarshalText(string(b), &pm); err != nil {
-		return err
+	if pm == nil {
+		return fmt.Errorf("package %s not found on any configured repo", pkg)
 	}
 
 	// TODO(later): we could write out b here and save 1 HTTP request
@@ -233,6 +269,14 @@ func install(args []string) error {
 		return fmt.Errorf("syntax: install [options] <package> [<package>...]")
 	}
 
+	repos, err := env.Repos()
+	if err != nil {
+		return err
+	}
+	if *repo != "" {
+		repos = []distri.Repo{{Path: *repo}}
+	}
+
 	// TODO: lock to ensure only one process modifies roimg at a time
 
 	tmpDir := filepath.Join(*root, "roimg", "tmp")
@@ -251,7 +295,7 @@ func install(args []string) error {
 	var eg errgroup.Group
 	for _, pkg := range fset.Args() {
 		pkg := pkg // copy
-		eg.Go(func() error { return installTransitively1(*root, *repo, pkg) })
+		eg.Go(func() error { return installTransitively1(*root, repos, pkg) })
 	}
 	if err := eg.Wait(); err != nil {
 		return err
