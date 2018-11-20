@@ -139,6 +139,13 @@ func pack(args []string) error {
 		return err
 	}
 
+	if err := os.MkdirAll(filepath.Join(*root, "etc/distri/repos.d"), 0755); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filepath.Join(*root, "etc/distri/repos.d/midna"), []byte("http://kwalitaet:alpha@midna.zekjur.net:8045/export"), 0644); err != nil {
+		return err
+	}
+
 	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
 	basePkgs, err := b.glob(*repo, []string{
 		"systemd",
