@@ -7,11 +7,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+)
+
+const (
+	systemd = "systemd-amd64-239"
+	bash    = "bash-amd64-4.4.18"
 )
 
 func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
@@ -102,7 +108,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 	// Create temporary repos which only hold one package (and its runtime
 	// dependencies):
 	addrs := make(map[string]string) // pkg → addr
-	for _, pkg := range []string{"systemd-amd64-239", "bash-amd64-4.4.18"} {
+	for _, pkg := range []string{systemd, bash} {
 		rtmpdir, err := ioutil.TempDir("", "distritest")
 		if err != nil {
 			return err
@@ -158,13 +164,91 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 	return nil
 }
 
+func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...string) error {
+	// Create temporary repos which only hold one package (and its runtime
+	// dependencies):
+	addrs := make(map[string]string) // pkg → addr
+	for _, pkg := range []string{"systemd-amd64-239", "systemd-amd64-100"} {
+		rtmpdir, err := ioutil.TempDir("", "distritest")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(rtmpdir)
+		meta, err := readMeta(filepath.Join(env.DefaultRepo, systemd+".meta.textproto"))
+		if err != nil {
+			return err
+		}
+		// Copy and rename the latest systemd to simulate two versions being present
+		for _, dep := range append([]string{systemd}, meta.GetRuntimeDep()...) {
+			cp := exec.Command("cp",
+				filepath.Join(env.DefaultRepo, dep+".squashfs"),
+				filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
+				rtmpdir)
+			cp.Stderr = os.Stderr
+			if err := cp.Run(); err != nil {
+				return fmt.Errorf("%v: %v", cp.Args, err)
+			}
+		}
+		idx := strings.LastIndexByte(pkg, '-')
+		base, version := pkg[:idx], pkg[idx+1:]
+		for _, suffix := range []string{"squashfs", "meta.textproto"} {
+			if err := os.Rename(
+				filepath.Join(rtmpdir, "systemd-amd64-239."+suffix),
+				filepath.Join(rtmpdir, pkg+"."+suffix)); err != nil {
+				return err
+			}
+			if err := os.Symlink(pkg+"."+suffix, filepath.Join(rtmpdir, base+"."+suffix)); err != nil {
+				return err
+			}
+		}
+
+		metaFn := filepath.Join(rtmpdir, pkg+".meta.textproto")
+		pm, err := readMeta(metaFn)
+		if err != nil {
+			return err
+		}
+		pm.Version = proto.String(version)
+		if err := ioutil.WriteFile(metaFn, []byte(proto.MarshalTextString(pm)), 0644); err != nil {
+			return err
+		}
+		addr, cleanup, err := export(ctx, rtmpdir)
+		if err != nil {
+			return err
+		}
+		defer cleanup()
+		addrs[pkg] = addr
+	}
+
+	ctmpdir, err := ioutil.TempDir("", "distritest")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(ctmpdir)
+	reposd := filepath.Join(ctmpdir, "repos.d")
+	if err := os.Mkdir(reposd, 0755); err != nil {
+		return err
+	}
+	for pkg, addr := range addrs {
+		if err := ioutil.WriteFile(filepath.Join(reposd, pkg), []byte("http://"+addr), 0644); err != nil {
+			return err
+		}
+	}
+	install := exec.Command("distri",
+		append([]string{
+			"install",
+			"-root=" + tmpdir,
+		}, pkg...)...)
+	install.Env = []string{"DISTRICFG=" + ctmpdir}
+	install.Stderr = os.Stderr
+	install.Stdout = os.Stdout
+	if err := install.Run(); err != nil {
+		return fmt.Errorf("%v: %v", install.Args, err)
+	}
+	return nil
+}
+
 func TestInstall(t *testing.T) {
 	t.Parallel()
-
-	const (
-		systemd = "systemd-amd64-239"
-		bash    = "bash-amd64-4.4.18"
-	)
 
 	for _, tt := range []struct {
 		desc        string
@@ -201,10 +285,17 @@ func TestInstall(t *testing.T) {
 		},
 
 		{
-			desc:        "HTTPMultiple",
+			desc:        "HTTPMultiplePkgs",
 			installFunc: installHTTPMultiple,
 			pkgsFull:    []string{systemd, bash},
 			pkgs:        []string{systemd, bash},
+		},
+
+		{
+			desc:        "HTTPMultipleVersions",
+			installFunc: installHTTPMultipleVersions,
+			pkgsFull:    []string{systemd},
+			pkgs:        []string{"systemd"},
 		},
 	} {
 		tt := tt // copy

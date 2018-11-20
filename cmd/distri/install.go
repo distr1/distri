@@ -191,6 +191,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 }
 
 func installTransitively1(root string, repos []distri.Repo, pkg string) error {
+	origpkg := pkg
 	if _, ok := hasArchSuffix(pkg); !ok && !likelyFullySpecified(pkg) {
 		pkg += "-amd64" // TODO: configurable / auto-detect
 	}
@@ -216,11 +217,11 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	}
 	var pm *pb.Meta
 	var repo distri.Repo
-	// TODO: chose the latest version instead
 	for m, r := range metas {
-		pm = m
-		repo = r
-		break
+		if pm == nil || m.GetVersion() > pm.GetVersion() {
+			pm = m
+			repo = r
+		}
 	}
 	if pm == nil {
 		return fmt.Errorf("package %s not found on any configured repo", pkg)
@@ -232,7 +233,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 
 	// TODO(later): we could write out b here and save 1 HTTP request
 	pkgs := append([]string{pkg}, pm.GetRuntimeDep()...)
-	log.Printf("resolved %s to %v", pkg, pkgs)
+	log.Printf("resolved %s to %v", origpkg, pkgs)
 
 	// TODO: figure out if this is the first installation by checking existence
 	// in the corresponding pkgset file
