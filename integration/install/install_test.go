@@ -14,12 +14,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func installFile(ctx context.Context, tmpdir, pkg string) error {
+func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
 	install := exec.Command("distri",
-		"install",
-		"-root="+tmpdir,
-		"-repo="+env.DefaultRepo,
-		pkg)
+		append([]string{
+			"install",
+			"-root=" + tmpdir,
+			"-repo=" + env.DefaultRepo,
+		}, pkg...)...)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
@@ -64,7 +65,7 @@ func export(ctx context.Context, repo string) (addr string, cleanup func(), _ er
 	return string(b), cleanup, nil
 }
 
-func installHTTP(ctx context.Context, tmpdir, pkg string) error {
+func installHTTP(ctx context.Context, tmpdir string, pkg ...string) error {
 	addr, cleanup, err := export(ctx, env.DefaultRepo)
 	if err != nil {
 		return err
@@ -72,10 +73,11 @@ func installHTTP(ctx context.Context, tmpdir, pkg string) error {
 	defer cleanup()
 
 	install := exec.Command("distri",
-		"install",
-		"-root="+tmpdir,
-		"-repo=http://"+addr,
-		pkg)
+		append([]string{
+			"install",
+			"-root=" + tmpdir,
+			"-repo=http://" + addr,
+		}, pkg...)...)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
@@ -96,7 +98,7 @@ func readMeta(fn string) (*pb.Meta, error) {
 	return &m, nil
 }
 
-func installHTTPMultiple(ctx context.Context, tmpdir, pkg string) error {
+func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) error {
 	// Create temporary repos which only hold one package (and its runtime
 	// dependencies):
 	addrs := make(map[string]string) // pkg → addr
@@ -143,9 +145,10 @@ func installHTTPMultiple(ctx context.Context, tmpdir, pkg string) error {
 		}
 	}
 	install := exec.Command("distri",
-		"install",
-		"-root="+tmpdir,
-		pkg)
+		append([]string{
+			"install",
+			"-root=" + tmpdir,
+		}, pkg...)...)
 	install.Env = []string{"DISTRICFG=" + ctmpdir}
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
@@ -158,13 +161,33 @@ func installHTTPMultiple(ctx context.Context, tmpdir, pkg string) error {
 func TestInstall(t *testing.T) {
 	t.Parallel()
 
+	const (
+		systemd = "systemd-amd64-239"
+		bash    = "bash-amd64-4.4.18"
+	)
+
 	for _, tt := range []struct {
 		desc        string
-		installFunc func(ctx context.Context, tmpdir, pkg string) error
+		installFunc func(ctx context.Context, tmpdir string, pkg ...string) error
+		pkgs        []string
 	}{
-		{"File", installFile},
-		{"HTTP", installHTTP},
-		{"HTTPMultiple", installHTTPMultiple},
+		{
+			desc:        "File",
+			installFunc: installFile,
+			pkgs:        []string{systemd},
+		},
+
+		{
+			desc:        "HTTP",
+			installFunc: installHTTP,
+			pkgs:        []string{systemd},
+		},
+
+		{
+			desc:        "HTTPMultiple",
+			installFunc: installHTTPMultiple,
+			pkgs:        []string{systemd, bash},
+		},
 	} {
 		tt := tt // copy
 		t.Run(tt.desc, func(t *testing.T) {
@@ -179,30 +202,25 @@ func TestInstall(t *testing.T) {
 			}
 			defer os.RemoveAll(tmpdir)
 
-			const pkg = "systemd-amd64-239"
-
-			if err := tt.installFunc(ctx, tmpdir, pkg); err != nil {
+			if err := tt.installFunc(ctx, tmpdir, tt.pkgs...); err != nil {
 				t.Fatal(err)
 			}
 
-			b, err := ioutil.ReadFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			var m pb.Meta
-			if err := proto.UnmarshalText(string(b), &m); err != nil {
-				t.Fatal(err)
-			}
-
-			for _, pkg := range append([]string{pkg}, m.GetRuntimeDep()...) {
-				t.Run("VerifyPackageInstalled/"+pkg, func(t *testing.T) {
-					if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".squashfs")); err != nil {
-						t.Fatal(err)
-					}
-					if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".meta.textproto")); err != nil {
-						t.Fatal(err)
-					}
-				})
+			for _, pkg := range tt.pkgs {
+				m, err := readMeta(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, pkg := range append([]string{pkg}, m.GetRuntimeDep()...) {
+					t.Run("VerifyPackageInstalled/"+pkg, func(t *testing.T) {
+						if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".squashfs")); err != nil {
+							t.Fatal(err)
+						}
+						if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".meta.textproto")); err != nil {
+							t.Fatal(err)
+						}
+					})
+				}
 			}
 
 			t.Run("VerifyEtcCopiedSystemd", func(t *testing.T) {
