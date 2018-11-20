@@ -578,7 +578,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/include/scsi,/out/include/sys,/out/include/gnu", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)

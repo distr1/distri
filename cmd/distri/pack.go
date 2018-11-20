@@ -333,7 +333,7 @@ netgroup:       nis
 	if err := ioutil.WriteFile(filepath.Join(network, "ether.network"), []byte(`
 [Match]
 #Type=ether
-Name=eth*
+Name=enp*
 
 [Network]
 DHCP=yes

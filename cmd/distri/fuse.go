@@ -38,23 +38,9 @@ const fuseHelp = `TODO
 var exchangeDirs = []string{
 	"/bin",
 	"/out/lib",
-	"/out/lib/firmware", // linux
-	"/out/lib/systemd/system",
-	"/out/lib/sysusers.d",
-	"/out/lib/tmpfiles.d",
-	"/out/lib/pkgconfig",
-	"/out/lib/xorg/modules",
-	"/out/lib/xorg/modules/input",
-	"/out/lib/xorg/modules/drivers",
 	"/out/include",
-	"/out/include/sys",  // libcap and glibc
-	"/out/include/gnu",  // glibc-amd64 and glibc-i686-amd64
-	"/out/include/scsi", // linux-amd64-4.18.7 and glibc-amd64-2.27
-	"/out/include/X11",
-	"/out/share/man/man1",
-	"/out/share/dbus-1/system.d",
-	"/out/share/dbus-1/system-services",
-	"/out/share/dbus-1/services",
+	"/out/share/man",
+	"/out/share/dbus-1",
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
 }
@@ -424,6 +410,10 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 }
 
 func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
+	start := time.Now()
+	defer func() {
+		log.Printf("scanPackages in %v", time.Since(start))
+	}()
 	// TODO: iterate over packages once, calling mkdir for all exchange dirs
 	for _, dir := range exchangeDirs {
 		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
@@ -447,12 +437,12 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		if err != nil {
 			return err
 		}
+		type pathWithInode struct {
+			path  string
+			inode squashfs.Inode
+		}
+		inodes := make([]pathWithInode, 0, len(exchangeDirs))
 		for _, path := range exchangeDirs {
-			exchangePath := strings.TrimPrefix(path, "/out")
-			dir, ok := fs.dirs[exchangePath]
-			if !ok {
-				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
-			}
 			inode, err := lookupPath(rd, strings.TrimPrefix(path, "/"))
 			if err != nil {
 				if _, ok := err.(*fileNotFoundError); ok {
@@ -460,11 +450,28 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 				}
 				return err
 			}
+			inodes = append(inodes, pathWithInode{path, inode})
+		}
+
+		for len(inodes) > 0 {
+			path, inode := inodes[0].path, inodes[0].inode
+			inodes = inodes[1:]
+			exchangePath := strings.TrimPrefix(path, "/out")
+			dir, ok := fs.dirs[exchangePath]
+			if !ok {
+				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
+			}
 			sfis, err := rd.Readdir(inode)
 			if err != nil {
 				return fmt.Errorf("Readdir(%s, %s): %v", pkg, dir, err)
 			}
 			for _, sfi := range sfis {
+				if sfi.Mode().IsDir() {
+					dir := filepath.Join(path, sfi.Name())
+					fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
+					inodes = append(inodes, pathWithInode{dir, sfi.Sys().(*squashfs.FileInfo).Inode})
+					continue
+				}
 				rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
 				if err != nil {
 					return err
