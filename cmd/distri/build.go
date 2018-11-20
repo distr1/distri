@@ -348,6 +348,17 @@ func hasArchSuffix(pkg string) (suffix string, ok bool) {
 	return "", false
 }
 
+// likelyFullySpecified returns true if the provided pkg contains an
+// architecture suffix in the middle, e.g. systemd-amd64-239.
+func likelyFullySpecified(pkg string) bool {
+	for a := range archs {
+		if strings.Contains(pkg, "-"+a+"-") {
+			return true
+		}
+	}
+	return false
+}
+
 func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 	if st, err := os.Lstat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil && st.Mode().IsRegular() {
 		return pkg, nil // pkg already contains the version

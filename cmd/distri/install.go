@@ -191,6 +191,9 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 }
 
 func installTransitively1(root string, repos []distri.Repo, pkg string) error {
+	if _, ok := hasArchSuffix(pkg); !ok && !likelyFullySpecified(pkg) {
+		pkg += "-amd64" // TODO: configurable / auto-detect
+	}
 	metas := make(map[*pb.Meta]distri.Repo)
 	for _, repo := range repos {
 		rd, err := repoReader(repo, pkg+".meta.textproto")
@@ -221,6 +224,10 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	}
 	if pm == nil {
 		return fmt.Errorf("package %s not found on any configured repo", pkg)
+	}
+
+	if _, ok := hasArchSuffix(pkg); ok {
+		pkg += "-" + pm.GetVersion()
 	}
 
 	// TODO(later): we could write out b here and save 1 HTTP request

@@ -169,23 +169,41 @@ func TestInstall(t *testing.T) {
 	for _, tt := range []struct {
 		desc        string
 		installFunc func(ctx context.Context, tmpdir string, pkg ...string) error
+		pkgsFull    []string
 		pkgs        []string
 	}{
 		{
 			desc:        "File",
 			installFunc: installFile,
+			pkgsFull:    []string{systemd},
 			pkgs:        []string{systemd},
 		},
 
 		{
 			desc:        "HTTP",
 			installFunc: installHTTP,
+			pkgsFull:    []string{systemd},
 			pkgs:        []string{systemd},
+		},
+
+		{
+			desc:        "HTTPResolveVersion",
+			installFunc: installHTTP,
+			pkgsFull:    []string{systemd},
+			pkgs:        []string{"systemd-amd64"},
+		},
+
+		{
+			desc:        "HTTPResolveAll",
+			installFunc: installHTTP,
+			pkgsFull:    []string{systemd},
+			pkgs:        []string{"systemd"},
 		},
 
 		{
 			desc:        "HTTPMultiple",
 			installFunc: installHTTPMultiple,
+			pkgsFull:    []string{systemd, bash},
 			pkgs:        []string{systemd, bash},
 		},
 	} {
@@ -206,7 +224,7 @@ func TestInstall(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for _, pkg := range tt.pkgs {
+			for _, pkg := range tt.pkgsFull {
 				m, err := readMeta(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
 				if err != nil {
 					t.Fatal(err)
