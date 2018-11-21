@@ -56,6 +56,40 @@ build_step: <
 >
 `))
 
+// TODO: refactor out of build.go
+func resolve1(imgDir, pkg string) ([]string, error) {
+	resolved := []string{pkg}
+	meta, err := pb.ReadMetaFile(filepath.Join(imgDir, pkg+".meta.textproto"))
+	if err != nil {
+		return nil, err
+	}
+	for _, dep := range meta.GetRuntimeDep() {
+		if dep == pkg {
+			continue // skip circular dependencies, e.g. gcc depends on itself
+		}
+		resolved = append(resolved, dep)
+	}
+	return resolved, nil
+}
+
+func resolve(imgDir string, pkgs []string) ([]string, error) {
+	deps := make(map[string]bool)
+	for _, pkg := range pkgs {
+		r, err := resolve1(imgDir, pkg)
+		if err != nil {
+			return nil, err
+		}
+		for _, dep := range r {
+			deps[dep] = true
+		}
+	}
+	resolved := make([]string, 0, len(deps))
+	for dep := range deps {
+		resolved = append(resolved, dep)
+	}
+	return resolved, nil
+}
+
 func emptyArchive() ([]byte, error) {
 	var buf bytes.Buffer
 	gw := gzip.NewWriter(&buf)
@@ -70,6 +104,8 @@ func emptyArchive() ([]byte, error) {
 }
 
 func TestBuild(t *testing.T) {
+	t.Parallel()
+
 	// Serve upstream source tarball via HTTP:
 	empty, err := emptyArchive()
 	if err != nil {
@@ -95,19 +131,14 @@ func TestBuild(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	for _, dep := range []string{
+	deps, err := resolve(env.DefaultRepo, []string{
 		"bash-amd64-4.4.18",
-		// TODO: remove once bash-4.4.18’s runtime_deps are resolved:
-		"glibc-amd64-2.27",
-
 		"pkg-config-amd64-0.29.2",
-		// TODO: remove once pkg-config-0.29.2’s runtime_deps are resolved:
-		"glib-amd64-2.58.0",
-		"zlib-amd64-1.2.11",
-		"util-linux-amd64-2.32",
-		"pam-amd64-1.3.1",
-		"libffi-amd64-3.2.1",
-	} {
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, dep := range deps {
 		cp := exec.Command("cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
@@ -177,6 +208,8 @@ func TestBuild(t *testing.T) {
 }
 
 func TestUnversionedBuild(t *testing.T) {
+	t.Parallel()
+
 	// Serve upstream source tarball via HTTP:
 	empty, err := emptyArchive()
 	if err != nil {
@@ -202,22 +235,16 @@ func TestUnversionedBuild(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	for _, dep := range []string{
+	deps, err := resolve(env.DefaultRepo, []string{
 		"bash-amd64-4.4.18",
-		// TODO: remove once bash-4.4.18’s runtime_deps are resolved:
-		"glibc-amd64-2.27",
-
 		"linux-amd64-4.18.7",
 		"linux-firmware-amd64-20181104",
-
 		"pkg-config-amd64-0.29.2",
-		// TODO: remove once pkg-config-0.29.2’s runtime_deps are resolved:
-		"glib-amd64-2.58.0",
-		"zlib-amd64-1.2.11",
-		"util-linux-amd64-2.32",
-		"pam-amd64-1.3.1",
-		"libffi-amd64-3.2.1",
-	} {
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, dep := range deps {
 		cp := exec.Command("cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
