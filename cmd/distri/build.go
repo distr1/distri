@@ -416,7 +416,7 @@ func (b *buildctx) glob(imgDir string, pkgs []string) ([]string, error) {
 
 func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
 	resolved := []string{pkg}
-	meta, err := readMeta(filepath.Join(imgDir, pkg+".meta.textproto"))
+	meta, err := pb.ReadMetaFile(filepath.Join(imgDir, pkg+".meta.textproto"))
 	if err != nil {
 		return nil, err
 	}

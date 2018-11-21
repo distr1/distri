@@ -18,7 +18,6 @@ import (
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -153,12 +152,8 @@ func TestBuild(t *testing.T) {
 	// TODO: verify package properties
 
 	t.Run("VerifyRuntimeDep", func(t *testing.T) {
-		var meta pb.Meta
-		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
+		meta, err := pb.ReadMetaFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
 		if err != nil {
-			t.Fatal(err)
-		}
-		if err := proto.UnmarshalText(string(b), &meta); err != nil {
 			t.Fatal(err)
 		}
 		want := []string{
@@ -267,12 +262,8 @@ func TestUnversionedBuild(t *testing.T) {
 	// TODO: verify package properties
 
 	t.Run("VerifyRuntimeDep", func(t *testing.T) {
-		var meta pb.Meta
-		b, err := ioutil.ReadFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
+		meta, err := pb.ReadMetaFile(filepath.Join(distriroot, "build", "distri", "pkg", "test-amd64-1.meta.textproto"))
 		if err != nil {
-			t.Fatal(err)
-		}
-		if err := proto.UnmarshalText(string(b), &meta); err != nil {
 			t.Fatal(err)
 		}
 		want := []string{

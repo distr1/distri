@@ -92,18 +92,6 @@ func installHTTP(ctx context.Context, tmpdir string, pkg ...string) error {
 	return nil
 }
 
-func readMeta(fn string) (*pb.Meta, error) {
-	b, err := ioutil.ReadFile(fn)
-	if err != nil {
-		return nil, err
-	}
-	var m pb.Meta
-	if err := proto.UnmarshalText(string(b), &m); err != nil {
-		return nil, err
-	}
-	return &m, nil
-}
-
 func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) error {
 	// Create temporary repos which only hold one package (and its runtime
 	// dependencies):
@@ -114,7 +102,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 			return err
 		}
 		defer os.RemoveAll(rtmpdir)
-		meta, err := readMeta(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
+		meta, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
 		if err != nil {
 			return err
 		}
@@ -174,7 +162,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 			return err
 		}
 		defer os.RemoveAll(rtmpdir)
-		meta, err := readMeta(filepath.Join(env.DefaultRepo, systemd+".meta.textproto"))
+		meta, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, systemd+".meta.textproto"))
 		if err != nil {
 			return err
 		}
@@ -203,7 +191,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 		}
 
 		metaFn := filepath.Join(rtmpdir, pkg+".meta.textproto")
-		pm, err := readMeta(metaFn)
+		pm, err := pb.ReadMetaFile(metaFn)
 		if err != nil {
 			return err
 		}
@@ -316,7 +304,7 @@ func TestInstall(t *testing.T) {
 			}
 
 			for _, pkg := range tt.pkgsFull {
-				m, err := readMeta(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
+				m, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
 				if err != nil {
 					t.Fatal(err)
 				}

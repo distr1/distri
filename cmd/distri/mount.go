@@ -13,24 +13,11 @@ import (
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"golang.org/x/sys/unix"
 )
 
 const mountHelp = `TODO
 `
-
-func readMeta(fn string) (*pb.Meta, error) {
-	b, err := ioutil.ReadFile(fn)
-	if err != nil {
-		return nil, err
-	}
-	var m pb.Meta
-	if err := proto.UnmarshalText(string(b), &m); err != nil {
-		return nil, err
-	}
-	return &m, nil
-}
 
 func mountpoint(fn string) bool {
 	b, err := ioutil.ReadFile("/proc/self/mountinfo")
@@ -141,7 +128,7 @@ func mount(args []string) (cleanup func(), _ error) {
 	// TODO: glob package so that users can use “mount systemd” instead of
 	// “mount systemd-239”? alternatively: tab completion
 
-	meta, err := readMeta(filepath.Join(*repo, pkg+".meta.textproto"))
+	meta, err := pb.ReadMetaFile(filepath.Join(*repo, pkg+".meta.textproto"))
 	if err != nil {
 		return nil, err
 	}
