@@ -123,25 +123,47 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 	}
 
 	{
-		deps, err := b.build()
+		meta, err := b.build()
 		if err != nil {
 			return fmt.Errorf("build: %v", err)
 		}
 
-		// TODO: add the transitive closure of runtime dependencies
-
-		log.Printf("runtime deps: %q", deps)
-
-		c := proto.MarshalTextString(&pb.Meta{
-			RuntimeDep: deps,
-			SourcePkg:  proto.String(b.Pkg),
-			Version:    proto.String(b.Version),
+		pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
+			Name:      proto.String(b.Pkg),
+			ClaimGlob: []string{"*"},
 		})
-		if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+b.fullName()+".meta.textproto"), []byte(c), 0644); err != nil {
-			return err
-		}
-		if err := renameio.Symlink(b.fullName()+".meta.textproto", filepath.Join("../distri/pkg/"+b.Pkg+"-"+b.Arch+".meta.textproto")); err != nil {
-			return err
+		for _, pkg := range pkgs {
+			fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
+
+			deps := append(meta.GetRuntimeDep(),
+				append(b.Proto.GetRuntimeDep(),
+					pkg.GetRuntimeDep()...)...)
+
+			deps, err = b.glob(env.DefaultRepo, deps)
+			if err != nil {
+				return err
+			}
+
+			resolved, err := resolve(env.DefaultRepo, deps)
+			if err != nil {
+				return err
+			}
+
+			// TODO: add the transitive closure of runtime dependencies
+
+			log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
+
+			c := proto.MarshalTextString(&pb.Meta{
+				RuntimeDep: resolved,
+				SourcePkg:  proto.String(b.Pkg),
+				Version:    proto.String(b.Version),
+			})
+			if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+fullName+".meta.textproto"), []byte(c), 0644); err != nil {
+				return err
+			}
+			if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -207,34 +229,70 @@ func (b *buildctx) serialize() (string, error) {
 }
 
 func (b *buildctx) pkg() error {
-	dest, err := filepath.Abs("../distri/pkg/" + b.fullName() + ".squashfs")
-	if err != nil {
-		return err
+	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
+		Name:      proto.String(b.Pkg),
+		ClaimGlob: []string{"*"},
+	})
+	for _, pkg := range pkgs {
+		log.Printf("packaging %+v", pkg)
+		fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
+		dest, err := filepath.Abs("../distri/pkg/" + fullName + ".squashfs")
+		if err != nil {
+			return err
+		}
+
+		f, err := renameio.TempFile("", dest)
+		if err != nil {
+			return err
+		}
+		defer f.Cleanup()
+		w, err := squashfs.NewWriter(f, time.Now())
+		if err != nil {
+			return err
+		}
+
+		destRoot := filepath.Join(filepath.Dir(b.DestDir), b.fullName())
+		for _, pattern := range pkg.GetClaimGlob() {
+			if pattern == "*" {
+				// Common path: no globbing or file manipulation required
+				if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.fullName())); err != nil {
+					return err
+				}
+				continue
+			}
+			matches, err := filepath.Glob(filepath.Join(destRoot, pattern))
+			if err != nil {
+				return err
+			}
+			tmp := filepath.Join(filepath.Dir(b.DestDir), fullName)
+			for _, m := range matches {
+				rel, err := filepath.Rel(destRoot, m)
+				if err != nil {
+					return err
+				}
+				dest := filepath.Join(tmp, rel)
+				if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+					return err
+				}
+				if err := os.Rename(m, dest); err != nil {
+					return err
+				}
+			}
+			if err := cp(w.Root, tmp); err != nil {
+				return err
+			}
+		}
+
+		if err := w.Flush(); err != nil {
+			return err
+		}
+
+		if err := f.CloseAtomicallyReplace(); err != nil {
+			return err
+		}
+		log.Printf("package successfully created in %s", dest)
 	}
 
-	f, err := renameio.TempFile("", dest)
-	if err != nil {
-		return err
-	}
-	defer f.Cleanup()
-	w, err := squashfs.NewWriter(f, time.Now())
-	if err != nil {
-		return err
-	}
-
-	if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.fullName())); err != nil {
-		return err
-	}
-
-	if err := w.Flush(); err != nil {
-		return err
-	}
-
-	if err := f.CloseAtomicallyReplace(); err != nil {
-		return err
-	}
-
-	log.Printf("package successfully created in %s", dest)
 	return nil
 }
 
@@ -556,7 +614,7 @@ func fuseMkdirAll(ctl string, dir string) error {
 	return nil
 }
 
-func (b *buildctx) build() (runtimedeps []string, _ error) {
+func (b *buildctx) build() (*pb.Meta, error) {
 	if os.Getenv("ZI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
 		if err != nil {
@@ -631,18 +689,7 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 		if err := proto.Unmarshal(c, &meta); err != nil {
 			return nil, err
 		}
-		deps = append(meta.GetRuntimeDep(), b.Proto.GetRuntimeDep()...)
-
-		deps, err = b.glob(env.DefaultRepo, deps)
-		if err != nil {
-			return nil, err
-		}
-
-		resolved, err := resolve(env.DefaultRepo, deps)
-		if err != nil {
-			return nil, err
-		}
-		return resolved, cmd.Wait()
+		return &meta, cmd.Wait()
 	}
 
 	logDir := filepath.Dir(b.SourceDir) // TODO: introduce a struct field
@@ -1170,8 +1217,9 @@ func (b *buildctx) build() (runtimedeps []string, _ error) {
 	for pkg := range depPkgs {
 		deps = append(deps, pkg)
 	}
-
-	return deps, nil
+	return &pb.Meta{
+		RuntimeDep: deps,
+	}, nil
 }
 
 // cherryPick applies src to the extracted sources in tmp. src is either the
@@ -1340,15 +1388,13 @@ func runJob(job string) error {
 	}
 	b.Proto = &buildProto
 
-	deps, err := b.build()
+	meta, err := b.build()
 	if err != nil {
 		return err
 	}
 
 	{
-		b, err := proto.Marshal(&pb.Meta{
-			RuntimeDep: deps,
-		})
+		b, err := proto.Marshal(meta)
 		if err != nil {
 			return err
 		}

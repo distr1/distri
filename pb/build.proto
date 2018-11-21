@@ -35,6 +35,14 @@ message Install {
   repeated Symlink symlink = 2;
 }
 
+message SplitPackage {
+  optional string name = 1; // required
+
+  repeated string runtime_dep = 2;
+
+  repeated string claim_glob = 3; // required
+}
+
 message Build {
   // URL to upstream source archive. Currently, only tar.gz archives are supported.
   optional string source = 1;
@@ -60,4 +68,6 @@ message Build {
   repeated string cherry_pick = 6;
 
   optional Install install = 8;
+
+  repeated SplitPackage split_package = 11;
 }
