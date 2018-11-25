@@ -449,9 +449,6 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		if err := proto.UnmarshalText(string(c), &meta); err != nil {
 			return "", err
 		}
-		if meta.GetSourcePkg() != pkg {
-			continue // false positive: e.g. linux-firmware-3 for pattern linux-*
-		}
 		candidates = append(candidates, strings.TrimSuffix(filepath.Base(m), ".meta.textproto"))
 	}
 	if len(candidates) > 1 {
