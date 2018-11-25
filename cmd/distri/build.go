@@ -129,8 +129,8 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		}
 
 		pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
-			Name:      proto.String(b.Pkg),
-			ClaimGlob: []string{"*"},
+			Name:  proto.String(b.Pkg),
+			Claim: []*pb.Claim{{Glob: proto.String("*")}},
 		})
 		for _, pkg := range pkgs {
 			fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
@@ -230,8 +230,8 @@ func (b *buildctx) serialize() (string, error) {
 
 func (b *buildctx) pkg() error {
 	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
-		Name:      proto.String(b.Pkg),
-		ClaimGlob: []string{"*"},
+		Name:  proto.String(b.Pkg),
+		Claim: []*pb.Claim{{Glob: proto.String("*")}},
 	})
 	for _, pkg := range pkgs {
 		log.Printf("packaging %+v", pkg)
@@ -252,25 +252,28 @@ func (b *buildctx) pkg() error {
 		}
 
 		destRoot := filepath.Join(filepath.Dir(b.DestDir), b.fullName())
-		for _, pattern := range pkg.GetClaimGlob() {
-			if pattern == "*" {
+		tmp := filepath.Join(filepath.Dir(b.DestDir), fullName)
+		for _, claim := range pkg.GetClaim() {
+			if claim.GetGlob() == "*" {
 				// Common path: no globbing or file manipulation required
 				if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.fullName())); err != nil {
 					return err
 				}
 				continue
 			}
-			matches, err := filepath.Glob(filepath.Join(destRoot, pattern))
+			matches, err := filepath.Glob(filepath.Join(destRoot, claim.GetGlob()))
 			if err != nil {
 				return err
 			}
-			tmp := filepath.Join(filepath.Dir(b.DestDir), fullName)
 			for _, m := range matches {
 				rel, err := filepath.Rel(destRoot, m)
 				if err != nil {
 					return err
 				}
 				dest := filepath.Join(tmp, rel)
+				if dir := claim.GetDir(); dir != "" {
+					dest = filepath.Join(tmp, dir, filepath.Base(m))
+				}
 				if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
 					return err
 				}
@@ -278,9 +281,9 @@ func (b *buildctx) pkg() error {
 					return err
 				}
 			}
-			if err := cp(w.Root, tmp); err != nil {
-				return err
-			}
+		}
+		if err := cp(w.Root, tmp); err != nil {
+			return err
 		}
 
 		if err := w.Flush(); err != nil {
