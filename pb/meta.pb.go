@@ -3,9 +3,11 @@
 
 package pb
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -38,16 +40,17 @@ func (m *Meta) Reset()         { *m = Meta{} }
 func (m *Meta) String() string { return proto.CompactTextString(m) }
 func (*Meta) ProtoMessage()    {}
 func (*Meta) Descriptor() ([]byte, []int) {
-	return fileDescriptor_meta_a8a909c0283b98c3, []int{0}
+	return fileDescriptor_3b5ea8fe65782bcc, []int{0}
 }
+
 func (m *Meta) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Meta.Unmarshal(m, b)
 }
 func (m *Meta) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Meta.Marshal(b, m, deterministic)
 }
-func (dst *Meta) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Meta.Merge(dst, src)
+func (m *Meta) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Meta.Merge(m, src)
 }
 func (m *Meta) XXX_Size() int {
 	return xxx_messageInfo_Meta.Size(m)
@@ -83,9 +86,9 @@ func init() {
 	proto.RegisterType((*Meta)(nil), "pb.Meta")
 }
 
-func init() { proto.RegisterFile("meta.proto", fileDescriptor_meta_a8a909c0283b98c3) }
+func init() { proto.RegisterFile("meta.proto", fileDescriptor_3b5ea8fe65782bcc) }
 
-var fileDescriptor_meta_a8a909c0283b98c3 = []byte{
+var fileDescriptor_3b5ea8fe65782bcc = []byte{
 	// 119 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xca, 0x4d, 0x2d, 0x49,
 	0xd4, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x4a, 0xe0, 0x62, 0xf1, 0x4d,

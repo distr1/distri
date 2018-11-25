@@ -3,13 +3,12 @@
 
 package pb
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -33,16 +32,17 @@ func (m *PingRequest) Reset()         { *m = PingRequest{} }
 func (m *PingRequest) String() string { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()    {}
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{0}
+	return fileDescriptor_25b8a32cc84c7f03, []int{0}
 }
+
 func (m *PingRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingRequest.Unmarshal(m, b)
 }
 func (m *PingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PingRequest.Marshal(b, m, deterministic)
 }
-func (dst *PingRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PingRequest.Merge(dst, src)
+func (m *PingRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PingRequest.Merge(m, src)
 }
 func (m *PingRequest) XXX_Size() int {
 	return xxx_messageInfo_PingRequest.Size(m)
@@ -63,16 +63,17 @@ func (m *PingReply) Reset()         { *m = PingReply{} }
 func (m *PingReply) String() string { return proto.CompactTextString(m) }
 func (*PingReply) ProtoMessage()    {}
 func (*PingReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{1}
+	return fileDescriptor_25b8a32cc84c7f03, []int{1}
 }
+
 func (m *PingReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingReply.Unmarshal(m, b)
 }
 func (m *PingReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PingReply.Marshal(b, m, deterministic)
 }
-func (dst *PingReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PingReply.Merge(dst, src)
+func (m *PingReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PingReply.Merge(m, src)
 }
 func (m *PingReply) XXX_Size() int {
 	return xxx_messageInfo_PingReply.Size(m)
@@ -94,16 +95,17 @@ func (m *MkdirAllRequest) Reset()         { *m = MkdirAllRequest{} }
 func (m *MkdirAllRequest) String() string { return proto.CompactTextString(m) }
 func (*MkdirAllRequest) ProtoMessage()    {}
 func (*MkdirAllRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{2}
+	return fileDescriptor_25b8a32cc84c7f03, []int{2}
 }
+
 func (m *MkdirAllRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MkdirAllRequest.Unmarshal(m, b)
 }
 func (m *MkdirAllRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_MkdirAllRequest.Marshal(b, m, deterministic)
 }
-func (dst *MkdirAllRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MkdirAllRequest.Merge(dst, src)
+func (m *MkdirAllRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MkdirAllRequest.Merge(m, src)
 }
 func (m *MkdirAllRequest) XXX_Size() int {
 	return xxx_messageInfo_MkdirAllRequest.Size(m)
@@ -131,16 +133,17 @@ func (m *MkdirAllReply) Reset()         { *m = MkdirAllReply{} }
 func (m *MkdirAllReply) String() string { return proto.CompactTextString(m) }
 func (*MkdirAllReply) ProtoMessage()    {}
 func (*MkdirAllReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{3}
+	return fileDescriptor_25b8a32cc84c7f03, []int{3}
 }
+
 func (m *MkdirAllReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MkdirAllReply.Unmarshal(m, b)
 }
 func (m *MkdirAllReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_MkdirAllReply.Marshal(b, m, deterministic)
 }
-func (dst *MkdirAllReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MkdirAllReply.Merge(dst, src)
+func (m *MkdirAllReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MkdirAllReply.Merge(m, src)
 }
 func (m *MkdirAllReply) XXX_Size() int {
 	return xxx_messageInfo_MkdirAllReply.Size(m)
@@ -161,16 +164,17 @@ func (m *ScanPackagesRequest) Reset()         { *m = ScanPackagesRequest{} }
 func (m *ScanPackagesRequest) String() string { return proto.CompactTextString(m) }
 func (*ScanPackagesRequest) ProtoMessage()    {}
 func (*ScanPackagesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{4}
+	return fileDescriptor_25b8a32cc84c7f03, []int{4}
 }
+
 func (m *ScanPackagesRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ScanPackagesRequest.Unmarshal(m, b)
 }
 func (m *ScanPackagesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ScanPackagesRequest.Marshal(b, m, deterministic)
 }
-func (dst *ScanPackagesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ScanPackagesRequest.Merge(dst, src)
+func (m *ScanPackagesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScanPackagesRequest.Merge(m, src)
 }
 func (m *ScanPackagesRequest) XXX_Size() int {
 	return xxx_messageInfo_ScanPackagesRequest.Size(m)
@@ -191,16 +195,17 @@ func (m *ScanPackagesReply) Reset()         { *m = ScanPackagesReply{} }
 func (m *ScanPackagesReply) String() string { return proto.CompactTextString(m) }
 func (*ScanPackagesReply) ProtoMessage()    {}
 func (*ScanPackagesReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fusectl_e58e208efbc91f9b, []int{5}
+	return fileDescriptor_25b8a32cc84c7f03, []int{5}
 }
+
 func (m *ScanPackagesReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ScanPackagesReply.Unmarshal(m, b)
 }
 func (m *ScanPackagesReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ScanPackagesReply.Marshal(b, m, deterministic)
 }
-func (dst *ScanPackagesReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ScanPackagesReply.Merge(dst, src)
+func (m *ScanPackagesReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScanPackagesReply.Merge(m, src)
 }
 func (m *ScanPackagesReply) XXX_Size() int {
 	return xxx_messageInfo_ScanPackagesReply.Size(m)
@@ -218,6 +223,25 @@ func init() {
 	proto.RegisterType((*MkdirAllReply)(nil), "pb.MkdirAllReply")
 	proto.RegisterType((*ScanPackagesRequest)(nil), "pb.ScanPackagesRequest")
 	proto.RegisterType((*ScanPackagesReply)(nil), "pb.ScanPackagesReply")
+}
+
+func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_25b8a32cc84c7f03) }
+
+var fileDescriptor_25b8a32cc84c7f03 = []byte{
+	// 196 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x2b, 0x2d, 0x4e,
+	0x4d, 0x2e, 0xc9, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0xe2, 0xe5,
+	0xe2, 0x0e, 0xc8, 0xcc, 0x4b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0xe2, 0xe6, 0xe2,
+	0x84, 0x70, 0x0b, 0x72, 0x2a, 0x95, 0x94, 0xb9, 0xf8, 0x7d, 0xb3, 0x53, 0x32, 0x8b, 0x1c, 0x73,
+	0x72, 0xa0, 0xf2, 0x42, 0x02, 0x5c, 0xcc, 0x29, 0x99, 0x45, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c,
+	0x41, 0x20, 0xa6, 0x12, 0x3f, 0x17, 0x2f, 0x42, 0x11, 0x48, 0x97, 0x28, 0x97, 0x70, 0x70, 0x72,
+	0x62, 0x5e, 0x40, 0x62, 0x72, 0x76, 0x62, 0x7a, 0x6a, 0x31, 0xcc, 0x64, 0x61, 0x2e, 0x41, 0x54,
+	0xe1, 0x82, 0x9c, 0x4a, 0xa3, 0x15, 0x8c, 0x5c, 0x2c, 0x6e, 0xa1, 0xc1, 0xae, 0x42, 0x1a, 0x5c,
+	0x2c, 0x20, 0x7b, 0x85, 0xf8, 0xf5, 0x0a, 0x92, 0xf4, 0x90, 0x1c, 0x24, 0xc5, 0x8b, 0x10, 0x00,
+	0x19, 0xce, 0x20, 0x64, 0xc2, 0xc5, 0x01, 0xb3, 0x4f, 0x48, 0x18, 0x24, 0x89, 0xe6, 0x44, 0x29,
+	0x41, 0x54, 0x41, 0x88, 0x2e, 0x07, 0x2e, 0x1e, 0x64, 0xdb, 0x85, 0xc4, 0x41, 0x8a, 0xb0, 0x38,
+	0x53, 0x4a, 0x14, 0x53, 0x02, 0x6c, 0x02, 0x20, 0x00, 0x00, 0xff, 0xff, 0xec, 0x83, 0x0e, 0x7e,
+	0x3c, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -366,23 +390,4 @@ var _FUSE_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fusectl.proto",
-}
-
-func init() { proto.RegisterFile("fusectl.proto", fileDescriptor_fusectl_e58e208efbc91f9b) }
-
-var fileDescriptor_fusectl_e58e208efbc91f9b = []byte{
-	// 196 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x2b, 0x2d, 0x4e,
-	0x4d, 0x2e, 0xc9, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0xe2, 0xe5,
-	0xe2, 0x0e, 0xc8, 0xcc, 0x4b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0xe2, 0xe6, 0xe2,
-	0x84, 0x70, 0x0b, 0x72, 0x2a, 0x95, 0x94, 0xb9, 0xf8, 0x7d, 0xb3, 0x53, 0x32, 0x8b, 0x1c, 0x73,
-	0x72, 0xa0, 0xf2, 0x42, 0x02, 0x5c, 0xcc, 0x29, 0x99, 0x45, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c,
-	0x41, 0x20, 0xa6, 0x12, 0x3f, 0x17, 0x2f, 0x42, 0x11, 0x48, 0x97, 0x28, 0x97, 0x70, 0x70, 0x72,
-	0x62, 0x5e, 0x40, 0x62, 0x72, 0x76, 0x62, 0x7a, 0x6a, 0x31, 0xcc, 0x64, 0x61, 0x2e, 0x41, 0x54,
-	0xe1, 0x82, 0x9c, 0x4a, 0xa3, 0x15, 0x8c, 0x5c, 0x2c, 0x6e, 0xa1, 0xc1, 0xae, 0x42, 0x1a, 0x5c,
-	0x2c, 0x20, 0x7b, 0x85, 0xf8, 0xf5, 0x0a, 0x92, 0xf4, 0x90, 0x1c, 0x24, 0xc5, 0x8b, 0x10, 0x00,
-	0x19, 0xce, 0x20, 0x64, 0xc2, 0xc5, 0x01, 0xb3, 0x4f, 0x48, 0x18, 0x24, 0x89, 0xe6, 0x44, 0x29,
-	0x41, 0x54, 0x41, 0x88, 0x2e, 0x07, 0x2e, 0x1e, 0x64, 0xdb, 0x85, 0xc4, 0x41, 0x8a, 0xb0, 0x38,
-	0x53, 0x4a, 0x14, 0x53, 0x02, 0x6c, 0x02, 0x20, 0x00, 0x00, 0xff, 0xff, 0xec, 0x83, 0x0e, 0x7e,
-	0x3c, 0x01, 0x00, 0x00,
 }

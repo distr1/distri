@@ -3,9 +3,11 @@
 
 package pb
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -29,16 +31,17 @@ func (m *MirrorMeta) Reset()         { *m = MirrorMeta{} }
 func (m *MirrorMeta) String() string { return proto.CompactTextString(m) }
 func (*MirrorMeta) ProtoMessage()    {}
 func (*MirrorMeta) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mirrormeta_54e12c08b973d285, []int{0}
+	return fileDescriptor_beb1b007a14d6496, []int{0}
 }
+
 func (m *MirrorMeta) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MirrorMeta.Unmarshal(m, b)
 }
 func (m *MirrorMeta) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_MirrorMeta.Marshal(b, m, deterministic)
 }
-func (dst *MirrorMeta) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MirrorMeta.Merge(dst, src)
+func (m *MirrorMeta) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MirrorMeta.Merge(m, src)
 }
 func (m *MirrorMeta) XXX_Size() int {
 	return xxx_messageInfo_MirrorMeta.Size(m)
@@ -68,16 +71,17 @@ func (m *MirrorMeta_Package) Reset()         { *m = MirrorMeta_Package{} }
 func (m *MirrorMeta_Package) String() string { return proto.CompactTextString(m) }
 func (*MirrorMeta_Package) ProtoMessage()    {}
 func (*MirrorMeta_Package) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mirrormeta_54e12c08b973d285, []int{0, 0}
+	return fileDescriptor_beb1b007a14d6496, []int{0, 0}
 }
+
 func (m *MirrorMeta_Package) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MirrorMeta_Package.Unmarshal(m, b)
 }
 func (m *MirrorMeta_Package) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_MirrorMeta_Package.Marshal(b, m, deterministic)
 }
-func (dst *MirrorMeta_Package) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MirrorMeta_Package.Merge(dst, src)
+func (m *MirrorMeta_Package) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MirrorMeta_Package.Merge(m, src)
 }
 func (m *MirrorMeta_Package) XXX_Size() int {
 	return xxx_messageInfo_MirrorMeta_Package.Size(m)
@@ -107,9 +111,9 @@ func init() {
 	proto.RegisterType((*MirrorMeta_Package)(nil), "pb.MirrorMeta.Package")
 }
 
-func init() { proto.RegisterFile("mirrormeta.proto", fileDescriptor_mirrormeta_54e12c08b973d285) }
+func init() { proto.RegisterFile("mirrormeta.proto", fileDescriptor_beb1b007a14d6496) }
 
-var fileDescriptor_mirrormeta_54e12c08b973d285 = []byte{
+var fileDescriptor_beb1b007a14d6496 = []byte{
 	// 146 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xc8, 0xcd, 0x2c, 0x2a,
 	0xca, 0x2f, 0xca, 0x4d, 0x2d, 0x49, 0xd4, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48,

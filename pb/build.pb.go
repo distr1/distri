@@ -3,9 +3,11 @@
 
 package pb
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -29,16 +31,17 @@ func (m *BuildStep) Reset()         { *m = BuildStep{} }
 func (m *BuildStep) String() string { return proto.CompactTextString(m) }
 func (*BuildStep) ProtoMessage()    {}
 func (*BuildStep) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{0}
+	return fileDescriptor_14ce178a580e4ede, []int{0}
 }
+
 func (m *BuildStep) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_BuildStep.Unmarshal(m, b)
 }
 func (m *BuildStep) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_BuildStep.Marshal(b, m, deterministic)
 }
-func (dst *BuildStep) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BuildStep.Merge(dst, src)
+func (m *BuildStep) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BuildStep.Merge(m, src)
 }
 func (m *BuildStep) XXX_Size() int {
 	return xxx_messageInfo_BuildStep.Size(m)
@@ -72,16 +75,17 @@ func (m *CBuilder) Reset()         { *m = CBuilder{} }
 func (m *CBuilder) String() string { return proto.CompactTextString(m) }
 func (*CBuilder) ProtoMessage()    {}
 func (*CBuilder) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{1}
+	return fileDescriptor_14ce178a580e4ede, []int{1}
 }
+
 func (m *CBuilder) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CBuilder.Unmarshal(m, b)
 }
 func (m *CBuilder) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CBuilder.Marshal(b, m, deterministic)
 }
-func (dst *CBuilder) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CBuilder.Merge(dst, src)
+func (m *CBuilder) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CBuilder.Merge(m, src)
 }
 func (m *CBuilder) XXX_Size() int {
 	return xxx_messageInfo_CBuilder.Size(m)
@@ -133,16 +137,17 @@ func (m *PerlBuilder) Reset()         { *m = PerlBuilder{} }
 func (m *PerlBuilder) String() string { return proto.CompactTextString(m) }
 func (*PerlBuilder) ProtoMessage()    {}
 func (*PerlBuilder) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{2}
+	return fileDescriptor_14ce178a580e4ede, []int{2}
 }
+
 func (m *PerlBuilder) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PerlBuilder.Unmarshal(m, b)
 }
 func (m *PerlBuilder) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PerlBuilder.Marshal(b, m, deterministic)
 }
-func (dst *PerlBuilder) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PerlBuilder.Merge(dst, src)
+func (m *PerlBuilder) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PerlBuilder.Merge(m, src)
 }
 func (m *PerlBuilder) XXX_Size() int {
 	return xxx_messageInfo_PerlBuilder.Size(m)
@@ -172,16 +177,17 @@ func (m *Install) Reset()         { *m = Install{} }
 func (m *Install) String() string { return proto.CompactTextString(m) }
 func (*Install) ProtoMessage()    {}
 func (*Install) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{3}
+	return fileDescriptor_14ce178a580e4ede, []int{3}
 }
+
 func (m *Install) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Install.Unmarshal(m, b)
 }
 func (m *Install) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Install.Marshal(b, m, deterministic)
 }
-func (dst *Install) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Install.Merge(dst, src)
+func (m *Install) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Install.Merge(m, src)
 }
 func (m *Install) XXX_Size() int {
 	return xxx_messageInfo_Install.Size(m)
@@ -218,16 +224,17 @@ func (m *Install_Symlink) Reset()         { *m = Install_Symlink{} }
 func (m *Install_Symlink) String() string { return proto.CompactTextString(m) }
 func (*Install_Symlink) ProtoMessage()    {}
 func (*Install_Symlink) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{3, 0}
+	return fileDescriptor_14ce178a580e4ede, []int{3, 0}
 }
+
 func (m *Install_Symlink) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Install_Symlink.Unmarshal(m, b)
 }
 func (m *Install_Symlink) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Install_Symlink.Marshal(b, m, deterministic)
 }
-func (dst *Install_Symlink) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Install_Symlink.Merge(dst, src)
+func (m *Install_Symlink) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Install_Symlink.Merge(m, src)
 }
 func (m *Install_Symlink) XXX_Size() int {
 	return xxx_messageInfo_Install_Symlink.Size(m)
@@ -265,16 +272,17 @@ func (m *SplitPackage) Reset()         { *m = SplitPackage{} }
 func (m *SplitPackage) String() string { return proto.CompactTextString(m) }
 func (*SplitPackage) ProtoMessage()    {}
 func (*SplitPackage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{4}
+	return fileDescriptor_14ce178a580e4ede, []int{4}
 }
+
 func (m *SplitPackage) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SplitPackage.Unmarshal(m, b)
 }
 func (m *SplitPackage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SplitPackage.Marshal(b, m, deterministic)
 }
-func (dst *SplitPackage) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SplitPackage.Merge(dst, src)
+func (m *SplitPackage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SplitPackage.Merge(m, src)
 }
 func (m *SplitPackage) XXX_Size() int {
 	return xxx_messageInfo_SplitPackage.Size(m)
@@ -336,16 +344,17 @@ func (m *Build) Reset()         { *m = Build{} }
 func (m *Build) String() string { return proto.CompactTextString(m) }
 func (*Build) ProtoMessage()    {}
 func (*Build) Descriptor() ([]byte, []int) {
-	return fileDescriptor_build_034d731bb527aaca, []int{5}
+	return fileDescriptor_14ce178a580e4ede, []int{5}
 }
+
 func (m *Build) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Build.Unmarshal(m, b)
 }
 func (m *Build) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Build.Marshal(b, m, deterministic)
 }
-func (dst *Build) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Build.Merge(dst, src)
+func (m *Build) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Build.Merge(m, src)
 }
 func (m *Build) XXX_Size() int {
 	return xxx_messageInfo_Build.Size(m)
@@ -355,27 +364,6 @@ func (m *Build) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_Build proto.InternalMessageInfo
-
-type isBuild_Builder interface {
-	isBuild_Builder()
-}
-
-type Build_Cbuilder struct {
-	Cbuilder *CBuilder `protobuf:"bytes,7,opt,name=cbuilder,oneof"`
-}
-type Build_Perlbuilder struct {
-	Perlbuilder *PerlBuilder `protobuf:"bytes,10,opt,name=perlbuilder,oneof"`
-}
-
-func (*Build_Cbuilder) isBuild_Builder()    {}
-func (*Build_Perlbuilder) isBuild_Builder() {}
-
-func (m *Build) GetBuilder() isBuild_Builder {
-	if m != nil {
-		return m.Builder
-	}
-	return nil
-}
 
 func (m *Build) GetSource() string {
 	if m != nil && m.Source != nil {
@@ -396,6 +384,29 @@ func (m *Build) GetVersion() string {
 		return *m.Version
 	}
 	return ""
+}
+
+type isBuild_Builder interface {
+	isBuild_Builder()
+}
+
+type Build_Cbuilder struct {
+	Cbuilder *CBuilder `protobuf:"bytes,7,opt,name=cbuilder,oneof"`
+}
+
+type Build_Perlbuilder struct {
+	Perlbuilder *PerlBuilder `protobuf:"bytes,10,opt,name=perlbuilder,oneof"`
+}
+
+func (*Build_Cbuilder) isBuild_Builder() {}
+
+func (*Build_Perlbuilder) isBuild_Builder() {}
+
+func (m *Build) GetBuilder() isBuild_Builder {
+	if m != nil {
+		return m.Builder
+	}
+	return nil
 }
 
 func (m *Build) GetCbuilder() *CBuilder {
@@ -538,9 +549,9 @@ func init() {
 	proto.RegisterType((*Build)(nil), "pb.Build")
 }
 
-func init() { proto.RegisterFile("build.proto", fileDescriptor_build_034d731bb527aaca) }
+func init() { proto.RegisterFile("build.proto", fileDescriptor_14ce178a580e4ede) }
 
-var fileDescriptor_build_034d731bb527aaca = []byte{
+var fileDescriptor_14ce178a580e4ede = []byte{
 	// 536 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0xd1, 0x6e, 0xd3, 0x4a,
 	0x10, 0xad, 0xe3, 0xb6, 0x8e, 0x67, 0xd3, 0xdb, 0xde, 0x2d, 0x42, 0x16, 0x12, 0x4a, 0x88, 0x04,
