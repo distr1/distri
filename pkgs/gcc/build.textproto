@@ -72,3 +72,14 @@ build_step: <
 install: <
   symlink: < oldname: "gcc" newname: "bin/cc" >
 >
+
+split_package: <
+  name: "gcc-libs"
+  claim: < glob: "out/lib64/libgcc_s.so*" >
+  claim: < glob: "out/lib64/libstdc++.so*" >
+  claim: < glob: "out/lib64/libgomp.so*" >
+  claim: <
+    glob: "out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt*.o"
+    dir: "out/lib64"
+  >
+>
