@@ -14,8 +14,6 @@ dep: "libcap"
 dep: "util-linux"
 dep: "gettext"
 dep: "meson"
-dep: "ninja"
-dep: "python3"
 dep: "kmod"
 dep: "cryptsetup"
 
@@ -28,7 +26,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-amd64-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" ./configure --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" ./configure --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
 #  argv: "LDFLAGS=-static"
 >
 
@@ -56,7 +54,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-amd64-0.47.1/out//lib/python3.7/site-packages/ LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" ninja -C build -v"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" ninja -C build -v"
 >
 
 # TODO: glibc bug: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sys/mount.h;h=ce2838e3a79caf1f49c9aceacb143ff5e403e50e;hb=HEAD#l85 should read 1UL, not 1:
@@ -67,7 +65,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "PYTHONPATH=/ro/meson-amd64-0.47.1/out//lib/python3.7/site-packages/ DESTDIR=${ZI_DESTDIR} make install"
+  argv: "DESTDIR=${ZI_DESTDIR} make install"
 >
 
 install: <

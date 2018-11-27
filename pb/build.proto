@@ -24,6 +24,9 @@ message PerlBuilder {
   repeated string extra_makefile_flag = 1;
 }
 
+message PythonBuilder {
+}
+
 message Install {
   message Symlink {
     optional string oldname = 1;
@@ -59,6 +62,7 @@ message Build {
   oneof builder {
     CBuilder cbuilder = 7;
     PerlBuilder perlbuilder = 10;
+    PythonBuilder pythonbuilder = 12;
   }
 
   // TODO: move this field into a custom builder

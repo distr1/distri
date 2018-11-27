@@ -323,6 +323,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		pkgconfigDirs []string
 		includeDirs   []string
 		perl5Dirs     []string
+		pythonDirs    []string
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
@@ -341,6 +342,8 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
 		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
+		// TODO: is site-packages the best choice here?
+		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
 	}
 
 	ifNotHermetic := func(val string) string {
@@ -358,6 +361,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		"CPATH=" + strings.Join(includeDirs, ":") + ifNotHermetic(":$CPATH"),                       // for gcc
 		"PKG_CONFIG_PATH=" + strings.Join(pkgconfigDirs, ":") + ifNotHermetic(":$PKG_CONFIG_PATH"), // for pkg-config
 		"PERL5LIB=" + strings.Join(perl5Dirs, ":") + ifNotHermetic(":$PERL5LIB"),                   // for perl
+		"PYTHONPATH=" + strings.Join(pythonDirs, ":") + ifNotHermetic(":$PYTHONPATH"),
 	}
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
@@ -370,9 +374,10 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 func (b *buildctx) runtimeEnv(deps []string) []string {
 	// TODO: this should go into the C builder once the C builder is used by all packages
 	var (
-		binDirs   []string
-		libDirs   []string
-		perl5Dirs []string
+		binDirs    []string
+		libDirs    []string
+		perl5Dirs  []string
+		pythonDirs []string
 	)
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
@@ -384,12 +389,15 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
 		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
 		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
+		// TODO: is site-packages the best choice here?
+		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
 	}
 
 	env := []string{
 		"PATH=" + strings.Join(binDirs, ":") + ":$PATH",                       // for finding binaries
 		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":") + ":$LD_LIBRARY_PATH", // for ld
 		"PERL5LIB=" + strings.Join(perl5Dirs, ":") + ":$PERL5LIB",             // for perl
+		"PYTHONPATH=" + strings.Join(pythonDirs, ":") + ":$PYTHONPATH",        // for python
 	}
 	return env
 }
@@ -573,6 +581,12 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 		case *pb.Build_Perlbuilder:
 			deps = append(deps, []string{
 				"perl-" + native,
+			}...)
+			deps = append(deps, cdeps...)
+
+		case *pb.Build_Pythonbuilder:
+			deps = append(deps, []string{
+				"python3-" + native,
 			}...)
 			deps = append(deps, cdeps...)
 
@@ -946,6 +960,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
+		case *pb.Build_Pythonbuilder:
+			var err error
+			steps, env, err = b.buildpython(v.Pythonbuilder, env)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("BUG: unknown builder")
 		}
@@ -1203,6 +1223,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			for _, pkg := range b.Proto.GetDep() {
 				depPkgs[pkg] = true
 			}
+		case *pb.Build_Pythonbuilder:
+			depPkgs["python3-amd64-3.7.0"] = true
 		default:
 			return nil, fmt.Errorf("BUG: unknown builder")
 		}
