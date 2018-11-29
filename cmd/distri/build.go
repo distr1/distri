@@ -256,9 +256,6 @@ func (b *buildctx) pkg() error {
 		for _, claim := range pkg.GetClaim() {
 			if claim.GetGlob() == "*" {
 				// Common path: no globbing or file manipulation required
-				if err := cp(w.Root, filepath.Join(filepath.Dir(b.DestDir), b.fullName())); err != nil {
-					return err
-				}
 				continue
 			}
 			matches, err := filepath.Glob(filepath.Join(destRoot, claim.GetGlob()))
