@@ -146,6 +146,13 @@ func pack(args []string) error {
 		return err
 	}
 
+	if err := os.MkdirAll(filepath.Join(*root, "root/.ssh"), 0700); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filepath.Join(*root, "root/.ssh/authorized_keys"), []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDK+HnXfG/OsK2OVJTv/3YQPj/Yh21QRM6+bRN3NqYGhjVBTazkSaLASU19guV6mapXtjWYdoojPYzJ4HEY2RSwhpLxnjMhC+Nax8PPS+GVBq3IHku/7xSVWfRemJGNfHYVTmidur7NpjmYDCDvtF1MCfkWDRbs6txXABWCDbTeR83DUHDMlVB7bMxB44vktGWknudiFkBDlx7VL3njI6ohMi8d6pbWUU8Xuqut5fbkRTQEwU/7/9kC9vmFo8EsX4WtvUwJhQ7a4yEMbPHAhei+8GDpOcjppaqt0x3O4dRbpERafUmL5iMSIkLLb9YGn9fbzklj4sgwWSKuPemPGzq5 michael@midna"), 0644); err != nil {
+		return err
+	}
+
 	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
 	basePkgs, err := b.glob(*repo, []string{
 		"systemd",
