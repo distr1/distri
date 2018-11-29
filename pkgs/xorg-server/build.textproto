@@ -1,8 +1,12 @@
-source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.1.tar.bz2"
-hash: "59c99fe86fe75b8164c6567bfc6e982aecc2e4a51e6fbac1b842d5d00549e918"
-version: "1.20.1"
+source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.3.tar.bz2"
+hash: "1b3ce466c12cacbe2252b3ad5b0ed561972eef9d09e75900d65fb1e21f9201de"
+version: "1.20.3"
 
 cbuilder: <>
+
+# https://gitlab.freedesktop.org/xorg/xserver/issues/17
+cherry_pick: "xwayland-config.patch"
+cherry_pick: "moduledir.patch"
 
 # build dependencies:
 dep: "pixman"
@@ -19,5 +23,27 @@ dep: "libepoxy"
 dep: "zlib" # TODO: configure doesn’t check for it
 dep: "xkbcomp"
 dep: "systemd" # for udev
+dep: "nettle"
+dep: "font-util"
+
+dep: "meson"
 
 runtime_dep: "xkbcomp"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/xorg-server-amd64-1.20.1/out/lib/systemd\" meson ${ZI_SOURCEDIR} --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX} -Dlocalstatedir=/var -Dxdmcp=false -Dsecure-rpc=false"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/xorg-server-amd64-1.20.1/out/lib/systemd\" ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>

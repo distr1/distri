@@ -1,0 +1,14 @@
+--- /dev/null	2018-11-14 08:15:01.995999488 +0100
++++ b/include/xwayland-config.h.meson.in	2018-11-29 08:27:16.141777162 +0100
+@@ -0,0 +1,11 @@
++/* xwayland-config.h.meson.in: not at all generated */
++
++#pragma once
++
++#include <dix-config.h>
++
++/* Build glamor support for Xwayland */
++#mesondefine XWL_HAS_GLAMOR
++
++/* Build eglstream support for Xwayland */
++#mesondefine XWL_HAS_EGLSTREAM

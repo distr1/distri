@@ -1,0 +1,34 @@
+diff --git i/include/meson.build w/include/meson.build
+index dfca3c3..cf95603 100644
+--- i/include/meson.build
++++ w/include/meson.build
+@@ -89,6 +89,7 @@ conf_data.set('GBM_BO_WITH_MODIFIERS',
+ 
+ conf_data.set_quoted('SERVER_MISC_CONFIG_PATH', serverconfigdir)
+ conf_data.set_quoted('PROJECTROOT', get_option('prefix'))
++conf_data.set_quoted('SYS_CONFIGDIRPATH', '/ro/share/X11/xorg.conf.d')
+ conf_data.set_quoted('SYSCONFDIR', join_paths(get_option('prefix'), get_option('sysconfdir')))
+ conf_data.set_quoted('SUID_WRAPPER_DIR', join_paths(get_option('prefix'), get_option('libexecdir')))
+ conf_data.set_quoted('COMPILEDDEFAULTFONTPATH', default_font_path)
+@@ -315,7 +316,7 @@ xorg_data.set_quoted('DEFAULT_XDG_DATA_HOME_LOGDIR', 'xorg')
+ xorg_data.set_quoted('DEFAULT_LOGDIR', log_dir)
+ xorg_data.set_quoted('DEFAULT_LOGPREFIX', 'Xorg.')
+ xorg_data.set_quoted('FALLBACK_INPUT_DRIVER', 'libinput')
+-xorg_data.set_quoted('DEFAULT_MODULE_PATH', join_paths(get_option('prefix'), module_dir))
++xorg_data.set_quoted('DEFAULT_MODULE_PATH', '/ro/lib/xorg/modules')
+ xorg_data.set_quoted('DEFAULT_LIBRARY_PATH', join_paths(get_option('prefix'), get_option('libdir')))
+ xorg_data.set_quoted('__XSERVERNAME__', 'Xorg')
+ xorg_data.set('XSERVER_LIBPCIACCESS', get_option('pciaccess'))
+diff --git i/meson.build w/meson.build
+index ec9a24b..4895997 100644
+--- i/meson.build
++++ w/meson.build
+@@ -616,7 +616,7 @@ if build_xorg
+     sdkconfig.set('libdir', join_paths('${exec_prefix}', get_option('libdir')))
+     sdkconfig.set('includedir', join_paths('${prefix}', get_option('includedir')))
+     sdkconfig.set('datarootdir', join_paths('${prefix}', get_option('datadir')))
+-    sdkconfig.set('moduledir', join_paths('${exec_prefix}', module_dir))
++    sdkconfig.set('moduledir', '/ro/lib/xorg/modules')
+     sdkconfig.set('sdkdir', join_paths('${prefix}', get_option('includedir'), 'xorg'))
+     sdkconfig.set('sysconfigdir', join_paths('${datarootdir}', 'X11/xorg.conf.d'))
+ 
