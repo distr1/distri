@@ -9,6 +9,7 @@ dep: "meson"
 dep: "libffi"
 dep: "zlib"
 dep: "util-linux"
+dep: "m4" # so that glib’s m4macros are installed
 
 build_step: <
   argv: "/bin/sh"
