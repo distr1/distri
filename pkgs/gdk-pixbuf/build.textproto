@@ -18,6 +18,8 @@ dep: "libxslt"
 
 dep: "strace"
 
+# e.g. gdk-pixbuf-csource requires MIME data to load PNG files
+runtime_dep: "shared-mime-info"
 
 build_step: <
   argv: "mkdir"
