@@ -1,0 +1,26 @@
+source: "https://gitlab.freedesktop.org/xorg/app/xdm/-/archive/16d74befa4430eb024d81ee4070520afff697d60/xdm-16d74befa4430eb024d81ee4070520afff697d60.tar.bz2"
+hash: "6420e03377e70c2c3313a55347c32f135ff478c6eae40b9a0149729ca21a1371"
+version: "16d74befa4430eb024d81ee4070520afff697d60"
+
+# https://git.archlinux.org/svntogit/packages.git/plain/trunk/libsystemd.patch?h=packages/xorg-xdm
+cherry_pick: "libsystemd.patch"
+
+cbuilder: <
+  copy_to_builddir: true
+  autoreconf: true
+  extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
+  extra_configure_flag: "--with-systemduserunitdir=${prefix}/lib/systemd/user"
+  extra_configure_flag: "--with-xdmconfigdir=/etc/X11/xdm"
+  extra_configure_flag: "--with-xdmscriptdir=/etc/X11/xdm"
+>
+
+# build dependencies:
+dep: "autoconf" # TODO: autoreconf
+dep: "automake" # TODO: autoreconf
+dep: "libtool" # TODO: autoreconf
+dep: "xorg-macros"
+dep: "libx11"
+dep: "libxmu"
+dep: "libxaw"
+dep: "libxdmcp"
+dep: "systemd"
