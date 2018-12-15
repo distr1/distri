@@ -647,7 +647,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -815,6 +815,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			//   /sbin → /ro/bin (for e.g. linux, which hard-codes /sbin/depmod)
 			//   /lib64 → /ro/glibc-amd64-2.27/out/lib for ld-linux-x86-64.so.2
 			//   /lib → /ro/glibc-i686-amd64-2.27/out/lib for ld-linux.so.2
+			//   /usr/share → /ro/share (for e.g. gobject-introspection)
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
 			// TODO: do we still need this for native builds?
@@ -841,6 +842,10 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				if err := os.Symlink("/ro/include", filepath.Join(b.ChrootDir, "usr", "include")); err != nil {
 					return nil, err
 				}
+			}
+
+			if err := os.Symlink("/ro/share", filepath.Join(b.ChrootDir, "usr", "share")); err != nil {
+				return nil, err
 			}
 
 			for _, bin := range []string{"bin", "usr/bin", "sbin"} {
