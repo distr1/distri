@@ -19,6 +19,15 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 	if opts.GetCopyToBuilddir() {
 		steps = [][]string{
 			[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
+		}
+		if opts.GetAutoreconf() {
+			steps = append(steps, [][]string{
+				[]string{"mkdir", "-p", "m4"},
+				[]string{"/bin/sh", "-c", "command -v intltoolize && intltoolize --force --copy --automake || true"},
+				[]string{"/bin/sh", "-c", "ACLOCAL_PATH=/ro/share/aclocal autoreconf --force --install"},
+			}...)
+		}
+		steps = append(steps, [][]string{
 			append([]string{
 				"./configure",
 				"--host=" + target,
@@ -26,7 +35,7 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 				"--sysconfdir=/etc",
 				"--disable-dependency-tracking",
 			}, opts.GetExtraConfigureFlag()...),
-		}
+		}...)
 	} else {
 		steps = [][]string{
 			// TODO: set --disable-silent-rules if found in configure help output

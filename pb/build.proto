@@ -16,6 +16,8 @@ message CBuilder {
   optional bool copy_to_builddir = 2;
 
   repeated string extra_make_flag = 4;
+
+  optional bool autoreconf = 5;
 }
 
 message PerlBuilder {
