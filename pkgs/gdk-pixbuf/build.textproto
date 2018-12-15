@@ -18,14 +18,6 @@ dep: "libxslt"
 
 dep: "strace"
 
-# TODO: what about loaders.cache?
-# ***
-# *** Warning: loaders.cache not built
-# ***
-# *** You should generate this file manually on the host system
-# *** using:
-# ***   gdk-pixbuf-query-loaders > /ro/gdk-pixbuf-amd64-2.38.0/out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
-# ***
 
 build_step: <
   argv: "mkdir"
@@ -57,4 +49,10 @@ build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "ln -s /ro/gdk-pixbuf-amd64-2.38.0/ro/gdk-pixbuf-amd64-2.38.0/out/* /ro/gdk-pixbuf-amd64-2.38.0/out/ && ${ZI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${ZI_DESTDIR}/${ZI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
 >
