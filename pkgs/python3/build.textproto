@@ -16,6 +16,7 @@ build_step: <
   argv: "${ZI_SOURCEDIR}/configure"
   argv: "--prefix=${ZI_PREFIX}"
   argv: "--with-openssl=/ro/openssl-amd64-1.0.2p/out"
+  argv: "--enable-shared" # for building e.g. libxml2’s Python bindings
 >
 
 # https://bugs.python.org/issue34823
