@@ -264,12 +264,19 @@ func pack(args []string) error {
 auth	required	pam_warn.so
 account	required	pam_unix.so
 account	required	pam_warn.so
-password	required	pam_deny.so
-password	required	pam_warn.so
+
+# success=1 will skip the pam_warn.so line
+password	[success=1 default=ignore]	pam_unix.so
+password	requisite	pam_warn.so
+password	required	pam_permit.so
+
 session	required	pam_unix.so
 session	required	pam_warn.so
 `
 	if err := ioutil.WriteFile(filepath.Join(pamd, "other"), []byte(pamdOther), 0644); err != nil {
+		return err
+	}
+	if err := os.Symlink("other", filepath.Join(pamd, "system-auth")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
