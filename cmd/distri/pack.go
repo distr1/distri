@@ -183,6 +183,7 @@ func pack(args []string) error {
 		"dracut",
 		"linux-firmware",
 		"cryptsetup",
+		"shadow",
 	})
 	if err != nil {
 		return err
