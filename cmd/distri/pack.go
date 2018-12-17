@@ -446,7 +446,7 @@ func writeDiskImg(dest, src string, encrypt, serialOnly, bootDebug bool) error {
 		return err
 	}
 	defer f.Close()
-	if err := f.Truncate(4 * 1024 * 1024 * 1024); err != nil { // 4 GB
+	if err := f.Truncate(5 * 1024 * 1024 * 1024); err != nil { // 5 GB
 		return err
 	}
 
