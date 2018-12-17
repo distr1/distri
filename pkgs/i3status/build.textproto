@@ -13,16 +13,18 @@ dep: "pulseaudio"
 dep: "which"
 
 build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+>
+
+build_step: <
   argv: "make"
-  argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
   argv: "SYSCONFDIR=/etc"
 >
 
 build_step: <
   argv: "make"
-  argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
   argv: "install"
   argv: "DESTDIR=${ZI_DESTDIR}"
   argv: "PREFIX=${ZI_PREFIX}"
