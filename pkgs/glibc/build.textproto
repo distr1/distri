@@ -16,9 +16,51 @@ cbuilder: <
   # nsswitch mechanism not finding e.g. libnss_myhostname.so. Hence, we tell
   # glibc explicitly to search /ro/lib:
   extra_make_flag: "user-defined-trusted-dirs=/ro/lib"
+
+  # TODO: specifying localedata/install-locales here results in an error message:
+  # aa_DJ.UTF-8aa_DJ.ISO-8859-1aa_ET.UTF-8aa_ER.UTF-8aa_ER.UTF-8agr_PE.UTF-8af_ZA.UTF-8...af_ZA.ISO-8859-1......@saaho............/bin/sh: line 13: /tmp/distri-build171828973/elf/ld-linux-x86-64.so.2: No such file or directory
+  # Install all supported locales:
+#  extra_make_flag: "localedata/install-locales"
 >
 
 # build dependencies:
 dep: "bison"
 dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
+
+# TODO: specify cross-compile target like in buildc.go?
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--sysconfdir=/etc"
+  argv: "--disable-dependency-tracking"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+  argv: "user-defined-trusted-dirs=/ro/lib"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "user-defined-trusted-dirs=/ro/lib"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "localedata/install-locales"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "user-defined-trusted-dirs=/ro/lib"
+>
+
+build_step: <
+  argv: "rm"
+  argv: "${ZI_DESTDIR}/etc/ld.so.cache"
+>
