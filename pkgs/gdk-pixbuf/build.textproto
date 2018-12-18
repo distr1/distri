@@ -28,13 +28,6 @@ build_step: <
 >
 
 build_step: <
-  argv: "ln"
-  argv: "-s"
-  argv: "/ro/shared-mime-info-amd64-1.10/out/share/mime"
-  argv: "/usr/share/mime"
->
-
-build_step: <
   argv: "/bin/sh"
   argv: "-c"
   argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
