@@ -1,0 +1,18 @@
+source: "distriroot://distri1-1.tar.gz"
+hash: ""
+version: "1"
+
+cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+
+# Go build environment:
+dep: "golang"
+
+# build dependencies:
+
+# TODO: map GOCACHE into the build environment
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cd ${ZI_SOURCEDIR} && HOME=/tmp GOBIN=${ZI_DESTDIR}/${ZI_PREFIX}/bin go install ./cmd/distri"
+>

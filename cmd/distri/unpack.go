@@ -46,7 +46,7 @@ func unpack(args []string) error {
 		Pkg:     pkg,
 		Version: buildProto.GetVersion(),
 	}
-	if _, err := b.extract(); err != nil {
+	if err := b.extract(); err != nil {
 		return fmt.Errorf("extract: %v", err)
 	}
 	return nil

@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -98,9 +99,21 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 
 	log.Printf("building %s-%s-%s", b.Pkg, b.Arch, b.Version)
 
-	b.SourceDir, err = b.extract()
+	b.SourceDir = trimArchiveSuffix(filepath.Base(b.Proto.GetSource()))
+
+	u, err := url.Parse(b.Proto.GetSource())
 	if err != nil {
-		return fmt.Errorf("extract: %v", err)
+		return fmt.Errorf("url.Parse: %v", err)
+	}
+
+	if u.Scheme == "distriroot" {
+		if err := updateFromDistriroot(b.SourceDir); err != nil {
+			return fmt.Errorf("updateFromDistriroot: %v", err)
+		}
+	} else {
+		if err := b.extract(); err != nil {
+			return fmt.Errorf("extract: %v", err)
+		}
 	}
 
 	b.SourceDir, err = filepath.Abs(b.SourceDir)
@@ -1285,65 +1298,68 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 	return nil
 }
 
-func (b *buildctx) extract() (srcdir string, _ error) {
-	fn := filepath.Base(b.Proto.GetSource())
-	dir := fn
+func trimArchiveSuffix(fn string) string {
 	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar", "tgz"} {
-		dir = strings.TrimSuffix(dir, "."+suffix)
+		fn = strings.TrimSuffix(fn, "."+suffix)
 	}
-	_, err := os.Stat(dir)
+	return fn
+}
+
+func (b *buildctx) extract() error {
+	fn := filepath.Base(b.Proto.GetSource())
+
+	_, err := os.Stat(b.SourceDir)
 	if err == nil {
-		return dir, nil // already extracted
+		return nil // already extracted
 	}
 
 	if !os.IsNotExist(err) {
-		return "", err // directory exists, but can’t access it?
+		return err // directory exists, but can’t access it?
 	}
 
 	if err := b.verify(fn); err != nil {
-		return "", fmt.Errorf("verify: %v", err)
+		return fmt.Errorf("verify: %v", err)
 	}
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		return "", err
+		return err
 	}
 	tmp, err := ioutil.TempDir(pwd, "distri")
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer os.RemoveAll(tmp)
 	// TODO(later): extract in pure Go to avoid tar dependency
 	cmd := exec.Command("tar", "xf", fn, "--strip-components=1", "--no-same-owner", "-C", tmp)
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return "", err
+		return err
 	}
 
 	for _, u := range b.Proto.GetCherryPick() {
 		if err := b.cherryPick(u, tmp); err != nil {
-			return "", fmt.Errorf("cherry picking %s: %v", u, err)
+			return fmt.Errorf("cherry picking %s: %v", u, err)
 		}
 		log.Printf("cherry picked %s", u)
 	}
 
-	if err := os.Rename(tmp, dir); err != nil {
-		return "", err
+	if err := os.Rename(tmp, b.SourceDir); err != nil {
+		return err
 	}
 
-	return dir, nil
+	return nil
 }
 
 func (b *buildctx) verify(fn string) error {
-	_, err := os.Stat(fn)
-	if err != nil {
+	if _, err := os.Stat(fn); err != nil {
 		if !os.IsNotExist(err) {
 			return err // file exists, but can’t access it?
 		}
 
 		// TODO(later): calculate hash while downloading to avoid having to read the file
 		if err := b.download(fn); err != nil {
-			return err
+			return fmt.Errorf("download: %v", err)
 		}
 	}
 	log.Printf("verifying %s", fn)
@@ -1376,6 +1392,7 @@ func (b *buildctx) download(fn string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
 		return fmt.Errorf("unexpected HTTP status: got %d (%v), want %d", got, resp.Status, want)
 	}
@@ -1387,8 +1404,58 @@ func (b *buildctx) download(fn string) error {
 	if _, err := io.Copy(f, resp.Body); err != nil {
 		return err
 	}
-	resp.Body.Close()
 	return f.Close()
+}
+
+func updateFromDistriroot(builddir string) error {
+	// TODO(later): fill ignore from .gitignore?
+	ignore := map[string]bool{
+		".git":         true,
+		"build":        true,
+		"linux-4.18.7": true,
+		"pkgs":         true,
+		"docs":         true,
+		"org":          true,
+	}
+	err := filepath.Walk(env.DistriRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && ignore[info.Name()] {
+			return filepath.SkipDir
+		}
+		rel, err := filepath.Rel(env.DistriRoot, path)
+		if err != nil {
+			return err
+		}
+		dest := filepath.Join(builddir, rel)
+		if info.IsDir() {
+			return os.MkdirAll(dest, 0755)
+		}
+		// Instead of comparing mtime, we just compare contents. This works
+		// because the files are small. See https://apenwarr.ca/log/20181113
+		bNew, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		bOld, err := ioutil.ReadFile(dest)
+		if err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		if err == nil && bytes.Equal(bOld, bNew) {
+			return nil
+		}
+		log.Printf("updating %s", dest)
+		if err := renameio.WriteFile(dest, bNew, 0644); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("filepath.Walk: %v", err)
+	}
+
+	return nil
 }
 
 func runJob(job string) error {
