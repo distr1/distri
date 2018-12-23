@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
@@ -660,7 +662,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -1308,7 +1310,16 @@ func trimArchiveSuffix(fn string) string {
 func (b *buildctx) extract() error {
 	fn := filepath.Base(b.Proto.GetSource())
 
-	_, err := os.Stat(b.SourceDir)
+	u, err := url.Parse(b.Proto.GetSource())
+	if err != nil {
+		return fmt.Errorf("url.Parse: %v", err)
+	}
+
+	if u.Scheme == "distri+gomod" {
+		fn = fn + ".tar.gz"
+	}
+
+	_, err = os.Stat(b.SourceDir)
 	if err == nil {
 		return nil // already extracted
 	}
@@ -1380,6 +1391,143 @@ func (b *buildctx) verify(fn string) error {
 }
 
 func (b *buildctx) download(fn string) error {
+	u, err := url.Parse(b.Proto.GetSource())
+	if err != nil {
+		return fmt.Errorf("url.Parse: %v", err)
+	}
+
+	if u.Scheme == "distri+gomod" {
+		return b.downloadGoModule(fn, u.Host+u.Path)
+	} else if u.Scheme == "http" || u.Scheme == "https" {
+		return b.downloadHTTP(fn)
+	} else {
+		return fmt.Errorf("unimplemented URL scheme %q", u.Scheme)
+	}
+}
+
+func (b *buildctx) downloadGoModule(fn, importPath string) error {
+	tmpdir, err := ioutil.TempDir("", "distri-gomod")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+	gotool := exec.Command("go", "mod", "download", "-json", importPath)
+	gotool.Dir = tmpdir
+	gotool.Env = []string{
+		"GO111MODULE=on",
+		"GOPATH=" + tmpdir,
+		"GOCACHE=" + filepath.Join(tmpdir, "cache"),
+		"PATH=" + os.Getenv("PATH"),
+	}
+	gotool.Stderr = os.Stderr
+	out, err := gotool.Output()
+	if err != nil {
+		return fmt.Errorf("%v: %v", gotool.Args, err)
+	}
+	var modinfo struct {
+		Info  string
+		GoMod string
+		Dir   string
+	}
+	if err := json.Unmarshal(out, &modinfo); err != nil {
+		return err
+	}
+	// E.g.:
+	// Info:  /tmp/distri-gomod767829578/pkg/mod/cache/download/golang.org/x/text/@v/v0.3.0.info
+	// GoMod: /tmp/distri-gomod767829578/pkg/mod/cache/download/golang.org/x/text/@v/v0.3.0.mod
+	// Dir:   /tmp/distri-gomod767829578/pkg/mod/golang.org/x/text@v0.3.0
+
+	var info struct {
+		Time string // the version’s timestamp
+	}
+	bInfo, err := ioutil.ReadFile(modinfo.Info)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(bInfo, &info); err != nil {
+		return fmt.Errorf("malformed Info file: %v", err)
+	}
+	t, err := time.Parse(time.RFC3339, info.Time)
+	if err != nil {
+		return fmt.Errorf("malformed Time in Info file: %v", err)
+	}
+
+	trim := filepath.Clean(tmpdir) + "/"
+	prefix := strings.TrimSuffix(fn, ".tar.gz") + "/"
+	f, err := os.Create(fn)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	gz := gzip.NewWriter(f)
+	tw := tar.NewWriter(gz)
+	for _, fn := range []string{modinfo.Info, modinfo.GoMod} {
+		c, err := ioutil.ReadFile(fn)
+		if err != nil {
+			return err
+		}
+		if err := tw.WriteHeader(&tar.Header{
+			Name:    prefix + strings.TrimPrefix(fn, trim),
+			ModTime: t,
+			Size:    int64(len(c)),
+			Mode:    0644,
+		}); err != nil {
+			return err
+		}
+		if _, err := tw.Write(c); err != nil {
+			return err
+		}
+	}
+	err = filepath.Walk(modinfo.Dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("file %q is not regular", path)
+		}
+		mode := int64(0644)
+		if info.Mode()&0700 != 0 {
+			mode = 0755
+		}
+		if err := tw.WriteHeader(&tar.Header{
+			Name:    prefix + strings.TrimPrefix(path, trim),
+			ModTime: t,
+			Size:    info.Size(),
+			Mode:    mode,
+		}); err != nil {
+			return err
+		}
+		in, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+		if _, err := io.Copy(tw, in); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+	if err := gz.Close(); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *buildctx) downloadHTTP(fn string) error {
 	// We need to disable compression: with some web servers,
 	// http.DefaultTransport’s default compression handling results in an
 	// unwanted gunzip step. E.g., http://rpm5.org/files/popt/popt-1.16.tar.gz

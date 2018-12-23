@@ -47,6 +47,7 @@ var exchangeDirs = []string{
 	"/out/share/dbus-1",
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
+	"/out/gopath",
 }
 
 const (
