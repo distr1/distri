@@ -29,6 +29,9 @@ message PerlBuilder {
 message PythonBuilder {
 }
 
+message GomodBuilder {
+}
+
 message Install {
   message Symlink {
     optional string oldname = 1;
@@ -65,6 +68,7 @@ message Build {
     CBuilder cbuilder = 7;
     PerlBuilder perlbuilder = 10;
     PythonBuilder pythonbuilder = 12;
+    GomodBuilder gomodbuilder = 13;
   }
 
   // TODO: move this field into a custom builder

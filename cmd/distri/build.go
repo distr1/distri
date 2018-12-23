@@ -602,6 +602,13 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			}...)
 			deps = append(deps, cdeps...)
 
+		case *pb.Build_Gomodbuilder:
+			deps = append(deps, []string{
+				"bash-" + native,
+				"coreutils-" + native,
+				"patchelf-" + native, // e.g. cloud.google.com/go includes .elf files
+			}...)
+
 		case *pb.Build_Cbuilder:
 			deps = append(deps, cdeps...)
 		}
@@ -983,6 +990,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
+		case *pb.Build_Gomodbuilder:
+			var err error
+			steps, env, err = b.buildgomod(v.Gomodbuilder, env)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("BUG: unknown builder")
 		}
@@ -1233,6 +1246,9 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	if builder := b.Proto.Builder; builder != nil {
 		switch builder.(type) {
 		case *pb.Build_Cbuilder:
+			// no extra runtime deps
+		case *pb.Build_Gomodbuilder:
+			// no extra runtime deps
 		case *pb.Build_Perlbuilder:
 			depPkgs["perl-amd64-5.28.0"] = true
 			// pass through all deps to run-time deps
