@@ -11,6 +11,9 @@ test: install
 image:
 	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4
 
+cryptimage:
+	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4 -encrypt -serialonly -base=base-full
+
 gcsimage:
 	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4 -gcsdiskimg=/tmp/distri-gcs.tar.gz
 

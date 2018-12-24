@@ -59,6 +59,7 @@ func pack(args []string) error {
 			"",
 			"TODO")
 		repo       = fset.String("repo", env.DefaultRepo, "TODO")
+		extraBase  = fset.String("base", "", "if non-empty, an additional base image to install")
 		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
@@ -154,7 +155,20 @@ func pack(args []string) error {
 	}
 
 	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
-	basePkgs, err := b.glob(*repo, []string{"base"})
+
+	basePkgNames := []string{"base"} // contains packages required for pack
+	if *extraBase != "" {
+		basePkgNames = append(basePkgNames, *extraBase)
+		pkgset := filepath.Join(*root, "etc", "distri", "pkgset.d", "extrabase.pkgset")
+		if err := os.MkdirAll(filepath.Dir(pkgset), 0755); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(pkgset, []byte(*extraBase), 0644); err != nil {
+			return err
+		}
+	}
+
+	basePkgs, err := b.glob(*repo, basePkgNames)
 	if err != nil {
 		return err
 	}
