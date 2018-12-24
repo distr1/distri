@@ -154,37 +154,7 @@ func pack(args []string) error {
 	}
 
 	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
-	basePkgs, err := b.glob(*repo, []string{
-		"systemd",
-		"glibc",
-		"coreutils",
-		"strace",
-		"bash",
-		"psmisc",
-		"ncurses", // TODO: why does psmisc not link against it?
-		"containerd",
-		"docker-engine",
-		"docker",
-		"runc",
-		"grep",
-		"openssh",
-		"iproute2",
-		"iputils",
-		"linux",
-		"ca-certificates",
-		"grub2",
-		"grub2-efi",
-		"squashfs",
-		"fuse",
-		"haveged", // for gathering entropy on e.g. Google Cloud
-		"dbus",
-		"binutils", // for debugging (e.g. readelf)
-		"curl",
-		"dracut",
-		"linux-firmware",
-		"cryptsetup",
-		"shadow",
-	})
+	basePkgs, err := b.glob(*repo, []string{"base"})
 	if err != nil {
 		return err
 	}
