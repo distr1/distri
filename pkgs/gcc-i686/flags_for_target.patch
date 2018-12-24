@@ -1,0 +1,11 @@
+--- a/gcc-8.2.0/configure	2018-07-26 11:48:58.000000000 +0200
++++ b/gcc-8.2.0/configure	2018-11-13 22:44:32.422783303 +0100
+@@ -7598,7 +7598,7 @@
+ # being built; programs in there won't even run.
+ if test "${build}" = "${host}" && test -d ${srcdir}/gcc; then
+   # Search for pre-installed headers if nothing else fits.
+-  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include'
++  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B/ro/glibc-i686-amd64-2.27/out/lib -isystem /ro/glibc-i686-amd64-2.27/out/include -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include'
+ fi
+ 
+ if test "x${use_gnu_ld}" = x &&
