@@ -8,11 +8,67 @@ cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C d
 dep: "golang"
 
 # build dependencies:
+dep: "go-cloud.google.com-go"
+dep: "go-github.com-client9-misspell"
+dep: "go-github.com-golang-gddo"
+dep: "go-github.com-golang-glog"
+dep: "go-github.com-golang-lint"
+dep: "go-github.com-golang-mock"
+dep: "go-github.com-golang-protobuf"
+dep: "go-github.com-google-go--cmp"
+dep: "go-github.com-google-renameio"
+dep: "go-github.com-jacobsa-fuse"
+dep: "go-github.com-kisielk-gotool"
+dep: "go-github.com-kylelemons-godebug"
+dep: "go-github.com-lpar-gzipped"
+dep: "go-golang.org-x-exp"
+dep: "go-golang.org-x-lint"
+dep: "go-golang.org-x-net"
+dep: "go-golang.org-x-oauth2"
+dep: "go-golang.org-x-sync"
+dep: "go-golang.org-x-sys"
+dep: "go-golang.org-x-text"
+dep: "go-golang.org-x-tools"
+dep: "go-gonum.org-v1-gonum"
+dep: "go-gonum.org-v1-netlib"
+dep: "go-google.golang.org-appengine"
+dep: "go-google.golang.org-genproto"
+dep: "go-google.golang.org-grpc"
+dep: "go-honnef.co-go-tools"
 
-# TODO: map GOCACHE into the build environment
+# Using exchange directories directly does not work well with Go (resulting in
+# unexpected and uninformative error messages), because they contain symbolic
+# links. This is unlikely to change as per https://golang.org/doc/code.html:
+#   Note that symbolic links should not be used to link files or directories
+#   into your workspace.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "mkdir /tmp/gopath && cp -Lr /ro/gopath/pkg/ /tmp/gopath"
+>
+
+# (Reported as https://github.com/golang/go/issues/29410)
+# /tmp/gopath/pkg/mod/gonum.org/v1/gonum@v0.0.0-20181012194325-406984d37414/go.mod
+# references golang.org/x/exp v0.0.0-20180321215751-8460e604b9de, which is not
+# packaged, and this makes the build fail. The following works around the issue:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo 'module golang.org/x/exp' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/exp/@v/v0.0.0-20180321215751-8460e604b9de.mod"
+>
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo 'module golang.org/x/tools' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/tools/@v/v0.0.0-20180525024113-a5b4c53f6e8b.mod"
+>
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo 'module golang.org/x/net' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/net/@v/v0.0.0-20180826012351-8a410e7b638d.mod"
+>
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cd ${ZI_SOURCEDIR} && HOME=/tmp GOBIN=${ZI_DESTDIR}/${ZI_PREFIX}/bin go install ./cmd/distri"
+  argv: "cd ${ZI_SOURCEDIR} && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${ZI_DESTDIR}/${ZI_PREFIX}/bin go install -v ./cmd/distri"
 >
