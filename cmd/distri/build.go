@@ -1619,6 +1619,39 @@ func updateFromDistriroot(builddir string) error {
 		return fmt.Errorf("filepath.Walk: %v", err)
 	}
 
+	// Drop all replace directives from go.mod, if any. We only do this for the
+	// distriroot:// URL scheme, because for upstream packages, go.mod should
+	// not be released with replace statements pointing outside of the
+	// package. If it is, that is an upstream bug and should be patched.
+	type replacement struct {
+		Path string
+	}
+	type replace struct {
+		Old replacement
+	}
+	var mod struct {
+		Replace []replace
+	}
+	gotool := exec.Command("go", "mod", "edit", "-json")
+	gotool.Dir = builddir
+	gotool.Stderr = os.Stderr
+	out, err := gotool.Output()
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(out, &mod); err != nil {
+		return err
+	}
+	for _, rep := range mod.Replace {
+		log.Printf("dropping replace %s", rep.Old.Path)
+		gotool := exec.Command("go", "mod", "edit", "-dropreplace", rep.Old.Path)
+		gotool.Dir = builddir
+		gotool.Stderr = os.Stderr
+		if err := gotool.Run(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
