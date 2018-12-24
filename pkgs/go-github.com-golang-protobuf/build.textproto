@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/golang/protobuf@v1.2.0"
+hash: "381e90145caa259a96c22dc90c29d8bc325c3b2c2de142d5687f9f1ef958cadd"
+version: "v1.2.0"
+
+gomodbuilder: <>
+
+# build dependencies:

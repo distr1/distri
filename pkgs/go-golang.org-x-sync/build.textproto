@@ -1,0 +1,7 @@
+source: "distri+gomod://golang.org/x/sync@v0.0.0-20180314180146-1d60e4601c6f"
+hash: "fb72f4156a96884b63e7542174b9996baa82444ebd0ec194b733e8acfd8b4e0c"
+version: "v0.0.0-20180314180146-1d60e4601c6f"
+
+gomodbuilder: <>
+
+# build dependencies:

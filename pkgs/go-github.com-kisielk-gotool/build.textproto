@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/kisielk/gotool@v1.0.0"
+hash: "56e5c011abfea94937885c4660052e635ea9477ee3a59d91bf001b350421d584"
+version: "v1.0.0"
+
+gomodbuilder: <>
+
+# build dependencies:

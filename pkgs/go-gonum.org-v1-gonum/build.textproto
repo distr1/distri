@@ -1,0 +1,7 @@
+source: "distri+gomod://gonum.org/v1/gonum@v0.0.0-20181012194325-406984d37414"
+hash: "8b2f8121ebf04425972b7b9c91f59799d7e95b7d6c858f7a6c7d8bfe9ad96433"
+version: "v0.0.0-20181012194325-406984d37414"
+
+gomodbuilder: <>
+
+# build dependencies:

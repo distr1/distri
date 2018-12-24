@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/lpar/gzipped@v1.1.0"
+hash: "87012ea9359e07569da02f42c288afd3f9a8346346a00b27c6e37c49f3ac0f8f"
+version: "v1.1.0"
+
+gomodbuilder: <>
+
+# build dependencies:

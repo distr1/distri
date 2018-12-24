@@ -1,0 +1,7 @@
+source: "distri+gomod://honnef.co/go/tools@v0.0.0-20180728063816-88497007e858"
+hash: "38b76fc129e13aa28ba58790a64c883007da43d64b8297db2682e83ef6754a23"
+version: "v0.0.0-20180728063816-88497007e858"
+
+gomodbuilder: <>
+
+# build dependencies:

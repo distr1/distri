@@ -1,0 +1,7 @@
+source: "distri+gomod://golang.org/x/oauth2@v0.0.0-20180821212333-d2e6202438be"
+hash: "0d0a827201f6c94c2afca3cd0efef299828c21c7ae2f0411f18137c53310ec91"
+version: "v0.0.0-20180821212333-d2e6202438be"
+
+gomodbuilder: <>
+
+# build dependencies:

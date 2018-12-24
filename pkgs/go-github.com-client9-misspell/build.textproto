@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/client9/misspell@v0.3.4"
+hash: "a7c4195370f54a8b041dde5c054c6c0b53d30bb28df8b2837f676e2ad9d0f623"
+version: "v0.3.4"
+
+gomodbuilder: <>
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/golang/gddo@v0.0.0-20180911175731-8b031907f29f"
+hash: "b28f0745be19ecfbf9ba4616ef2cdb45c5a2d3435e2a7955df86e22f38c4f361"
+version: "v0.0.0-20180911175731-8b031907f29f"
+
+gomodbuilder: <>
+
+# build dependencies:

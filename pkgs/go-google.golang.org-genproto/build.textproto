@@ -1,0 +1,7 @@
+source: "distri+gomod://google.golang.org/genproto@v0.0.0-20180817151627-c66870c02cf8"
+hash: "89c672ea213d910cfcca3cb35217524a625cfa42ef099ddb25776a6692a27180"
+version: "v0.0.0-20180817151627-c66870c02cf8"
+
+gomodbuilder: <>
+
+# build dependencies:

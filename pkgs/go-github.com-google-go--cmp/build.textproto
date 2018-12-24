@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/google/go-cmp@v0.2.0"
+hash: "82c28d4cbb7b95c82901529043057d4d1dc2b2e9de23f8a99a473be5e94d99a6"
+version: "v0.2.0"
+
+gomodbuilder: <>
+
+# build dependencies:

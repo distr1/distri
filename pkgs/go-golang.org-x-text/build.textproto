@@ -1,0 +1,7 @@
+source: "distri+gomod://golang.org/x/text@v0.3.0"
+hash: "9ec402d18c781687211cb4fde16ca007ee52ca433394b13962e35cdc880aea3d"
+version: "v0.3.0"
+
+gomodbuilder: <>
+
+# build dependencies:
