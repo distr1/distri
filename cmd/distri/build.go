@@ -112,6 +112,10 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		if err := updateFromDistriroot(b.SourceDir); err != nil {
 			return fmt.Errorf("updateFromDistriroot: %v", err)
 		}
+	} else if u.Scheme == "empty" {
+		if err := os.MkdirAll(b.SourceDir, 0755); err != nil {
+			return err
+		}
 	} else {
 		if err := b.extract(); err != nil {
 			return fmt.Errorf("extract: %v", err)

@@ -1,5 +1,4 @@
-source: "http://t.zekjur.net/empty.tar.gz"
-hash: "9eb0136c44c2c33764a36af279a3eac58f4e9ab827e1a771aa15f286ae9ca4c7"
+source: "empty://"
 version: "1"
 
 # configure runtime requirements:
@@ -26,7 +25,7 @@ dep: "findutils"
 # pre-warming for squashfs performance measurements:
 # build_step: <
 #   argv: "find"
-#   argv: "/ro/gcc-8.2.0/buildoutput/bin"
+#   argv: "/ro/gcc-8.2.0/out/bin"
 #   argv: "-exec"
 #   argv: "md5sum"
 #   argv: "{}"
