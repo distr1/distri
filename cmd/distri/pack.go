@@ -163,7 +163,7 @@ func pack(args []string) error {
 		if err := os.MkdirAll(filepath.Dir(pkgset), 0755); err != nil {
 			return err
 		}
-		if err := ioutil.WriteFile(pkgset, []byte(*extraBase), 0644); err != nil {
+		if err := ioutil.WriteFile(pkgset, []byte(*extraBase+"\n"), 0644); err != nil {
 			return err
 		}
 	}
