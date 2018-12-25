@@ -68,7 +68,7 @@ dep: "coreutils"
 split_package: <
   name: "multi-libs"
   runtime_dep: "bash"
-  claim_glob: "out/lib/*.so"
+  claim: < glob: "out/lib/*.so" >
 >
 
 build_step: <
