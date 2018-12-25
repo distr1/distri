@@ -41,10 +41,11 @@ func unpack(args []string) error {
 	}
 
 	b := &buildctx{
-		Proto:   &buildProto,
-		PkgDir:  pkgDir,
-		Pkg:     pkg,
-		Version: buildProto.GetVersion(),
+		Proto:     &buildProto,
+		PkgDir:    pkgDir,
+		Pkg:       pkg,
+		Version:   buildProto.GetVersion(),
+		SourceDir: trimArchiveSuffix(filepath.Base(buildProto.GetSource())),
 	}
 	if err := b.extract(); err != nil {
 		return fmt.Errorf("extract: %v", err)
