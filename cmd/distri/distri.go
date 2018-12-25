@@ -96,6 +96,7 @@ func main() {
 			"batch":    {batchHelp, func() { batch(helpFlag) }},
 			"log":      {logHelp, func() { showlog(helpFlag) }},
 			"unpack":   {unpackHelp, func() { unpack(helpFlag) }},
+			"update":   {updateHelp, func() { update(helpFlag) }},
 		}
 		if len(args) != 1 {
 			fmt.Fprintf(os.Stderr, "syntax: %s help <verb>\n", os.Args[0])
@@ -191,6 +192,11 @@ func main() {
 
 	case "unpack":
 		if err := unpack(args); err != nil {
+			log.Fatal(err)
+		}
+
+	case "update":
+		if err := update(args); err != nil {
 			log.Fatal(err)
 		}
 

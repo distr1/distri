@@ -47,7 +47,14 @@ func isNotExist(err error) bool {
 func repoReader(repo distri.Repo, fn string) (io.ReadCloser, error) {
 	if strings.HasPrefix(repo.Path, "http://") ||
 		strings.HasPrefix(repo.Path, "https://") {
-		resp, err := http.Get(repo.Path + "/" + fn) // TODO: sanitize slashes
+		req, err := http.NewRequest("GET", repo.Path+"/"+fn, nil) // TODO: sanitize slashes
+		if err != nil {
+			return nil, err
+		}
+		if os.Getenv("DISTRI_REEXEC") == "1" {
+			req.Header.Set("X-Distri-Reexec", "yes")
+		}
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
