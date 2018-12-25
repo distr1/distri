@@ -1,20 +1,11 @@
 package build_test
 
 import (
-	"archive/tar"
-	"bytes"
-	"compress/gzip"
-	"crypto/sha256"
-	"fmt"
 	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"text/template"
-	"time"
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
@@ -23,9 +14,9 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-var buildTextprotoTmpl = template.Must(template.New("").Parse(`
-source: "{{ .Source }}"
-hash: "{{ .Hash }}"
+const buildTextproto = `
+source: "empty://"
+hash: ""
 version: "1"
 
 dep: "bash-amd64-4.4.18"
@@ -37,11 +28,11 @@ build_step: <
   argv: "-c"
   argv: "exit 0"
 >
-`))
+`
 
-var unversionedBuildTextprotoTmpl = template.Must(template.New("").Parse(`
-source: "{{ .Source }}"
-hash: "{{ .Hash }}"
+const unversionedBuildTextproto = `
+source: "empty://"
+hash: ""
 version: "1"
 
 dep: "bash"
@@ -55,11 +46,11 @@ build_step: <
   argv: "-c"
   argv: "exit 0"
 >
-`))
+`
 
-var multiPackageBuildTextprotoTmpl = template.Must(template.New("").Parse(`
-source: "{{ .Source }}"
-hash: "{{ .Hash }}"
+const multiPackageBuildTextproto = `
+source: "empty://"
+hash: ""
 version: "1"
 
 dep: "bash"
@@ -82,7 +73,7 @@ build_step: <
   argv: "-c"
   argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/share/doc/multi; mkdir -p $d; touch $d/README.md"
 >
-`))
+`
 
 // TODO: refactor out of build.go
 func resolve1(imgDir, pkg string) ([]string, error) {
@@ -118,35 +109,8 @@ func resolve(imgDir string, pkgs []string) ([]string, error) {
 	return resolved, nil
 }
 
-func emptyArchive() ([]byte, error) {
-	var buf bytes.Buffer
-	gw := gzip.NewWriter(&buf)
-	tw := tar.NewWriter(gw)
-	if err := tw.Close(); err != nil {
-		return nil, err
-	}
-	if err := gw.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
 func TestBuild(t *testing.T) {
 	t.Parallel()
-
-	// Serve upstream source tarball via HTTP:
-	empty, err := emptyArchive()
-	if err != nil {
-		t.Fatal(err)
-	}
-	h := sha256.New()
-	h.Write(empty)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeContent(w, r, "empty.tar.gz", time.Time{}, bytes.NewReader(empty))
-	}))
-	defer srv.Close()
-	source := srv.URL + "/empty.tar.gz"
-	hash := fmt.Sprintf("%x", h.Sum(nil))
 
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
@@ -182,17 +146,10 @@ func TestBuild(t *testing.T) {
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	var buf bytes.Buffer
-	if err := buildTextprotoTmpl.Execute(&buf, struct {
-		Source string
-		Hash   string
-	}{
-		Source: source,
-		Hash:   hash,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(pkgDir, "build.textproto"), buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "build.textproto"),
+		[]byte(buildTextproto),
+		0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -238,20 +195,6 @@ func TestBuild(t *testing.T) {
 func TestUnversionedBuild(t *testing.T) {
 	t.Parallel()
 
-	// Serve upstream source tarball via HTTP:
-	empty, err := emptyArchive()
-	if err != nil {
-		t.Fatal(err)
-	}
-	h := sha256.New()
-	h.Write(empty)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeContent(w, r, "empty.tar.gz", time.Time{}, bytes.NewReader(empty))
-	}))
-	defer srv.Close()
-	source := srv.URL + "/empty.tar.gz"
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -288,17 +231,10 @@ func TestUnversionedBuild(t *testing.T) {
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	var buf bytes.Buffer
-	if err := unversionedBuildTextprotoTmpl.Execute(&buf, struct {
-		Source string
-		Hash   string
-	}{
-		Source: source,
-		Hash:   hash,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(pkgDir, "build.textproto"), buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "build.textproto"),
+		[]byte(unversionedBuildTextproto),
+		0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -364,20 +300,6 @@ func list(rd *squashfs.Reader, dir string, inode squashfs.Inode) ([]string, erro
 func TestMultiPackageBuild(t *testing.T) {
 	t.Parallel()
 
-	// Serve upstream source tarball via HTTP:
-	empty, err := emptyArchive()
-	if err != nil {
-		t.Fatal(err)
-	}
-	h := sha256.New()
-	h.Write(empty)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeContent(w, r, "empty.tar.gz", time.Time{}, bytes.NewReader(empty))
-	}))
-	defer srv.Close()
-	source := srv.URL + "/empty.tar.gz"
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -412,17 +334,10 @@ func TestMultiPackageBuild(t *testing.T) {
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	var buf bytes.Buffer
-	if err := multiPackageBuildTextprotoTmpl.Execute(&buf, struct {
-		Source string
-		Hash   string
-	}{
-		Source: source,
-		Hash:   hash,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(pkgDir, "build.textproto"), buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "build.textproto"),
+		[]byte(multiPackageBuildTextproto),
+		0644); err != nil {
 		t.Fatal(err)
 	}
 
