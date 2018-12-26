@@ -1193,7 +1193,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			return nil
 		}
 		// TODO: detect whether the binary is statically or dynamically linked (the latter has an INTERP section)
-		pkgs, err := findShlibDeps(path)
+		pkgs, err := findShlibDeps(path, env)
 		if err != nil {
 			if err == errLddFailed {
 				return nil // skip patchelf
