@@ -10,35 +10,24 @@ build_step: <
 >
 
 # The following packages will be installed on ALL distri machines:
-runtime_dep: "systemd"
-runtime_dep: "glibc"
-runtime_dep: "coreutils"
-runtime_dep: "strace"
-runtime_dep: "bash"
-runtime_dep: "psmisc"
-runtime_dep: "ncurses" # TODO: why does psmisc not link against it?
+runtime_dep: "binutils" # for debugging (e.g. readelf)
+runtime_dep: "ca-certificates"
 runtime_dep: "containerd"
-runtime_dep: "docker-engine"
+runtime_dep: "curl"
 runtime_dep: "docker"
-runtime_dep: "runc"
+runtime_dep: "docker-engine"
+runtime_dep: "emacs"
+runtime_dep: "fuse"
 runtime_dep: "grep"
-runtime_dep: "openssh"
+runtime_dep: "haveged" # for gathering entropy on e.g. Google Cloud
 runtime_dep: "iproute2"
 runtime_dep: "iputils"
 runtime_dep: "linux"
-runtime_dep: "ca-certificates"
-runtime_dep: "grub2"
-runtime_dep: "grub2-efi"
-runtime_dep: "squashfs"
-runtime_dep: "fuse"
-runtime_dep: "haveged" # for gathering entropy on e.g. Google Cloud
-runtime_dep: "dbus"
-runtime_dep: "binutils" # for debugging (e.g. readelf)
-runtime_dep: "curl"
-runtime_dep: "dracut"
-runtime_dep: "linux-firmware"
-runtime_dep: "cryptsetup"
+runtime_dep: "ncurses" # TODO: why does psmisc not link against it?
+runtime_dep: "openssh"
+runtime_dep: "psmisc"
+runtime_dep: "runc"
 runtime_dep: "shadow"
-runtime_dep: "distri1"
+runtime_dep: "squashfs"
+runtime_dep: "strace" # for debugging
 runtime_dep: "sudo"
-runtime_dep: "emacs"
