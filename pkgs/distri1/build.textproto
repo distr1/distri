@@ -66,6 +66,11 @@ build_step: <
   argv: "-c"
   argv: "echo 'module golang.org/x/net' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/net/@v/v0.0.0-20180826012351-8a410e7b638d.mod"
 >
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo 'module golang.org/x/sys' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/sys/@v/v0.0.0-20180830151530-49385e6e1522.mod"
+>
 
 build_step: <
   argv: "/bin/sh"

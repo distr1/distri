@@ -32,6 +32,3 @@ runtime_dep: "containerd"
 runtime_dep: "docker-engine"
 runtime_dep: "openssh"
 runtime_dep: "haveged"
-
-# TODO: remove once jacobsa/fuse has pure Go mount code
-runtime_dep: "fuse"

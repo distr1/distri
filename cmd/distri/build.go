@@ -1213,11 +1213,19 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			filepath.Base(path) != "gcrt1.o" &&
 			filepath.Base(path) != "crt1.o" &&
 			!strings.HasSuffix(path, ".a") {
+			// patchelf does not preserve the setuid bit, so restore it:
+			fi, err := os.Stat(path)
+			if err != nil {
+				return err
+			}
 			patchelf := exec.Command("patchelf", "--shrink-rpath", path)
 			patchelf.Stdout = os.Stdout
 			patchelf.Stderr = os.Stderr
 			if err := patchelf.Run(); err != nil {
 				return fmt.Errorf("%v: %v", patchelf.Args, err)
+			}
+			if err := os.Chmod(path, fi.Mode()); err != nil {
+				return err
 			}
 		}
 		return nil

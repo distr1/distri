@@ -310,7 +310,7 @@ type file struct {
 	size    uint32
 	name    string
 	modTime time.Time
-	mode    os.FileMode
+	mode    uint16
 
 	// buf accumulates at least dataBlockSize bytes, at which point a new block
 	// is being written.
@@ -339,7 +339,7 @@ func (d *Directory) Directory(name string, modTime time.Time) *Directory {
 
 // File creates a file with the specified name, modTime and mode. The returned
 // io.WriterCloser must be closed after writing the file.
-func (d *Directory) File(name string, modTime time.Time, mode os.FileMode) (io.WriteCloser, error) {
+func (d *Directory) File(name string, modTime time.Time, mode uint16) (io.WriteCloser, error) {
 	off, err := d.w.w.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return nil, err
@@ -608,7 +608,7 @@ func (f *file) Close() error {
 	if err := binary.Write(&f.w.inodeBuf, binary.LittleEndian, regInodeHeader{
 		inodeHeader: inodeHeader{
 			InodeType:   fileType,
-			Mode:        uint16(f.mode),
+			Mode:        f.mode,
 			Uid:         0,
 			Gid:         0,
 			Mtime:       int32(f.modTime.Unix()),

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/distr1/distri/internal/squashfs"
@@ -22,7 +23,7 @@ func cp(w *squashfs.Directory, dir string) error {
 		return err
 	}
 	for _, fi := range fis {
-		//log.Printf("file %s, mode %v", fi.Name(), fi.Mode())
+		//log.Printf("file %s, mode %#o (raw %#o)", fi.Name(), fi.Mode(), fi.Sys().(*syscall.Stat_t).Mode)
 		if fi.IsDir() {
 			subdir := w.Directory(fi.Name(), fi.ModTime())
 			if err := cp(subdir, filepath.Join(dir, fi.Name())); err != nil {
@@ -34,7 +35,7 @@ func cp(w *squashfs.Directory, dir string) error {
 				return err
 			}
 			defer in.Close()
-			f, err := w.File(fi.Name(), fi.ModTime(), fi.Mode().Perm())
+			f, err := w.File(fi.Name(), fi.ModTime(), uint16(fi.Sys().(*syscall.Stat_t).Mode))
 			if err != nil {
 				return err
 			}

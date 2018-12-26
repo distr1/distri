@@ -231,6 +231,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 		ReadOnly: true,
 		Options: map[string]string{
 			"allow_other": "", // allow all users to read files
+			"suid":        "",
 		},
 		//DebugLogger: log.New(logf, "[debug] ", log.LstdFlags),
 	})

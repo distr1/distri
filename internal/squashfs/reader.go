@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -182,10 +183,14 @@ func (r *Reader) Stat(name string, i Inode) (os.FileInfo, error) {
 		}, nil
 
 	case regInodeHeader:
+		mode := os.FileMode(x.Mode & 0777)
+		if x.Mode&syscall.S_ISUID != 0 {
+			mode |= os.ModeSetuid
+		}
 		return &FileInfo{
 			name:    name,
 			size:    int64(x.FileSize),
-			mode:    os.FileMode(x.Mode),
+			mode:    mode,
 			modTime: time.Unix(int64(x.Mtime), 0),
 			Inode:   i,
 		}, nil
