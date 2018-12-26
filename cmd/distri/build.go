@@ -1640,6 +1640,7 @@ func updateFromDistriroot(builddir string) error {
 	}
 	type replace struct {
 		Old replacement
+		New replacement
 	}
 	var mod struct {
 		Replace []replace
@@ -1655,6 +1656,9 @@ func updateFromDistriroot(builddir string) error {
 		return err
 	}
 	for _, rep := range mod.Replace {
+		if strings.HasPrefix(rep.New.Path, "./") {
+			continue
+		}
 		log.Printf("dropping replace %s", rep.Old.Path)
 		gotool := exec.Command("go", "mod", "edit", "-dropreplace", rep.Old.Path)
 		gotool.Dir = builddir
