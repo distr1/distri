@@ -4,6 +4,4 @@ version: "4.6"
 
 cbuilder: <>
 
-# build dependencies:
-
-# TODO: patch out selinux line from /etc/pam.d/login until pam package builds selinux
+cherry_pick: "0001-remove-selinux.patch"

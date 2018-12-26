@@ -1,0 +1,38 @@
+From 170a5e967b407c8fa6bb64129f23b6b1362b25d1 Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Wed, 26 Dec 2018 16:39:37 +0100
+Subject: [PATCH] remove selinux
+
+---
+ etc/pam.d/login | 2 --
+ etc/pam.d/su    | 2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/etc/pam.d/login b/etc/pam.d/login
+index 5a64806..40ab86a 100644
+--- a/etc/pam.d/login
++++ b/etc/pam.d/login
+@@ -4,8 +4,6 @@ auth		include		system-auth
+ account		required	pam_nologin.so
+ account		include		system-auth
+ password	include		system-auth
+-session		required	pam_selinux.so close
+ session		include		system-auth
+ session		required	pam_loginuid.so
+ session		optional	pam_console.so
+-session		required	pam_selinux.so open
+diff --git a/etc/pam.d/su b/etc/pam.d/su
+index 7ef7134..13c2327 100644
+--- a/etc/pam.d/su
++++ b/etc/pam.d/su
+@@ -7,7 +7,5 @@ auth		required	pam_wheel.so use_uid
+ auth		include		system-auth
+ account		include		system-auth
+ password	include		system-auth
+-session		required	pam_selinux.so close
+ session		include		system-auth
+-session		required	pam_selinux.so open multiple
+ session		optional	pam_xauth.so
+-- 
+2.19.1
+
