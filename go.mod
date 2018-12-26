@@ -16,3 +16,5 @@ require (
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
 	google.golang.org/grpc v1.16.0
 )
+
+replace github.com/jacobsa/fuse => ./fuse
