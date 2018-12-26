@@ -1,0 +1,48 @@
+# latest google-chrome-stable .deb from
+# http://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages:
+source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_71.0.3578.98-1_amd64.deb" 
+hash: "c2b2b56d854b7666ba1e7c090c0e599d695ff40a8676eb018da4ccbb4ac7711e"
+version: "71.0.3578.98-1"
+
+cbuilder: <>
+
+dep: "tar" # for unpacking the data.tar.xz part of the .deb
+dep: "xzutils"
+
+dep: "expat"
+dep: "pango"
+dep: "cairo"
+dep: "libxext"
+dep: "libxdamage"
+dep: "libxfixes"
+dep: "libxrender"
+dep: "libxrandr"
+dep: "gdk-pixbuf"
+dep: "gtk+"
+dep: "libxcomposite"
+dep: "libxcursor"
+dep: "libxtst"
+dep: "nss"
+dep: "cups"
+dep: "libxscrnsaver"
+dep: "alsa-lib"
+
+build_step: <
+  argv: "tar"
+  argv: "xf"
+  argv: "${ZI_SOURCEDIR}/data.tar.xz"
+>
+
+build_step: <
+  argv: "ldd"
+  argv: "opt/google/chrome/chrome"
+>
+
+# We need to use patchelf --set-rpath with chrome-sandbox, because its setuid
+# bit triggers secure-execution mode in ld.so(8), resulting in the
+# LD_LIBRARY_PATH environment variable being ignored.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp -ar opt/google/chrome/* $d; patchelf --set-rpath $LD_LIBRARY_PATH $d/chrome-sandbox; chmod u+s $d/chrome-sandbox"
+>

@@ -1329,7 +1329,7 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 }
 
 func trimArchiveSuffix(fn string) string {
-	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar", "tgz"} {
+	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar", "tgz", "deb"} {
 		fn = strings.TrimSuffix(fn, "."+suffix)
 	}
 	return fn
@@ -1369,11 +1369,24 @@ func (b *buildctx) extract() error {
 		return err
 	}
 	defer os.RemoveAll(tmp)
-	// TODO(later): extract in pure Go to avoid tar dependency
-	cmd := exec.Command("tar", "xf", fn, "--strip-components=1", "--no-same-owner", "-C", tmp)
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
+	if strings.HasSuffix(fn, ".deb") {
+		abs, err := filepath.Abs(fn)
+		if err != nil {
+			return err
+		}
+		cmd := exec.Command("ar", "x", abs)
+		cmd.Dir = tmp
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("%v: %v", cmd.Args, err)
+		}
+	} else {
+		// TODO(later): extract in pure Go to avoid tar dependency
+		cmd := exec.Command("tar", "xf", fn, "--strip-components=1", "--no-same-owner", "-C", tmp)
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("%v: %v", cmd.Args, err)
+		}
 	}
 
 	for _, u := range b.Proto.GetCherryPick() {
