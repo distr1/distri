@@ -1,0 +1,70 @@
+source: "https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tar.xz"
+hash: "22d9b1ac5b26135ad2b8c2901a9413537e08749a753356ee913c84dbd2df5574"
+version: "2.7.15"
+
+cbuilder: <>
+
+# TODO: file upstream bug: pkg-config invocation does not ignore CPATH
+cherry_pick: "http://t.zekjur.net/py.patch"
+cherry_pick: "modules.patch"
+
+# build dependencies:
+dep: "zlib"
+dep: "openssl"
+dep: "libffi"
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--with-openssl=/ro/openssl-amd64-1.0.2p/out"
+  argv: "--enable-shared" # for building e.g. libxml2’s Python bindings
+>
+
+# https://bugs.python.org/issue34823
+build_step: <
+  argv: "ln"
+  argv: "-s"
+  argv: "/ro/libffi-amd64-3.2.1/out/lib64"
+  argv: "/usr/"
+>
+
+build_step: <
+  argv: "sed"
+  argv: "-i"
+  argv: "s,^#zlib,zlib,g"
+  argv: "Modules/Setup"
+>
+
+build_step: <
+  argv: "sed"
+  argv: "-i"
+  argv: "s,^#_sha,_sha,g"
+  argv: "Modules/Setup"
+>
+
+# # doesn’t help for sha224 :/
+# build_step: <
+#   argv: "sed"
+#   argv: "-i"
+#   argv: "s,^#SSL=/usr/local/ssl,SSL=/ro/openssl-amd64-1.0.2p,g"
+#   argv: "Modules/Setup"
+# >
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make -j8"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} make install DESTDIR=${ZI_DESTDIR}"
+>
+
+# python3 is the default python on distri
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "rm ${ZI_DESTDIR}/${ZI_PREFIX}/bin/python"
+>

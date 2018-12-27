@@ -1,0 +1,49 @@
+From 51ccf32f61a7e940523f71ef346970256245e959 Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Thu, 27 Dec 2018 13:54:13 +0100
+Subject: [PATCH] python2.7 modules: enable ssl, sha
+
+---
+ Modules/Setup.dist | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/Modules/Setup.dist b/Modules/Setup.dist
+index 523e05a..43bdfa0 100644
+--- a/Modules/Setup.dist
++++ b/Modules/Setup.dist
+@@ -211,14 +211,14 @@ GLHACK=-Dclear=__GLclear
+ #_csv _csv.c
+ 
+ # Socket module helper for socket(2)
+-#_socket socketmodule.c timemodule.c
++_socket socketmodule.c timemodule.c
+ 
+ # Socket module helper for SSL support; you must comment out the other
+ # socket line above, and possibly edit the SSL variable:
+-#SSL=/usr/local/ssl
+-#_ssl _ssl.c \
+-#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+-#	-L$(SSL)/lib -lssl -lcrypto
++SSL=/ro/openssl-amd64-1.0.2p
++_ssl _ssl.c \
++	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
++	-L$(SSL)/lib -lssl -lcrypto
+ 
+ # The crypt module is now disabled by default because it breaks builds
+ # on many systems (where -lcrypt is needed), e.g. Linux (I believe).
+@@ -257,9 +257,9 @@ GLHACK=-Dclear=__GLclear
+ 
+ # The _sha module implements the SHA checksum algorithms.
+ # (NIST's Secure Hash Algorithms.)
+-#_sha shamodule.c
+-#_sha256 sha256module.c
+-#_sha512 sha512module.c
++_sha shamodule.c
++_sha256 sha256module.c
++_sha512 sha512module.c
+ 
+ 
+ # SGI IRIX specific modules -- off by default.
+-- 
+2.19.1
+
