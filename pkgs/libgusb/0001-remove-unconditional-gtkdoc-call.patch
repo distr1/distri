@@ -1,0 +1,29 @@
+From da00eb23dc4195ce702652bb7d1872683e34aee2 Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Wed, 26 Dec 2018 22:14:30 +0100
+Subject: [PATCH] remove unconditional gtkdoc call
+
+---
+ docs/api/meson.build | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/docs/api/meson.build b/docs/api/meson.build
+index 1bdcb1d..f4aafa6 100644
+--- a/docs/api/meson.build
++++ b/docs/api/meson.build
+@@ -4,12 +4,3 @@ gusb_version_xml = configure_file(
+   configuration : conf,
+ )
+ 
+-gnome.gtkdoc(
+-  'gusb',
+-  src_dir : [
+-    join_paths(meson.source_root(), 'gusb'),
+-    join_paths(meson.build_root(), 'gusb'),
+-  ],
+-  main_sgml : 'gusb-docs.sgml',
+-  install : true
+-)
+-- 
+2.19.1
+

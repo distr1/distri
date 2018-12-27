@@ -1,0 +1,10 @@
+source: "https://download.gnome.org/sources/vala/0.43/vala-0.43.2.tar.xz"
+hash: "713cb9464649c851b0050b6f9b6b91fd6157f23e7ab5943ceb1883538f86d722"
+version: "0.43.2"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "flex"
+dep: "bison"
+dep: "graphviz"

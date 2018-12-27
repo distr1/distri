@@ -11,4 +11,4 @@ dep: "fontconfig"
 dep: "glib"
 dep: "fribidi"
 dep: "python3"
-
+dep: "gobject-introspection"

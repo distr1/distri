@@ -573,6 +573,15 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			"strace", // useful for interactive debugging
 		}
 
+		if cb, ok := builder.(*pb.Build_Cbuilder); ok && cb.Cbuilder.GetAutoreconf() {
+			nativeDeps = append(nativeDeps, []string{
+				"autoconf",
+				"automake",
+				"libtool",
+				"gettext",
+			}...)
+		}
+
 		// TODO: check for native
 		if b.Arch == "amd64" {
 			nativeDeps = append(nativeDeps, "gcc", "binutils")
@@ -673,7 +682,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)

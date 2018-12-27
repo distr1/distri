@@ -1,0 +1,63 @@
+source: "https://github.com/hughsie/fwupd/archive/1.2.1.tar.gz"
+hash: "7ff2bb6979a7f7dbecf03e5e817d3835a698d5114a0c780a3c8de64a2fe4ae63"
+version: "1.2.1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson"
+dep: "gobject-introspection"
+dep: "gettext"
+dep: "libgudev"
+dep: "libxmlb"
+dep: "libgusb"
+dep: "sqlite3"
+dep: "libarchive"
+dep: "json-glib"
+dep: "libsoup"
+dep: "gnutls"
+dep: "gcab"
+dep: "efivar"
+dep: "elfutils"
+dep: "cairo"
+dep: "pygobject"
+dep: "pango"
+dep: "pycairo"
+dep: "pillow"
+dep: "libsmbios"
+dep: "vala"
+dep: "gnu-efi"
+dep: "dejavu-fonts-ttf"
+dep: "polkit"
+
+# po/make-images requires a working fontconfig:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -r /ro/fontconfig-amd64-2.13.1/etc/fonts /etc/"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,/usr/share/fonts,/ro/dejavu-fonts-ttf-amd64-2.37/out/share/fonts/,g' /etc/fonts/fonts.conf"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${ZI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${ZI_SOURCEDIR} -Dgpg=false -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/gnu-efi-amd64-3.0.9/out/lib -Dsystemdunitdir=${ZI_PREFIX}/lib/systemd/system"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>

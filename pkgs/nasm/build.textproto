@@ -1,0 +1,32 @@
+source: "http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.xz"
+hash: "812ecfb0dcbc5bd409aaa8f61c7de94c5b8752a7b00c632883d15b2ed6452573"
+version: "2.13.03"
+
+cbuilder: <>
+
+# build dependencies:
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--disable-werror"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,-Werror=attributes,,g' Makefile"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "INSTALLROOT=${ZI_DESTDIR}"
+  argv: "PREFIX=${ZI_PREFIX}"
+>

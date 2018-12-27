@@ -31,3 +31,5 @@ runtime_dep: "shadow"
 runtime_dep: "squashfs"
 runtime_dep: "strace" # for debugging
 runtime_dep: "sudo"
+runtime_dep: "zsh"
+runtime_dep: "man-db"

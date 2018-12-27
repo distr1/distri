@@ -38,8 +38,11 @@ const fuseHelp = `TODO
 var exchangeDirs = []string{
 	"/bin",
 	"/out/lib",
+	"/out/lib/gio",
+	"/out/lib/girepository-1.0",
 	"/out/include",
 	"/out/share/aclocal",
+	"/out/share/gettext",
 	"/out/share/gir-1.0",
 	"/out/share/glib-2.0/schemas",
 	"/out/share/mime",

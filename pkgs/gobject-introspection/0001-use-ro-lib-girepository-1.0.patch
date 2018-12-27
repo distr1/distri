@@ -1,0 +1,25 @@
+From 4ee53f24f4b545967afe0f6d2648db3285706a4e Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Thu, 27 Dec 2018 09:49:52 +0100
+Subject: [PATCH] use /ro/lib/girepository-1.0
+
+---
+ girepository/girepository.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/girepository/girepository.c b/girepository/girepository.c
+index c1fa3d3..a7a0018 100644
+--- a/girepository/girepository.c
++++ b/girepository/girepository.c
+@@ -188,7 +188,7 @@ init_globals (void)
+           g_free (custom_dirs);
+         }
+ 
+-      libdir = GOBJECT_INTROSPECTION_LIBDIR;
++      libdir = "/ro/lib";
+ 
+       typelib_dir = g_build_filename (libdir, "girepository-1.0", NULL);
+ 
+-- 
+2.19.1
+

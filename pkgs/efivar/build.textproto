@@ -1,0 +1,19 @@
+source: "https://github.com/rhboot/efivar/releases/download/37/efivar-37.tar.bz2"
+hash: "3c67feb93f901b98fbb897d5ca82931a6698b5bcd6ac34f0815f670d77747b9f"
+version: "37"
+
+cbuilder: <>
+
+cherry_pick: "0001-disable-Werror.patch"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "export DESTDIR=${ZI_DESTDIR} PREFIX=${ZI_PREFIX} LIBDIR=${ZI_PREFIX}/lib; make -j8 && make install"
+>

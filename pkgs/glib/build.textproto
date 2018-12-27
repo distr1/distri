@@ -14,7 +14,7 @@ dep: "m4" # so that glib’s m4macros are installed
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Dselinux=false"
+  argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Dselinux=false -Dgio_module_dir=/ro/lib/gio"
 >
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.

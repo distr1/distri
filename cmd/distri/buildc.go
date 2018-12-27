@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/distr1/distri/pb"
 )
 
@@ -14,6 +16,10 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 	env = append(env, b.substitute("DESTDIR=${ZI_DESTDIR}"))
 
 	target := configureTarget[b.Arch]
+
+	if opts.GetAutoreconf() && !opts.GetCopyToBuilddir() {
+		return nil, nil, fmt.Errorf("cbuilder: autoreconf requires copy_to_builddir")
+	}
 
 	var steps [][]string
 	if opts.GetCopyToBuilddir() {

@@ -1,0 +1,29 @@
+source: "https://github.com/hughsie/libxmlb/archive/0.1.5.tar.gz"
+hash: "d42ed89600b6ce42b4aeac4a9293339ee8d7c00fe80d2699f3af2771a846b99d"
+version: "0.1.5"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson"
+dep: "gobject-introspection"
+dep: "gettext"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${ZI_PREFIX} -Dgtkdoc=false . ${ZI_SOURCEDIR}"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>

@@ -1,0 +1,33 @@
+source: "https://github.com/hughsie/libgusb/archive/0.3.0.tar.gz"
+hash: "b36310f8405d5fd68f6caf4a829f7ab4c627b38fd3d02a139d411fce0f3a49f1"
+version: "0.3.0"
+
+cbuilder: <>
+
+cherry_pick: "0001-remove-unconditional-gtkdoc-call.patch"
+
+# build dependencies:
+dep: "meson"
+dep: "gobject-introspection"
+dep: "gettext"
+dep: "libusb"
+dep: "vala"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${ZI_PREFIX} -Dgtkdoc=false . ${ZI_SOURCEDIR}"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>

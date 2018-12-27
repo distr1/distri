@@ -1,0 +1,41 @@
+source: "https://www.freedesktop.org/software/polkit/releases/polkit-0.115.tar.gz"
+hash: "2f87ecdabfbd415c6306673ceadc59846f059b18ef2fce42bac63fe283f12131"
+version: "0.115"
+
+cbuilder: <
+  extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
+>
+
+# build dependencies:
+dep: "mozjs52"
+dep: "expat"
+dep: "systemd"
+dep: "intltool"
+dep: "python3"
+
+build_step: <
+  argv: "mkdir"
+  argv: "-p"
+  argv: "/sys/fs/cgroup/systemd/"
+>
+
+build_step: <
+  argv: "${ZI_SOURCEDIR}/configure"
+  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--sysconfdir=/etc"
+  argv: "--disable-dependency-tracking"
+  argv: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "V=1"
+  argv: "DESTDIR=${ZI_DESTDIR}"
+>

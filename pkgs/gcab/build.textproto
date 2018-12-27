@@ -1,0 +1,30 @@
+source: "https://github.com/GNOME/gcab/archive/v1.2.tar.gz"
+hash: "087b3ce558c00d4054b20a7fde3b392b9a960c808308078fd8750c30c0c71c64"
+version: "1.2"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson"
+dep: "gobject-introspection"
+dep: "gettext"
+dep: "vala"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Ddocs=false"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+>
