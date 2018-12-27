@@ -30,6 +30,8 @@ dep: "gnu-efi"
 dep: "dejavu-fonts-ttf"
 dep: "polkit"
 
+runtime_dep: "shared-mime-info"
+
 # po/make-images requires a working fontconfig:
 build_step: <
   argv: "/bin/sh"
