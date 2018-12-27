@@ -1,9 +1,9 @@
 # TODO: use a better upstream URL once Mozilla publishes archives. Currently,
 # they want you to download snapshots out of their CI system (WAT?!) and I can’t
 # find the link.
-source: "http://deb.debian.org/debian/pool/main/m/mozjs52/mozjs52_52.9.1.orig.tar.xz"
-hash: "f9324a6724233ab15f10381fe13e635e89d725ef1e78025a0a7d36c58a84a0f9"
-version: "52.9.1"
+source: "https://download.gnome.org/teams/releng/tarballs-needing-help/mozjs/mozjs-52.6.0gnome1.tar.xz"
+hash: "786647e0ee743ab8ebd67d307ab406f93d50363ead7d7d05e29eeb113ebbf525"
+version: "52.6.0gnome1"
 
 cbuilder: <>
 
@@ -24,5 +24,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "export SHELL=/bin/sh; cd js/src && autoconf2.13 && mkdir build_OPT.OBJ && cd build_OPT.OBJ && cp /usr/src/mozjs52-amd64-52.9.1/LICENSE /dev/urandom && ../configure --prefix=${ZI_PREFIX} && make -j8 && make install DESTDIR=${ZI_DESTDIR}"
+  argv: "export SHELL=/bin/sh; cd js/src && autoconf2.13 && mkdir build_OPT.OBJ && cd build_OPT.OBJ && cp ${ZI_SOURCEDIR}/LICENSE /dev/urandom && ../configure --prefix=${ZI_PREFIX} && make -j8 && make install DESTDIR=${ZI_DESTDIR}"
 >
