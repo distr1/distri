@@ -342,6 +342,13 @@ type fuseFS struct {
 	fileReaders   map[fuseops.InodeID]*io.SectionReader
 }
 
+func (fs *fuseFS) growReaders(n int) {
+	// Increase capacity to hold as many readers as we now have packages:
+	readers := make([]*squashfsReader, n)
+	copy(readers, fs.readers)
+	fs.readers = readers
+}
+
 func (fs *fuseFS) reader(image int) *squashfsReader {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
@@ -490,10 +497,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		}
 	}
 
-	// Increase capacity to hold as many readers as we now have packages:
-	readers := make([]*squashfsReader, len(fs.pkgs))
-	copy(readers, fs.readers)
-	fs.readers = readers
+	fs.growReaders(len(fs.pkgs))
 
 	return nil
 }
@@ -544,10 +548,8 @@ func (fs *fuseFS) updatePackages() error {
 			fs.symlink(dir, rel)
 		}
 	}
-	// Increase capacity to hold as many readers as we now have packages:
-	readers := make([]*squashfsReader, len(fs.pkgs))
-	copy(readers, fs.readers)
-	fs.readers = readers
+
+	fs.growReaders(len(fs.pkgs))
 
 	return nil
 }
