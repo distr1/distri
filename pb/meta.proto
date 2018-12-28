@@ -19,5 +19,5 @@ message Meta {
   optional string version = 3;
 
   // TODO: document overlays
-  repeated Overlay runtime_overlay = 4;
+  repeated Union runtime_union = 4;
 }

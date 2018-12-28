@@ -151,6 +151,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		inodeCnt:    2, // root + ctl inode
 		dirs:        make(map[string]*dir),
 		inodes:      make(map[fuseops.InodeID]interface{}),
+		unions:      make(map[fuseops.InodeID][]fuseops.InodeID),
 	}
 	dir := &dir{
 		byName: make(map[string]*dirent),
@@ -168,6 +169,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 			return nil, err
 		}
 	}
+	fs.growReaders(len(pkgs))
 
 	if err := fs.scanPackagesLocked(pkgs); err != nil {
 		return nil, err
@@ -236,7 +238,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 			"allow_other": "", // allow all users to read files
 			"suid":        "",
 		},
-		//DebugLogger: log.New(logf, "[debug] ", log.LstdFlags),
+		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
 		return nil, err
@@ -318,7 +320,7 @@ type squashfsReader struct {
 	file *os.File // for closing it in Destroy
 
 	dircacheMu sync.Mutex
-	dircache   map[squashfs.Inode]map[string]os.FileInfo
+	dircache   map[squashfs.Inode]map[string]fuseops.ChildInodeEntry
 }
 
 type fuseFS struct {
@@ -331,6 +333,7 @@ type fuseFS struct {
 	inodeCnt fuseops.InodeID
 	dirs     map[string]*dir
 	inodes   map[fuseops.InodeID]interface{} // *dirent (file) or *dir (dir)
+	unions   map[fuseops.InodeID][]fuseops.InodeID
 	// pkgs is only ever appended to (empty strings are tombstones), because the
 	// inode for /<pkg> is an index into pkgs.
 	pkgs []string
@@ -353,6 +356,12 @@ func (fs *fuseFS) reader(image int) *squashfsReader {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
 	return fs.readers[image]
+}
+
+func (fs *fuseFS) union(inode fuseops.InodeID) []fuseops.InodeID {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	return fs.unions[inode]
 }
 
 func (fs *fuseFS) allocateInodeLocked() fuseops.InodeID {
@@ -440,7 +449,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		existing[pkg] = true
 	}
 
-	for _, pkg := range pkgs {
+	for idx, pkg := range pkgs {
 		if existing[pkg] {
 			continue
 		}
@@ -449,10 +458,59 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		if err != nil {
 			return err
 		}
+		// TODO: close or reuse f
 		rd, err := squashfs.NewReader(f)
 		if err != nil {
 			return err
 		}
+
+		// set up runtime_unions:
+		meta, err := pb.ReadMetaFile(filepath.Join(fs.repo, pkg+".meta.textproto"))
+		if err != nil {
+			return err
+		}
+		for _, o := range meta.GetRuntimeUnion() {
+			// log.Printf("%s: runtime union: %v", pkg, o)
+			image := -1
+			for idx, pkg := range fs.pkgs {
+				if pkg != o.GetPkg() {
+					continue
+				}
+				image = idx
+				break
+			}
+			if image == -1 {
+				log.Printf("%s: runtime union: pkg %q not found", pkg, o.GetPkg())
+				continue // o.pkg not found
+			}
+
+			dstinode, err := LookupPath(rd, "out/"+o.GetDir())
+			if err != nil {
+				if _, ok := err.(*FileNotFoundError); ok {
+					continue // nothing to overlay, skip this package
+				}
+				return err
+			}
+
+			if err := fs.mountImage(image); err != nil {
+				return err
+			}
+			rd := fs.readers[image]
+			srcinode, err := LookupPath(rd.Reader, "out/"+o.GetDir())
+			if err != nil {
+				if _, ok := err.(*FileNotFoundError); ok {
+					log.Printf("%s: runtime union: %s/out/%s not found", pkg, o.GetPkg(), o.GetDir())
+					continue
+				}
+				return err
+			}
+
+			srcfuse := fs.fuseInode(image, srcinode)
+			dstfuse := fs.fuseInode(idx, dstinode)
+			fs.unions[srcfuse] = append(fs.unions[srcfuse], dstfuse)
+			delete(rd.dircache, srcinode) // invalidate dircache
+		}
+
 		type pathWithInode struct {
 			path  string
 			inode squashfs.Inode
@@ -587,7 +645,7 @@ func (fs *fuseFS) mountImage(image int) error {
 	fs.readers[image] = &squashfsReader{
 		file:     f,
 		Reader:   rd,
-		dircache: make(map[squashfs.Inode]map[string]os.FileInfo),
+		dircache: make(map[squashfs.Inode]map[string]fuseops.ChildInodeEntry),
 	}
 	return nil
 }
@@ -730,14 +788,20 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 	fis, ok := rd.dircache[squashfsInode]
 	rd.dircacheMu.Unlock()
 	if !ok {
-		fis = make(map[string]os.FileInfo)
-		dfis, err := rd.Readdir(squashfsInode)
-		if err != nil {
-			//log.Printf("Readdir: %v", err)
-			return fuse.EIO // TODO: what happens if we pass err?
+		fis = make(map[string]fuseops.ChildInodeEntry)
+		ur := fs.newUnionReader(op.Parent)
+		for ur.Next() {
+			image := ur.Image()
+			for _, fi := range ur.Dir() {
+				fis[fi.Name()] = fuseops.ChildInodeEntry{
+					Child:      fs.fuseInode(image, fi.Sys().(*squashfs.FileInfo).Inode),
+					Attributes: fs.fuseAttributes(fi),
+				}
+			}
 		}
-		for _, fi := range dfis {
-			fis[fi.Name()] = fi
+		if err := ur.Err(); err != nil {
+			log.Printf("Readdir: %v", err)
+			return fuse.EIO
 		}
 		// It is okay if another goroutine races us to getting this lock: the
 		// contents will be the same, and an extra write doesn’t hurt.
@@ -746,12 +810,12 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		rd.dircacheMu.Unlock()
 	}
 
-	fi, ok := fis[op.Name]
+	cie, ok := fis[op.Name]
 	if !ok {
 		return fuse.ENOENT
 	}
-	op.Entry.Child = fs.fuseInode(image, fi.Sys().(*squashfs.FileInfo).Inode)
-	op.Entry.Attributes = fs.fuseAttributes(fi)
+	op.Entry.Child = cie.Child
+	op.Entry.Attributes = cie.Attributes
 	return nil
 }
 
@@ -910,27 +974,33 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 		return nil
 	}
 
-	fis, err := fs.reader(image).Readdir(squashfsInode)
-	if err != nil {
-		//log.Printf("Readdir: %v", err)
-		return fuse.EIO // TODO: what happens if we pass err?
+	var fis []fuseutil.Dirent
+	ur := fs.newUnionReader(op.Inode)
+	for ur.Next() {
+		image := ur.Image()
+		for _, e := range ur.Dir() {
+			direntType := fuseutil.DT_File
+			if e.IsDir() {
+				direntType = fuseutil.DT_Directory
+			}
+			fis = append(fis, fuseutil.Dirent{
+				Offset: fuseops.DirOffset(len(fis)) + 1, // (opaque) offset of the next entry
+				Inode:  fs.fuseInode(image, e.Sys().(*squashfs.FileInfo).Inode),
+				Name:   e.Name(),
+				Type:   direntType,
+			})
+		}
+	}
+	if err := ur.Err(); err != nil {
+		log.Printf("Readdir: %v", err)
+		return fuse.EIO
 	}
 
 	if op.Offset > fuseops.DirOffset(len(fis)) {
 		return fuse.EIO
 	}
 
-	for idx, e := range fis[op.Offset:] {
-		direntType := fuseutil.DT_File
-		if e.IsDir() {
-			direntType = fuseutil.DT_Directory
-		}
-		dirent := fuseutil.Dirent{
-			Offset: op.Offset + fuseops.DirOffset(idx) + 1, // (opaque) offset of the next entry
-			Inode:  fs.fuseInode(image, e.Sys().(*squashfs.FileInfo).Inode),
-			Name:   e.Name(),
-			Type:   direntType,
-		}
+	for _, dirent := range fis[op.Offset:] {
 		//log.Printf("  dirent: %+v", dirent)
 		n := fuseutil.WriteDirent(op.Dst[op.BytesRead:], dirent)
 		if n == 0 {

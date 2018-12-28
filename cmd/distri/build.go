@@ -173,24 +173,24 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 
 			log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
 
-			overlays := make([]*pb.Overlay, len(b.Proto.RuntimeOverlay))
-			for idx, o := range b.Proto.RuntimeOverlay {
+			unions := make([]*pb.Union, len(b.Proto.RuntimeUnion))
+			for idx, o := range b.Proto.RuntimeUnion {
 				globbed, err := b.glob1(env.DefaultRepo, o.GetPkg())
 				if err != nil {
 					return err
 				}
 
-				overlays[idx] = &pb.Overlay{
+				unions[idx] = &pb.Union{
 					Dir: o.Dir,
 					Pkg: proto.String(globbed),
 				}
 			}
 
 			c := proto.MarshalTextString(&pb.Meta{
-				RuntimeDep:     resolved,
-				SourcePkg:      proto.String(b.Pkg),
-				Version:        proto.String(b.Version),
-				RuntimeOverlay: overlays,
+				RuntimeDep:   resolved,
+				SourcePkg:    proto.String(b.Pkg),
+				Version:      proto.String(b.Version),
+				RuntimeUnion: unions,
 			})
 			if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+fullName+".meta.textproto"), []byte(c), 0644); err != nil {
 				return err

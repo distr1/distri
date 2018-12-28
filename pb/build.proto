@@ -59,7 +59,7 @@ message SplitPackage {
   repeated Claim claim = 3; // required
 }
 
-message Overlay {
+message Union {
   // e.g. “out/lib/irssi/modules”
   optional string dir = 1; // required
   // e.g. “irssi”
@@ -97,6 +97,6 @@ message Build {
 
   repeated SplitPackage split_package = 11;
 
-  // TODO: document overlays
-  repeated Overlay runtime_overlay = 15;
+  // TODO: document unions
+  repeated Union runtime_union = 15;
 }
