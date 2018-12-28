@@ -55,6 +55,7 @@ build_step: <
   # argv: "--with-stage1-ldflags=-static"
   # argv: "--with-boot-ldflags=-static"
   argv: "--enable-languages=c,c++"
+  argv: "--enable-linker-build-id" # compiler will always pass --build-id to linker
 >
 
 build_step: <
