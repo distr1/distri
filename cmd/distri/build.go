@@ -624,6 +624,12 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 
 		case *pb.Build_Cbuilder:
 			deps = append(deps, cdeps...)
+
+		case *pb.Build_Cmakebuilder:
+			deps = append(deps, []string{
+				"cmake-" + native,
+			}...)
+			deps = append(deps, cdeps...)
 		}
 	}
 	return deps
@@ -991,6 +997,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
+		case *pb.Build_Cmakebuilder:
+			var err error
+			steps, env, err = b.buildcmake(v.Cmakebuilder, env)
+			if err != nil {
+				return nil, err
+			}
 		case *pb.Build_Perlbuilder:
 			var err error
 			steps, env, err = b.buildperl(v.Perlbuilder, env)
@@ -1267,6 +1279,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	if builder := b.Proto.Builder; builder != nil {
 		switch builder.(type) {
 		case *pb.Build_Cbuilder:
+			// no extra runtime deps
+		case *pb.Build_Cmakebuilder:
 			// no extra runtime deps
 		case *pb.Build_Gomodbuilder:
 			// no extra runtime deps
