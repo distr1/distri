@@ -75,5 +75,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cd ${ZI_SOURCEDIR} && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${ZI_DESTDIR}/${ZI_PREFIX}/bin go install -v ./cmd/distri"
+  argv: "cd ${ZI_SOURCEDIR} && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${ZI_DESTDIR}/${ZI_PREFIX}/bin CGO_ENABLED=0 go install -v ./cmd/distri"
 >
