@@ -8,3 +8,8 @@ cmakebuilder: <>
 dep: "yajl2"
 dep: "curl"
 dep: "irssi"
+
+runtime_overlay: <
+  dir: "out/lib/irssi/modules"
+  pkg: "irssi"
+>

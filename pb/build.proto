@@ -59,6 +59,13 @@ message SplitPackage {
   repeated Claim claim = 3; // required
 }
 
+message Overlay {
+  // e.g. “out/lib/irssi/modules”
+  optional string dir = 1; // required
+  // e.g. “irssi”
+  optional string pkg = 2; // required
+}
+
 message Build {
   // URL to upstream source archive. Currently, only tar.gz archives are supported.
   optional string source = 1;
@@ -89,4 +96,7 @@ message Build {
   optional Install install = 8;
 
   repeated SplitPackage split_package = 11;
+
+  // TODO: document overlays
+  repeated Overlay runtime_overlay = 15;
 }

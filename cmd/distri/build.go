@@ -173,9 +173,10 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 			log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
 
 			c := proto.MarshalTextString(&pb.Meta{
-				RuntimeDep: resolved,
-				SourcePkg:  proto.String(b.Pkg),
-				Version:    proto.String(b.Version),
+				RuntimeDep:     resolved,
+				SourcePkg:      proto.String(b.Pkg),
+				Version:        proto.String(b.Version),
+				RuntimeOverlay: b.Proto.RuntimeOverlay,
 			})
 			if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+fullName+".meta.textproto"), []byte(c), 0644); err != nil {
 				return err
