@@ -44,6 +44,8 @@ message Install {
   repeated string systemd_unit = 1;
 
   repeated Symlink symlink = 2;
+
+  repeated string empty_dir = 3;
 }
 
 message Claim {

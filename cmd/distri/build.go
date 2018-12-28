@@ -1128,6 +1128,14 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
+	for _, dir := range b.Proto.GetInstall().GetEmptyDir() {
+		log.Printf("creating empty dir %s", dir)
+		dest := filepath.Join(b.DestDir, b.Prefix, "out")
+		if err := os.MkdirAll(filepath.Join(dest, dir), 0755); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := os.MkdirAll(filepath.Join(b.DestDir, b.Prefix, "bin"), 0755); err != nil {
 		return nil, err
 	}

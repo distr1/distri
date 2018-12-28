@@ -9,3 +9,7 @@ dep: "openssl"
 dep: "ncurses"
 
 runtime_dep: "ncurses"
+
+install: <
+  empty_dir: "lib/irssi/modules"
+>
