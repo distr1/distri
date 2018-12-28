@@ -1,4 +1,4 @@
-package main
+package fuse
 
 import (
 	"context"
@@ -28,14 +28,14 @@ import (
 	"github.com/distr1/distri/pb"
 )
 
-const fuseHelp = `TODO
+const Help = `TODO
 `
 
 // wellKnown lists paths which should be created as a union overlay underneath
 // /ro. E.g., /ro/bin will contain symlinks to all package’s bin directories, or
 // /ro/system will contain symlinks to all package’s
 // out/lib/systemd/system directories.
-var exchangeDirs = []string{
+var ExchangeDirs = []string{
 	"/bin",
 	"/out/lib",
 	"/out/lib/gio",
@@ -58,11 +58,11 @@ const (
 	ctlInode  = 2
 )
 
-type fileNotFoundError struct {
+type FileNotFoundError struct {
 	path string
 }
 
-func (e *fileNotFoundError) Error() string {
+func (e *FileNotFoundError) Error() string {
 	return fmt.Sprintf("%q not found", e.path)
 }
 
@@ -76,18 +76,18 @@ func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component strin
 			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
 		}
 	}
-	return 0, &fileNotFoundError{path: component}
+	return 0, &FileNotFoundError{path: component}
 }
 
-func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
+func LookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
 	inode := rd.RootInode()
 	parts := strings.Split(path, "/")
 	for idx, part := range parts {
 		var err error
 		inode, err = lookupComponent(rd, inode, part)
 		if err != nil {
-			if _, ok := err.(*fileNotFoundError); ok {
-				return 0, &fileNotFoundError{path: path}
+			if _, ok := err.(*FileNotFoundError); ok {
+				return 0, &FileNotFoundError{path: path}
 			}
 			return 0, err
 		}
@@ -103,13 +103,13 @@ func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
 			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
 			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
 			//log.Printf("-> %s", target)
-			return lookupPath(rd, target)
+			return LookupPath(rd, target)
 		}
 	}
 	return inode, nil
 }
 
-func mountfuse(args []string) (join func(context.Context) error, _ error) {
+func Mount(args []string) (join func(context.Context) error, _ error) {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
@@ -134,13 +134,13 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 			}
 			permitted[overlay] = true
 		}
-		for _, dir := range exchangeDirs {
+		for _, dir := range ExchangeDirs {
 			if !permitted[dir] {
 				continue
 			}
 			filtered = append(filtered, dir)
 		}
-		exchangeDirs = filtered
+		ExchangeDirs = filtered
 	}
 
 	// TODO: use inotify to efficiently get updates to the store
@@ -174,7 +174,7 @@ func mountfuse(args []string) (join func(context.Context) error, _ error) {
 	}
 
 	var libRequested bool
-	for _, dir := range exchangeDirs {
+	for _, dir := range ExchangeDirs {
 		if dir == "/lib" {
 			libRequested = true
 			break
@@ -431,7 +431,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		log.Printf("scanPackages in %v", time.Since(start))
 	}()
 	// TODO: iterate over packages once, calling mkdir for all exchange dirs
-	for _, dir := range exchangeDirs {
+	for _, dir := range ExchangeDirs {
 		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
 	}
 
@@ -457,11 +457,11 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 			path  string
 			inode squashfs.Inode
 		}
-		inodes := make([]pathWithInode, 0, len(exchangeDirs))
-		for _, path := range exchangeDirs {
-			inode, err := lookupPath(rd, strings.TrimPrefix(path, "/"))
+		inodes := make([]pathWithInode, 0, len(ExchangeDirs))
+		for _, path := range ExchangeDirs {
+			inode, err := LookupPath(rd, strings.TrimPrefix(path, "/"))
 			if err != nil {
-				if _, ok := err.(*fileNotFoundError); ok {
+				if _, ok := err.(*FileNotFoundError); ok {
 					continue
 				}
 				return err
@@ -569,13 +569,14 @@ func (fs *fuseFS) mountImage(image int) error {
 	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + pkg + ".squashfs"}
 	f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-		f, err = updateAndOpen("/tmp/imgdir" /*fs.repo*/, remote+"/"+pkg+".squashfs")
-		if err != nil {
-			return err
-		}
+		return err
+		// if !os.IsNotExist(err) {
+		// 	return err
+		// }
+		// f, err = updateAndOpen("/tmp/imgdir" /*fs.repo*/, remote+"/"+pkg+".squashfs")
+		// if err != nil {
+		// 	return err
+		// }
 	}
 	rd, err := squashfs.NewReader(f)
 	if err != nil {

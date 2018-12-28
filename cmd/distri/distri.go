@@ -10,6 +10,8 @@ import (
 	"runtime/pprof"
 	"runtime/trace"
 	"sync"
+
+	"github.com/distr1/distri/cmd/distri/internal/fuse"
 )
 
 var (
@@ -88,7 +90,7 @@ func main() {
 			"pack":     {packHelp, func() { pack(helpFlag) }},
 			"scaffold": {scaffoldHelp, func() { scaffold(helpFlag) }},
 			"install":  {installHelp, func() { install(helpFlag) }},
-			"fuse":     {fuseHelp, func() { mountfuse(helpFlag) }},
+			"fuse":     {fuse.Help, func() { fuse.Mount(helpFlag) }},
 			"fusectl":  {fusectlHelp, func() { fusectl(helpFlag) }},
 			"export":   {exportHelp, func() { export(helpFlag) }},
 			"env":      {envHelp, func() { printenv(helpFlag) }},
@@ -153,7 +155,7 @@ func main() {
 		}
 
 	case "fuse":
-		join, err := mountfuse(args)
+		join, err := fuse.Mount(args)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
@@ -180,7 +181,7 @@ func pack(args []string) error {
 		return err
 	}
 
-	if _, err := mountfuse([]string{"-repo=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
+	if _, err := cmdfuse.Mount([]string{"-repo=" + filepath.Join(*root, "roimg"), filepath.Join(*root, "ro")}); err != nil {
 		return err
 	}
 	defer fuse.Unmount(filepath.Join(*root, "ro"))
@@ -615,7 +616,7 @@ name=root`)
 	if err := chown.Run(); err != nil {
 		return fmt.Errorf("%v: %v", chown.Args, err)
 	}
-	join, err := mountfuse([]string{"-repo=/mnt/roimg", "/mnt/ro"})
+	join, err := cmdfuse.Mount([]string{"-repo=/mnt/roimg", "/mnt/ro"})
 	if err != nil {
 		return err
 	}

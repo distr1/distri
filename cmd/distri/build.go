@@ -22,6 +22,7 @@ import (
 	"text/template"
 	"time"
 
+	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
@@ -702,7 +703,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = mountfuse([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)

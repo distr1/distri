@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -48,11 +49,11 @@ func mirror(args []string) error {
 		if err != nil {
 			return err
 		}
-		for _, wk := range exchangeDirs {
+		for _, wk := range fuse.ExchangeDirs {
 			wk = strings.TrimPrefix(wk, "/")
-			inode, err := lookupPath(rd, wk)
+			inode, err := fuse.LookupPath(rd, wk)
 			if err != nil {
-				if _, ok := err.(*fileNotFoundError); ok {
+				if _, ok := err.(*fuse.FileNotFoundError); ok {
 					continue
 				}
 				return err
