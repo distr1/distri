@@ -869,6 +869,17 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 	}
 
 	if image == -1 {
+		if op.Inode == ctlInode {
+			op.Attributes = fuseops.InodeAttributes{
+				Nlink: 1, // TODO: number of incoming hard links to this inode
+				Mode:  os.ModeSymlink | 0444,
+				Atime: time.Now(), // TODO
+				Mtime: time.Now(), // TODO
+				Ctime: time.Now(), // TODO
+			}
+			return nil
+		}
+
 		fs.mu.Lock()
 		defer fs.mu.Unlock()
 		x, ok := fs.inodes[op.Inode]
@@ -884,7 +895,6 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 				Mtime: time.Now(), // TODO
 				Ctime: time.Now(), // TODO
 			}
-			return nil
 		case *dirent:
 			op.Attributes = fuseops.InodeAttributes{
 				Nlink: 1, // TODO: number of incoming hard links to this inode
