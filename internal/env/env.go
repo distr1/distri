@@ -46,6 +46,9 @@ func Repos() ([]distri.Repo, error) {
 	}
 	var repos []distri.Repo
 	for _, fi := range fis {
+		if !strings.HasSuffix(fi.Name(), ".repo") {
+			continue
+		}
 		b, err := ioutil.ReadFile(filepath.Join(dir, fi.Name()))
 		if err != nil {
 			return nil, err

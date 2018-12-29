@@ -144,7 +144,7 @@ func pack(args []string) error {
 	if err := os.MkdirAll(filepath.Join(*root, "etc/distri/repos.d"), 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(*root, "etc/distri/repos.d/midna"), []byte("http://kwalitaet:alpha@midna.zekjur.net:8045/export"), 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(*root, "etc/distri/repos.d/midna.repo"), []byte("http://kwalitaet:alpha@midna.zekjur.net:8045/export"), 0644); err != nil {
 		return err
 	}
 
