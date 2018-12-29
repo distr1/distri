@@ -291,6 +291,9 @@ func install(args []string) error {
 	if *repo != "" {
 		repos = []distri.Repo{{Path: *repo}}
 	}
+	if len(repos) == 0 {
+		return fmt.Errorf("no repos configured")
+	}
 
 	// TODO: lock to ensure only one process modifies roimg at a time
 
