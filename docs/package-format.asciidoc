@@ -1,5 +1,7 @@
 # distri package format
-:toc:
+:toc: left
+:toclevels: 4
+:sectnums:
 
 This document describes the distri package format.
 
@@ -36,20 +38,33 @@ Many pieces of software exchange data by placing files in well-known file system
 |===
 | Location | Contents | Consumers
 | `/bin` | programs | shell, other programs
-| `/include` | contains C header files | compilers
-| `/lib` | contains libraries | compilers and https://manpages.debian.org/stretch/manpages/ld-linux.8[`ld.so`]
-| `/lib/pkgconfig` | contains pkgconfig files | pkg-config
-| `/lib/systemd/system` | contains systemd service files | systemd
-| `/share/man` | contains manual pages | man
+| `/include` | C header files | compilers
+| `/lib` | libraries | compilers and https://manpages.debian.org/stretch/manpages/ld-linux.8[`ld.so`]
+| `/lib/pkgconfig` | pkgconfig files | pkg-config
+| `/lib/systemd/system` | systemd service files | systemd
+| `/share/man` | manual pages | man
 | … | … | …
 |===
 
-Packages can declare one or more exchange directories in their metadata file. All loaded exchange directories will be listed in all available packages. In other words: if you don’t have the `man` package installed, even though many other packages will ship man pages, the `/ro/share/man` exchange directory will not be filled.
+Packages can declare one or more exchange directories in their metadata file. Exchange directories are lazily created. In other words: if you don’t have the `man` package installed, even though many other packages will ship man pages, the `/ro/share/man` exchange directory will not be filled.
 
 [NOTE]
-Nested overlays are supported: some exchange directories are hierarchical. For example, several Xorg libraries ship files not in `/usr/include`, but in `/usr/include/X11`.
+Overlays are recursive, since a number of exchange directories are hierarchical. For example, several Xorg libraries ship files not in `/usr/include`, but in `/usr/include/X11`.
 
-TODO: what about package-local exchange directories? e.g. /ro/irssi-8.1.11/exchange/plugins, because plugins are tightly coupled to the ABI, and would otherwise interfere with side-by-side installation?
+#### Per-package Union Directories
+
+The exchange directories listed above are global. For packages with a plugin architecture, the plugin packages can specify they want to be overlaid onto another package. E.g., the `irssi-robustirc` package specifies:
+
+```
+runtime_union: <
+  dir: "lib/irssi/modules"
+  pkg: "irssi"
+>
+```
+
+When the `irssi` package is mounted, its `/ro/irssi-amd64-1.1.1/out/lib/irssi/modules` directory will contain the union of the `lib/irssi/modules` directories of all plugins.
+
+Note that this mechanism is strongly versioned: `irssi-amd64-1.1.1` will only see plugins which were built for `irssi-amd64-1.1.1`.
 
 ## Package Contents
 
