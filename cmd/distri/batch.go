@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
@@ -76,9 +77,7 @@ func batch(args []string) error {
 		if err != nil {
 			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
 		} else {
-			onInterruptMu.Lock()
-			onInterrupt = append(onInterrupt, cleanup)
-			onInterruptMu.Unlock()
+			oninterrupt.Register(cleanup)
 			defer cleanup()
 		}
 	}

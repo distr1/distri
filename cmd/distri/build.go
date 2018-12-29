@@ -24,6 +24,7 @@ import (
 
 	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -1890,9 +1891,7 @@ func build(args []string) error {
 		if err != nil {
 			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
 		} else {
-			onInterruptMu.Lock()
-			onInterrupt = append(onInterrupt, cleanup)
-			onInterruptMu.Unlock()
+			oninterrupt.Register(cleanup)
 			defer cleanup()
 		}
 	}

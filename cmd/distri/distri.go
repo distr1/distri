@@ -6,25 +6,17 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"runtime/pprof"
 	"runtime/trace"
-	"sync"
 
 	"github.com/distr1/distri/cmd/distri/internal/fuse"
+
+	_ "github.com/distr1/distri/internal/oninterrupt"
 )
 
 var (
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
-)
-
-// onInterrupt allows subcommands to register cleanup handlers which shall be
-// run on receiving SIGINT, e.g. reverting temporary CPU frequency scaling
-// governor changes.
-var (
-	onInterruptMu sync.Mutex
-	onInterrupt   []func()
 )
 
 func main() {
@@ -52,22 +44,6 @@ func main() {
 		if err := pid1(); err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	{
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt)
-		go func() {
-			<-c
-			onInterruptMu.Lock()
-			for _, f := range onInterrupt {
-				f()
-			}
-			onInterruptMu.Unlock()
-			// TODO: replace by cancelling a context:
-			// https://medium.com/@matryer/make-ctrl-c-cancel-the-context-context-bd006a8ad6ff
-			os.Exit(1)
-		}()
 	}
 
 	args := flag.Args()

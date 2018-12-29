@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 )
@@ -282,15 +283,9 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	if *readiness != -1 {
 		os.NewFile(uintptr(*readiness), "").Close()
 	}
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	go func() {
-		<-ch
+	oninterrupt.Register(func() {
 		syscall.Unmount(mountpoint, 0)
-		// The following os.Exit is typically unreached because the above
-		// unmount causes mfs.Join to return.
-		os.Exit(128 + int(syscall.SIGINT))
-	}()
+	})
 
 	return join, nil
 }
