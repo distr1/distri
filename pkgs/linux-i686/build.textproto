@@ -21,7 +21,7 @@ dep: "kmod"
 build_step: <
   argv: "make"
   argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
+  argv: "${DISTRI_SOURCEDIR}"
   argv: "olddefconfig"
   argv: "ARCH=i386"
 >
@@ -29,8 +29,8 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
+  argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
-  argv: "INSTALL_HDR_PATH=${ZI_DESTDIR}/${ZI_PREFIX}"
+  argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "ARCH=i386"
 >

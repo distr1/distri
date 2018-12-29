@@ -9,7 +9,7 @@ runtime_dep: "ninja"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 # https://github.com/NixOS/nixpkgs/pull/28444#issuecomment-324033323
@@ -24,6 +24,6 @@ build_step: <
   argv: "python3"
   argv: "setup.py"
   argv: "install"
-  argv: "--prefix=${ZI_PREFIX}"
-  argv: "--root=${ZI_DESTDIR}"
+  argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--root=${DISTRI_DESTDIR}"
 >

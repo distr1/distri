@@ -27,7 +27,7 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "-C"
-  argv: "${ZI_SOURCEDIR}/nss"
+  argv: "${DISTRI_SOURCEDIR}/nss"
   argv: "USE_64=1"
   argv: "NSPR_INCLUDE_DIR=/ro/nspr-amd64-4.20/out/include/nspr/"
   argv: "CROSS_COMPILE=1" # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
@@ -38,24 +38,24 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib; mkdir -p $d; install -m755 ${ZI_SOURCEDIR}/dist/Linux*/lib/*.{so,a} $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib; mkdir -p $d; install -m755 ${DISTRI_SOURCEDIR}/dist/Linux*/lib/*.{so,a} $d"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/include; mkdir -p $d; cp -RL ${ZI_SOURCEDIR}/dist/{public,private}/nss/* $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/include; mkdir -p $d; cp -RL ${DISTRI_SOURCEDIR}/dist/{public,private}/nss/* $d"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
   # TODO: why not install all binaries? LFS only choses these 3
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; install -m755 ${ZI_SOURCEDIR}/dist/Linux*/bin/{certutil,nss-config,pk12util} $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; install -m755 ${DISTRI_SOURCEDIR}/dist/Linux*/bin/{certutil,nss-config,pk12util} $d"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib/pkgconfig; mkdir -p $d; install -m644 ${ZI_SOURCEDIR}/dist/Linux*/lib/pkgconfig/nss.pc $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/pkgconfig; mkdir -p $d; install -m644 ${DISTRI_SOURCEDIR}/dist/Linux*/lib/pkgconfig/nss.pc $d"
 >

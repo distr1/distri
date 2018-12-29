@@ -4,9 +4,9 @@ version: "2.13"
 
 cbuilder: <
   extra_configure_flag: "--program-suffix=2.13"
-  extra_make_flag: "prefix=${ZI_DESTDIR}/${ZI_PREFIX}"
-  extra_make_flag: "datadir=${ZI_DESTDIR}/${ZI_PREFIX}/share"
-  extra_make_flag: "infodir=${ZI_DESTDIR}/${ZI_PREFIX}/share/info"
+  extra_make_flag: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
+  extra_make_flag: "datadir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share"
+  extra_make_flag: "infodir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/info"
 >
 
 # build dependencies:
@@ -16,8 +16,8 @@ dep: "perl"
 runtime_dep: "m4"
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
   argv: "--program-suffix=2.13"
@@ -34,7 +34,7 @@ build_step: <
   argv: "make"
   argv: "install"
   argv: "V=1"
-  argv: "prefix=${ZI_DESTDIR}/${ZI_PREFIX}"
-  argv: "datadir=${ZI_DESTDIR}/${ZI_PREFIX}/share"
-  argv: "infodir=${ZI_DESTDIR}/${ZI_PREFIX}/share/info"
+  argv: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
+  argv: "datadir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share"
+  argv: "infodir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/info"
 >

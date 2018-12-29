@@ -2,7 +2,7 @@
 
 for typ in rsa ecdsa ed25519
 do
-	[ -e "/etc/ssh/ssh_host_${typ}_key" ] || ${ZI_PREFIX}/bin/ssh-keygen -f "/etc/ssh/ssh_host_${typ}_key" -N "" -t "$typ"
+	[ -e "/etc/ssh/ssh_host_${typ}_key" ] || ${DISTRI_PREFIX}/bin/ssh-keygen -f "/etc/ssh/ssh_host_${typ}_key" -N "" -t "$typ"
 done
 
-exec ${ZI_PREFIX}/sbin/sshd "$@"
+exec ${DISTRI_PREFIX}/sbin/sshd "$@"

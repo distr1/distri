@@ -11,13 +11,13 @@ dep: "systemd"
 # build_step: <
 #   argv: "/bin/sh"
 #   argv: "-c"
-#   argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+#   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 # >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" meson ${ZI_SOURCEDIR} --prefix=${ZI_PREFIX} -Drootprefix=${ZI_PREFIX}"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -30,19 +30,19 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/dev/; mkdir -p $d; touch $d/fuse"
+  argv: "d=${DISTRI_DESTDIR}/dev/; mkdir -p $d; touch $d/fuse"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "rm ${ZI_DESTDIR}/dev/fuse"
+  argv: "rm ${DISTRI_DESTDIR}/dev/fuse"
 >
 
 install: <

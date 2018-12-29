@@ -367,10 +367,10 @@ func (b *buildctx) pkg() error {
 
 func (b *buildctx) substitute(s string) string {
 	// TODO: different format? this might be mistaken for environment variables
-	s = strings.Replace(s, "${ZI_DESTDIR}", b.DestDir, -1)
-	s = strings.Replace(s, "${ZI_PREFIX}", filepath.Join(b.Prefix, "out"), -1)
-	s = strings.Replace(s, "${ZI_BUILDDIR}", b.BuildDir, -1)
-	s = strings.Replace(s, "${ZI_SOURCEDIR}", b.SourceDir, -1)
+	s = strings.Replace(s, "${DISTRI_DESTDIR}", b.DestDir, -1)
+	s = strings.Replace(s, "${DISTRI_PREFIX}", filepath.Join(b.Prefix, "out"), -1)
+	s = strings.Replace(s, "${DISTRI_BUILDDIR}", b.BuildDir, -1)
+	s = strings.Replace(s, "${DISTRI_SOURCEDIR}", b.SourceDir, -1)
 	return s
 }
 
@@ -717,7 +717,7 @@ func fuseMkdirAll(ctl string, dir string) error {
 }
 
 func (b *buildctx) build() (*pb.Meta, error) {
-	if os.Getenv("ZI_BUILD_PROCESS") != "1" {
+	if os.Getenv("DISTRI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
 		if err != nil {
 			return nil, err
@@ -772,7 +772,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		//"strace", "-f", "-o", "/tmp/st", os.Args[0], "-job="+serialized)
 		cmd.ExtraFiles = []*os.File{w}
 		// TODO: clean the environment
-		cmd.Env = append(os.Environ(), "ZI_BUILD_PROCESS=1")
+		cmd.Env = append(os.Environ(), "DISTRI_BUILD_PROCESS=1")
 		cmd.Stdin = os.Stdin // for interactive debugging
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

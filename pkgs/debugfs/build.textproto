@@ -14,5 +14,5 @@ build_step: <
 runtime_dep: "distri1"
 
 install: <
-  systemd_unit: "${ZI_SOURCEDIR}/debugfs.service"
+  systemd_unit: "${DISTRI_SOURCEDIR}/debugfs.service"
 >

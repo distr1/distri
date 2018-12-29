@@ -17,13 +17,13 @@ dep: "m4" # TODO: remove (runtime-dep of flex)
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "./configure --prefix=${ZI_PREFIX}"
+  argv: "./configure --prefix=${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -34,5 +34,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install DESTDIR=${ZI_DESTDIR} PREFIX=${ZI_PREFIX} SBINDIR=${ZI_PREFIX}/sbin"
+  argv: "make install DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX} SBINDIR=${DISTRI_PREFIX}/sbin"
 >

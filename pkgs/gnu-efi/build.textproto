@@ -9,11 +9,11 @@ cbuilder: <>
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make -j8 PREFIX=${ZI_DESTDIR}/${ZI_PREFIX} && make install PREFIX=${ZI_DESTDIR}/${ZI_PREFIX}"
+  argv: "make -j8 PREFIX=${DISTRI_DESTDIR}/${DISTRI_PREFIX} && make install PREFIX=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
 >

@@ -11,11 +11,11 @@ cbuilder: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "make"
-  argv: "prefix=${ZI_DESTDIR}/${ZI_PREFIX}"
+  argv: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "install"
 >

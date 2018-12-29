@@ -15,10 +15,10 @@ dep: "strace"
 cbuilder: <
   extra_configure_flag: "OPENSSL_SEEDS_ITSELF=yes"
   extra_configure_flag: "--sysconfdir=/etc/ssh"
-  extra_configure_flag: "--with-privsep-path=${ZI_PREFIX}/var/empty"
+  extra_configure_flag: "--with-privsep-path=${DISTRI_PREFIX}/var/empty"
   extra_configure_flag: "--with-pam"
 >
 
 install: <
-  systemd_unit: "${ZI_SOURCEDIR}/ssh.service"
+  systemd_unit: "${DISTRI_SOURCEDIR}/ssh.service"
 >

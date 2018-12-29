@@ -65,13 +65,13 @@ split_package: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/lib; mkdir -p $d; touch $d/liba.so"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib; mkdir -p $d; touch $d/liba.so"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/share/doc/multi; mkdir -p $d; touch $d/README.md"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/doc/multi; mkdir -p $d; touch $d/README.md"
 >
 `
 

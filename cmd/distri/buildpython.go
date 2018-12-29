@@ -6,8 +6,8 @@ import (
 
 func (b *buildctx) buildpython(opts *pb.PythonBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	steps := [][]string{
-		[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
-		[]string{"python3", "setup.py", "install", "--prefix=${ZI_PREFIX}", "--root=${ZI_DESTDIR}"},
+		[]string{"cp", "-T", "-ar", "${DISTRI_SOURCEDIR}/", "."},
+		[]string{"python3", "setup.py", "install", "--prefix=${DISTRI_PREFIX}", "--root=${DISTRI_DESTDIR}"},
 	}
 	return stepsToProto(steps), env, nil
 }

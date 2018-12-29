@@ -22,7 +22,7 @@ dep: "python3"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 # TODO: make /share/aclocal an exchange dir
@@ -47,7 +47,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "./configure --prefix=${ZI_PREFIX}"
+  argv: "./configure --prefix=${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -59,5 +59,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install DESTDIR=${ZI_DESTDIR} PREFIX=${ZI_PREFIX}"
+  argv: "make install DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX}"
 >

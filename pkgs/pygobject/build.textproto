@@ -14,7 +14,7 @@ dep: "pycairo"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR}"
+  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR}"
 >
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
@@ -27,5 +27,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
 >

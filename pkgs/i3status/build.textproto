@@ -15,7 +15,7 @@ dep: "which"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
@@ -26,8 +26,8 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "SYSCONFDIR=/etc"
   argv: "V=1"
 >

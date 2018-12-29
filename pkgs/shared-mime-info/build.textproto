@@ -12,8 +12,8 @@ dep: "gettext"
 dep: "libxml2"
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -25,8 +25,8 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
 >
 
 install: <

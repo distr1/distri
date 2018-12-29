@@ -58,8 +58,8 @@ build_step: <
 # the search path is persisted in gcc/cppdefault.c
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
   argv: "--disable-libitm" # TODO: fails build: g++ missing from libtool invocation
   argv: "--disable-libmpx" # fails build: PATH_MAX not defined, apparently removed from upstream gcc for next release
@@ -88,12 +88,12 @@ build_step: <
   argv: "-j8"
   argv: "install-host"
   argv: "install-target"
-  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
 >
 
 # TODO: gcc does not find prefixed binutils, i.e. it looks for “as”, not “i686-pc-linux-gnu-as”
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/i686-pc-linux-gnu/bin; mkdir -p $d; for f in $(ls /ro/binutils-i686-amd64-2.31/bin/); do ln -s /ro/binutils-i686-amd64-2.31/bin/$f ${d}/${f#i686-pc-linux-gnu-}; done"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/bin; mkdir -p $d; for f in $(ls /ro/binutils-i686-amd64-2.31/bin/); do ln -s /ro/binutils-i686-amd64-2.31/bin/$f ${d}/${f#i686-pc-linux-gnu-}; done"
 >

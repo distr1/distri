@@ -108,7 +108,7 @@ Path to a systemd unit file which the build steps don’t install.
 .Example (from containerd):
 --------------------------------------------------------------------------------
 install: <
-  systemd_unit: "${ZI_SOURCEDIR}/containerd.service"
+  systemd_unit: "${DISTRI_SOURCEDIR}/containerd.service"
 >
 --------------------------------------------------------------------------------
 symlink (repeated):::

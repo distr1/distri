@@ -17,12 +17,12 @@ build_step: <
   argv: "cp"
   argv: "-T"
   argv: "-ar"
-  argv: "${ZI_SOURCEDIR}/"
+  argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "export SHELL=/bin/sh; cd js/src && autoconf2.13 && mkdir build_OPT.OBJ && cd build_OPT.OBJ && cp ${ZI_SOURCEDIR}/LICENSE /dev/urandom && ../configure --prefix=${ZI_PREFIX} && make -j8 && make install DESTDIR=${ZI_DESTDIR}"
+  argv: "export SHELL=/bin/sh; cd js/src && autoconf2.13 && mkdir build_OPT.OBJ && cd build_OPT.OBJ && cp ${DISTRI_SOURCEDIR}/LICENSE /dev/urandom && ../configure --prefix=${DISTRI_PREFIX} && make -j8 && make install DESTDIR=${DISTRI_DESTDIR}"
 >

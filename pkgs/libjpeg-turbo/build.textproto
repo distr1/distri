@@ -10,8 +10,8 @@ dep: "nasm"
 
 build_step: <
   argv: "/bin/cmake"
-  argv: "${ZI_SOURCEDIR}"
-  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}"
+  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -23,6 +23,6 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
 >

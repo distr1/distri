@@ -5,8 +5,8 @@ version: "2.31"
 cbuilder: <>
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
 #  argv: "LDFLAGS=-static"
 >
 
@@ -24,5 +24,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} make install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} make install"
 >

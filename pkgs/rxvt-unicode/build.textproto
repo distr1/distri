@@ -12,8 +12,8 @@ dep: "fontconfig"
 dep: "libxft"
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--enable-xft"
 >
 
@@ -26,7 +26,7 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
-  argv: "TERMINFO=${ZI_DESTDIR}/${ZI_PREFIX}/share/terminfo"  
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+  argv: "TERMINFO=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/terminfo"  
 >

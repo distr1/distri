@@ -35,7 +35,7 @@ dep: "findutils"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "gcc -o foo ${ZI_SOURCEDIR}/foo.c -lmnl $LDFLAGS"
+  argv: "gcc -o foo ${DISTRI_SOURCEDIR}/foo.c -lmnl $LDFLAGS"
 >
 
 # build_step: <
@@ -46,5 +46,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/bin/foo; mkdir -p $(dirname $d); cp foo $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin/foo; mkdir -p $(dirname $d); cp foo $d"
 >

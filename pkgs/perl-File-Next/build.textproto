@@ -10,13 +10,13 @@ dep: "perl"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "perl Makefile.PL INSTALL_BASE=${ZI_PREFIX} EXPATLIBPATH=/ro/expat-amd64-2.2.6/out/lib PREREQ_FATAL=true"
+  argv: "perl Makefile.PL INSTALL_BASE=${DISTRI_PREFIX} EXPATLIBPATH=/ro/expat-amd64-2.2.6/out/lib PREREQ_FATAL=true"
 >
 
 build_step: <
@@ -28,5 +28,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install DESTDIR=${ZI_DESTDIR}"
+  argv: "make install DESTDIR=${DISTRI_DESTDIR}"
 >

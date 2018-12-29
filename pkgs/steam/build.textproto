@@ -18,8 +18,8 @@ runtime_dep: "libx11-i686"
 build_step: <
   argv: "make"
   argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
+  argv: "${DISTRI_SOURCEDIR}"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
 >

@@ -13,7 +13,7 @@ var configureTarget = map[string]string{
 
 func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
-	env = append(env, b.substitute("DESTDIR=${ZI_DESTDIR}"))
+	env = append(env, b.substitute("DESTDIR=${DISTRI_DESTDIR}"))
 
 	target := configureTarget[b.Arch]
 
@@ -24,7 +24,7 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 	var steps [][]string
 	if opts.GetCopyToBuilddir() {
 		steps = [][]string{
-			[]string{"cp", "-T", "-ar", "${ZI_SOURCEDIR}/", "."},
+			[]string{"cp", "-T", "-ar", "${DISTRI_SOURCEDIR}/", "."},
 		}
 		if opts.GetAutoreconf() {
 			steps = append(steps, [][]string{
@@ -37,7 +37,7 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 			append([]string{
 				"./configure",
 				"--host=" + target,
-				"--prefix=${ZI_PREFIX}",
+				"--prefix=${DISTRI_PREFIX}",
 				"--sysconfdir=/etc",
 				"--disable-dependency-tracking",
 			}, opts.GetExtraConfigureFlag()...),
@@ -46,9 +46,9 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 		steps = [][]string{
 			// TODO: set --disable-silent-rules if found in configure help output
 			append([]string{
-				"${ZI_SOURCEDIR}/configure",
+				"${DISTRI_SOURCEDIR}/configure",
 				"--host=" + target,
-				"--prefix=${ZI_PREFIX}",
+				"--prefix=${DISTRI_PREFIX}",
 				"--sysconfdir=/etc",
 				"--disable-dependency-tracking",
 			}, opts.GetExtraConfigureFlag()...),
@@ -59,8 +59,8 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 		append([]string{"make", "-j8", "V=1"}, opts.GetExtraMakeFlag()...),
 		// e.g. help2man doesn’t pick up the environment variable
 		append([]string{"make", "install",
-			"DESTDIR=${ZI_DESTDIR}",
-			"PREFIX=${ZI_PREFIX}", // e.g. for iputils
+			"DESTDIR=${DISTRI_DESTDIR}",
+			"PREFIX=${DISTRI_PREFIX}", // e.g. for iputils
 		}, opts.GetExtraMakeFlag()...),
 	}...)
 	return stepsToProto(steps), env, nil

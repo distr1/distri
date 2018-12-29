@@ -7,8 +7,8 @@ cbuilder: <>
 # build dependencies:
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--disable-werror"
 >
 
@@ -27,6 +27,6 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "INSTALLROOT=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "INSTALLROOT=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
 >

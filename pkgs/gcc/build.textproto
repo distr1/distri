@@ -49,8 +49,8 @@ build_step: <
 # the search path is persisted in gcc/cppdefault.c
 
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
   # argv: "--with-stage1-ldflags=-static"
   # argv: "--with-boot-ldflags=-static"
@@ -67,7 +67,7 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
 >
 
 install: <

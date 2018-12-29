@@ -30,8 +30,8 @@ dep: "gzip"
 
 # TODO: specify cross-compile target like in buildc.go?
 build_step: <
-  argv: "${ZI_SOURCEDIR}/configure"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
 >
@@ -46,8 +46,8 @@ build_step: <
 build_step: <
   argv: "make"
   argv: "install"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "user-defined-trusted-dirs=/ro/lib"
 >
 
@@ -55,12 +55,12 @@ build_step: <
   argv: "make"
   argv: "-j8"
   argv: "localedata/install-locales"
-  argv: "DESTDIR=${ZI_DESTDIR}"
-  argv: "PREFIX=${ZI_PREFIX}"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "user-defined-trusted-dirs=/ro/lib"
 >
 
 build_step: <
   argv: "rm"
-  argv: "${ZI_DESTDIR}/etc/ld.so.cache"
+  argv: "${DISTRI_DESTDIR}/etc/ld.so.cache"
 >

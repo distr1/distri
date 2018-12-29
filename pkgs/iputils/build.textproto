@@ -18,7 +18,7 @@ dep: "nettle"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
@@ -30,5 +30,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${ZI_DESTDIR}/${ZI_PREFIX}/bin; mkdir -p $d; cp {ping,tracepath,traceroute6,clockdiff,rdisc,arping,tftpd,rarpd} $d/"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp {ping,tracepath,traceroute6,clockdiff,rdisc,arping,tftpd,rarpd} $d/"
 >

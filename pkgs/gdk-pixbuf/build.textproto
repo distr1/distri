@@ -30,7 +30,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${ZI_PREFIX} . ${ZI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
+  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
 >
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
@@ -43,11 +43,11 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} ninja -v install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "ln -s /ro/gdk-pixbuf-amd64-2.38.0/ro/gdk-pixbuf-amd64-2.38.0/out/* /ro/gdk-pixbuf-amd64-2.38.0/out/ && ${ZI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${ZI_DESTDIR}/${ZI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+  argv: "ln -s /ro/gdk-pixbuf-amd64-2.38.0/ro/gdk-pixbuf-amd64-2.38.0/out/* /ro/gdk-pixbuf-amd64-2.38.0/out/ && ${DISTRI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
 >

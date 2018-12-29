@@ -7,13 +7,13 @@ cbuilder: <>
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "./Configure -ds -e -Dprefix=${ZI_PREFIX} -Dcc=gcc"
+  argv: "./Configure -ds -e -Dprefix=${DISTRI_PREFIX} -Dcc=gcc"
 >
 
 build_step: <
@@ -25,5 +25,5 @@ build_step: <
   # TODO: get rid of /bin/sh once build_step supports environment variables
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} make install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} make install"
 >

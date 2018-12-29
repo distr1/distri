@@ -4,7 +4,7 @@ version: "1.9.4"
 
 cbuilder: <
   extra_configure_flag: "--enable-init=service.forking"
-  extra_configure_flag: "--enable-initdir=${ZI_PREFIX}/lib/systemd/system"
+  extra_configure_flag: "--enable-initdir=${DISTRI_PREFIX}/lib/systemd/system"
 >
 
 # build dependencies:

@@ -10,12 +10,12 @@ dep: "perl"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "./config"
-  argv: "--prefix=${ZI_PREFIX}"
+  argv: "--prefix=${DISTRI_PREFIX}"
   argv: "shared"
 >
 
@@ -27,5 +27,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install INSTALL_PREFIX=${ZI_DESTDIR} INSTALLTOP=${ZI_PREFIX}"
+  argv: "make install INSTALL_PREFIX=${DISTRI_DESTDIR} INSTALLTOP=${DISTRI_PREFIX}"
 >

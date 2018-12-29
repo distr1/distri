@@ -7,7 +7,7 @@ cbuilder: <>
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
@@ -18,5 +18,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make -C squashfs-tools install INSTALL_DIR=${ZI_DESTDIR}/${ZI_PREFIX}/bin"
+  argv: "make -C squashfs-tools install INSTALL_DIR=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin"
 >

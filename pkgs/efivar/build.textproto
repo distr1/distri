@@ -9,11 +9,11 @@ cherry_pick: "0001-disable-Werror.patch"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -T -ar ${ZI_SOURCEDIR}/ ."
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "export DESTDIR=${ZI_DESTDIR} PREFIX=${ZI_PREFIX} LIBDIR=${ZI_PREFIX}/lib; make -j8 && make install"
+  argv: "export DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX} LIBDIR=${DISTRI_PREFIX}/lib; make -j8 && make install"
 >

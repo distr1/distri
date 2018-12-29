@@ -11,13 +11,13 @@ dep: "gperf" # NOTE that libcap fails silently without gperf :(
 build_step: <
   argv: "make"
   argv: "-C"
-  argv: "${ZI_SOURCEDIR}"
+  argv: "${DISTRI_SOURCEDIR}"
   argv: "-j8"
-  argv: "prefix=${ZI_PREFIX}"
+  argv: "prefix=${DISTRI_PREFIX}"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${ZI_DESTDIR} make -C ${ZI_SOURCEDIR} install prefix=${ZI_PREFIX} lib=lib RAISE_SETFCAP=no"
+  argv: "DESTDIR=${DISTRI_DESTDIR} make -C ${DISTRI_SOURCEDIR} install prefix=${DISTRI_PREFIX} lib=lib RAISE_SETFCAP=no"
 >
