@@ -80,7 +80,9 @@ func pack(args []string) error {
 		"esp",     // grub (EFI System Partition)
 		"dev",     // udev
 		"ro",      // read-only package directory (mountpoint)
+		"ro-dbg",  // read-only package directory (mountpoint)
 		"roimg",   // read-only package store
+		"rodebug", // read-only package store
 		"ro-tmp",  // temporary directory which is not hidden by systemd’s tmp.mount
 		"proc",    // procfs
 		"sys",     // sysfs
@@ -233,7 +235,8 @@ func pack(args []string) error {
 		"containerd",
 		"docker",
 		"ssh",
-		"haveged")
+		"haveged",
+		"debugfs")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
