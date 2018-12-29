@@ -114,8 +114,9 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 			return fmt.Errorf("updateFromDistriroot: %v", err)
 		}
 	} else if u.Scheme == "empty" {
-		if err := os.MkdirAll(b.SourceDir, 0755); err != nil {
-			return err
+		b.SourceDir = "empty"
+		if err := b.makeEmpty(); err != nil {
+			return fmt.Errorf("makeEmpty: %v", err)
 		}
 	} else {
 		if err := b.extract(); err != nil {
@@ -1694,6 +1695,30 @@ func (b *buildctx) downloadHTTP(fn string) error {
 		return err
 	}
 	return f.Close()
+}
+
+func (b *buildctx) makeEmpty() error {
+	if _, err := os.Stat(b.SourceDir); err == nil {
+		return nil // already exists
+	}
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	tmp, err := ioutil.TempDir(pwd, "distri")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmp)
+
+	for _, u := range b.Proto.GetCherryPick() {
+		if err := b.cherryPick(u, tmp); err != nil {
+			return fmt.Errorf("cherry picking %s: %v", u, err)
+		}
+		log.Printf("cherry picked %s", u)
+	}
+
+	return os.Rename(tmp, b.SourceDir)
 }
 
 func updateFromDistriroot(builddir string) error {
