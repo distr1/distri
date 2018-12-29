@@ -26,7 +26,7 @@ func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
 		append([]string{
 			"install",
 			"-root=" + tmpdir,
-			"-repo=" + env.DefaultRepo,
+			"-repo=" + env.DefaultRepoRoot,
 		}, pkg...)...)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
@@ -37,7 +37,7 @@ func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
 }
 
 func installHTTP(ctx context.Context, tmpdir string, pkg ...string) error {
-	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepo)
+	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
 	if err != nil {
 		return err
 	}
@@ -67,6 +67,9 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 			return err
 		}
 		defer os.RemoveAll(rtmpdir)
+		if err := os.Mkdir(filepath.Join(rtmpdir, "pkg"), 0755); err != nil {
+			return err
+		}
 		meta, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
 		if err != nil {
 			return err
@@ -75,7 +78,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 			cp := exec.Command("cp",
 				filepath.Join(env.DefaultRepo, dep+".squashfs"),
 				filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
-				rtmpdir)
+				filepath.Join(rtmpdir, "pkg"))
 			cp.Stderr = os.Stderr
 			if err := cp.Run(); err != nil {
 				return fmt.Errorf("%v: %v", cp.Args, err)
@@ -99,7 +102,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 		return err
 	}
 	for pkg, addr := range addrs {
-		if err := ioutil.WriteFile(filepath.Join(reposd, pkg), []byte("http://"+addr), 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(reposd, pkg+".repo"), []byte("http://"+addr), 0644); err != nil {
 			return err
 		}
 	}
@@ -127,6 +130,9 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 			return err
 		}
 		defer os.RemoveAll(rtmpdir)
+		if err := os.Mkdir(filepath.Join(rtmpdir, "pkg"), 0755); err != nil {
+			return err
+		}
 		meta, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, systemd+".meta.textproto"))
 		if err != nil {
 			return err
@@ -136,7 +142,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 			cp := exec.Command("cp",
 				filepath.Join(env.DefaultRepo, dep+".squashfs"),
 				filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
-				rtmpdir)
+				filepath.Join(rtmpdir, "pkg"))
 			cp.Stderr = os.Stderr
 			if err := cp.Run(); err != nil {
 				return fmt.Errorf("%v: %v", cp.Args, err)
@@ -146,16 +152,16 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 		base, version := pkg[:idx], pkg[idx+1:]
 		for _, suffix := range []string{"squashfs", "meta.textproto"} {
 			if err := os.Rename(
-				filepath.Join(rtmpdir, "systemd-amd64-239."+suffix),
-				filepath.Join(rtmpdir, pkg+"."+suffix)); err != nil {
+				filepath.Join(rtmpdir, "pkg", "systemd-amd64-239."+suffix),
+				filepath.Join(rtmpdir, "pkg", pkg+"."+suffix)); err != nil {
 				return err
 			}
-			if err := os.Symlink(pkg+"."+suffix, filepath.Join(rtmpdir, base+"."+suffix)); err != nil {
+			if err := os.Symlink(pkg+"."+suffix, filepath.Join(rtmpdir, "pkg", base+"."+suffix)); err != nil {
 				return err
 			}
 		}
 
-		metaFn := filepath.Join(rtmpdir, pkg+".meta.textproto")
+		metaFn := filepath.Join(rtmpdir, "pkg", pkg+".meta.textproto")
 		pm, err := pb.ReadMetaFile(metaFn)
 		if err != nil {
 			return err
@@ -182,7 +188,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 		return err
 	}
 	for pkg, addr := range addrs {
-		if err := ioutil.WriteFile(filepath.Join(reposd, pkg), []byte("http://"+addr), 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(reposd, pkg+".repo"), []byte("http://"+addr), 0644); err != nil {
 			return err
 		}
 	}

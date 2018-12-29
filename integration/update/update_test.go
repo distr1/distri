@@ -37,7 +37,7 @@ func TestUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepo)
+	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,11 +49,11 @@ func TestUpdate(t *testing.T) {
 	}
 	rp := httputil.NewSingleHostReverseProxy(u)
 	distri1deps := map[string]bool{
-		"/distri1-amd64.meta.textproto":    true,
-		"/glibc-amd64-2.27.squashfs":       true,
-		"/glibc-amd64-2.27.meta.textproto": true,
-		"/distri1-amd64-1.squashfs":        true,
-		"/distri1-amd64-1.meta.textproto":  true,
+		"/pkg/distri1-amd64.meta.textproto":    true,
+		"/pkg/glibc-amd64-2.27.squashfs":       true,
+		"/pkg/glibc-amd64-2.27.meta.textproto": true,
+		"/pkg/distri1-amd64-1.squashfs":        true,
+		"/pkg/distri1-amd64-1.meta.textproto":  true,
 	}
 	var (
 		mu     sync.Mutex
@@ -78,15 +78,15 @@ func TestUpdate(t *testing.T) {
 
 		if first {
 			first = false
-			if got, want := r.URL.Path, "/distri1-amd64.meta.textproto"; got != want {
+			if got, want := r.URL.Path, "/pkg/distri1-amd64.meta.textproto"; got != want {
 				t.Errorf("first request = %s, want %v", got, want)
 			}
 		}
-		if strings.HasPrefix(r.URL.Path, "/bash-amd64-") &&
+		if strings.HasPrefix(r.URL.Path, "/pkg/bash-amd64-") &&
 			strings.HasSuffix(r.URL.Path, ".meta.textproto") {
 			bash = true
 		}
-		if strings.HasPrefix(r.URL.Path, "/strace-amd64-") &&
+		if strings.HasPrefix(r.URL.Path, "/pkg/strace-amd64-") &&
 			strings.HasSuffix(r.URL.Path, ".meta.textproto") {
 			strace = true
 		}

@@ -52,7 +52,7 @@ func TestGC(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepo)
+	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
 	if err != nil {
 		t.Fatal(err)
 	}
