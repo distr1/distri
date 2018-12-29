@@ -106,7 +106,8 @@ func gc(args []string) error {
 		for _, suffix := range []string{".meta.textproto", ".squashfs"} {
 			fn := filepath.Join(*root, "roimg", gcpkg+suffix)
 			if *dryRun {
-				fmt.Printf("would delete %s", fn)
+				fmt.Printf("would delete %s\n", fn)
+				return nil
 			} else {
 				if err := os.Remove(fn); err != nil {
 					return err
