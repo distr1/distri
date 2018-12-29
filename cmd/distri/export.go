@@ -33,7 +33,7 @@ func export(args []string) error {
 	var (
 		listen = fset.String("listen", ":7080", "[host]:port listen address for exporting the distri store")
 		gzip   = fset.Bool("gzip", true, "serve .gz files (if they exist). Typically desired on all networks but local loopback")
-		repo   = fset.String("repo", env.DefaultRepo, "repository to serve")
+		repo   = fset.String("repo", env.DefaultRepoRoot, "repository to serve")
 	)
 	fset.Parse(args)
 	log.Printf("exporting %s on %s", *repo, *listen)

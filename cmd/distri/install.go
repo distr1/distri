@@ -137,7 +137,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 		if err != nil {
 			return err
 		}
-		in, err := repoReader(repo, fn)
+		in, err := repoReader(repo, "pkg/"+fn)
 		if err != nil {
 			return err
 		}
@@ -204,7 +204,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
 	for _, repo := range repos {
-		rd, err := repoReader(repo, pkg+".meta.textproto")
+		rd, err := repoReader(repo, "pkg/"+pkg+".meta.textproto")
 		if err != nil {
 			if isNotExist(err) {
 				continue

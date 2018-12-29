@@ -65,7 +65,10 @@ func Repos() ([]distri.Repo, error) {
 	return repos, nil
 }
 
-// DefaultRepo is the default repository path or URL.
+// DefaultRepoRoot is the default repository path or URL.
+var DefaultRepoRoot = join(DistriRoot, "build/distri/")
+
+// DefaultRepo is the default repository path or URL to pkg/.
 var DefaultRepo = join(DistriRoot, "build/distri/pkg")
 
 func join(elem ...string) string {
