@@ -59,7 +59,7 @@ func pack(args []string) error {
 		root = fset.String("root",
 			"",
 			"TODO")
-		repo       = fset.String("repo", env.DefaultRepo, "TODO")
+		repo       = fset.String("repo", env.DefaultRepoRoot, "TODO")
 		extraBase  = fset.String("base", "", "if non-empty, an additional base image to install")
 		diskImg    = fset.String("diskimg", "", "Write an ext4 file system image to the specified path")
 		gcsDiskImg = fset.String("gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
@@ -169,7 +169,7 @@ func pack(args []string) error {
 		}
 	}
 
-	basePkgs, err := b.glob(*repo, basePkgNames)
+	basePkgs, err := b.glob(filepath.Join(*repo, "pkg"), basePkgNames)
 	if err != nil {
 		return err
 	}

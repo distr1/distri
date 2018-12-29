@@ -51,6 +51,7 @@ var ExchangeDirs = []string{
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
 	"/out/gopath",
+	"/debug",
 }
 
 const (
@@ -113,10 +114,12 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
-		repo      = fset.String("repo", env.DefaultRepo, "TODO")
-		readiness = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
-		overlays  = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
-		pkgsList  = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -repo will be provided")
+		repo         = fset.String("repo", env.DefaultRepo, "TODO")
+		readiness    = fset.Int("readiness", -1, "file descriptor on which to send readiness notification")
+		overlays     = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
+		pkgsList     = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -repo will be provided")
+		autoDownload = fset.Bool("autodownload", false, "simulate availability of all packages, automatically downloading them as required. works well for e.g. /ro-dbg")
+		section      = fset.String("section", "pkg", "repository section to serve (one of pkg, debug)")
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
@@ -146,12 +149,14 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	// TODO: use inotify to efficiently get updates to the store
 
 	fs := &fuseFS{
-		repo:        *repo,
-		fileReaders: make(map[fuseops.InodeID]*io.SectionReader),
-		inodeCnt:    2, // root + ctl inode
-		dirs:        make(map[string]*dir),
-		inodes:      make(map[fuseops.InodeID]interface{}),
-		unions:      make(map[fuseops.InodeID][]fuseops.InodeID),
+		repo:         *repo,
+		autoDownload: *autoDownload,
+		repoSection:  *section,
+		fileReaders:  make(map[fuseops.InodeID]*io.SectionReader),
+		inodeCnt:     2, // root + ctl inode
+		dirs:         make(map[string]*dir),
+		inodes:       make(map[fuseops.InodeID]interface{}),
+		unions:       make(map[fuseops.InodeID][]fuseops.InodeID),
 	}
 	dir := &dir{
 		byName: make(map[string]*dirent),
@@ -173,6 +178,12 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 
 	if err := fs.scanPackagesLocked(pkgs); err != nil {
 		return nil, err
+	}
+
+	if fs.autoDownload {
+		if err := fs.updatePackages(); err != nil {
+			log.Printf("updatePackages: %v", err)
+		}
 	}
 
 	var libRequested bool
@@ -326,8 +337,10 @@ type squashfsReader struct {
 type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
-	repo string
-	ctl  string
+	repo         string
+	ctl          string
+	autoDownload bool
+	repoSection  string // e.g. “debug” (default “pkg”)
 
 	mu       sync.Mutex
 	inodeCnt fuseops.InodeID
@@ -467,6 +480,10 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		// set up runtime_unions:
 		meta, err := pb.ReadMetaFile(filepath.Join(fs.repo, pkg+".meta.textproto"))
 		if err != nil {
+			if os.IsNotExist(err) {
+				log.Print(err)
+				continue // recover by skipping this package
+			}
 			return err
 		}
 		for _, o := range meta.GetRuntimeUnion() {
@@ -561,10 +578,19 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 }
 
 // TODO: read this from a config file, remove trailing slash if any (always added by caller)
-const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export"
+const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export/debug"
 
 func (fs *fuseFS) updatePackages() error {
-	resp, err := http.Get(remote + "/meta.binaryproto")
+	repos, err := env.Repos()
+	if err != nil {
+		return fmt.Errorf("env.Repos: %v", err)
+	}
+
+	if len(repos) == 0 {
+		return fmt.Errorf("no repositories configured")
+	}
+	// TODO: make this code work with multiple repos
+	resp, err := http.Get(repos[0].Path + "/" + fs.repoSection + "/meta.binaryproto")
 	if err != nil {
 		return err
 	}
@@ -594,7 +620,8 @@ func (fs *fuseFS) updatePackages() error {
 		}
 		fs.pkgs = append(fs.pkgs, pkg.GetName())
 		for _, p := range pkg.GetWellKnownPath() {
-			exchangePath := strings.TrimPrefix(filepath.Dir(p), "out")
+			exchangePath := "/" + strings.TrimPrefix(filepath.Dir(p), "out/")
+			fs.mkExchangeDirAll(exchangePath)
 			dir, ok := fs.dirs[exchangePath]
 			if !ok {
 				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
@@ -627,14 +654,16 @@ func (fs *fuseFS) mountImage(image int) error {
 	// f := &httpReaderAt{fileurl: "http://localhost:7080/" + pkg + ".squashfs"}
 	f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
 	if err != nil {
-		return err
-		// if !os.IsNotExist(err) {
-		// 	return err
-		// }
-		// f, err = updateAndOpen("/tmp/imgdir" /*fs.repo*/, remote+"/"+pkg+".squashfs")
-		// if err != nil {
-		// 	return err
-		// }
+		if !os.IsNotExist(err) {
+			return err
+		}
+		if !fs.autoDownload {
+			return err
+		}
+		f, err = autodownload(fs.repo, remote+"/"+pkg+".squashfs")
+		if err != nil {
+			return err
+		}
 	}
 	rd, err := squashfs.NewReader(f)
 	if err != nil {

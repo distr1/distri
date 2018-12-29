@@ -263,14 +263,37 @@ func (b *buildctx) serialize() (string, error) {
 }
 
 func (b *buildctx) pkg() error {
-	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
-		Name:  proto.String(b.Pkg),
-		Claim: []*pb.Claim{{Glob: proto.String("*")}},
+	type splitPackage struct {
+		Proto  *pb.SplitPackage
+		subdir string
+	}
+	var pkgs []splitPackage
+	for _, pkg := range b.Proto.GetSplitPackage() {
+		pkgs = append(pkgs, splitPackage{
+			Proto:  pkg,
+			subdir: "pkg",
+		})
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(b.DestDir), b.fullName(), "debug")); err == nil {
+		pkgs = append(pkgs, splitPackage{
+			Proto: &pb.SplitPackage{
+				Name:  proto.String(b.Pkg),
+				Claim: []*pb.Claim{{Glob: proto.String("debug")}},
+			},
+			subdir: "debug",
+		})
+	}
+	pkgs = append(pkgs, splitPackage{
+		Proto: &pb.SplitPackage{
+			Name:  proto.String(b.Pkg),
+			Claim: []*pb.Claim{{Glob: proto.String("*")}},
+		},
+		subdir: "pkg",
 	})
 	for _, pkg := range pkgs {
 		log.Printf("packaging %+v", pkg)
-		fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
-		dest, err := filepath.Abs("../distri/pkg/" + fullName + ".squashfs")
+		fullName := pkg.Proto.GetName() + "-" + b.Arch + "-" + b.Version
+		dest, err := filepath.Abs("../distri/" + pkg.subdir + "/" + fullName + ".squashfs")
 		if err != nil {
 			return err
 		}
@@ -285,9 +308,17 @@ func (b *buildctx) pkg() error {
 			return err
 		}
 
+		// Look for files in b.fullName(), i.e. the actual package name
 		destRoot := filepath.Join(filepath.Dir(b.DestDir), b.fullName())
+		// Place files in fullName, i.e. the split package name
 		tmp := filepath.Join(filepath.Dir(b.DestDir), fullName)
-		for _, claim := range pkg.GetClaim() {
+		if pkg.subdir != "pkg" {
+			// Side-step directory conflict for packages with the same name in a
+			// different subdir (e.g. pkg/irssi-amd64-1.1.1.squashfs
+			// vs. debug/irssi-amd64-1.1.1.squashfs):
+			tmp += "-" + pkg.subdir
+		}
+		for _, claim := range pkg.Proto.GetClaim() {
 			if claim.GetGlob() == "*" {
 				// Common path: no globbing or file manipulation required
 				continue
@@ -296,11 +327,13 @@ func (b *buildctx) pkg() error {
 			if err != nil {
 				return err
 			}
+			// Move files from actual package dir to split package dir
 			for _, m := range matches {
 				rel, err := filepath.Rel(destRoot, m)
 				if err != nil {
 					return err
 				}
+				// rel is e.g. out/lib64/libgcc_s.so.1
 				dest := filepath.Join(tmp, rel)
 				if dir := claim.GetDir(); dir != "" {
 					dest = filepath.Join(tmp, dir, filepath.Base(m))
@@ -1271,6 +1304,27 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err := os.Chmod(path, fi.Mode()); err != nil {
 				return err
 			}
+		}
+
+		buildid, err := readBuildid(path)
+		if err != nil {
+			return fmt.Errorf("readBuildid(%s): %v", path, err)
+		}
+		debugPath := filepath.Join(destDir, "debug", ".build-id", string(buildid[:2])+"/"+string(buildid[2:])+".debug")
+		if err := os.MkdirAll(filepath.Dir(debugPath), 0755); err != nil {
+			return err
+		}
+		objcopy := exec.Command("objcopy", "--only-keep-debug", path, debugPath)
+		objcopy.Stdout = os.Stdout
+		objcopy.Stderr = os.Stderr
+		if err := objcopy.Run(); err != nil {
+			return fmt.Errorf("%v: %v", objcopy.Args, err)
+		}
+		strip := exec.Command("strip", "-g", path)
+		strip.Stdout = os.Stdout
+		strip.Stderr = os.Stderr
+		if err := strip.Run(); err != nil {
+			return fmt.Errorf("%v: %v", strip.Args, err)
 		}
 		return nil
 	})
