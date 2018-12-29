@@ -36,7 +36,14 @@ func export(args []string) error {
 		repo   = fset.String("repo", env.DefaultRepoRoot, "repository to serve")
 	)
 	fset.Parse(args)
-	log.Printf("exporting %s on %s", *repo, *listen)
+
+	ln, err := net.Listen("tcp", *listen)
+	if err != nil {
+		return err
+	}
+	addr := ln.Addr().String()
+	server := &http.Server{Addr: addr}
+	log.Printf("exporting %s on %s", *repo, addr)
 
 	if *gzip {
 		http.Handle("/", gzipped.FileServer(http.Dir(*repo)))
@@ -44,11 +51,6 @@ func export(args []string) error {
 		http.Handle("/", http.FileServer(http.Dir(*repo)))
 	}
 
-	server := &http.Server{Addr: *listen}
-	ln, err := net.Listen("tcp", *listen)
-	if err != nil {
-		return err
-	}
-	addrfd.MustWrite(ln.Addr().String())
+	addrfd.MustWrite(addr)
 	return server.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
 }
