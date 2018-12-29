@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/renameio"
 )
 
 const mirrorHelp = `Makes a package store usable as a mirror
@@ -21,10 +21,30 @@ by bundling metadata from packages into meta.binaryproto.
 
 // TODO: have export automatically call mirror
 
+func walk(rd *squashfs.Reader, dirInode squashfs.Inode, dir string) ([]string, error) {
+	fis, err := rd.Readdir(dirInode)
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for _, fi := range fis {
+		if fi.Mode().IsRegular() {
+			files = append(files, filepath.Join(dir, fi.Name()))
+		}
+		if fi.Mode().IsDir() {
+			tmp, err := walk(rd, fi.Sys().(*squashfs.FileInfo).Inode, filepath.Join(dir, fi.Name()))
+			if err != nil {
+				return nil, err
+			}
+			files = append(files, tmp...)
+		}
+	}
+	return files, nil
+}
+
 func mirror(args []string) error {
 	fset := flag.NewFlagSet("mirror", flag.ExitOnError)
 	fset.Parse(args)
-	log.Printf("TODO: mirror")
 
 	var mm pb.MirrorMeta
 
@@ -58,12 +78,13 @@ func mirror(args []string) error {
 				}
 				return err
 			}
-			sfis, err := rd.Readdir(inode)
+
+			files, err := walk(rd, inode, wk)
 			if err != nil {
-				return fmt.Errorf("Readdir(%s, %s): %v", fi.Name(), wk, err)
+				return err
 			}
-			for _, sfi := range sfis {
-				mmp.WellKnownPath = append(mmp.WellKnownPath, filepath.Join(wk, sfi.Name()))
+			for _, fn := range files {
+				mmp.WellKnownPath = append(mmp.WellKnownPath, fn)
 			}
 		}
 
@@ -75,10 +96,10 @@ func mirror(args []string) error {
 		return err
 	}
 
-	// TODO: write atomic
-	if err := ioutil.WriteFile("meta.binaryproto", b, 0644); err != nil {
+	if err := renameio.WriteFile("meta.binaryproto", b, 0644); err != nil {
 		return err
 	}
+	log.Printf("wrote %d packages to meta.binaryproto (%d bytes)", len(mm.Package), len(b))
 
 	return nil
 }
