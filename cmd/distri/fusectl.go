@@ -16,7 +16,8 @@ const fusectlHelp = `TODO
 func fusectl(args []string) error {
 	fset := flag.NewFlagSet("fusectl", flag.ExitOnError)
 	var (
-		mkdirAll = fset.String("mkdirall", "", "if non-empty, sends a MkdirAll request")
+		mkdirAll     = fset.String("mkdirall", "", "if non-empty, sends a MkdirAll request")
+		scanPackages = fset.Bool("scan_packages", false, "sends a ScanPackages request")
 	)
 	fset.Parse(args)
 
@@ -34,6 +35,10 @@ func fusectl(args []string) error {
 	cl := pb.NewFUSEClient(conn)
 	if *mkdirAll != "" {
 		if _, err := cl.MkdirAll(ctx, &pb.MkdirAllRequest{Dir: mkdirAll}); err != nil {
+			return err
+		}
+	} else if *scanPackages {
+		if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
 			return err
 		}
 	} else {
