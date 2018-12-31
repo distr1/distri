@@ -4,6 +4,8 @@ version: "1.16"
 
 cbuilder: <>
 
+cherry_pick: "0001-dirlist.patch"
+
 # build dependencies:
 dep: "perl"
 dep: "autoconf"

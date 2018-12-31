@@ -1,0 +1,34 @@
+From 858e8a838b8a13564ff3f299ec1e25233df95f04 Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Mon, 31 Dec 2018 15:02:40 +0100
+Subject: [PATCH] dirlist
+
+---
+ Makefile.in      | 2 +-
+ m4/acdir/dirlist | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+ create mode 100644 m4/acdir/dirlist
+
+diff --git a/Makefile.in b/Makefile.in
+index 8e80b76..415c9fa 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -861,7 +861,7 @@ dist_automake_ac_DATA = \
+   m4/upc.m4 \
+   m4/vala.m4
+ 
+-dist_system_ac_DATA = m4/acdir/README
++dist_system_ac_DATA = m4/acdir/README m4/acdir/dirlist
+ automake_internal_acdir = $(automake_acdir)/internal
+ dist_automake_internal_ac_DATA = m4/internal/ac-config-macro-dirs.m4
+ 
+diff --git a/m4/acdir/dirlist b/m4/acdir/dirlist
+new file mode 100644
+index 0000000..fb5b291
+--- /dev/null
++++ b/m4/acdir/dirlist
+@@ -0,0 +1 @@
++/ro/share/aclocal
+-- 
+2.19.1
+
