@@ -28,5 +28,5 @@ build_step: <
 
 install: <
   # xtrans is the only package which installs to share/pkgconfig
-  symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >
+  symlink: < oldname: "../../share/pkgconfig/yajl.pc" newname: "lib/pkgconfig/yajl.pc" >
 >
