@@ -137,5 +137,23 @@ func TestFUSE(t *testing.T) {
 		}
 	})
 
-	// TODO: delete the newer package
+	t.Run("DeleteVersion", func(t *testing.T) {
+		for _, suffix := range []string{".meta.textproto", ".squashfs"} {
+			if err := os.Remove(filepath.Join(repo, "less-amd64-530-3"+suffix)); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
+			t.Fatal(err)
+		}
+
+		target, err := os.Readlink(tmpdir + "/bin/less")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := target, "../less-amd64-530-2/bin/less"; got != want {
+			t.Fatalf("Readlink(bin/less) = %v, want %v", got, want)
+		}
+	})
 }

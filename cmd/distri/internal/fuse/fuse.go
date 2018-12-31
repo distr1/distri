@@ -447,6 +447,52 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 	return pkgs, nil
 }
 
+func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeDirs []string) error {
+	type pathWithInode struct {
+		path  string
+		inode squashfs.Inode
+	}
+	inodes := make([]pathWithInode, 0, len(exchangeDirs))
+	for _, path := range exchangeDirs {
+		inode, err := LookupPath(rd, strings.TrimPrefix(path, "/"))
+		if err != nil {
+			if _, ok := err.(*FileNotFoundError); ok {
+				continue
+			}
+			return err
+		}
+		inodes = append(inodes, pathWithInode{path, inode})
+	}
+
+	for len(inodes) > 0 {
+		path, inode := inodes[0].path, inodes[0].inode
+		inodes = inodes[1:]
+		exchangePath := strings.TrimPrefix(path, "/out")
+		dir, ok := fs.dirs[exchangePath]
+		if !ok {
+			panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
+		}
+		sfis, err := rd.Readdir(inode)
+		if err != nil {
+			return fmt.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
+		}
+		for _, sfi := range sfis {
+			if sfi.Mode().IsDir() {
+				dir := filepath.Join(path, sfi.Name())
+				fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
+				inodes = append(inodes, pathWithInode{dir, sfi.Sys().(*squashfs.FileInfo).Inode})
+				continue
+			}
+			rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
+			if err != nil {
+				return err
+			}
+			fs.symlink(dir, rel)
+		}
+	}
+	return nil
+}
+
 func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 	start := time.Now()
 	defer func() {
@@ -464,6 +510,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 
 	for idx, pkg := range pkgs {
 		if existing[pkg] {
+			delete(existing, pkg) // left-overs are deleted packages
 			continue
 		}
 		fs.pkgs = append(fs.pkgs, pkg)
@@ -528,46 +575,78 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 			delete(rd.dircache, srcinode) // invalidate dircache
 		}
 
-		type pathWithInode struct {
-			path  string
-			inode squashfs.Inode
+		if err := fs.scanPackagesSymlink(rd, pkg, ExchangeDirs); err != nil {
+			return err
 		}
-		inodes := make([]pathWithInode, 0, len(ExchangeDirs))
-		for _, path := range ExchangeDirs {
-			inode, err := LookupPath(rd, strings.TrimPrefix(path, "/"))
-			if err != nil {
-				if _, ok := err.(*FileNotFoundError); ok {
-					continue
-				}
-				return err
-			}
-			inodes = append(inodes, pathWithInode{path, inode})
-		}
+	}
 
-		for len(inodes) > 0 {
-			path, inode := inodes[0].path, inodes[0].inode
-			inodes = inodes[1:]
-			exchangePath := strings.TrimPrefix(path, "/out")
-			dir, ok := fs.dirs[exchangePath]
-			if !ok {
-				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
+	if leftover := existing; len(leftover) > 0 {
+		// iterate through all symlinks, checking if they begin with /ro/<pkg>,
+		// and <pkg> matching any of the still-present ones
+		scan := make(map[string]bool)
+		for path, dir := range fs.dirs {
+			for idx, dirent := range dir.entries {
+				if dirent == nil {
+					continue // tombstone
+				}
+				if dirent.linkTarget == "" {
+					continue // subdirectory
+				}
+				// e.g. /lib/pkgconfig/bash.pc → ../../bash-amd64-1/out/lib/pkgconfig/bash.pc
+				target := filepath.Clean(filepath.Join(filepath.Dir(path), dirent.linkTarget))
+				// target is now /bash-amd64-1/out/lib/pkgconfig/bash.pc
+				pkg := target[1 : 1+strings.IndexByte(target[1:], '/')]
+				if leftover[pkg] {
+					scan[path] = true
+
+					// delete, in case there is no stand-in (or the stand-in
+					// does not contain the file)
+					delete(dir.byName, dirent.name)
+					dir.entries[idx] = nil // tombstone
+				}
 			}
-			sfis, err := rd.Readdir(inode)
-			if err != nil {
-				return fmt.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
-			}
-			for _, sfi := range sfis {
-				if sfi.Mode().IsDir() {
-					dir := filepath.Join(path, sfi.Name())
-					fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
-					inodes = append(inodes, pathWithInode{dir, sfi.Sys().(*squashfs.FileInfo).Inode})
+		}
+		affectedExchangeDirs := make([]string, 0, len(scan))
+		for path := range scan {
+			affectedExchangeDirs = append(affectedExchangeDirs, path)
+		}
+		for deleted := range existing {
+			var standin string
+			for _, arch := range []string{"amd64", "i686"} {
+				archmiddle := "-" + arch + "-"
+				if !strings.Contains(deleted, archmiddle) {
 					continue
 				}
-				rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
+				source := deleted[:strings.Index(deleted, archmiddle)+len(archmiddle)]
+				matches, err := filepath.Glob(filepath.Join(fs.repo, source+"*.squashfs"))
 				if err != nil {
 					return err
 				}
-				fs.symlink(dir, rel)
+				if len(matches) == 0 {
+					continue
+				}
+				for idx, m := range matches {
+					matches[idx] = strings.TrimSuffix(filepath.Base(m), ".squashfs")
+				}
+				sort.Sort(sort.Reverse(sort.StringSlice(matches)))
+				standin = matches[0]
+				break
+			}
+			if standin == "" {
+				continue
+			}
+			f, err := os.Open(filepath.Join(fs.repo, standin+".squashfs"))
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			rd, err := squashfs.NewReader(f)
+			if err != nil {
+				return err
+			}
+
+			if err := fs.scanPackagesSymlink(rd, standin, affectedExchangeDirs); err != nil {
+				return err
 			}
 		}
 	}
