@@ -17,7 +17,28 @@ import (
 
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/pb"
 )
+
+func resolve1(imgDir, pkg string) ([]string, error) {
+	const ext = ".meta.textproto"
+	resolved := []string{pkg}
+	fn := filepath.Join(imgDir, pkg+ext)
+	if target, err := os.Readlink(fn); err == nil {
+		resolved = append(resolved, strings.TrimSuffix(filepath.Base(target), ext))
+	}
+	meta, err := pb.ReadMetaFile(fn)
+	if err != nil {
+		return nil, err
+	}
+	for _, dep := range meta.GetRuntimeDep() {
+		if dep == pkg {
+			continue // skip circular dependencies, e.g. gcc depends on itself
+		}
+		resolved = append(resolved, dep)
+	}
+	return resolved, nil
+}
 
 func TestUpdate(t *testing.T) {
 	ctx, canc := context.WithCancel(context.Background())
@@ -48,12 +69,17 @@ func TestUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 	rp := httputil.NewSingleHostReverseProxy(u)
-	distri1deps := map[string]bool{
-		"/pkg/distri1-amd64.meta.textproto":    true,
-		"/pkg/glibc-amd64-2.27.squashfs":       true,
-		"/pkg/glibc-amd64-2.27.meta.textproto": true,
-		"/pkg/distri1-amd64-1.squashfs":        true,
-		"/pkg/distri1-amd64-1.meta.textproto":  true,
+	distri1deps := make(map[string]bool)
+	{
+		distri1deps["/pkg/distri1-amd64.meta.textproto"] = true
+		deps, err := resolve1(env.DefaultRepo, "distri1-amd64")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, dep := range deps {
+			distri1deps["/pkg/"+dep+".squashfs"] = true
+			distri1deps["/pkg/"+dep+".meta.textproto"] = true
+		}
 	}
 	var (
 		mu     sync.Mutex

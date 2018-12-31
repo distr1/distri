@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "1"
+version: "2"
 
 cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
 

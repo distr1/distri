@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/distr1/distri/internal/env"
@@ -77,8 +78,13 @@ build_step: <
 
 // TODO: refactor out of build.go
 func resolve1(imgDir, pkg string) ([]string, error) {
+	const ext = ".meta.textproto"
 	resolved := []string{pkg}
-	meta, err := pb.ReadMetaFile(filepath.Join(imgDir, pkg+".meta.textproto"))
+	fn := filepath.Join(imgDir, pkg+ext)
+	if target, err := os.Readlink(fn); err == nil {
+		resolved = append(resolved, strings.TrimSuffix(filepath.Base(target), ext))
+	}
+	meta, err := pb.ReadMetaFile(fn)
 	if err != nil {
 		return nil, err
 	}
