@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"syscall"
@@ -430,8 +431,7 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var pkgs []string
+	pkgs := make([]string, 0, len(fis))
 	for _, fi := range fis {
 		if !strings.HasSuffix(fi.Name(), ".squashfs") {
 			continue
@@ -439,6 +439,11 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 		pkg := strings.TrimSuffix(fi.Name(), ".squashfs")
 		pkgs = append(pkgs, pkg)
 	}
+	// Need to sort again: removing the .squashfs suffix reverses sort order of
+	// e.g. [less-amd64-530-2.squashfs less-amd64-530.squashfs]
+	// to   [less-amd64-530.squashfs less-amd64-530-2.squashfs]
+	// ('.' > '-' because 0x2E > 0x2D)
+	sort.Strings(pkgs)
 	return pkgs, nil
 }
 
@@ -549,7 +554,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 			}
 			sfis, err := rd.Readdir(inode)
 			if err != nil {
-				return fmt.Errorf("Readdir(%s, %s): %v", pkg, dir, err)
+				return fmt.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
 			}
 			for _, sfi := range sfis {
 				if sfi.Mode().IsDir() {
