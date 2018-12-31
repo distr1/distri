@@ -733,8 +733,6 @@ func (fs *fuseFS) StatFS(ctx context.Context, op *fuseops.StatFSOp) error {
 var never = time.Now().Add(365 * 24 * time.Hour)
 
 func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) error {
-	op.Entry.AttributesExpiration = never
-	op.Entry.EntryExpiration = never
 	//log.Printf("LookUpInode(op=%+v)", op)
 	// find dirent op.Name in inode op.Parent
 	image, squashfsInode, err := fs.squashfsInode(op.Parent)
@@ -811,6 +809,9 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		//log.Printf("return EIO")
 		return fuse.EIO
 	}
+
+	op.Entry.AttributesExpiration = never
+	op.Entry.EntryExpiration = never
 
 	rd := fs.reader(image)
 	rd.dircacheMu.Lock()
