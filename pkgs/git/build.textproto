@@ -12,3 +12,5 @@ cbuilder: <
 dep: "perl"
 dep: "gettext"
 dep: "tar"
+dep: "openssl"
+dep: "curl"
