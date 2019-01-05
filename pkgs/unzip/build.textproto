@@ -1,0 +1,32 @@
+source: "https://datapacket.dl.sourceforge.net/project/infozip/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz"
+hash: "036d96991646d0449ed0aa952e4fbe21b476ce994abc276e49d30e686708bd37"
+version: "6.0"
+
+# TODO: pull all patches from debian.
+
+cbuilder: <>
+
+# build dependencies:
+#dep: "bzip2"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "make"
+  argv: "-f"
+  argv: "unix/Makefile"
+#  argv: "D_USE_BZ2=-DUSE_BZIP2"
+# TODO: -DIZ_HAVE_UXUIDGID with 05-fix-uid-gid-handling.patch
+  argv: "CF=-DACORN_FTYPE_NFS -DWILD_STOP_AT_DIR -DLARGE_FILE_SUPPORT -DUNICODE_SUPPORT -DUNICODE_WCHAR -DUTF8_MAYBE_NATIVE -DNO_LCHMOD -DDATE_FORMAT=DF_YMD  -DNOMEMCPY -DNO_WORKING_ISPRINT -I."
+  argv: "unzips"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${DISTRI_DESTDIR} make -f unix/Makefile install prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
+>
