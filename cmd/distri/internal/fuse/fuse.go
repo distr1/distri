@@ -49,6 +49,7 @@ var ExchangeDirs = []string{
 	"/out/share/glib-2.0/schemas",
 	"/out/share/mime",
 	"/out/share/man",
+	"/out/share/icons",
 	"/out/share/dbus-1",
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
