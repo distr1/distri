@@ -76,6 +76,7 @@ func main() {
 			"unpack":   {unpackHelp, func() { unpack(helpFlag) }},
 			"update":   {updateHelp, func() { update(helpFlag) }},
 			"gc":       {gcHelp, func() { gc(helpFlag) }},
+			"patch":    {patchHelp, func() { patch(helpFlag) }},
 		}
 		if len(args) != 1 {
 			fmt.Fprintf(os.Stderr, "syntax: %s help <verb>\n", os.Args[0])
@@ -181,6 +182,11 @@ func main() {
 
 	case "gc":
 		if err := gc(args); err != nil {
+			log.Fatal(err)
+		}
+
+	case "patch":
+		if err := patch(args); err != nil {
 			log.Fatal(err)
 		}
 
