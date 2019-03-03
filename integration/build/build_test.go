@@ -76,6 +76,22 @@ build_step: <
 >
 `
 
+const pkgConfigBuildTextproto = `
+source: "empty://"
+hash: ""
+version: "1"
+
+dep: "bash"
+dep: "coreutils"
+dep: "libepoxy"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/pkgconfig/; mkdir -p $d; f=gtk+-3.0.pc; echo 'Requires: gdk-3.0 atk >= 2.15.1 cairo >= 1.14.0 cairo-gobject >= 1.14.0 gdk-pixbuf-2.0 >= 2.30.0 gio-2.0 >= 2.49.4' > $d/$f; echo 'Requires.private: atk atk-bridge-2.0   epoxy >= 1.4 pangoft2 gio-unix-2.0 >= 2.49.4' >> $d/$f"
+>
+`
+
 // TODO: refactor out of build.go
 func resolve1(imgDir, pkg string) ([]string, error) {
 	const ext = ".meta.textproto"
@@ -416,6 +432,96 @@ func TestMultiPackageBuild(t *testing.T) {
 			want: []string{
 				"bash-amd64-4.4.18",
 				"glibc-amd64-2.27", // from bash
+			},
+		},
+	} {
+		test := test // copy
+		t.Run("VerifyRuntimeDep/"+test.meta, func(t *testing.T) {
+			meta, err := pb.ReadMetaFile(filepath.Join(distriroot, "build", "distri", "pkg", test.meta))
+			if err != nil {
+				t.Fatal(err)
+			}
+			opts := []cmp.Option{
+				cmpopts.SortSlices(func(a, b string) bool {
+					return a < b
+				}),
+			}
+			if diff := cmp.Diff(test.want, meta.GetRuntimeDep(), opts...); diff != "" {
+				t.Fatalf("unexpected runtime deps: (-want +got)\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestPkgConfigRuntimeDeps(t *testing.T) {
+	t.Parallel()
+
+	distriroot, err := ioutil.TempDir("", "integrationbuild")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(distriroot)
+
+	// Copy build dependencies into our temporary DISTRIROOT:
+	repo := filepath.Join(distriroot, "build", "distri", "pkg")
+	if err := os.MkdirAll(repo, 0755); err != nil {
+		t.Fatal(err)
+	}
+	deps, err := resolve(env.DefaultRepo, []string{
+		//"mesa-amd64-18.2.0",
+		"bash-amd64-4.4.18",
+		"coreutils-amd64-8.30",
+		"libepoxy-amd64-1.5.2",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, dep := range deps {
+		cp := exec.Command("cp",
+			filepath.Join(env.DefaultRepo, dep+".squashfs"),
+			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
+			repo)
+		cp.Stderr = os.Stderr
+		if err := cp.Run(); err != nil {
+			t.Fatalf("%v: %v", cp.Args, err)
+		}
+	}
+
+	// Write package build instructions:
+	pkgDir := filepath.Join(distriroot, "pkg", "pkgconfig")
+	if err := os.MkdirAll(pkgDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "build.textproto"),
+		[]byte(pkgConfigBuildTextproto),
+		0644); err != nil {
+		t.Fatal(err)
+	}
+
+	build := exec.Command("distri", "build")
+	build.Dir = pkgDir
+	build.Env = []string{
+		"DISTRIROOT=" + distriroot,
+		"PATH=" + os.Getenv("PATH"), // to locate tar(1)
+	}
+	build.Stdout = os.Stdout
+	build.Stderr = os.Stderr
+	if err := build.Run(); err != nil {
+		t.Fatalf("%v: %v", build.Args, err)
+	}
+
+	// TODO: verify package properties
+
+	for _, test := range []struct {
+		meta string
+		want []string
+	}{
+		{
+			meta: "pkgconfig-amd64-1.meta.textproto",
+			want: []string{
+				"glibc-amd64-2.27",     // from shlibdeps
+				"libepoxy-amd64-1.5.2", // from pkgconfig
 			},
 		},
 	} {

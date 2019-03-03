@@ -1347,10 +1347,30 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			return nil, err
 		}
 		for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
-			if strings.HasPrefix(line, "Requires.private: ") ||
-				strings.HasPrefix(line, "Requires: ") {
-				// TODO: add packages which contain this pkgconfig file
-				log.Printf("TODO: extract names from %q", line)
+			if !strings.HasPrefix(line, "Requires.private: ") &&
+				!strings.HasPrefix(line, "Requires: ") {
+				continue
+			}
+			line = strings.TrimPrefix(line, "Requires:")
+			line = strings.TrimPrefix(line, "Requires.private:")
+			byPkg := make(map[string]string)
+			for _, dep := range deps {
+				for _, subdir := range []string{"lib", "share"} {
+					fis, err := ioutil.ReadDir(filepath.Join("/ro", dep, "out", subdir, "pkgconfig"))
+					if err != nil && !os.IsNotExist(err) {
+						return nil, err
+					}
+					for _, fi := range fis {
+						byPkg[fi.Name()] = dep
+					}
+				}
+			}
+			modules := pkgConfigFilesFromRequires(line)
+			for _, mod := range modules {
+				if dep, ok := byPkg[mod+".pc"]; ok {
+					log.Printf("found run-time dependency %s from pkgconfig file", dep)
+					depPkgs[dep] = true
+				}
 			}
 		}
 	}
