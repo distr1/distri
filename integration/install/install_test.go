@@ -320,3 +320,33 @@ func TestInstall(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkInstallChrome(b *testing.B) {
+	ctx := context.Background()
+	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer cleanup()
+	b.SetBytes(950232307) // TODO: find
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tmpdir, err := ioutil.TempDir("", "integrationinstall")
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer os.RemoveAll(tmpdir)
+
+		install := exec.Command("distri",
+			append([]string{
+				"install",
+				"-root=" + tmpdir,
+				"-repo=http://" + addr,
+			}, "google-chrome")...)
+		install.Stderr = os.Stderr
+		install.Stdout = os.Stdout
+		if err := install.Run(); err != nil {
+			b.Fatalf("%v: %v", install.Args, err)
+		}
+	}
+}

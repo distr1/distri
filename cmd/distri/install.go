@@ -8,11 +8,15 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
 	"sync/atomic"
 	"time"
+
+	gzip "compress/gzip"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
@@ -45,7 +49,28 @@ func isNotExist(err error) bool {
 	return os.IsNotExist(err)
 }
 
-func repoReader(repo distri.Repo, fn string) (io.ReadCloser, error) {
+var httpClient = &http.Client{Transport: &http.Transport{
+	MaxIdleConnsPerHost: 10,
+	DisableCompression:  true,
+}}
+
+type gzipReader struct {
+	body io.ReadCloser
+	zr   *gzip.Reader
+}
+
+func (r *gzipReader) Read(p []byte) (n int, err error) {
+	return r.zr.Read(p)
+}
+
+func (r *gzipReader) Close() error {
+	if err := r.zr.Close(); err != nil {
+		return err
+	}
+	return r.body.Close()
+}
+
+func repoReader(ctx context.Context, repo distri.Repo, fn string) (io.ReadCloser, error) {
 	if strings.HasPrefix(repo.Path, "http://") ||
 		strings.HasPrefix(repo.Path, "https://") {
 		req, err := http.NewRequest("GET", repo.Path+"/"+fn, nil) // TODO: sanitize slashes
@@ -55,15 +80,25 @@ func repoReader(repo distri.Repo, fn string) (io.ReadCloser, error) {
 		if os.Getenv("DISTRI_REEXEC") == "1" {
 			req.Header.Set("X-Distri-Reexec", "yes")
 		}
-		resp, err := http.DefaultClient.Do(req)
+		// good for typical links (≤ gigabit)
+		// performance bottleneck for faster links (10 gbit/s+)
+		req.Header.Set("Accept-Encoding", "gzip")
+		resp, err := httpClient.Do(req.WithContext(ctx))
 		if err != nil {
 			return nil, err
 		}
 		if got, want := resp.StatusCode, http.StatusOK; got != want {
 			if got == http.StatusNotFound {
-				return nil, &errNotFound{}
+				return nil, &errNotFound{url: req.URL}
 			}
-			return nil, xerrors.Errorf("HTTP status %v", resp.Status)
+			return nil, fmt.Errorf("%s: HTTP status %v", req.URL, resp.Status)
+		}
+		if strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") {
+			rd, err := gzip.NewReader(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			return &gzipReader{body: resp.Body, zr: rd}, nil
 		}
 		return resp.Body, nil
 	}
