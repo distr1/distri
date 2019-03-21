@@ -778,7 +778,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Start(); err != nil {
-			return nil, xerrors.Errorf("%v: %v", cmd.Args, err)
+			return nil, xerrors.Errorf("%v: %w", cmd.Args, err)
 		}
 		// Close the write end of the pipe in the parent process
 		if err := w.Close(); err != nil {
@@ -792,7 +792,11 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		if err := proto.Unmarshal(c, &meta); err != nil {
 			return nil, err
 		}
-		return &meta, cmd.Wait()
+		if err := cmd.Wait(); err != nil {
+			fmt.Fprintf(os.Stderr, "\ntry sysctl -w kernel.unprivileged_userns_clone=1? (wild guess)\n\n")
+			return nil, xerrors.Errorf("%v: %w", cmd.Args, err)
+		}
+		return &meta, nil
 	}
 
 	logDir := filepath.Dir(b.SourceDir) // TODO: introduce a struct field
