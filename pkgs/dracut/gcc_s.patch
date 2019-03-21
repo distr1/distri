@@ -1,0 +1,11 @@
+--- old/modules.d/99base/module-setup.sh	2018-07-06 10:37:51.000000000 +0200
++++ new/modules.d/99base/module-setup.sh	2019-03-21 21:38:14.672020438 +0100
+@@ -18,6 +18,8 @@
+     inst_multiple mount mknod mkdir sleep chroot chown \
+         sed ls flock cp mv dmesg rm ln rmmod mkfifo umount readlink setsid
+     inst $(command -v modprobe) /sbin/modprobe
++    inst_multiple -o strace
++    inst /ro/lib64/libgcc_s.so.1 /ro/lib/libgcc_s.so.1
+ 
+     inst_multiple -o findmnt less kmod
+ 

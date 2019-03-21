@@ -5,6 +5,7 @@ version: "048"
 cherry_pick: "exec.patch"
 cherry_pick: "emergency.patch"
 cherry_pick: "dm-uuid.patch"
+cherry_pick: "gcc_s.patch"
 
 cbuilder: <
   copy_to_builddir: true
