@@ -105,7 +105,7 @@ func main() {
 	}
 	v, ok := verbs[verb]
 	if !ok {
-		fmt.Fprintf(os.Stderr, "unknown command %q\n", args[0])
+		fmt.Fprintf(os.Stderr, "unknown command %q\n", verb)
 		fmt.Fprintf(os.Stderr, "syntax: distri <command> [options]\n")
 		os.Exit(2)
 	}
