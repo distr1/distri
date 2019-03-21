@@ -10,11 +10,13 @@ dep: "libx11"
 dep: "libxrender"
 dep: "fontconfig"
 dep: "libxft"
+dep: "ncurses" # --with-terminfo option needs tic
 
 build_step: <
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--enable-xft"
+  argv: "--with-terminfo=${DISTRI_DESTDIR}${DISTRI_PREFIX}/share/terminfo"
 >
 
 build_step: <
@@ -24,9 +26,7 @@ build_step: <
 >
 
 build_step: <
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${DISTRI_DESTDIR}"
-  argv: "PREFIX=${DISTRI_PREFIX}"
-  argv: "TERMINFO=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/terminfo"  
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "TERMINFO=${DISTRI_DESTDIR}${DISTRI_PREFIX}/share/terminfo make install DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX}"
 >
