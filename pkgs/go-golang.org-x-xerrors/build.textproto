@@ -1,0 +1,7 @@
+source: "distri+gomod://golang.org/x/xerrors@v0.0.0-20190315151331-d61658bd2e18"
+hash: "eea7cf5bea9fcbd7ae7c6263a1ba45ca861092c53f32359c3b4cb2584dceb7fd"
+version: "v0.0.0-20190315151331-d61658bd2e18"
+
+gomodbuilder: <>
+
+# build dependencies:
