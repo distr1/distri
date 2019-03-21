@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "3"
+version: "8"
 
 cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
 
@@ -35,6 +35,7 @@ dep: "go-google.golang.org-appengine"
 dep: "go-google.golang.org-genproto"
 dep: "go-google.golang.org-grpc"
 dep: "go-honnef.co-go-tools"
+dep: "go-golang.org-x-xerrors"
 
 # Using exchange directories directly does not work well with Go (resulting in
 # unexpected and uninformative error messages), because they contain symbolic
