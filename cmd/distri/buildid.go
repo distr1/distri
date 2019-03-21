@@ -4,6 +4,7 @@ import (
 	"debug/elf"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"io"
 
 	"golang.org/x/xerrors"
@@ -24,6 +25,8 @@ func readAligned4(r io.Reader, sz int32) ([]byte, error) {
 	return data, nil
 }
 
+var errBuildIdNotFound = errors.New(".note.gnu.build-id not present")
+
 // based on go/src/cmd/internal/buildid.ReadELFNote
 func readBuildid(filename string) (string, error) {
 	f, err := elf.Open(filename)
@@ -32,6 +35,9 @@ func readBuildid(filename string) (string, error) {
 	}
 	defer f.Close()
 	sect := f.Section(".note.gnu.build-id")
+	if sect == nil {
+		return "", errBuildIdNotFound
+	}
 	if got, want := sect.Type, elf.SHT_NOTE; got != want {
 		return "", xerrors.Errorf("ELF note type = %v, want %v", got, want)
 	}

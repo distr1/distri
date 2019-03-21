@@ -1314,6 +1314,9 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		buildid, err := readBuildid(path)
+		if err == errBuildIdNotFound {
+			return nil // keep debug symbols, if any
+		}
 		if err != nil {
 			return xerrors.Errorf("readBuildid(%s): %v", path, err)
 		}
