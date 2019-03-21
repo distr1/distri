@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/renameio"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/xerrors"
 )
 
 // TODO: to make this performant enough, even just for starting emacs, we
@@ -39,7 +40,7 @@ func (hr *httpReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 	}
 	defer resp.Body.Close()
 	if got, want := resp.StatusCode, http.StatusPartialContent; got != want {
-		return 0, fmt.Errorf("HTTP status %v", resp.Status)
+		return 0, xerrors.Errorf("HTTP status %v", resp.Status)
 	}
 	for n < int(resp.ContentLength-1) {
 		nn, err := resp.Body.Read(p[n:])
@@ -86,7 +87,7 @@ func autodownload(imgDir, fileurl string) (*os.File, error) {
 			}
 			defer resp.Body.Close()
 			if got, want := resp.StatusCode, http.StatusOK; got != want {
-				return fmt.Errorf("%s: HTTP status %v", baseurl+suffix, resp.Status)
+				return xerrors.Errorf("%s: HTTP status %v", baseurl+suffix, resp.Status)
 			}
 			_, err = io.Copy(f, resp.Body)
 			return err

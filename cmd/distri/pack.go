@@ -20,6 +20,7 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
+	"golang.org/x/xerrors"
 )
 
 const packHelp = `TODO
@@ -70,7 +71,7 @@ func pack(args []string) error {
 	)
 	fset.Parse(args)
 	if *root == "" {
-		return fmt.Errorf("syntax: pack -root=<directory>")
+		return xerrors.Errorf("syntax: pack -root=<directory>")
 	}
 
 	for _, dir := range []string{
@@ -374,7 +375,7 @@ veth
 
 	if *diskImg != "" {
 		if err := writeDiskImg(*diskImg, *root, *encrypt, *serialOnly, *bootDebug); err != nil {
-			return fmt.Errorf("writeDiskImg: %v", err)
+			return xerrors.Errorf("writeDiskImg: %v", err)
 		}
 	}
 
@@ -504,14 +505,14 @@ name=root`)
 	sfdisk.Stdout = os.Stdout
 	sfdisk.Stderr = os.Stderr
 	if err := sfdisk.Run(); err != nil {
-		return fmt.Errorf("%v: %v", sfdisk.Args, err)
+		return xerrors.Errorf("%v: %v", sfdisk.Args, err)
 	}
 
 	losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", dest)
 	losetup.Stderr = os.Stderr
 	out, err := losetup.Output()
 	if err != nil {
-		return fmt.Errorf("%v: %v", losetup.Args, err)
+		return xerrors.Errorf("%v: %v", losetup.Args, err)
 	}
 
 	base := strings.TrimSpace(string(out))
@@ -526,14 +527,14 @@ name=root`)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
-		return fmt.Errorf("%v: %v", mkfs.Args, err)
+		return xerrors.Errorf("%v: %v", mkfs.Args, err)
 	}
 
 	mkfs = exec.Command("sudo", "mkfs.ext2", boot)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
-		return fmt.Errorf("%v: %v", mkfs.Args, err)
+		return xerrors.Errorf("%v: %v", mkfs.Args, err)
 	}
 
 	var luksUUID string
@@ -543,14 +544,14 @@ name=root`)
 		luksFormat.Stdout = os.Stdout
 		luksFormat.Stderr = os.Stderr
 		if err := luksFormat.Run(); err != nil {
-			return fmt.Errorf("%v: %v", luksFormat.Args, err)
+			return xerrors.Errorf("%v: %v", luksFormat.Args, err)
 		}
 
 		lsblk := exec.Command("lsblk", root, "-no", "uuid")
 		lsblk.Stderr = os.Stderr
 		uuid, err := lsblk.Output()
 		if err != nil {
-			return fmt.Errorf("lsblk: %v", err)
+			return xerrors.Errorf("lsblk: %v", err)
 		}
 		luksUUID = strings.TrimSpace(string(uuid))
 
@@ -559,7 +560,7 @@ name=root`)
 		luksOpen.Stdout = os.Stdout
 		luksOpen.Stderr = os.Stderr
 		if err := luksOpen.Run(); err != nil {
-			return fmt.Errorf("%v: %v", luksOpen.Args, err)
+			return xerrors.Errorf("%v: %v", luksOpen.Args, err)
 		}
 		defer func() {
 			luksClose := exec.Command("sudo", "cryptsetup", "close", "cryptroot")
@@ -577,11 +578,11 @@ name=root`)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
-		return fmt.Errorf("%v: %v", mkfs.Args, err)
+		return xerrors.Errorf("%v: %v", mkfs.Args, err)
 	}
 
 	if err := syscall.Mount(root, "/mnt", "ext4", syscall.MS_MGC_VAL, ""); err != nil {
-		return fmt.Errorf("mount %s /mnt: %v", root, err)
+		return xerrors.Errorf("mount %s /mnt: %v", root, err)
 	}
 	defer syscall.Unmount("/mnt", 0)
 
@@ -590,26 +591,26 @@ name=root`)
 	cp.Stdout = os.Stdout
 	cp.Stderr = os.Stderr
 	if err := cp.Run(); err != nil {
-		return fmt.Errorf("%v: %v", cp.Args, err)
+		return xerrors.Errorf("%v: %v", cp.Args, err)
 	}
 
 	if err := syscall.Mount(boot, "/mnt/boot", "ext2", syscall.MS_MGC_VAL, ""); err != nil {
-		return fmt.Errorf("mount %s /mnt/boot: %v", boot, err)
+		return xerrors.Errorf("mount %s /mnt/boot: %v", boot, err)
 	}
 	defer syscall.Unmount("/mnt/boot", 0)
 
 	if err := syscall.Mount(esp, "/mnt/esp", "vfat", syscall.MS_MGC_VAL, ""); err != nil {
-		return fmt.Errorf("mount %s /mnt/esp: %v", esp, err)
+		return xerrors.Errorf("mount %s /mnt/esp: %v", esp, err)
 	}
 	defer syscall.Unmount("/mnt/esp", 0)
 
 	if err := syscall.Mount("/dev", "/mnt/dev", "", syscall.MS_MGC_VAL|syscall.MS_BIND, ""); err != nil {
-		return fmt.Errorf("mount /dev /mnt/dev: %v", err)
+		return xerrors.Errorf("mount /dev /mnt/dev: %v", err)
 	}
 	defer syscall.Unmount("/mnt/dev", 0)
 
 	if err := syscall.Mount("/sys", "/mnt/sys", "", syscall.MS_MGC_VAL|syscall.MS_BIND, ""); err != nil {
-		return fmt.Errorf("mount /sys /mnt/sys: %v", err)
+		return xerrors.Errorf("mount /sys /mnt/sys: %v", err)
 	}
 	defer syscall.Unmount("/mnt/sys", 0)
 
@@ -617,7 +618,7 @@ name=root`)
 	chown.Stderr = os.Stderr
 	chown.Stdout = os.Stdout
 	if err := chown.Run(); err != nil {
-		return fmt.Errorf("%v: %v", chown.Args, err)
+		return xerrors.Errorf("%v: %v", chown.Args, err)
 	}
 	join, err := cmdfuse.Mount([]string{"-repo=/mnt/roimg", "/mnt/ro"})
 	if err != nil {
@@ -637,7 +638,7 @@ name=root`)
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
-		return fmt.Errorf("%v: %v", dracut.Args, err)
+		return xerrors.Errorf("%v: %v", dracut.Args, err)
 	}
 
 	var params []string
@@ -654,41 +655,41 @@ name=root`)
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
-		return fmt.Errorf("%v: %v", mkconfig.Args, err)
+		return xerrors.Errorf("%v: %v", mkconfig.Args, err)
 	}
 
 	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02/bin/grub-install", "--target=i386-pc", base)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
-		return fmt.Errorf("%v: %v", install.Args, err)
+		return xerrors.Errorf("%v: %v", install.Args, err)
 	}
 
 	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/esp", "--removable", "--no-nvram", "--boot-directory=/boot")
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
-		return fmt.Errorf("%v: %v", install.Args, err)
+		return xerrors.Errorf("%v: %v", install.Args, err)
 	}
 
 	if err := fuse.Unmount("/mnt/ro"); err != nil {
-		return fmt.Errorf("unmount /mnt/ro: %v", err)
+		return xerrors.Errorf("unmount /mnt/ro: %v", err)
 	}
 
 	if err := join(context.Background()); err != nil {
-		return fmt.Errorf("fuse: %v", err)
+		return xerrors.Errorf("fuse: %v", err)
 	}
 
 	chown = exec.Command("sudo", "chown", "root", "/mnt/ro")
 	chown.Stderr = os.Stderr
 	chown.Stdout = os.Stdout
 	if err := chown.Run(); err != nil {
-		return fmt.Errorf("%v: %v", chown.Args, err)
+		return xerrors.Errorf("%v: %v", chown.Args, err)
 	}
 
 	for _, m := range []string{"sys", "dev", "boot", "esp", ""} {
 		if err := syscall.Unmount(filepath.Join("/mnt", m), 0); err != nil {
-			return fmt.Errorf("unmount /mnt/%s: %v", m, err)
+			return xerrors.Errorf("unmount /mnt/%s: %v", m, err)
 		}
 	}
 
@@ -696,7 +697,7 @@ name=root`)
 	losetup.Stdout = os.Stdout
 	losetup.Stderr = os.Stderr
 	if err := losetup.Run(); err != nil {
-		return fmt.Errorf("%v: %v", losetup.Args, err)
+		return xerrors.Errorf("%v: %v", losetup.Args, err)
 	}
 
 	return nil

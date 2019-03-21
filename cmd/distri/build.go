@@ -31,6 +31,7 @@ import (
 	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
+	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 )
 
@@ -107,21 +108,21 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 
 	u, err := url.Parse(b.Proto.GetSource())
 	if err != nil {
-		return fmt.Errorf("url.Parse: %v", err)
+		return xerrors.Errorf("url.Parse: %v", err)
 	}
 
 	if u.Scheme == "distriroot" {
 		if err := updateFromDistriroot(b.SourceDir); err != nil {
-			return fmt.Errorf("updateFromDistriroot: %v", err)
+			return xerrors.Errorf("updateFromDistriroot: %v", err)
 		}
 	} else if u.Scheme == "empty" {
 		b.SourceDir = "empty"
 		if err := b.makeEmpty(); err != nil {
-			return fmt.Errorf("makeEmpty: %v", err)
+			return xerrors.Errorf("makeEmpty: %v", err)
 		}
 	} else {
 		if err := b.extract(); err != nil {
-			return fmt.Errorf("extract: %v", err)
+			return xerrors.Errorf("extract: %v", err)
 		}
 	}
 
@@ -147,7 +148,7 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 	{
 		meta, err := b.build()
 		if err != nil {
-			return fmt.Errorf("build: %v", err)
+			return xerrors.Errorf("build: %v", err)
 		}
 
 		pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
@@ -526,10 +527,10 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		candidates = append(candidates, strings.TrimSuffix(filepath.Base(m), ".meta.textproto"))
 	}
 	if len(candidates) > 1 {
-		return "", fmt.Errorf("specify the package version to disambiguate between %q", candidates)
+		return "", xerrors.Errorf("specify the package version to disambiguate between %q", candidates)
 	}
 	if len(candidates) == 0 {
-		return "", fmt.Errorf("package %q not found (pattern %s)", pkg, pattern)
+		return "", xerrors.Errorf("package %q not found (pattern %s)", pkg, pattern)
 	}
 	return candidates[0], nil
 }
@@ -734,7 +735,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 
 		deps, err := b.builddeps(b.Proto)
 		if err != nil {
-			return nil, fmt.Errorf("builddeps: %v", err)
+			return nil, xerrors.Errorf("builddeps: %v", err)
 		}
 
 		if b.FUSE {
@@ -777,7 +778,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Start(); err != nil {
-			return nil, fmt.Errorf("%v: %v", cmd.Args, err)
+			return nil, xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 		// Close the write end of the pipe in the parent process
 		if err := w.Close(); err != nil {
@@ -857,7 +858,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				return nil, err
 			}
 			if err := syscall.Mount(b.SourceDir, src, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				return nil, fmt.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
+				return nil, xerrors.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
 			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
 
@@ -869,7 +870,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 					return nil, err
 				}
 				if err := syscall.Mount(wrappersSrc, wrappers, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-					return nil, fmt.Errorf("bind mount %s %s: %v", wrappersSrc, wrappers, err)
+					return nil, xerrors.Errorf("bind mount %s %s: %v", wrappersSrc, wrappers, err)
 				}
 			}
 		}
@@ -884,7 +885,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				return nil, err
 			}
 			if err := syscall.Mount(b.DestDir, dst, "none", syscall.MS_BIND, ""); err != nil {
-				return nil, fmt.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
+				return nil, xerrors.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
 			}
 			b.DestDir = strings.TrimPrefix(dst, b.ChrootDir)
 
@@ -896,7 +897,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 					return nil, err
 				}
 				if err := syscall.Mount(dst, prefix, "none", syscall.MS_BIND, ""); err != nil {
-					return nil, fmt.Errorf("bind mount %s %s: %v", dst, prefix, err)
+					return nil, xerrors.Errorf("bind mount %s %s: %v", dst, prefix, err)
 				}
 			}
 
@@ -965,13 +966,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			// Make available b.SourceDir as /usr/src/<pkg>-<version> (read-only):
 			src := filepath.Join("/usr/src", b.fullName())
 			if err := syscall.Mount("tmpfs", "/usr/src", "tmpfs", 0, ""); err != nil {
-				return nil, fmt.Errorf("mount tmpfs /usr/src: %v", err)
+				return nil, xerrors.Errorf("mount tmpfs /usr/src: %v", err)
 			}
 			if err := os.MkdirAll(src, 0755); err != nil {
 				return nil, err
 			}
 			if err := syscall.Mount(b.SourceDir, src, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				return nil, fmt.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
+				return nil, xerrors.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
 			}
 			b.SourceDir = src
 		}
@@ -981,13 +982,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			dst := filepath.Join("/ro", "tmp")
 			// TODO: get rid of the requirement of having (an empty) /ro exist on the host
 			if err := syscall.Mount("tmpfs", "/ro", "tmpfs", 0, ""); err != nil {
-				return nil, fmt.Errorf("mount tmpfs /ro: %v", err)
+				return nil, xerrors.Errorf("mount tmpfs /ro: %v", err)
 			}
 			if err := os.MkdirAll(dst, 0755); err != nil {
 				return nil, err
 			}
 			if err := syscall.Mount(b.DestDir, dst, "none", syscall.MS_BIND, ""); err != nil {
-				return nil, fmt.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
+				return nil, xerrors.Errorf("bind mount %s %s: %v", b.DestDir, dst, err)
 			}
 			b.DestDir = dst
 
@@ -1026,7 +1027,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			// }
 
 			// if err := syscall.Mount("/ro/bin", "/bin", "none", syscall.MS_BIND, ""); err != nil {
-			// 	return fmt.Errorf("bind mount %s %s: %v", "/ro/bin", "/bin", err)
+			// 	return xerrors.Errorf("bind mount %s %s: %v", "/ro/bin", "/bin", err)
 			// }
 		}
 	}
@@ -1072,12 +1073,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				return nil, err
 			}
 		default:
-			return nil, fmt.Errorf("BUG: unknown builder")
+			return nil, xerrors.Errorf("BUG: unknown builder")
 		}
 	}
 
 	if len(steps) == 0 {
-		return nil, fmt.Errorf("build.textproto does not specify Builder nor BuildSteps")
+		return nil, xerrors.Errorf("build.textproto does not specify Builder nor BuildSteps")
 	}
 
 	if b.Hermetic {
@@ -1138,7 +1139,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	for _, unit := range b.Proto.GetInstall().GetSystemdUnit() {
 		fn := b.substitute(unit)
 		if _, err := os.Stat(fn); err != nil {
-			return nil, fmt.Errorf("unit %q: %v", unit, err)
+			return nil, xerrors.Errorf("unit %q: %v", unit, err)
 		}
 		dest := filepath.Join(b.DestDir, b.Prefix, "out", "lib", "systemd", "system")
 		log.Printf("installing systemd unit %q: cp %s %s/", unit, fn, dest)
@@ -1301,7 +1302,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			patchelf.Stdout = os.Stdout
 			patchelf.Stderr = os.Stderr
 			if err := patchelf.Run(); err != nil {
-				return fmt.Errorf("%v: %v", patchelf.Args, err)
+				return xerrors.Errorf("%v: %v", patchelf.Args, err)
 			}
 			if err := os.Chmod(path, fi.Mode()); err != nil {
 				return err
@@ -1310,7 +1311,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 
 		buildid, err := readBuildid(path)
 		if err != nil {
-			return fmt.Errorf("readBuildid(%s): %v", path, err)
+			return xerrors.Errorf("readBuildid(%s): %v", path, err)
 		}
 		debugPath := filepath.Join(destDir, "debug", ".build-id", string(buildid[:2])+"/"+string(buildid[2:])+".debug")
 		if err := os.MkdirAll(filepath.Dir(debugPath), 0755); err != nil {
@@ -1320,13 +1321,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		objcopy.Stdout = os.Stdout
 		objcopy.Stderr = os.Stderr
 		if err := objcopy.Run(); err != nil {
-			return fmt.Errorf("%v: %v", objcopy.Args, err)
+			return xerrors.Errorf("%v: %v", objcopy.Args, err)
 		}
 		strip := exec.Command("strip", "-g", path)
 		strip.Stdout = os.Stdout
 		strip.Stderr = os.Stderr
 		if err := strip.Run(); err != nil {
-			return fmt.Errorf("%v: %v", strip.Args, err)
+			return xerrors.Errorf("%v: %v", strip.Args, err)
 		}
 		return nil
 	})
@@ -1393,7 +1394,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		case *pb.Build_Pythonbuilder:
 			depPkgs["python3-amd64-3.7.0"] = true
 		default:
-			return nil, fmt.Errorf("BUG: unknown builder")
+			return nil, xerrors.Errorf("BUG: unknown builder")
 		}
 	}
 
@@ -1427,7 +1428,7 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 		cmd.Stdin = f
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cmd.Args, err)
+			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 		return nil
 	}
@@ -1437,7 +1438,7 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 		return err
 	}
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return fmt.Errorf("HTTP status %v", resp.Status)
+		return xerrors.Errorf("HTTP status %v", resp.Status)
 	}
 	// TODO: once we extract in golang tar, we can just re-extract the timestamps
 	cmd := exec.Command("patch", "-p1", "--batch", "--set-time", "--set-utc")
@@ -1445,7 +1446,7 @@ func (b *buildctx) cherryPick(src, tmp string) error {
 	cmd.Stdin = resp.Body
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%v: %v", cmd.Args, err)
+		return xerrors.Errorf("%v: %v", cmd.Args, err)
 	}
 	return nil
 }
@@ -1462,7 +1463,7 @@ func (b *buildctx) extract() error {
 
 	u, err := url.Parse(b.Proto.GetSource())
 	if err != nil {
-		return fmt.Errorf("url.Parse: %v", err)
+		return xerrors.Errorf("url.Parse: %v", err)
 	}
 
 	if u.Scheme == "distri+gomod" {
@@ -1479,7 +1480,7 @@ func (b *buildctx) extract() error {
 	}
 
 	if err := b.verify(fn); err != nil {
-		return fmt.Errorf("verify: %v", err)
+		return xerrors.Errorf("verify: %v", err)
 	}
 
 	pwd, err := os.Getwd()
@@ -1500,20 +1501,20 @@ func (b *buildctx) extract() error {
 		cmd.Dir = tmp
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cmd.Args, err)
+			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 	} else {
 		// TODO(later): extract in pure Go to avoid tar dependency
 		cmd := exec.Command("tar", "xf", fn, "--strip-components=1", "--no-same-owner", "-C", tmp)
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cmd.Args, err)
+			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 	}
 
 	for _, u := range b.Proto.GetCherryPick() {
 		if err := b.cherryPick(u, tmp); err != nil {
-			return fmt.Errorf("cherry picking %s: %v", u, err)
+			return xerrors.Errorf("cherry picking %s: %v", u, err)
 		}
 		log.Printf("cherry picked %s", u)
 	}
@@ -1533,7 +1534,7 @@ func (b *buildctx) verify(fn string) error {
 
 		// TODO(later): calculate hash while downloading to avoid having to read the file
 		if err := b.download(fn); err != nil {
-			return fmt.Errorf("download: %v", err)
+			return xerrors.Errorf("download: %v", err)
 		}
 	}
 	log.Printf("verifying %s", fn)
@@ -1548,7 +1549,7 @@ func (b *buildctx) verify(fn string) error {
 	}
 	sum := fmt.Sprintf("%x", h.Sum(nil))
 	if got, want := sum, b.Proto.GetHash(); got != want {
-		return fmt.Errorf("hash mismatch for %s: got %s, want %s", fn, got, want)
+		return xerrors.Errorf("hash mismatch for %s: got %s, want %s", fn, got, want)
 	}
 	return nil
 }
@@ -1556,7 +1557,7 @@ func (b *buildctx) verify(fn string) error {
 func (b *buildctx) download(fn string) error {
 	u, err := url.Parse(b.Proto.GetSource())
 	if err != nil {
-		return fmt.Errorf("url.Parse: %v", err)
+		return xerrors.Errorf("url.Parse: %v", err)
 	}
 
 	if u.Scheme == "distri+gomod" {
@@ -1564,7 +1565,7 @@ func (b *buildctx) download(fn string) error {
 	} else if u.Scheme == "http" || u.Scheme == "https" {
 		return b.downloadHTTP(fn)
 	} else {
-		return fmt.Errorf("unimplemented URL scheme %q", u.Scheme)
+		return xerrors.Errorf("unimplemented URL scheme %q", u.Scheme)
 	}
 }
 
@@ -1585,7 +1586,7 @@ func (b *buildctx) downloadGoModule(fn, importPath string) error {
 	gotool.Stderr = os.Stderr
 	out, err := gotool.Output()
 	if err != nil {
-		return fmt.Errorf("%v: %v", gotool.Args, err)
+		return xerrors.Errorf("%v: %v", gotool.Args, err)
 	}
 	var modinfo struct {
 		Info  string
@@ -1608,11 +1609,11 @@ func (b *buildctx) downloadGoModule(fn, importPath string) error {
 		return err
 	}
 	if err := json.Unmarshal(bInfo, &info); err != nil {
-		return fmt.Errorf("malformed Info file: %v", err)
+		return xerrors.Errorf("malformed Info file: %v", err)
 	}
 	t, err := time.Parse(time.RFC3339, info.Time)
 	if err != nil {
-		return fmt.Errorf("malformed Time in Info file: %v", err)
+		return xerrors.Errorf("malformed Time in Info file: %v", err)
 	}
 
 	trim := filepath.Clean(tmpdir) + "/"
@@ -1649,7 +1650,7 @@ func (b *buildctx) downloadGoModule(fn, importPath string) error {
 			return nil
 		}
 		if !info.Mode().IsRegular() {
-			return fmt.Errorf("file %q is not regular", path)
+			return xerrors.Errorf("file %q is not regular", path)
 		}
 		mode := int64(0644)
 		if info.Mode()&0700 != 0 {
@@ -1705,7 +1706,7 @@ func (b *buildctx) downloadHTTP(fn string) error {
 	}
 	defer resp.Body.Close()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return fmt.Errorf("unexpected HTTP status: got %d (%v), want %d", got, resp.Status, want)
+		return xerrors.Errorf("unexpected HTTP status: got %d (%v), want %d", got, resp.Status, want)
 	}
 	f, err := os.Create(fn)
 	if err != nil {
@@ -1734,7 +1735,7 @@ func (b *buildctx) makeEmpty() error {
 
 	for _, u := range b.Proto.GetCherryPick() {
 		if err := b.cherryPick(u, tmp); err != nil {
-			return fmt.Errorf("cherry picking %s: %v", u, err)
+			return xerrors.Errorf("cherry picking %s: %v", u, err)
 		}
 		log.Printf("cherry picked %s", u)
 	}
@@ -1787,7 +1788,7 @@ func updateFromDistriroot(builddir string) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("filepath.Walk: %v", err)
+		return xerrors.Errorf("filepath.Walk: %v", err)
 	}
 
 	// Drop all replace directives from go.mod, if any. We only do this for the
@@ -1839,7 +1840,7 @@ func runJob(job string) error {
 		return err
 	}
 	if err := json.Unmarshal(c, &b); err != nil {
-		return fmt.Errorf("unmarshaling %q: %v", string(c), err)
+		return xerrors.Errorf("unmarshaling %q: %v", string(c), err)
 	}
 	c, err = ioutil.ReadFile(filepath.Join(b.PkgDir, "build.textproto"))
 	if err != nil {
@@ -1918,7 +1919,7 @@ func build(args []string) error {
 
 	if _, err := os.Stat("build.textproto"); err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("syntax: distri build, in the pkg/<pkg>/ directory")
+			return xerrors.Errorf("syntax: distri build, in the pkg/<pkg>/ directory")
 		}
 		return err
 	}

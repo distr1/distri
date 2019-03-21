@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"path/filepath"
 	"syscall"
+
+	"golang.org/x/xerrors"
 )
 
 const umountHelp = `TODO
@@ -21,7 +22,7 @@ func umount(args []string) error {
 
 	fset.Parse(args)
 	if fset.NArg() != 1 {
-		return fmt.Errorf("syntax: umount <package>")
+		return xerrors.Errorf("syntax: umount <package>")
 	}
 	pkg := fset.Arg(0)
 

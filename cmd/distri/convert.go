@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/distr1/distri/internal/squashfs"
+	"golang.org/x/xerrors"
 )
 
 func cp(w *squashfs.Directory, dir string) error {
@@ -66,7 +66,7 @@ func convert(args []string) error {
 	var pkg = fset.String("pkg", "", "path to tar.gz package to convert to squashfs")
 	fset.Parse(args)
 	if *pkg == "" {
-		return fmt.Errorf("required: -pkg")
+		return xerrors.Errorf("required: -pkg")
 	}
 	log.Printf("converting %s to SquashFS", *pkg)
 	tmp, err := ioutil.TempDir("", "convert")
@@ -80,7 +80,7 @@ func convert(args []string) error {
 	cmd.Dir = tmp
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%v: %v", cmd.Args, err)
+		return xerrors.Errorf("%v: %v", cmd.Args, err)
 	}
 
 	log.Printf("packing")

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/xerrors"
 )
 
 const unpackHelp = `TODO
@@ -26,14 +26,14 @@ func unpack(args []string) error {
 	}
 
 	if buildDir := filepath.Join(env.DistriRoot, "build"); !strings.HasPrefix(wd, buildDir+"/") {
-		return fmt.Errorf("run unpack in a subdirectory of %s", buildDir)
+		return xerrors.Errorf("run unpack in a subdirectory of %s", buildDir)
 	}
 	pkg := filepath.Base(wd)
 
 	pkgDir := "../../pkgs/" + pkg
 	c, err := ioutil.ReadFile(filepath.Join(pkgDir, "build.textproto"))
 	if err != nil {
-		return fmt.Errorf("reading accompanying build.textproto: %v", err)
+		return xerrors.Errorf("reading accompanying build.textproto: %v", err)
 	}
 	var buildProto pb.Build
 	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
@@ -48,7 +48,7 @@ func unpack(args []string) error {
 		SourceDir: trimArchiveSuffix(filepath.Base(buildProto.GetSource())),
 	}
 	if err := b.extract(); err != nil {
-		return fmt.Errorf("extract: %v", err)
+		return xerrors.Errorf("extract: %v", err)
 	}
 	return nil
 }

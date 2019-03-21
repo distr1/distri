@@ -21,6 +21,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 )
 
@@ -62,7 +63,7 @@ func repoReader(repo distri.Repo, fn string) (io.ReadCloser, error) {
 			if got == http.StatusNotFound {
 				return nil, &errNotFound{}
 			}
-			return nil, fmt.Errorf("HTTP status %v", resp.Status)
+			return nil, xerrors.Errorf("HTTP status %v", resp.Status)
 		}
 		return resp.Body, nil
 	}
@@ -158,7 +159,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 	if first {
 		readerAt, err := mmap.Open(filepath.Join(tmpDir, pkg+".squashfs"))
 		if err != nil {
-			return fmt.Errorf("copying /etc: %v", err)
+			return xerrors.Errorf("copying /etc: %v", err)
 		}
 
 		rd, err := squashfs.NewReader(readerAt)
@@ -176,7 +177,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 			}
 			log.Printf("copying %s/etc", pkg)
 			if err := unpackDir(filepath.Join(root, "etc"), rd, fi.Sys().(*squashfs.FileInfo).Inode); err != nil {
-				return fmt.Errorf("copying /etc: %v", err)
+				return xerrors.Errorf("copying /etc: %v", err)
 			}
 			break
 		}
@@ -231,7 +232,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		}
 	}
 	if pm == nil {
-		return fmt.Errorf("package %s not found on any configured repo", pkg)
+		return xerrors.Errorf("package %s not found on any configured repo", pkg)
 	}
 
 	if _, ok := hasArchSuffix(pkg); ok {
@@ -252,7 +253,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		pkg := pkg //copy
 		eg.Go(func() error {
 			if err := install1(root, repo, pkg, first); err != nil {
-				return fmt.Errorf("installing %s: %v", pkg, err)
+				return xerrors.Errorf("installing %s: %v", pkg, err)
 			}
 			return nil
 		})
@@ -281,7 +282,7 @@ func install(args []string) error {
 	)
 	fset.Parse(args)
 	if fset.NArg() < 1 {
-		return fmt.Errorf("syntax: install [options] <package> [<package>...]")
+		return xerrors.Errorf("syntax: install [options] <package> [<package>...]")
 	}
 
 	repos, err := env.Repos()
@@ -292,7 +293,7 @@ func install(args []string) error {
 		repos = []distri.Repo{{Path: *repo}}
 	}
 	if len(repos) == 0 {
-		return fmt.Errorf("no repos configured")
+		return xerrors.Errorf("no repos configured")
 	}
 
 	// TODO: lock to ensure only one process modifies roimg at a time

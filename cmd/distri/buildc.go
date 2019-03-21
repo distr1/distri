@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/distr1/distri/pb"
+	"golang.org/x/xerrors"
 )
 
 var configureTarget = map[string]string{
@@ -18,7 +17,7 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 	target := configureTarget[b.Arch]
 
 	if opts.GetAutoreconf() && !opts.GetCopyToBuilddir() {
-		return nil, nil, fmt.Errorf("cbuilder: autoreconf requires copy_to_builddir")
+		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires copy_to_builddir")
 	}
 
 	var steps [][]string

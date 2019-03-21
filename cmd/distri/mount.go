@@ -14,6 +14,7 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"golang.org/x/sys/unix"
+	"golang.org/x/xerrors"
 )
 
 const mountHelp = `TODO
@@ -121,7 +122,7 @@ func mount(args []string) (cleanup func(), _ error) {
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
-		return nil, fmt.Errorf("syntax: mount <package>")
+		return nil, xerrors.Errorf("syntax: mount <package>")
 	}
 	pkg := fset.Arg(0)
 

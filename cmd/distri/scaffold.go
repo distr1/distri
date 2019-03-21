@@ -18,6 +18,7 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/xerrors"
 )
 
 const scaffoldHelp = `TODO
@@ -118,7 +119,7 @@ func scaffoldGo(gomod string) error {
 	gotool.Stderr = os.Stderr
 	b, err := gotool.Output()
 	if err != nil {
-		return fmt.Errorf("%v: %v", gotool.Args, err)
+		return xerrors.Errorf("%v: %v", gotool.Args, err)
 	}
 	dec := json.NewDecoder(bytes.NewReader(b))
 	for dec.More() {
@@ -159,12 +160,12 @@ func scaffold(args []string) error {
 		return scaffoldGo(*gomod)
 	}
 	if fset.NArg() != 1 {
-		return fmt.Errorf("syntax: scaffold <url>")
+		return xerrors.Errorf("syntax: scaffold <url>")
 	}
 	u := fset.Arg(0)
 	parsed, err := url.Parse(u)
 	if err != nil {
-		return fmt.Errorf("could not parse URL %q: %v", u, err)
+		return xerrors.Errorf("could not parse URL %q: %v", u, err)
 	}
 	var scaffoldType int
 	if parsed.Host == "cpan.metacpan.org" {
@@ -179,7 +180,7 @@ func scaffold(args []string) error {
 	}
 	idx := strings.LastIndex(pkg, "-")
 	if idx == -1 {
-		return fmt.Errorf("could not segment %q into <name>-<version>", pkg)
+		return xerrors.Errorf("could not segment %q into <name>-<version>", pkg)
 	}
 
 	name := strings.ToLower(pkg[:idx])

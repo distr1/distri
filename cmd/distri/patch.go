@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,6 +18,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
+	"golang.org/x/xerrors"
 )
 
 const patchHelp = `TODO
@@ -59,7 +59,7 @@ func patchJob(job string) error {
 	}
 
 	if err := unix.Chroot(p.ChrootDir); err != nil {
-		return fmt.Errorf("chroot(%s): %v", p.ChrootDir, err)
+		return xerrors.Errorf("chroot(%s): %v", p.ChrootDir, err)
 	}
 
 	if err := os.Chdir(filepath.Join("/usr/src", p.fullName())); err != nil {
@@ -89,7 +89,7 @@ func patch(args []string) error {
 	}
 
 	if fset.NArg() != 1 {
-		return fmt.Errorf("syntax: distri patch [options] <patchfile>")
+		return xerrors.Errorf("syntax: distri patch [options] <patchfile>")
 	}
 	patchfile := fset.Arg(0)
 
@@ -99,7 +99,7 @@ func patch(args []string) error {
 			return err
 		}
 		if pkgs := filepath.Join(env.DistriRoot, "pkgs"); filepath.Dir(wd) != pkgs {
-			return fmt.Errorf("either run distri patch inside of %s or specify -pkg", pkgs)
+			return xerrors.Errorf("either run distri patch inside of %s or specify -pkg", pkgs)
 		}
 		*pkg = filepath.Base(wd)
 	}
@@ -112,7 +112,7 @@ func patch(args []string) error {
 	}
 	var buildProto pb.Build
 	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
-		return fmt.Errorf("reading %s: %v", buildProtoPath, err)
+		return xerrors.Errorf("reading %s: %v", buildProtoPath, err)
 	}
 
 	p := &patchctx{
@@ -146,7 +146,7 @@ func patch(args []string) error {
 		lowerdir := filepath.Join(env.DistriRoot, "build", p.Pkg, trimArchiveSuffix(filepath.Base(p.Proto.GetSource())))
 		target := filepath.Join(p.ChrootDir, "usr", "src", p.fullName())
 		if err := os.MkdirAll(target, 0755); err != nil {
-			return fmt.Errorf("MkdirAll(%s) = %v", target, err)
+			return xerrors.Errorf("MkdirAll(%s) = %v", target, err)
 		}
 		opts := strings.Join([]string{
 			"lowerdir=" + lowerdir,
@@ -154,7 +154,7 @@ func patch(args []string) error {
 			"workdir=" + workdir,
 		}, ",")
 		if err := syscall.Mount("overlay", target, "overlay", 0, opts); err != nil {
-			return fmt.Errorf("mount: %v", err)
+			return xerrors.Errorf("mount: %v", err)
 		}
 		defer syscall.Unmount(target, 0)
 
@@ -273,7 +273,7 @@ func patch(args []string) error {
 			},
 		}
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cmd.Args, err)
+			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 
 		// Generate a patch out of the modifications
@@ -304,7 +304,7 @@ func patch(args []string) error {
 					if ee, ok := err.(*exec.ExitError); ok && ee.ExitCode() == 1 {
 						// files are different, which is what we expect
 					} else {
-						return fmt.Errorf("%v: %v", diff.Args, err)
+						return xerrors.Errorf("%v: %v", diff.Args, err)
 					}
 				}
 			}

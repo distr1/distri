@@ -20,6 +20,7 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
@@ -202,7 +203,7 @@ func batch(args []string) error {
 			}
 		}
 		if _, err := topo.Sort(g); err != nil {
-			return fmt.Errorf("could not break cycles: %v", err)
+			return xerrors.Errorf("could not break cycles: %v", err)
 		}
 	}
 
@@ -288,7 +289,7 @@ func (s *scheduler) build(pkg string) error {
 	build.Stdout = logFile
 	build.Stderr = logFile
 	if err := build.Run(); err != nil {
-		return fmt.Errorf("%v: %v", build.Args, err)
+		return xerrors.Errorf("%v: %v", build.Args, err)
 	}
 	return nil
 }
@@ -311,7 +312,7 @@ func (s *scheduler) run() error {
 				if s.simulate {
 					go func() {
 						if !s.buildDry(n.pkg) {
-							result <- fmt.Errorf("simulate intentionally failed")
+							result <- xerrors.Errorf("simulate intentionally failed")
 						} else {
 							result <- nil
 						}
@@ -405,7 +406,7 @@ func (s *scheduler) markFailed(n graph.Node) int {
 			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", name)
 		}
 		if _, ok := s.built[name]; !ok {
-			s.built[d.(*node).fullname] = fmt.Errorf("dependencies cannot be fulfilled")
+			s.built[d.(*node).fullname] = xerrors.Errorf("dependencies cannot be fulfilled")
 			failed++
 		}
 		failed += s.markFailed(d)

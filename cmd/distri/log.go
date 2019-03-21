@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/distr1/distri/internal/env"
+	"golang.org/x/xerrors"
 )
 
 const logHelp = `TODO
@@ -18,7 +19,7 @@ func showlog(args []string) error {
 	var ()
 	fset.Parse(args)
 	if fset.NArg() != 1 {
-		return fmt.Errorf("syntax: log <package>")
+		return xerrors.Errorf("syntax: log <package>")
 	}
 	pkg := fset.Arg(0)
 
@@ -27,7 +28,7 @@ func showlog(args []string) error {
 		return err
 	}
 	if got, want := len(matches), 1; got != want {
-		return fmt.Errorf("unexpected number of logfiles: got %d, want %d (matches: %v)", got, want, matches)
+		return xerrors.Errorf("unexpected number of logfiles: got %d, want %d (matches: %v)", got, want, matches)
 	}
 
 	shargs := []string{

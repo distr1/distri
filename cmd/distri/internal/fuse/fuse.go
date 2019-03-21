@@ -22,6 +22,7 @@ import (
 	"github.com/jacobsa/fuse"
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
+	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 
 	"github.com/distr1/distri/internal/env"
@@ -97,7 +98,7 @@ func LookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
 		}
 		fi, err := rd.Stat("", inode)
 		if err != nil {
-			return 0, fmt.Errorf("Stat(%d): %v", inode, err)
+			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
 		}
 		if fi.Mode()&os.ModeSymlink > 0 {
 			target, err := rd.ReadLink(inode)
@@ -126,7 +127,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
-		return nil, fmt.Errorf("syntax: fuse <mountpoint>")
+		return nil, xerrors.Errorf("syntax: fuse <mountpoint>")
 	}
 	mountpoint := fset.Arg(0)
 	//log.Printf("mounting FUSE file system at %q", mountpoint)
@@ -475,7 +476,7 @@ func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeD
 		}
 		sfis, err := rd.Readdir(inode)
 		if err != nil {
-			return fmt.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
+			return xerrors.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
 		}
 		for _, sfi := range sfis {
 			if sfi.Mode().IsDir() {
@@ -663,11 +664,11 @@ const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export/debug"
 func (fs *fuseFS) updatePackages() error {
 	repos, err := env.Repos()
 	if err != nil {
-		return fmt.Errorf("env.Repos: %v", err)
+		return xerrors.Errorf("env.Repos: %v", err)
 	}
 
 	if len(repos) == 0 {
-		return fmt.Errorf("no repositories configured")
+		return xerrors.Errorf("no repositories configured")
 	}
 	// TODO: make this code work with multiple repos
 	resp, err := http.Get(repos[0].Path + "/" + fs.repoSection + "/meta.binaryproto")
@@ -676,11 +677,11 @@ func (fs *fuseFS) updatePackages() error {
 	}
 	defer resp.Body.Close()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return fmt.Errorf("HTTP status %v", resp.Status)
+		return xerrors.Errorf("HTTP status %v", resp.Status)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("reading meta.binaryproto: %v", err)
+		return xerrors.Errorf("reading meta.binaryproto: %v", err)
 	}
 	var mm pb.MirrorMeta
 	if err := proto.Unmarshal(b, &mm); err != nil {
@@ -1215,10 +1216,10 @@ func (fs *fuseFS) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingReply,
 
 func (fs *fuseFS) MkdirAll(ctx context.Context, req *pb.MkdirAllRequest) (*pb.MkdirAllReply, error) {
 	if req.GetDir() == "" {
-		return nil, fmt.Errorf("MkdirAll: dir must not be empty")
+		return nil, xerrors.Errorf("MkdirAll: dir must not be empty")
 	}
 	if strings.Contains(req.GetDir(), "/") {
-		return nil, fmt.Errorf("MkdirAll: dir must not contain slashes")
+		return nil, xerrors.Errorf("MkdirAll: dir must not contain slashes")
 	}
 	fs.mu.Lock()
 	defer fs.mu.Unlock()

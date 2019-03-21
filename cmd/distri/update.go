@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
 const updateHelp = `TODO
@@ -25,7 +26,7 @@ func update(args []string) error {
 	)
 	fset.Parse(args)
 	if *repo == "" {
-		return fmt.Errorf("-repo flag is required")
+		return xerrors.Errorf("-repo flag is required")
 	}
 
 	if os.Getenv("DISTRI_REEXEC") != "1" {
@@ -40,7 +41,7 @@ func update(args []string) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%v: %v", cmd.Args, err)
+			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
 		return nil
 	}
