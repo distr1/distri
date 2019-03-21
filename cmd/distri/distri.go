@@ -111,6 +111,7 @@ func main() {
 	}
 	fmt.Fprintf(os.Stderr, "%s", v.helpText)
 	if err := v.fn(args); err != nil {
-		log.Fatalf("%s: %+v", v, err)
+		fmt.Printf("%s: %+v\n", verb, err)
+		os.Exit(1)
 	}
 }
