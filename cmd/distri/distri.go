@@ -86,7 +86,7 @@ func main() {
 	}
 
 	args := flag.Args()
-	verb := "build" // TODO: change default to install when outside of $DISTRIROOT
+	verb := "build"
 	if len(args) > 0 {
 		verb, args = args[0], args[1:]
 	}
