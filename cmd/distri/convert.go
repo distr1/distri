@@ -16,6 +16,9 @@ import (
 	"golang.org/x/xerrors"
 )
 
+const convertHelp = `TODO
+`
+
 func cp(w *squashfs.Directory, dir string) error {
 	//log.Printf("cp(%s)", dir)
 	fis, err := ioutil.ReadDir(dir)
