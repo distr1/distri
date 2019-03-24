@@ -1,0 +1,39 @@
+source: "https://t.zekjur.net/mplayer-export-snapshot-2019-02-19.tar.bz2"
+hash: "28157e61a118731c5714dc607c0ecbfdee6ae7a84e45e226d7993e785e1802b1"
+version: "0.2019-02-19-4"
+
+cbuilder: <
+#  extra_configure_flag: "--without-bash-malloc"
+>
+
+dep: "yasm"
+dep: "pulseaudio"
+dep: "libx11"
+dep: "mesa"
+
+build_step: <
+  argv: "cp"
+  argv: "-T"
+  argv: "-ar"
+  argv: "${DISTRI_SOURCEDIR}/"
+  argv: "."
+>
+
+build_step: <
+  argv: "./configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+# TODO: destdir
+build_step: <
+  argv: "make"
+  argv: "install-mplayer"
+  argv: "V=1"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+>
