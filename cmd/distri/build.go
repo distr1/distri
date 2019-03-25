@@ -1172,16 +1172,16 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		dest := filepath.Join(b.DestDir, b.Prefix, "out")
 		name := filepath.Join(dest, chmod.GetName())
 		st, err := os.Stat(name)
-		if err!=nil{
+		if err != nil {
 			return nil, err
 		}
 		m := st.Mode()
 		if chmod.GetSetuid() {
 			m |= os.ModeSetuid
 		}
-		mode:=os.FileMode(uint32(m))
-		log.Printf("setting mode to %o: %s", mode,name)
-		if err := os.Chmod(name, mode); err != nil{
+		mode := os.FileMode(uint32(m))
+		log.Printf("setting mode to %o: %s", mode, name)
+		if err := os.Chmod(name, mode); err != nil {
 			return nil, err
 		}
 	}
