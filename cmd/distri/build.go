@@ -1168,6 +1168,24 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
+	for _, chmod := range b.Proto.GetInstall().GetChmod() {
+		dest := filepath.Join(b.DestDir, b.Prefix, "out")
+		name := filepath.Join(dest, chmod.GetName())
+		st, err := os.Stat(name)
+		if err!=nil{
+			return nil, err
+		}
+		m := st.Mode()
+		if chmod.GetSetuid() {
+			m |= os.ModeSetuid
+		}
+		mode:=os.FileMode(uint32(m))
+		log.Printf("setting mode to %o: %s", mode,name)
+		if err := os.Chmod(name, mode); err != nil{
+			return nil, err
+		}
+	}
+
 	for _, dir := range b.Proto.GetInstall().GetEmptyDir() {
 		log.Printf("creating empty dir %s", dir)
 		dest := filepath.Join(b.DestDir, b.Prefix, "out")

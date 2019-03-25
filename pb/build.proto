@@ -36,16 +36,21 @@ message GomodBuilder {
 }
 
 message Install {
+  repeated string systemd_unit = 1;
+
   message Symlink {
     optional string oldname = 1;
     optional string newname = 2;
   }
-
-  repeated string systemd_unit = 1;
-
   repeated Symlink symlink = 2;
 
   repeated string empty_dir = 3;
+
+  message Chmod {
+    optional bool setuid = 1;
+    optional string name = 2;
+  }
+  repeated Chmod chmod = 4;
 }
 
 message Claim {
