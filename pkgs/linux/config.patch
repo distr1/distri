@@ -1,5 +1,5 @@
 --- /dev/null	2019-03-19 17:47:24.411999675 +0100
-+++ .config	2019-03-21 22:12:25.194830021 +0100
++++ .config	2019-03-23 17:39:10.025798839 +0100
 @@ -0,0 +1,4655 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
@@ -184,7 +184,7 @@
 +CONFIG_NAMESPACES=y
 +CONFIG_UTS_NS=y
 +CONFIG_IPC_NS=y
-+# CONFIG_USER_NS is not set
++CONFIG_USER_NS=y
 +CONFIG_PID_NS=y
 +CONFIG_NET_NS=y
 +# CONFIG_SCHED_AUTOGROUP is not set
