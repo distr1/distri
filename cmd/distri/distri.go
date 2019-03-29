@@ -16,6 +16,7 @@ import (
 )
 
 var (
+	debug      = flag.Bool("debug", false, "enable debug mode: format error messages with additional detail")
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
 )
@@ -111,7 +112,11 @@ func main() {
 	}
 	fmt.Fprintf(os.Stderr, "%s", v.helpText)
 	if err := v.fn(args); err != nil {
-		fmt.Printf("%s: %+v\n", verb, err)
+		if *debug {
+			fmt.Printf("%s: %+v\n", verb, err)
+		} else {
+			fmt.Printf("%s: %v\n", verb, err)
+		}
 		os.Exit(1)
 	}
 }
