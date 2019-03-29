@@ -1,6 +1,6 @@
 source: "https://invisible-mirror.net/archives/ncurses/ncurses-6.1.tar.gz"
 hash: "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17"
-version: "6.1"
+version: "6.1-2"
 
 cbuilder: <
   # TODO: enable C++ support?
@@ -14,4 +14,6 @@ cbuilder: <
   extra_configure_flag: "--enable-overwrite"
 
   extra_configure_flag: "--with-shared"
+
+  extra_configure_flag: "--with-default-terminfo-dir=/ro/share/terminfo"
 >
