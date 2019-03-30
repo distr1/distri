@@ -7,7 +7,7 @@ index 3c55324..9ad3915 100644
  # option to preserve environment (-p), followed by '--' for safety, and then
  # the entered username.
 -ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear --keep-baud console 115200,38400,9600 $TERM
-+ExecStart=-/ro/util-linux-amd64-2.32/out/sbin/agetty -o '-p -- \\u' --noclear --keep-baud console 115200,38400,9600 $TERM
++ExecStart=-/bin/agetty -o '-p -- \\u' --noclear --keep-baud console 115200,38400,9600 $TERM
  Type=idle
  Restart=always
  UtmpIdentifier=cons
@@ -20,7 +20,7 @@ index 087ab7f..0f0048f 100644
  # option to preserve environment (-p), followed by '--' for safety, and then
  # the entered username.
 -ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear --keep-baud pts/%I 115200,38400,9600 $TERM
-+ExecStart=-/ro/util-linux-amd64-2.32/out/sbin/agetty -o '-p -- \\u' --noclear --keep-baud pts/%I 115200,38400,9600 $TERM
++ExecStart=-/bin/agetty -o '-p -- \\u' --noclear --keep-baud pts/%I 115200,38400,9600 $TERM
  Type=idle
  Restart=always
  RestartSec=0
@@ -33,7 +33,7 @@ index 80e793b..d433d8d 100644
  # option to preserve environment (-p), followed by '--' for safety, and then
  # the entered username.
 -ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM
-+ExecStart=-/ro/util-linux-amd64-2.32/out/sbin/agetty -o '-p -- \\u' --noclear %I $TERM
++ExecStart=-/bin/agetty -o '-p -- \\u' --noclear %I $TERM
  Type=idle
  Restart=always
  RestartSec=0
@@ -46,7 +46,7 @@ index 757b86a..8ab8e0e 100644
  # option to preserve environment (-p), followed by '--' for safety, and then
  # the entered username.
 -ExecStart=-/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
-+ExecStart=-/ro/util-linux-amd64-2.32/out/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
++ExecStart=-/bin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
  Type=idle
  Restart=always
  UtmpIdentifier=%I
