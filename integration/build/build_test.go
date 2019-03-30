@@ -200,7 +200,7 @@ func TestBuild(t *testing.T) {
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
 			"util-linux-amd64-2.32",   // from glib-2.58.0
-			"pam-amd64-1.3.1",         // from util-linux-2.32
+			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
@@ -285,7 +285,7 @@ func TestUnversionedBuild(t *testing.T) {
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
 			"util-linux-amd64-2.32",   // from glib-2.58.0
-			"pam-amd64-1.3.1",         // from util-linux-2.32
+			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
