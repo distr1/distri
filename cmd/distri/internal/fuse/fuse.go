@@ -824,6 +824,13 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 	}
 
 	if image == -1 { // (virtual) root directory
+
+		// Cache virtual files for 1s, which is the default entry_timeout FUSE
+		// option value. Enabling caching speeds up building the i3 package from
+		// 46s to 18s. Larger values (e.g. never) have no effect.
+		op.Entry.AttributesExpiration = time.Now().Add(1 * time.Second)
+		op.Entry.EntryExpiration = time.Now().Add(1 * time.Second)
+
 		if squashfsInode == 1 { // root directory (e.g. /ro)
 			fs.mu.Lock()
 			defer fs.mu.Unlock()
