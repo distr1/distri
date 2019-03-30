@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/psmisc/psmisc/psmisc-23.1.tar.xz"
 hash: "2e84d474cf75dfbe3ecdacfb797bbfab71a35c7c2639d1b9f6d5f18b2149ba30"
-version: "23.1"
+version: "23.1-2"
 
 cherry_pick: "dirstamp.patch" # https://gitlab.com/psmisc/psmisc/merge_requests/17
 
