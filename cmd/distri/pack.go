@@ -208,7 +208,7 @@ func pack(args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return err
+		return xerrors.Errorf("%v: %w", cmd.Args, err)
 	}
 
 	cmd = exec.Command("unshare",
@@ -222,7 +222,7 @@ func pack(args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return err
+		return xerrors.Errorf("%v: %w", cmd.Args, err)
 	}
 
 	cmd = exec.Command("unshare",
@@ -241,7 +241,7 @@ func pack(args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return err
+		return xerrors.Errorf("%v: %w", cmd.Args, err)
 	}
 
 	pamd := filepath.Join(*root, "etc", "pam.d")
