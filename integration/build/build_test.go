@@ -531,13 +531,14 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			opts := []cmp.Option{
-				cmpopts.SortSlices(func(a, b string) bool {
-					return a < b
-				}),
+			got := make(map[string]bool)
+			for _, dep := range meta.GetRuntimeDep() {
+				got[dep] = true
 			}
-			if diff := cmp.Diff(test.want, meta.GetRuntimeDep(), opts...); diff != "" {
-				t.Fatalf("unexpected runtime deps: (-want +got)\n%s", diff)
+			for _, want := range test.want {
+				if !got[want] {
+					t.Errorf("runtime dep %q not found in %v", want, meta.GetRuntimeDep())
+				}
 			}
 		})
 	}
