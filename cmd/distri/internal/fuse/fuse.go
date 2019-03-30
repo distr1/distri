@@ -814,6 +814,11 @@ func (fs *fuseFS) StatFS(ctx context.Context, op *fuseops.StatFSOp) error {
 // there is no sentinel value meaning never in FUSE.
 var never = time.Now().Add(365 * 24 * time.Hour)
 
+// VirtualFileExpiration determines how long virtual files (e.g. exchange
+// directory contents) are cached. 1s matches the default entry_timeout FUSE
+// option. Larger values (e.g. never) have no effect.
+const VirtualFileExpiration = 1 * time.Second
+
 func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) error {
 	//log.Printf("LookUpInode(op=%+v)", op)
 	// find dirent op.Name in inode op.Parent
@@ -828,8 +833,8 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		// Cache virtual files for 1s, which is the default entry_timeout FUSE
 		// option value. Enabling caching speeds up building the i3 package from
 		// 46s to 18s. Larger values (e.g. never) have no effect.
-		op.Entry.AttributesExpiration = time.Now().Add(1 * time.Second)
-		op.Entry.EntryExpiration = time.Now().Add(1 * time.Second)
+		op.Entry.AttributesExpiration = time.Now().Add(VirtualFileExpiration)
+		op.Entry.EntryExpiration = time.Now().Add(VirtualFileExpiration)
 
 		if squashfsInode == 1 { // root directory (e.g. /ro)
 			fs.mu.Lock()

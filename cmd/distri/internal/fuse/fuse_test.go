@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/cp"
@@ -128,6 +129,9 @@ func TestFUSE(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		// TODO: drop cache instead of waiting for it to expire
+		time.Sleep(2 * fuse.VirtualFileExpiration) // ensure cache expired
+
 		target, err := os.Readlink(tmpdir + "/bin/less")
 		if err != nil {
 			t.Fatal(err)
@@ -147,6 +151,9 @@ func TestFUSE(t *testing.T) {
 		if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
 			t.Fatal(err)
 		}
+
+		// TODO: drop cache instead of waiting for it to expire
+		time.Sleep(2 * fuse.VirtualFileExpiration) // ensure cache expired
 
 		target, err := os.Readlink(tmpdir + "/bin/less")
 		if err != nil {
