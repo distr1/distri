@@ -41,6 +41,7 @@ const Help = `TODO
 var ExchangeDirs = []string{
 	"/bin",
 	"/out/lib",
+	"/out/lib64",
 	"/out/lib/gio",
 	"/out/lib/girepository-1.0",
 	"/out/include",
