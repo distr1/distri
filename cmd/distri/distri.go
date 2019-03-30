@@ -113,9 +113,9 @@ func main() {
 	fmt.Fprintf(os.Stderr, "%s", v.helpText)
 	if err := v.fn(args); err != nil {
 		if *debug {
-			fmt.Printf("%s: %+v\n", verb, err)
+			fmt.Fprintf(os.Stderr, "%s: %+v\n", verb, err)
 		} else {
-			fmt.Printf("%s: %v\n", verb, err)
+			fmt.Fprintf(os.Stderr, "%s: %v\n", verb, err)
 		}
 		os.Exit(1)
 	}
