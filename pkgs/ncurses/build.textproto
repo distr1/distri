@@ -15,5 +15,5 @@ cbuilder: <
 
   extra_configure_flag: "--with-shared"
 
-  extra_configure_flag: "--with-default-terminfo-dir=/ro/share/terminfo"
+  extra_configure_flag: "--with-terminfo-dirs=/ro/share/terminfo"
 >
