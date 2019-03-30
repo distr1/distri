@@ -260,6 +260,7 @@ password	requisite	pam_warn.so
 password	required	pam_permit.so
 
 session	required	pam_unix.so
+session	optional	pam_systemd.so
 session	required	pam_warn.so
 `
 	if err := ioutil.WriteFile(filepath.Join(pamd, "other"), []byte(pamdOther), 0644); err != nil {

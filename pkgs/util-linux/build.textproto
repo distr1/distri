@@ -1,6 +1,6 @@
 source: "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.tar.xz"
 hash: "6c7397abc764e32e8159c2e96042874a190303e77adceb4ac5bd502a272a4734"
-version: "2.32"
+version: "2.32-2"
 
 cbuilder: <
   extra_configure_flag: "--disable-wall" # TODO: requires “chgrp tty <bin>”, which does not work in a user namespace
