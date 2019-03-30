@@ -1,0 +1,22 @@
+--- old/libpam/Makefile.am	2017-02-10 11:10:15.000000000 +0100
++++ new/libpam/Makefile.am	2019-03-30 16:01:08.232650100 +0100
+@@ -2,7 +2,7 @@
+ # Copyright (c) 2005, 2006, 2007, 2009 Thorsten Kukuk <kukuk@thkukuk.de>
+ #
+ 
+-AM_CFLAGS = -DDEFAULT_MODULE_PATH=\"$(SECUREDIR)/\" -DLIBPAM_COMPILE \
++AM_CFLAGS = -DDEFAULT_MODULE_PATH=\"/ro/lib/security/\" -DLIBPAM_COMPILE \
+ 	-I$(srcdir)/include $(LIBPRELUDE_CFLAGS) -DPAM_VERSION=\"$(VERSION)\"
+ if HAVE_LIBSELINUX
+   AM_CFLAGS += -D"WITH_SELINUX"
+--- old/libpam/Makefile.in	2018-05-18 12:58:05.000000000 +0200
++++ new/libpam/Makefile.in	2019-03-30 16:01:08.236650043 +0100
+@@ -398,7 +398,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-AM_CFLAGS = -DDEFAULT_MODULE_PATH=\"$(SECUREDIR)/\" -DLIBPAM_COMPILE \
++AM_CFLAGS = -DDEFAULT_MODULE_PATH=\"/ro/lib/security/\" -DLIBPAM_COMPILE \
+ 	-I$(srcdir)/include $(LIBPRELUDE_CFLAGS) \
+ 	-DPAM_VERSION=\"$(VERSION)\" $(am__append_1)
+ CLEANFILES = *~
