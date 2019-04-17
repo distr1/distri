@@ -200,7 +200,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239/bin/systemd-firstboot", "--hostname=distri0",
+		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password=bleh",
 		"--copy-timezone",
 		"--copy-locale",
@@ -216,21 +216,22 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239/bin/systemd-sysusers",
-		"/ro/systemd-amd64-239/out/lib/sysusers.d/basic.conf",
-		"/ro/systemd-amd64-239/out/lib/sysusers.d/systemd.conf")
+		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemd-sysusers",
+		"/ro/systemd-amd64-239-2/out/lib/sysusers.d/basic.conf",
+		"/ro/systemd-amd64-239-2/out/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return xerrors.Errorf("%v: %w", cmd.Args, err)
 	}
 
+	// TODO: dynamically find which units to enable (test: xdm)
 	cmd = exec.Command("unshare",
 		"--user",
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239/bin/systemctl",
+		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemctl",
 		"enable",
 		"systemd-networkd",
 		"containerd",
@@ -635,7 +636,7 @@ name=root`)
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239/out/share/pkgconfig/ dracut /boot/initramfs-4.18.7.img 4.18.7")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-2/out/share/pkgconfig/ dracut /boot/initramfs-4.18.7.img 4.18.7")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
