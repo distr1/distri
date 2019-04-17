@@ -411,6 +411,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
 		// TODO: is site-packages the best choice here?
 		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
+		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python2.7/site-packages")
 	}
 
 	ifNotHermetic := func(val string) string {
