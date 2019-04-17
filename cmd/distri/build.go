@@ -1348,11 +1348,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		if err := objcopy.Run(); err != nil {
 			return xerrors.Errorf("%v: %v", objcopy.Args, err)
 		}
-		strip := exec.Command("strip", "-g", path)
-		strip.Stdout = os.Stdout
-		strip.Stderr = os.Stderr
-		if err := strip.Run(); err != nil {
-			return xerrors.Errorf("%v: %v", strip.Args, err)
+		if b.Pkg != "binutils" {
+			strip := exec.Command("strip", "-g", path)
+			strip.Stdout = os.Stdout
+			strip.Stderr = os.Stderr
+			if err := strip.Run(); err != nil {
+				return xerrors.Errorf("%v: %v", strip.Args, err)
+			}
 		}
 		return nil
 	})
