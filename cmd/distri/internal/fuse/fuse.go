@@ -22,6 +22,7 @@ import (
 	"github.com/jacobsa/fuse"
 	"github.com/jacobsa/fuse/fuseops"
 	"github.com/jacobsa/fuse/fuseutil"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 
@@ -182,7 +183,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	}
 	fs.growReaders(len(pkgs))
 
-	if err := fs.scanPackagesLocked(pkgs); err != nil {
+	if err := fs.scanPackages(&nopLocker{}, pkgs); err != nil {
 		return nil, err
 	}
 
@@ -203,7 +204,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		// Even if the /lib exchange dir was not requested, we still need to
 		// provide a symlink to ld-linux.so, which is used as the .interp of our
 		// ELF binaries.
-		fs.mkExchangeDirAll("/lib")
+		fs.mkExchangeDirAll(&nopLocker{}, "/lib")
 		fs.symlink(fs.dirs["/lib"], "../glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2")
 	}
 
@@ -234,7 +235,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 					continue
 				}
 				fs.mu.Lock()
-				err = fs.scanPackagesLocked(pkgs)
+				err = fs.scanPackages(&nopLocker{}, pkgs)
 				fs.mu.Unlock()
 				if err != nil {
 					log.Printf("scanPackages: %v", err)
@@ -382,7 +383,9 @@ func (fs *fuseFS) allocateInodeLocked() fuseops.InodeID {
 	return fs.inodeCnt
 }
 
-func (fs *fuseFS) mkExchangeDirAll(path string) {
+func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
+	mu.Lock()
+	defer mu.Unlock()
 	components := strings.Split(path, "/")
 	for idx, component := range components[1:] {
 		path := strings.Join(components[:idx+2], "/")
@@ -451,7 +454,7 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 	return pkgs, nil
 }
 
-func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeDirs []string) error {
+func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg string, exchangeDirs []string) error {
 	type pathWithInode struct {
 		path  string
 		inode squashfs.Inode
@@ -472,7 +475,9 @@ func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeD
 		path, inode := inodes[0].path, inodes[0].inode
 		inodes = inodes[1:]
 		exchangePath := strings.TrimPrefix(path, "/out")
+		mu.Lock()
 		dir, ok := fs.dirs[exchangePath]
+		mu.Unlock()
 		if !ok {
 			panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
 		}
@@ -483,7 +488,7 @@ func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeD
 		for _, sfi := range sfis {
 			if sfi.Mode().IsDir() {
 				dir := filepath.Join(path, sfi.Name())
-				fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
+				fs.mkExchangeDirAll(mu, strings.TrimPrefix(dir, "/out"))
 				inodes = append(inodes, pathWithInode{dir, sfi.Sys().(*squashfs.FileInfo).Inode})
 				continue
 			}
@@ -491,20 +496,99 @@ func (fs *fuseFS) scanPackagesSymlink(rd *squashfs.Reader, pkg string, exchangeD
 			if err != nil {
 				return err
 			}
+			mu.Lock()
 			fs.symlink(dir, rel)
+			mu.Unlock()
 		}
 	}
 	return nil
 }
 
-func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
+func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
+	f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	rd, err := squashfs.NewReader(f)
+	if err != nil {
+		return err
+	}
+
+	// set up runtime_unions:
+	meta, err := pb.ReadMetaFile(filepath.Join(fs.repo, pkg+".meta.textproto"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Print(err)
+			return nil // recover by skipping this package
+		}
+		return err
+	}
+	for _, o := range meta.GetRuntimeUnion() {
+		// log.Printf("%s: runtime union: %v", pkg, o)
+		image := -1
+		mu.Lock()
+		for idx, pkg := range fs.pkgs {
+			if pkg != o.GetPkg() {
+				continue
+			}
+			image = idx
+			break
+		}
+		mu.Unlock()
+		if image == -1 {
+			log.Printf("%s: runtime union: pkg %q not found", pkg, o.GetPkg())
+			continue // o.pkg not found
+		}
+
+		dstinode, err := LookupPath(rd, "out/"+o.GetDir())
+		if err != nil {
+			if _, ok := err.(*FileNotFoundError); ok {
+				continue // nothing to overlay, skip this package
+			}
+			return err
+		}
+
+		err = fs.mountImage(image)
+		mu.Lock()
+		rd := fs.readers[image]
+		mu.Unlock()
+		if err != nil {
+			return err
+		}
+
+		srcinode, err := LookupPath(rd.Reader, "out/"+o.GetDir())
+		if err != nil {
+			if _, ok := err.(*FileNotFoundError); ok {
+				log.Printf("%s: runtime union: %s/out/%s not found", pkg, o.GetPkg(), o.GetDir())
+				continue
+			}
+			return err
+		}
+
+		mu.Lock()
+		srcfuse := fs.fuseInode(image, srcinode)
+		dstfuse := fs.fuseInode(idx, dstinode)
+		fs.unions[srcfuse] = append(fs.unions[srcfuse], dstfuse)
+		mu.Unlock()
+		delete(rd.dircache, srcinode) // invalidate dircache
+	}
+
+	if err := fs.scanPackagesSymlink(mu, rd, pkg, ExchangeDirs); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 	start := time.Now()
 	defer func() {
 		log.Printf("scanPackages in %v", time.Since(start))
 	}()
 	// TODO: iterate over packages once, calling mkdir for all exchange dirs
 	for _, dir := range ExchangeDirs {
-		fs.mkExchangeDirAll(strings.TrimPrefix(dir, "/out"))
+		fs.mkExchangeDirAll(mu, strings.TrimPrefix(dir, "/out"))
 	}
 
 	existing := make(map[string]bool)
@@ -512,74 +596,27 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 		existing[pkg] = true
 	}
 
-	for idx, pkg := range pkgs {
-		if existing[pkg] {
-			delete(existing, pkg) // left-overs are deleted packages
-			continue
-		}
-		fs.pkgs = append(fs.pkgs, pkg)
-		f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
-		if err != nil {
-			return err
-		}
-		// TODO: close or reuse f
-		rd, err := squashfs.NewReader(f)
-		if err != nil {
-			return err
+	{
+		mu := mu // shadow, possibly overwrite:
+		if _, ok := mu.(*nopLocker); ok {
+			mu = &sync.Mutex{} // ensure locking during errgroup
 		}
 
-		// set up runtime_unions:
-		meta, err := pb.ReadMetaFile(filepath.Join(fs.repo, pkg+".meta.textproto"))
-		if err != nil {
-			if os.IsNotExist(err) {
-				log.Print(err)
-				continue // recover by skipping this package
+		var eg errgroup.Group
+		for idx, pkg := range pkgs {
+			if existing[pkg] {
+				delete(existing, pkg) // left-overs are deleted packages
+				continue
 			}
-			return err
+			mu.Lock()
+			fs.pkgs = append(fs.pkgs, pkg)
+			mu.Unlock()
+			idx, pkg := idx, pkg // copy
+			eg.Go(func() error {
+				return fs.scanPackage(mu, idx, pkg)
+			})
 		}
-		for _, o := range meta.GetRuntimeUnion() {
-			// log.Printf("%s: runtime union: %v", pkg, o)
-			image := -1
-			for idx, pkg := range fs.pkgs {
-				if pkg != o.GetPkg() {
-					continue
-				}
-				image = idx
-				break
-			}
-			if image == -1 {
-				log.Printf("%s: runtime union: pkg %q not found", pkg, o.GetPkg())
-				continue // o.pkg not found
-			}
-
-			dstinode, err := LookupPath(rd, "out/"+o.GetDir())
-			if err != nil {
-				if _, ok := err.(*FileNotFoundError); ok {
-					continue // nothing to overlay, skip this package
-				}
-				return err
-			}
-
-			if err := fs.mountImage(image); err != nil {
-				return err
-			}
-			rd := fs.readers[image]
-			srcinode, err := LookupPath(rd.Reader, "out/"+o.GetDir())
-			if err != nil {
-				if _, ok := err.(*FileNotFoundError); ok {
-					log.Printf("%s: runtime union: %s/out/%s not found", pkg, o.GetPkg(), o.GetDir())
-					continue
-				}
-				return err
-			}
-
-			srcfuse := fs.fuseInode(image, srcinode)
-			dstfuse := fs.fuseInode(idx, dstinode)
-			fs.unions[srcfuse] = append(fs.unions[srcfuse], dstfuse)
-			delete(rd.dircache, srcinode) // invalidate dircache
-		}
-
-		if err := fs.scanPackagesSymlink(rd, pkg, ExchangeDirs); err != nil {
+		if err := eg.Wait(); err != nil {
 			return err
 		}
 	}
@@ -649,7 +686,7 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 				return err
 			}
 
-			if err := fs.scanPackagesSymlink(rd, standin, affectedExchangeDirs); err != nil {
+			if err := fs.scanPackagesSymlink(mu, rd, standin, affectedExchangeDirs); err != nil {
 				return err
 			}
 		}
@@ -659,6 +696,11 @@ func (fs *fuseFS) scanPackagesLocked(pkgs []string) error {
 
 	return nil
 }
+
+type nopLocker struct{}
+
+func (*nopLocker) Lock()   {}
+func (*nopLocker) Unlock() {}
 
 // TODO: read this from a config file, remove trailing slash if any (always added by caller)
 const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export/debug"
@@ -704,7 +746,7 @@ func (fs *fuseFS) updatePackages() error {
 		fs.pkgs = append(fs.pkgs, pkg.GetName())
 		for _, p := range pkg.GetWellKnownPath() {
 			exchangePath := "/" + strings.TrimPrefix(filepath.Dir(p), "out/")
-			fs.mkExchangeDirAll(exchangePath)
+			fs.mkExchangeDirAll(&nopLocker{}, exchangePath)
 			dir, ok := fs.dirs[exchangePath]
 			if !ok {
 				panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
@@ -1242,7 +1284,7 @@ func (fs *fuseFS) MkdirAll(ctx context.Context, req *pb.MkdirAllRequest) (*pb.Mk
 			return &pb.MkdirAllReply{}, nil
 		}
 	}
-	fs.mkExchangeDirAll("/" + req.GetDir())
+	fs.mkExchangeDirAll(&nopLocker{}, "/"+req.GetDir())
 	return &pb.MkdirAllReply{}, nil
 }
 
@@ -1253,5 +1295,5 @@ func (fs *fuseFS) ScanPackages(ctx context.Context, req *pb.ScanPackagesRequest)
 	}
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
-	return &pb.ScanPackagesReply{}, fs.scanPackagesLocked(pkgs)
+	return &pb.ScanPackagesReply{}, fs.scanPackages(&nopLocker{}, pkgs)
 }
