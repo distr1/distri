@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"runtime/pprof"
 	"runtime/trace"
@@ -13,12 +14,15 @@ import (
 	"golang.org/x/xerrors"
 
 	_ "github.com/distr1/distri/internal/oninterrupt"
+
+	_ "net/http/pprof"
 )
 
 var (
 	debug      = flag.Bool("debug", false, "enable debug mode: format error messages with additional detail")
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
+	httpListen = flag.String("listen", "", "host:port to listen on for HTTP")
 )
 
 func main() {
@@ -40,6 +44,10 @@ func main() {
 		}
 		trace.Start(f)
 		defer trace.Stop()
+	}
+
+	if *httpListen != "" {
+		go http.ListenAndServe(*httpListen, nil)
 	}
 
 	if os.Getpid() == 1 {
