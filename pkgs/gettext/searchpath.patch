@@ -1,0 +1,11 @@
+--- old/gettext-tools/src/search-path.c	2016-05-28 02:29:03.000000000 +0200
++++ new/gettext-tools/src/search-path.c	2019-04-18 22:22:34.107283966 +0200
+@@ -118,7 +118,7 @@
+     /* Make it possible to override the locator file location.  This
+        is necessary for running the testsuite before "make
+        install".  */
+-    gettextdatadir = relocate (GETTEXTDATADIR);
++    gettextdatadir = relocate ("/ro/share/gettext");
+ 
+   /* Append element from GETTEXTDATADIR.  */
+   if (sub == NULL)
