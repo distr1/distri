@@ -9,6 +9,7 @@ cbuilder: <>
 # build dependencies:
 dep: "perl"
 dep: "nspr"
+dep: "sqlite3"
 
 dep: "strace"
 
@@ -31,8 +32,8 @@ build_step: <
   argv: "USE_64=1"
   argv: "NSPR_INCLUDE_DIR=/ro/nspr-amd64-4.20/out/include/nspr/"
   argv: "CROSS_COMPILE=1" # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
+  argv: "NSS_USE_SYSTEM_SQLITE=1" # prevent linking errors in e.g. networkmanager
   # TODO: USE_SYSTEM_ZLIB=1
-  # TODO: NSS_USE_SYSTEM_SQLITE=1
 >
 
 build_step: <
