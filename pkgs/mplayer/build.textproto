@@ -1,5 +1,5 @@
-source: "https://t.zekjur.net/mplayer-export-snapshot-2019-02-19.tar.bz2"
-hash: "28157e61a118731c5714dc607c0ecbfdee6ae7a84e45e226d7993e785e1802b1"
+source: "https://t.zekjur.net/mplayer-export-2019-02-19%2Bffmpeg.tar.bz2"
+hash: "ac054bad4754a2ee4e185ac94598906562aa4a30eaf63ff02b899e22f9756ac5"
 version: "0.2019-02-19-4"
 
 cbuilder: <
