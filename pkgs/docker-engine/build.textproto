@@ -14,7 +14,7 @@ dep: "golang"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "export GOPATH=$PWD/go && d=go/src/github.com/docker/docker && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= DOCKER_GITCOMMIT=unsupported DOCKER_BUILDTAGS='exclude_graphdriver_btrfs' hack/make.sh binary && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp -H bundles/binary-daemon/dockerd $d/"
+  argv: "export GOPATH=$PWD/go HOME=$PWD && d=go/src/github.com/docker/docker && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= DOCKER_GITCOMMIT=unsupported DOCKER_BUILDTAGS='exclude_graphdriver_btrfs' hack/make.sh binary && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp -H bundles/binary-daemon/dockerd $d/"
 >
 
 install: <
