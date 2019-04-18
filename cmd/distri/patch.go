@@ -296,7 +296,11 @@ func patch(args []string) error {
 			}
 			if info.Mode().IsRegular() {
 				rel := strings.TrimPrefix(path, upperdir+"/")
-				diff := exec.Command("diff", "-u", "old/"+rel, "new/"+rel)
+				old := "old/" + rel
+				if _, err := os.Stat(filepath.Join(tmpdir, old)); err != nil {
+					old = "/dev/null"
+				}
+				diff := exec.Command("diff", "-u", old, "new/"+rel)
 				diff.Dir = tmpdir
 				diff.Stdout = &patch
 				diff.Stderr = os.Stderr
