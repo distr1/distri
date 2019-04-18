@@ -1,5 +1,5 @@
---- a/gcc-8.2.0/configure	2018-07-26 11:48:58.000000000 +0200
-+++ b/gcc-8.2.0/configure	2018-11-13 22:44:32.422783303 +0100
+--- a/configure	2018-07-26 11:48:58.000000000 +0200
++++ b/configure	2018-11-13 22:44:32.422783303 +0100
 @@ -7598,7 +7598,7 @@
  # being built; programs in there won't even run.
  if test "${build}" = "${host}" && test -d ${srcdir}/gcc; then
