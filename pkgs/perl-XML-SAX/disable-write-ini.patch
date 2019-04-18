@@ -1,0 +1,11 @@
+--- old/Makefile.PL	2018-02-15 10:44:15.000000000 +0100
++++ new/Makefile.PL	2019-04-18 20:40:24.828919454 +0200
+@@ -15,7 +15,7 @@
+ 
+ sub MY::install {
+     package MY;
+-    my $script = shift->SUPER::install(@_);
++    my $script = shift->SUPER::install(@_);;  return $script;
+ 
+     # Only modify existing ParserDetails.ini if user agrees
+ 
