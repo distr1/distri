@@ -2,30 +2,10 @@ source: "https://ftp.acc.umu.se/pub/GNOME/sources/pygobject/3.31/pygobject-3.31.
 hash: "e75c9bc1f220863cea8386c121a6313fbc80bfe17e825538063252ffb28861c6"
 version: "3.31.2"
 
-cbuilder: <>
+mesonbuilder: <>
 
 # build dependencies:
-dep: "meson"
 dep: "gobject-introspection"
 dep: "gettext"
 dep: "cairo"
 dep: "pycairo"
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR}"
->
-
-# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "ninja -v"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->

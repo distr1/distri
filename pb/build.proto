@@ -23,6 +23,10 @@ message CBuilder {
 message CMakeBuilder {
 }
 
+message MesonBuilder {
+  repeated string extra_meson_flag = 1;
+}
+
 message PerlBuilder {
   // Extra flags to be specified when running Makefile.PL, e.g.
   // EXPATLIBPATH=/ro/expat-2.2.6/buildoutput/lib
@@ -84,6 +88,7 @@ message Build {
   oneof builder {
     CBuilder cbuilder = 7;
     CMakeBuilder cmakebuilder = 14;
+    MesonBuilder mesonbuilder = 16;
     PerlBuilder perlbuilder = 10;
     PythonBuilder pythonbuilder = 12;
     GomodBuilder gomodbuilder = 13;

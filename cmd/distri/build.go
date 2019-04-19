@@ -682,6 +682,12 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 				"cmake-" + native,
 			}...)
 			deps = append(deps, cdeps...)
+
+		case *pb.Build_Mesonbuilder:
+			deps = append(deps, []string{
+				"meson-" + native,
+			}...)
+			deps = append(deps, cdeps...)
 		}
 	}
 	return deps
@@ -1059,6 +1065,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
+		case *pb.Build_Mesonbuilder:
+			var err error
+			steps, env, err = b.buildmeson(v.Mesonbuilder, env)
+			if err != nil {
+				return nil, err
+			}
 		case *pb.Build_Perlbuilder:
 			var err error
 			steps, env, err = b.buildperl(v.Perlbuilder, env)
@@ -1409,6 +1421,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		case *pb.Build_Cbuilder:
 			// no extra runtime deps
 		case *pb.Build_Cmakebuilder:
+			// no extra runtime deps
+		case *pb.Build_Mesonbuilder:
 			// no extra runtime deps
 		case *pb.Build_Gomodbuilder:
 			// no extra runtime deps

@@ -2,28 +2,8 @@ source: "http://ftp.gnome.org/pub/gnome/sources/json-glib/1.4/json-glib-1.4.4.ta
 hash: "720c5f4379513dc11fd97dc75336eb0c0d3338c53128044d9fabec4374f4bc47"
 version: "1.4.4"
 
-cbuilder: <>
+mesonbuilder: <>
 
 # build dependencies:
-dep: "meson"
 dep: "gobject-introspection"
 dep: "gettext"
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR}"
->
-
-# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "ninja -v"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
