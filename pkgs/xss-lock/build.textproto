@@ -1,0 +1,29 @@
+source: "https://bitbucket.org/raymonad/xss-lock/get/1e158fb20108.tar.gz"
+hash: "19c9e55fd14346e79a1cfaa400cb51ef467d9e3f482fb28a38ba2bbc2c972d91"
+version: "0.3.0+g20190419"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "cmake"
+dep: "libxcb"
+dep: "xcb-util"
+
+build_step: <
+  argv: "/bin/cmake"
+  argv: "${DISTRI_SOURCEDIR}"
+  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+>
