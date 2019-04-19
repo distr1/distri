@@ -5,7 +5,6 @@ version: "1.0.28"
 cbuilder: <>
 
 # build dependencies:
-dep: "cmake"
 dep: "autoconf"
 dep: "autogen"
 dep: "alsa-lib"
