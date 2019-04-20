@@ -347,6 +347,14 @@ func (b *buildctx) pkg() error {
 				if err := os.Rename(m, dest); err != nil {
 					return err
 				}
+				// TODO: make symlinking the original optional
+				rel, err = filepath.Rel(filepath.Dir(m), dest)
+				if err != nil {
+					return err
+				}
+				if err := os.Symlink(rel, m); err != nil {
+					return err
+				}
 			}
 		}
 		if err := cp(w.Root, tmp); err != nil {

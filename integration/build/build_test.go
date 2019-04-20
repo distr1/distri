@@ -1,6 +1,7 @@
 package build_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,6 +14,7 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.org/x/xerrors"
 )
 
 const buildTextproto = `
@@ -199,7 +201,7 @@ func TestBuild(t *testing.T) {
 			"glib-amd64-2.58.0",       // from pkg-config (transitive)
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32",   // from glib-2.58.0
+			"util-linux-amd64-2.32-2", // from glib-2.58.0
 			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
@@ -284,7 +286,7 @@ func TestUnversionedBuild(t *testing.T) {
 			"glib-amd64-2.58.0",       // from pkg-config (transitive)
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32",   // from glib-2.58.0
+			"util-linux-amd64-2.32-2", // from glib-2.58.0
 			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
@@ -317,6 +319,68 @@ func list(rd *squashfs.Reader, dir string, inode squashfs.Inode) ([]string, erro
 		}
 	}
 	return files, nil
+}
+
+type fileNotFoundError struct {
+	path string
+}
+
+func (e *fileNotFoundError) Error() string {
+	return fmt.Sprintf("%q not found", e.path)
+}
+
+func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component string) (squashfs.Inode, error) {
+	rfis, err := rd.Readdir(parent)
+	if err != nil {
+		return 0, err
+	}
+	for _, rfi := range rfis {
+		if rfi.Name() == component {
+			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
+		}
+	}
+	return 0, &fileNotFoundError{path: component}
+}
+
+func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
+	inode := rd.RootInode()
+	parts := strings.Split(path, "/")
+	for idx, part := range parts {
+		var err error
+		inode, err = lookupComponent(rd, inode, part)
+		if err != nil {
+			if _, ok := err.(*fileNotFoundError); ok {
+				return 0, &fileNotFoundError{path: path}
+			}
+			return 0, err
+		}
+		if idx == len(parts)-1 {
+			return inode, nil
+		}
+		fi, err := rd.Stat("", inode)
+		if err != nil {
+			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
+		}
+		if fi.Mode()&os.ModeSymlink > 0 {
+			target, err := rd.ReadLink(inode)
+			if err != nil {
+				return 0, err
+			}
+			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
+			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
+			//log.Printf("-> %s", target)
+			return lookupPath(rd, target)
+		}
+	}
+	return inode, nil
+}
+
+func readLink(rd *squashfs.Reader, name string) (string, error) {
+	inode, err := lookupPath(rd, name)
+	if err != nil {
+		return "", nil
+	}
+	return rd.ReadLink(inode)
 }
 
 func TestMultiPackageBuild(t *testing.T) {
@@ -384,6 +448,7 @@ func TestMultiPackageBuild(t *testing.T) {
 		{
 			image: "multi-amd64-1.squashfs",
 			want: []string{
+				"out/lib/liba.so", // symlink
 				"out/share/doc/multi/README.md",
 			},
 		},
@@ -414,6 +479,17 @@ func TestMultiPackageBuild(t *testing.T) {
 
 			if diff := cmp.Diff(test.want, files); diff != "" {
 				t.Fatalf("unexpected files: (-want +got)\n%s", diff)
+			}
+
+			if test.image == "multi-amd64-1.squashfs" {
+				// Verify out/lib/liba.so is a symlink to the version in multi-libs
+				target, err := readLink(rd, "out/lib/liba.so")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if got, want := target, "../../../multi-libs-amd64-1/out/lib/liba.so"; got != want {
+					t.Errorf("ReadLink(%s) = %q, want %q", "out/lib/liba.so", got, want)
+				}
 			}
 		})
 	}
