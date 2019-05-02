@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	systemd = "systemd-amd64-239"
+	systemd = "systemd-amd64-239-2"
 	bash    = "bash-amd64-4.4.18"
 )
 
@@ -124,7 +124,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 	// Create temporary repos which only hold one package (and its runtime
 	// dependencies):
 	addrs := make(map[string]string) // pkg → addr
-	for _, pkg := range []string{"systemd-amd64-239", "systemd-amd64-100"} {
+	for _, pkg := range []string{"systemd-amd64-239-2", "systemd-amd64-100"} {
 		rtmpdir, err := ioutil.TempDir("", "distritest")
 		if err != nil {
 			return err
@@ -148,11 +148,12 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 				return fmt.Errorf("%v: %v", cp.Args, err)
 			}
 		}
-		idx := strings.LastIndexByte(pkg, '-')
-		base, version := pkg[:idx], pkg[idx+1:]
+		const sep = "-amd64-" // TODO: don’t hardcode amd64
+		idx := strings.Index(pkg, sep)
+		base, version := pkg[:idx+len(sep)-1], pkg[idx+len(sep):]
 		for _, suffix := range []string{"squashfs", "meta.textproto"} {
 			if err := os.Rename(
-				filepath.Join(rtmpdir, "pkg", "systemd-amd64-239."+suffix),
+				filepath.Join(rtmpdir, "pkg", "systemd-amd64-239-2."+suffix),
 				filepath.Join(rtmpdir, "pkg", pkg+"."+suffix)); err != nil {
 				return err
 			}
