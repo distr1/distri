@@ -461,7 +461,9 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" && b.Pkg != "glibc-i686" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+strings.Join(libDirs, " -Wl,-rpath=")+" -Wl,--dynamic-linker=/ro/glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2 "+strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
+			"-Wl,--dynamic-linker=/ro/glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2 "+
+			strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
 }
@@ -647,8 +649,6 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			"linux",
 			"findutils", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 
-			"patchelf", // for shrinking the RPATH
-
 			"strace", // useful for interactive debugging
 		}
 
@@ -698,7 +698,6 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			deps = append(deps, []string{
 				"bash-" + native,
 				"coreutils-" + native,
-				"patchelf-" + native, // e.g. cloud.google.com/go includes .elf files
 			}...)
 
 		case *pb.Build_Cbuilder:
@@ -773,7 +772,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			if _, err = cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 				return nil, err
 			}
 			defer fuse.Unmount(depsdir)
@@ -972,6 +971,10 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				if err := os.Symlink("/ro/include", filepath.Join(b.ChrootDir, "usr", "include")); err != nil {
 					return nil, err
 				}
+			}
+
+			if err := os.Symlink("/ro/lib", filepath.Join(b.ChrootDir, b.DestDir, "lib")); err != nil {
+				return nil, err
 			}
 
 			if err := os.Symlink("/ro/share", filepath.Join(b.ChrootDir, "usr", "share")); err != nil {
@@ -1314,6 +1317,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	// Find shlibdeps while we’re still in the chroot, so that ldd(1) locates
 	// the dependencies.
 	depPkgs := make(map[string]bool)
+	libs := make(map[string]bool)
 	destDir := filepath.Join(b.DestDir, b.Prefix)
 	var buf [4]byte
 	err = filepath.Walk(destDir, func(path string, info os.FileInfo, err error) error {
@@ -1335,40 +1339,16 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			return nil
 		}
 		// TODO: detect whether the binary is statically or dynamically linked (the latter has an INTERP section)
-		pkgs, err := findShlibDeps(path, env)
+		libDeps, err := findShlibDeps(path, env)
 		if err != nil {
 			if err == errLddFailed {
 				return nil // skip patchelf
 			}
 			return err
 		}
-		for _, pkg := range pkgs {
-			depPkgs[pkg] = true
-		}
-
-		// TODO: make patchelf able to operate on itself
-		if b.Pkg != "patchelf" &&
-			filepath.Base(path) != "Mcrt1.o" &&
-			filepath.Base(path) != "Scrt1.o" &&
-			filepath.Base(path) != "crti.o" &&
-			filepath.Base(path) != "crtn.o" &&
-			filepath.Base(path) != "gcrt1.o" &&
-			filepath.Base(path) != "crt1.o" &&
-			!strings.HasSuffix(path, ".a") {
-			// patchelf does not preserve the setuid bit, so restore it:
-			fi, err := os.Stat(path)
-			if err != nil {
-				return err
-			}
-			patchelf := exec.Command("patchelf", "--shrink-rpath", path)
-			patchelf.Stdout = os.Stdout
-			patchelf.Stderr = os.Stderr
-			if err := patchelf.Run(); err != nil {
-				return xerrors.Errorf("%v: %v", patchelf.Args, err)
-			}
-			if err := os.Chmod(path, fi.Mode()); err != nil {
-				return err
-			}
+		for _, d := range libDeps {
+			depPkgs[d.pkg] = true
+			libs[d.path] = true
 		}
 
 		buildid, err := readBuildid(path)
@@ -1400,6 +1380,20 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	// Replace the symlink to /ro/lib with a directory of links to the
+	// actually required libraries:
+	libDir := filepath.Join(b.DestDir, b.Prefix, "lib")
+	if err := os.MkdirAll(libDir, 0755); err != nil {
+		return nil, err
+	}
+	for lib := range libs {
+		newname := filepath.Join(libDir, filepath.Base(lib))
+		oldname := lib
+		if err := os.Symlink(oldname, newname); err != nil && !os.IsExist(err) {
+			return nil, err
+		}
 	}
 
 	// TODO(optimization): these could be build-time dependencies, as they are

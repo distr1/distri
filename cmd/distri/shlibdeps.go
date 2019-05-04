@@ -9,11 +9,16 @@ import (
 	"strings"
 )
 
-var lddRe = regexp.MustCompile(`^\t([^ ]+) => /ro/([^/]+)`)
+var lddRe = regexp.MustCompile(`^\t([^ ]+) => (/ro/([^/]+)[^\s]+)`)
 
 var errLddFailed = errors.New("ldd failed") // sentinel
 
-func findShlibDeps(fn string, env []string) ([]string, error) {
+type libDep struct {
+	pkg  string
+	path string
+}
+
+func findShlibDeps(fn string, env []string) ([]libDep, error) {
 	cmd := exec.Command("ldd", fn)
 	cmd.Env = env
 	cmd.Stderr = os.Stderr
@@ -23,13 +28,16 @@ func findShlibDeps(fn string, env []string) ([]string, error) {
 		return nil, errLddFailed // TODO: fix
 		return nil, err
 	}
-	var pkgs []string
+	var pkgs []libDep
 	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
 		matches := lddRe.FindStringSubmatch(line)
 		if matches == nil {
 			continue
 		}
-		pkgs = append(pkgs, matches[2])
+		pkgs = append(pkgs, libDep{
+			pkg:  matches[3],
+			path: matches[2],
+		})
 	}
 	return pkgs, nil
 }
