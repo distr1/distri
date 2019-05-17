@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -32,6 +33,27 @@ version: "{{.Version}}"
 
 # build dependencies:
 `))
+
+var githubRe = regexp.MustCompile(`^https://github.com/[^/]+/([^/]+)/archive/v(.+)\.tar\.gz$`)
+
+func nameFromURL(u string, scaffoldType int) (name string, version string, _ error) {
+	if matches := githubRe.FindStringSubmatch(u); matches != nil {
+		return matches[1], matches[2], nil
+	}
+	pkg := trimArchiveSuffix(filepath.Base(u))
+	pkg = strings.ReplaceAll(pkg, "_", "-")
+	idx := strings.LastIndex(pkg, "-")
+	if idx == -1 {
+		return "", "", xerrors.Errorf("could not segment %q into <name>-<version>", pkg)
+	}
+
+	name = strings.ToLower(pkg[:idx])
+	version = pkg[idx+1:]
+	if scaffoldType == scaffoldPerl {
+		name = "perl-" + pkg[:idx]
+	}
+	return name, version, nil
+}
 
 const (
 	scaffoldC = iota
@@ -152,7 +174,8 @@ func scaffoldGo(gomod string) error {
 func scaffold(args []string) error {
 	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
 	var (
-		pkgName = fset.String("pkg", "", "overwrite package name. auto-detect from URL if empty")
+		name    = fset.String("name", "", "If non-empty and specified with -version, overrides the detected package name")
+		version = fset.String("version", "", "If non-empty and specified with -name, overrides the detected package version")
 		gomod   = fset.String("gomod", "", "if non-empty, a path to a go.mod file from which to take targets to scaffold")
 	)
 	fset.Parse(args)
@@ -172,28 +195,19 @@ func scaffold(args []string) error {
 		scaffoldType = scaffoldPerl
 	}
 
-	var pkg string
-	if *pkgName != "" {
-		pkg = *pkgName
-	} else {
-		pkg = trimArchiveSuffix(filepath.Base(u))
-	}
-	idx := strings.LastIndex(pkg, "-")
-	if idx == -1 {
-		return xerrors.Errorf("could not segment %q into <name>-<version>", pkg)
-	}
-
-	name := strings.ToLower(pkg[:idx])
-	version := pkg[idx+1:]
-	if scaffoldType == scaffoldPerl {
-		name = "perl-" + pkg[:idx]
+	if *name == "" || *version == "" {
+		var err error
+		*name, *version, err = nameFromURL(u, scaffoldType)
+		if err != nil {
+			return xerrors.Errorf("nameFromURL: %w", err)
+		}
 	}
 
 	c := scaffoldctx{
 		ScaffoldType: scaffoldType,
 		SourceURL:    u,
-		Name:         name,
-		Version:      version,
+		Name:         *name,
+		Version:      *version,
 	}
 	return c.scaffold1()
 }
