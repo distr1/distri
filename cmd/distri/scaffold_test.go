@@ -41,7 +41,6 @@ func TestNameFromURL(t *testing.T) {
 			if got, want := version, tt.wantVersion; got != want {
 				t.Errorf("unexpected version for %s: got %q, want %q", tt.URL, got, want)
 			}
-
 		})
 	}
 }
