@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"text/template"
 
@@ -34,13 +33,16 @@ version: "{{.Version}}"
 # build dependencies:
 `))
 
-var githubRe = regexp.MustCompile(`^https://github.com/[^/]+/([^/]+)/archive/v(.+)\.tar\.gz$`)
-
-func nameFromURL(u string, scaffoldType int) (name string, version string, _ error) {
-	if matches := githubRe.FindStringSubmatch(u); matches != nil {
-		return matches[1], matches[2], nil
+func nameFromURL(parsed *url.URL, scaffoldType int) (name string, version string, _ error) {
+	if parsed.Host == "github.com" {
+		parts := strings.Split(strings.TrimPrefix(parsed.Path, "/"), "/")
+		_ = parts[0] // org/user
+		name = parts[1]
+		_ = parts[2] // “archive”
+		version = trimArchiveSuffix(strings.TrimPrefix(parts[3], "v"))
+		return name, version, nil
 	}
-	pkg := trimArchiveSuffix(filepath.Base(u))
+	pkg := trimArchiveSuffix(filepath.Base(parsed.String()))
 	pkg = strings.ReplaceAll(pkg, "_", "-")
 	idx := strings.LastIndex(pkg, "-")
 	if idx == -1 {
@@ -197,7 +199,7 @@ func scaffold(args []string) error {
 
 	if *name == "" || *version == "" {
 		var err error
-		*name, *version, err = nameFromURL(u, scaffoldType)
+		*name, *version, err = nameFromURL(parsed, scaffoldType)
 		if err != nil {
 			return xerrors.Errorf("nameFromURL: %w", err)
 		}
