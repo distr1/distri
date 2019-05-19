@@ -7,8 +7,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
+
+	"golang.org/x/xerrors"
 )
 
 type Reader struct {
@@ -135,6 +139,13 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 		}
 		return di, nil
 
+	case lregType:
+		var di lregInodeHeader
+		if err := binary.Read(br, binary.LittleEndian, &di); err != nil {
+			return nil, err
+		}
+		return di, nil
+
 		// TODO:
 		// blkdevType
 		// chrdevType
@@ -142,7 +153,6 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 		// socketType
 		// // The larger types are used for e.g. sparse files, xattrs, etc.
 		// ldirType
-		// lregType
 		// lsymlinkType
 		// lblkdevType
 		// lchrdevType
@@ -183,6 +193,19 @@ func (r *Reader) Stat(name string, i Inode) (os.FileInfo, error) {
 		}, nil
 
 	case regInodeHeader:
+		mode := os.FileMode(x.Mode & 0777)
+		if x.Mode&syscall.S_ISUID != 0 {
+			mode |= os.ModeSetuid
+		}
+		return &FileInfo{
+			name:    name,
+			size:    int64(x.FileSize),
+			mode:    mode,
+			modTime: time.Unix(int64(x.Mtime), 0),
+			Inode:   i,
+		}, nil
+
+	case lregInodeHeader:
 		mode := os.FileMode(x.Mode & 0777)
 		if x.Mode&syscall.S_ISUID != 0 {
 			mode |= os.ModeSetuid
@@ -247,14 +270,76 @@ func (r *Reader) FileReader(inode Inode) (*io.SectionReader, error) {
 	if err != nil {
 		return nil, err
 	}
-	ri := i.(regInodeHeader)
 	//log.Printf("i: %+v", i)
 	// TODO(compression): read the blocksizes to read compressed blocks
-	off := int64(ri.StartBlock) + int64(ri.Offset)
-	return io.NewSectionReader(r.r, off, int64(ri.FileSize)), nil
+	switch ri := i.(type) {
+	case regInodeHeader:
+		off := int64(ri.StartBlock) + int64(ri.Offset)
+		return io.NewSectionReader(r.r, off, int64(ri.FileSize)), nil
+	case lregInodeHeader:
+		off := int64(ri.StartBlock) + int64(ri.Offset)
+		return io.NewSectionReader(r.r, off, int64(ri.FileSize)), nil
+	default:
+		return nil, fmt.Errorf("BUG: non-file inode type")
+	}
+}
+
+type FileNotFoundError struct {
+	path string
+}
+
+func (e *FileNotFoundError) Error() string {
+	return fmt.Sprintf("%q not found", e.path)
+}
+
+func (r *Reader) lookupComponent(parent Inode, component string) (Inode, error) {
+	rfis, err := r.readdir(parent, false)
+	if err != nil {
+		return 0, err
+	}
+	for _, rfi := range rfis {
+		if rfi.Name() == component {
+			return rfi.Sys().(*FileInfo).Inode, nil
+		}
+	}
+	return 0, &FileNotFoundError{path: component}
+}
+
+func (r *Reader) LookupPath(path string) (Inode, error) {
+	inode := r.RootInode()
+	parts := strings.Split(path, "/")
+	for idx, part := range parts {
+		var err error
+		inode, err = r.lookupComponent(inode, part)
+		if err != nil {
+			if _, ok := err.(*FileNotFoundError); ok {
+				return 0, &FileNotFoundError{path: path}
+			}
+			return 0, err
+		}
+		fi, err := r.Stat("", inode)
+		if err != nil {
+			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
+		}
+		if fi.Mode()&os.ModeSymlink > 0 {
+			target, err := r.ReadLink(inode)
+			if err != nil {
+				return 0, err
+			}
+			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
+			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
+			//log.Printf("-> %s", target)
+			return r.LookupPath(target)
+		}
+	}
+	return inode, nil
 }
 
 func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
+	return r.readdir(dirInode, true)
+}
+
+func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
 	i, err := r.readInode(dirInode)
 	if err != nil {
@@ -314,9 +399,18 @@ func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
 			}
 			//log.Printf("name: %q", string(name))
 
-			fi, err := r.Stat(string(name), Inode(int64(dh.StartBlock)<<16|int64(de.Offset)))
-			if err != nil {
-				return nil, err
+			var fi os.FileInfo
+			if stat {
+				var err error
+				fi, err = r.Stat(string(name), Inode(int64(dh.StartBlock)<<16|int64(de.Offset)))
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				fi = &FileInfo{
+					name:  string(name),
+					Inode: Inode(int64(dh.StartBlock)<<16 | int64(de.Offset)),
+				}
 			}
 			fis = append(fis, fi)
 		}

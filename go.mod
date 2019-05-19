@@ -7,6 +7,7 @@ require (
 	github.com/google/renameio v0.0.0-20181108174601-76365acd908f
 	github.com/jacobsa/fuse v0.0.0-20180417054321-cd3959611bcb
 	github.com/lpar/gzipped v1.1.0
+	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec
 	golang.org/x/exp v0.0.0-20181011123434-d8bb7a16721e
 	golang.org/x/net v0.0.0-20181220203305-927f97764cc3
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f

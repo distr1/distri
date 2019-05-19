@@ -27,6 +27,8 @@ github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 h1:MtvEpTB6LX3v
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LEHPfb2qLo0BaaOLcbitczOKLWTsrBG9LczfCD4k=
 github.com/lpar/gzipped v1.1.0 h1:FEQnBzF06KTMh8Wnse6wNJvGwe7+vILQIFzuTq6ipGs=
 github.com/lpar/gzipped v1.1.0/go.mod h1:JBo67wiCld7AmFYfSNA75NmFG65roJiGwrVohF8uYGE=
+github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec h1:0bqN8Rf2FuWPPjV5mKQZadZrGlhA3j5IHQHQGnDOhZM=
+github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec/go.mod h1:nBdnFKj15wFbf94Rwfq4m30eAcyY9V/IyKAGQFtqkW0=
 golang.org/x/exp v0.0.0-20180321215751-8460e604b9de/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20181011123434-d8bb7a16721e h1:zdkKJYGX6U2WGPgeMiYP6Sn3okzsC0NTea9C0+wou8o=
 golang.org/x/exp v0.0.0-20181011123434-d8bb7a16721e/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
