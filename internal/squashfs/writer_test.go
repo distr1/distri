@@ -32,9 +32,9 @@ func TestUnsquashfs(t *testing.T) {
 				err error
 			)
 			if *fsImagePath != "" {
-				f, err = os.Create(*fsImagePath)
+				f, err = os.Create(*fsImagePath + fmt.Sprintf("-xattr-%v", xattr))
 			} else {
-				f, err = ioutil.TempFile("", "squashfs")
+				f, err = ioutil.TempFile("", fmt.Sprintf("squashfs-xattr-%v", xattr))
 				if err == nil {
 					defer os.Remove(f.Name())
 				}

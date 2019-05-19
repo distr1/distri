@@ -748,6 +748,9 @@ func writeXattr(w io.Writer, xattrs []Xattr) error {
 }
 
 func (w *Writer) writeXattrTables() (int64, error) {
+	if len(w.xattrs) == 0 {
+		return -1, nil
+	}
 	off, err := w.w.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return 0, err
