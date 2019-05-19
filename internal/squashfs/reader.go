@@ -480,7 +480,7 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 		return nil, err
 	}
 	log.Printf("id: %+v", id)
-	log.Printf("tableHeader: %+v", tableHeader)
+	log.Printf("tableHeader: %+v (start 0x%x)", tableHeader, tableHeader.XattrTableStart)
 
 	var xattrs []Xattr
 	for i := 0; i < int(id.Count); i++ {

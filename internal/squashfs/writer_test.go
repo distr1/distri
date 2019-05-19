@@ -31,7 +31,7 @@ func writeTestImage(iow io.WriteSeeker, xattr bool) error {
 		xattrs = append(xattrs, Xattr{
 			Type:     2,
 			FullName: "capability",
-			Value:    []byte{0x23, 0x42},
+			Value:    []byte{1, 0, 0, 2, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		})
 	}
 	ff, err := w.Root.File("hellö wörld", time.Now(), unix.S_IRUSR|unix.S_IRGRP|unix.S_IROTH, xattrs)
@@ -294,7 +294,7 @@ func TestReader(t *testing.T) {
 					wantXattr := Xattr{
 						Type:     2,
 						FullName: "security.capability",
-						Value:    []byte{0x23, 0x42},
+						Value:    []byte{1, 0, 0, 2, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 					}
 					if diff := cmp.Diff(wantXattr, xattrs[0]); diff != "" {
 						t.Errorf("unexpected extended attribute: diff (-want +got):\n%s", diff)
