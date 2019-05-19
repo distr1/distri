@@ -102,6 +102,24 @@ type regInodeHeader struct {
 	// Followed by a uint32 array of compressed block sizes.
 }
 
+// lregType
+type lregInodeHeader struct {
+	inodeHeader
+
+	// full byte offset from the start of the file system, e.g. 96 for first
+	// file contents. Not using fragments limits us to 2^32-1-96 (≈ 4GiB) bytes
+	// of file contents.
+	StartBlock uint64
+	FileSize   uint64
+	Sparse     uint64
+	Nlink      uint32
+	Fragment   uint32
+	Offset     uint32
+	Xattr      uint32
+
+	// Followed by a uint32 array of compressed block sizes.
+}
+
 // symlinkType
 type symlinkInodeHeader struct {
 	inodeHeader
@@ -166,6 +184,31 @@ type dirEntry struct {
 	// Followed by a byte array of Size bytes.
 }
 
+// xattr types
+const (
+	XattrTypeUser = iota
+	XattrTypeTrusted
+	XattrTypeSecurity
+)
+
+var xattrPrefix = map[int]string{
+	XattrTypeUser:     "user.",
+	XattrTypeTrusted:  "trusted.",
+	XattrTypeSecurity: "security.",
+}
+
+type Xattr struct {
+	Type     uint16
+	FullName string
+	Value    []byte
+}
+
+type xattrId struct {
+	Xattr uint64
+	Count uint32
+	Size  uint32
+}
+
 func writeIdTable(w io.WriteSeeker, ids []uint32) (start int64, err error) {
 	metaOff, err := w.Seek(0, io.SeekCurrent)
 	if err != nil {
@@ -209,6 +252,9 @@ type Writer struct {
 	// Root represents the file system root. Like all directories, Flush must be
 	// called precisely once.
 	Root *Directory
+
+	xattrs   []Xattr
+	xattrIds []xattrId
 
 	w io.WriteSeeker
 
@@ -325,6 +371,8 @@ type file struct {
 	compBuf *bytes.Buffer
 	// zlibWriter is re-used for each compressed block
 	zlibWriter *zlib.Writer
+
+	xattrRef uint32
 }
 
 // Directory creates a new directory with the specified name and modTime.
@@ -339,7 +387,7 @@ func (d *Directory) Directory(name string, modTime time.Time) *Directory {
 
 // File creates a file with the specified name, modTime and mode. The returned
 // io.WriterCloser must be closed after writing the file.
-func (d *Directory) File(name string, modTime time.Time, mode uint16) (io.WriteCloser, error) {
+func (d *Directory) File(name string, modTime time.Time, mode uint16, xattrs []Xattr) (io.WriteCloser, error) {
 	off, err := d.w.w.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return nil, err
@@ -352,6 +400,18 @@ func (d *Directory) File(name string, modTime time.Time, mode uint16) (io.WriteC
 	if err != nil {
 		return nil, err
 	}
+
+	xattrRef := uint32(invalidXattr)
+	if len(xattrs) > 0 {
+		xattrRef = uint32(len(d.w.xattrs))
+		d.w.xattrs = append(d.w.xattrs, xattrs[0]) // TODO: support multiple
+		size := len(xattrs[0].FullName) + len(xattrs[0].Value)
+		d.w.xattrIds = append(d.w.xattrIds, xattrId{
+			// Xattr is populated in writeXattrTables
+			Count: 1, // TODO: support multiple
+			Size:  uint32(size),
+		})
+	}
 	return &file{
 		w:          d.w,
 		d:          d,
@@ -361,6 +421,7 @@ func (d *Directory) File(name string, modTime time.Time, mode uint16) (io.WriteC
 		mode:       mode,
 		compBuf:    bytes.NewBuffer(make([]byte, dataBlockSize)),
 		zlibWriter: zw,
+		xattrRef:   xattrRef,
 	}, nil
 }
 
@@ -605,19 +666,21 @@ func (f *file) Close() error {
 	startBlock := f.w.inodeBuf.Len() / metadataBlockSize
 	offset := f.w.inodeBuf.Len() - startBlock*metadataBlockSize
 
-	if err := binary.Write(&f.w.inodeBuf, binary.LittleEndian, regInodeHeader{
+	if err := binary.Write(&f.w.inodeBuf, binary.LittleEndian, lregInodeHeader{
 		inodeHeader: inodeHeader{
-			InodeType:   fileType,
+			InodeType:   lregType,
 			Mode:        f.mode,
 			Uid:         0,
 			Gid:         0,
 			Mtime:       int32(f.modTime.Unix()),
 			InodeNumber: f.w.sb.Inodes + 1,
 		},
-		StartBlock: uint32(f.off), // TODO(later): check for overflow
+		StartBlock: uint64(f.off),
+		FileSize:   uint64(f.size),
+		Nlink:      1,
 		Fragment:   invalidFragment,
 		Offset:     0,
-		FileSize:   f.size,
+		Xattr:      f.xattrRef,
 	}); err != nil {
 		return err
 	}
@@ -637,6 +700,100 @@ func (f *file) Close() error {
 	f.w.sb.Inodes++
 
 	return nil
+}
+
+func writeXattr(w io.Writer, xattrs []Xattr) error {
+	for _, attr := range xattrs {
+		if err := binary.Write(w, binary.LittleEndian, struct {
+			Type     uint16
+			NameSize uint16
+		}{
+			Type:     attr.Type,
+			NameSize: uint16(len(attr.FullName)),
+		}); err != nil {
+			return err
+		}
+		if _, err := w.Write([]byte(attr.FullName)); err != nil {
+			return err
+		}
+
+		if err := binary.Write(w, binary.LittleEndian, struct {
+			ValSize uint32
+		}{
+			ValSize: uint32(len(attr.Value)),
+		}); err != nil {
+			return err
+		}
+
+		if _, err := w.Write(attr.Value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *Writer) writeXattrTables() (int64, error) {
+	off, err := w.w.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return 0, err
+	}
+	xattrTableStart := uint64(off)
+
+	var xattrBuf bytes.Buffer
+	if err := writeXattr(&xattrBuf, w.xattrs); err != nil {
+		return 0, err
+	}
+	xattrBlocks := (xattrBuf.Len() + (metadataBlockSize - 1)) / metadataBlockSize
+
+	if err := w.writeMetadataChunks(&xattrBuf); err != nil {
+		return 0, err
+	}
+
+	// write xattr id table
+	off, err = w.w.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return 0, err
+	}
+	idTableOff := uint32(off)
+	var xattrIdBuf bytes.Buffer
+	size := uint64(0)
+	for _, id := range w.xattrIds {
+		id.Xattr = uint64(size)
+		size += uint64(id.Size) + 8 /* sizeof(Type+NameSize+ValSize) */
+		if err := binary.Write(&xattrIdBuf, binary.LittleEndian, id); err != nil {
+			return 0, err
+		}
+	}
+	if err := w.writeMetadataChunks(&xattrIdBuf); err != nil {
+		return 0, err
+	}
+
+	// xattr table header
+	off, err = w.w.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return 0, err
+	}
+	if err := binary.Write(w.w, binary.LittleEndian, struct {
+		XattrTableStart uint64
+		XattrIds        uint32
+		Unused          uint32
+	}{
+		XattrTableStart: xattrTableStart,
+		XattrIds:        uint32(len(w.xattrs)),
+	}); err != nil {
+		return 0, err
+	}
+	// write block index
+	for i := 0; i < xattrBlocks; i++ {
+		if err := binary.Write(w.w, binary.LittleEndian, struct {
+			BlockOffset uint32
+		}{
+			BlockOffset: idTableOff + (uint32(i) * (8192 + 2 /* sizeof(uint16) */)),
+		}); err != nil {
+			return 0, err
+		}
+	}
+	return off, nil
 }
 
 // writeMetadataChunks copies from r to w in blocks of metadataBlockSize bytes
@@ -710,7 +867,12 @@ func (w *Writer) Flush() error {
 	}
 	w.sb.IdTableStart = idTableStart
 
-	// (9) xattr table omitted
+	// (9) xattr table
+	off, err = w.writeXattrTables()
+	if err != nil {
+		return err
+	}
+	w.sb.XattrIdTableStart = off
 
 	off, err = w.w.Seek(0, io.SeekCurrent)
 	if err != nil {
