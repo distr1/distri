@@ -778,7 +778,7 @@ func (w *Writer) writeXattrTables() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	idTableOff := uint32(off)
+	idTableOff := uint64(off)
 	var xattrIdBuf bytes.Buffer
 	size := uint64(0)
 	for _, id := range w.xattrIds {
@@ -806,9 +806,9 @@ func (w *Writer) writeXattrTables() (int64, error) {
 	// write block index
 	for i := 0; i < xattrBlocks; i++ {
 		if err := binary.Write(w.w, binary.LittleEndian, struct {
-			BlockOffset uint32
+			BlockOffset uint64
 		}{
-			BlockOffset: idTableOff + (uint32(i) * (8192 + 2 /* sizeof(uint16) */)),
+			BlockOffset: idTableOff + (uint64(i) * (8192 + 2 /* sizeof(uint16) */)),
 		}); err != nil {
 			return 0, err
 		}
