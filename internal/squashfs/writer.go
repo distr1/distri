@@ -747,6 +747,12 @@ func writeXattr(w io.Writer, xattrs []Xattr) error {
 	return nil
 }
 
+type xattrTableHeader struct {
+	XattrTableStart uint64
+	XattrIds        uint32
+	Unused          uint32
+}
+
 func (w *Writer) writeXattrTables() (int64, error) {
 	if len(w.xattrs) == 0 {
 		return -1, nil
@@ -791,11 +797,7 @@ func (w *Writer) writeXattrTables() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if err := binary.Write(w.w, binary.LittleEndian, struct {
-		XattrTableStart uint64
-		XattrIds        uint32
-		Unused          uint32
-	}{
+	if err := binary.Write(w.w, binary.LittleEndian, xattrTableHeader{
 		XattrTableStart: xattrTableStart,
 		XattrIds:        uint32(len(w.xattrs)),
 	}); err != nil {

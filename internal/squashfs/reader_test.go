@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func cmpFileInfo(got os.FileInfo, want FileInfo) error {
@@ -291,3 +293,54 @@ func TestReadfile(t *testing.T) {
 }
 
 // TODO: add test exercising ldirInodeHeader, e.g. '/mnt/loop/ca-certificates-3.39/buildoutput/etc/ssl'
+
+func TestReadXattr(t *testing.T) {
+	t.Parallel()
+
+	// TODO: generate a smaller version of this file
+	f, err := os.Open("testdata/xattr.squashfs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	rd, err := NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		Path string
+		Want []Xattr
+	}{
+		{
+			Path: "mtr-packet",
+			Want: []Xattr{
+				{
+					Type:     XattrTypeSecurity,
+					FullName: "security.capability",
+					Value:    []byte{1, 0, 0, 2, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+			},
+		},
+		{
+			Path: "gnome-keyring-daemon",
+			Want: []Xattr{
+				{
+					Type:     XattrTypeSecurity,
+					FullName: "security.capability",
+					Value:    []byte{1, 0, 0, 2, 0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+			},
+		},
+	} {
+		inode, err := rd.LookupPath(tt.Path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		xattrs, err := rd.ReadXattrs(inode)
+		if err != nil {
+			t.Fatalf("ReadXattrs(%v): %v", inode, err)
+		}
+		if diff := cmp.Diff(tt.Want, xattrs); diff != "" {
+			t.Fatalf("unexpected ReadXattrs result: diff (-want +got):\n%s", diff)
+		}
+	}
+}

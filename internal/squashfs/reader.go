@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -433,3 +434,89 @@ func (fi *FileInfo) Mode() os.FileMode  { return fi.mode }
 func (fi *FileInfo) IsDir() bool        { return fi.mode.IsDir() }
 func (fi *FileInfo) ModTime() time.Time { return fi.modTime }
 func (fi *FileInfo) Sys() interface{}   { return fi }
+
+func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
+	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
+	i, err := r.readInode(inode)
+	if err != nil {
+		return nil, err
+	}
+	var xid uint32
+	switch x := i.(type) {
+	case lregInodeHeader:
+		if x.Xattr == invalidXattr {
+			return nil, nil // file has no extended attributes
+		}
+		xid = x.Xattr
+	default:
+		return nil, fmt.Errorf("unknown directory inode type %T", i)
+	}
+
+	const idEntriesPerBlock = 512 // = 8192 / 16 /* sizeof(xattrId) */
+	block := xid / idEntriesPerBlock
+	offset := (xid % idEntriesPerBlock) * 16
+	log.Printf("xattr id %d, block %d, offset %d", xid, block, offset)
+	log.Printf("r.super.XattrIdTableStart = 0x%x, r.super.XattrIdTableStart = %v", r.super.XattrIdTableStart, r.super.XattrIdTableStart)
+	br := io.Reader(io.NewSectionReader(r.r, r.super.XattrIdTableStart, int64(16 /* sizeof(xattrTableHeader) */ +(block+1)*4 /* sizeof(uint32) */)))
+	var tableHeader xattrTableHeader
+	if err := binary.Read(br, binary.LittleEndian, &tableHeader); err != nil {
+		return nil, err
+	}
+	// index starts here
+	if _, err := io.CopyN(ioutil.Discard, br, int64(block*4 /* sizeof(uint32) */)); err != nil {
+		return nil, err
+	}
+	var blockOffset uint32
+	if err := binary.Read(br, binary.LittleEndian, &blockOffset); err != nil {
+		return nil, err
+	}
+	log.Printf("blockOffset = 0x%x (%d)", blockOffset, blockOffset)
+	br, err = r.blockReader(int64(blockOffset), int64(offset))
+	if err != nil {
+		return nil, err
+	}
+	var id xattrId
+	if err := binary.Read(br, binary.LittleEndian, &id); err != nil {
+		return nil, err
+	}
+	log.Printf("id: %+v", id)
+	log.Printf("tableHeader: %+v", tableHeader)
+
+	var xattrs []Xattr
+	for i := 0; i < int(id.Count); i++ {
+		blockoffset, offset := r.inode(Inode(id.Xattr))
+		br, err = r.blockReader(int64(tableHeader.XattrTableStart)+blockoffset, offset)
+		if err != nil {
+			return nil, err
+		}
+		var typ, nameSize uint16
+		if err := binary.Read(br, binary.LittleEndian, &typ); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(br, binary.LittleEndian, &nameSize); err != nil {
+			return nil, err
+		}
+		log.Printf("type = %v, nameSize = %v", typ, nameSize)
+		name := make([]byte, nameSize)
+		if _, err := io.ReadFull(br, name); err != nil {
+			return nil, err
+		}
+		log.Printf("name = %v", string(name))
+		var valSize uint32
+		if err := binary.Read(br, binary.LittleEndian, &valSize); err != nil {
+			return nil, err
+		}
+		val := make([]byte, valSize)
+		if _, err := io.ReadFull(br, val); err != nil {
+			return nil, err
+		}
+		log.Printf("val = %x", val)
+		xattrs = append(xattrs, Xattr{
+			Type:     typ,
+			FullName: xattrPrefix[int(typ)] + string(name),
+			Value:    val,
+		})
+	}
+
+	return xattrs, nil
+}

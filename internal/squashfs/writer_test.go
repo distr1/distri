@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/orcaman/writerseeker"
 	"golang.org/x/sys/unix"
 )
@@ -271,6 +272,32 @@ func TestReader(t *testing.T) {
 					}
 					if !bytes.Equal(got, want) {
 						t.Fatalf("path %q differs", entry.path)
+					}
+				})
+			}
+
+			if xattr {
+				t.Run("xattrs", func(t *testing.T) {
+					inode, err := rd.LookupPath("hellö wörld")
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					xattrs, err := rd.ReadXattrs(inode)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if got, want := len(xattrs), 1; got != want {
+						t.Fatalf("unexpected number of extended attributes: got %d, want %d", got, want)
+					}
+					wantXattr := Xattr{
+						Type:     2,
+						FullName: "security.capability",
+						Value:    []byte{0x23, 0x42},
+					}
+					if diff := cmp.Diff(wantXattr, xattrs[0]); diff != "" {
+						t.Errorf("unexpected extended attribute: diff (-want +got):\n%s", diff)
 					}
 				})
 			}
