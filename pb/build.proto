@@ -55,6 +55,12 @@ message Install {
     optional string name = 2;
   }
   repeated Chmod chmod = 4;
+
+  message Cap {
+    optional string filename = 1; // relative to ${DISTRI_PREFIX}
+    optional string capability = 2; // specified in cap_from_text(3)
+  }
+  repeated Cap capability = 5;
 }
 
 message Claim {

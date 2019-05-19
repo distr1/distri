@@ -13,11 +13,53 @@ import (
 	"time"
 
 	"github.com/distr1/distri/internal/squashfs"
+	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 )
 
 const convertHelp = `TODO
 `
+
+// stringsFromByteSlice converts a sequence of attributes to a []string.
+// On Linux, each entry is a NULL-terminated string.
+func stringsFromByteSlice(buf []byte) []string {
+	var result []string
+	off := 0
+	for i, b := range buf {
+		if b == 0 {
+			result = append(result, string(buf[off:i]))
+			off = i + 1
+		}
+	}
+	return result
+}
+
+func readXattrs(fd int) ([]squashfs.Xattr, error) {
+	sz, err := unix.Flistxattr(fd, nil)
+	if err != nil {
+		return nil, err
+	}
+	buf := make([]byte, sz)
+	sz, err = unix.Flistxattr(fd, buf)
+	if err != nil {
+		return nil, err
+	}
+	var attrs []squashfs.Xattr
+	attrnames := stringsFromByteSlice(buf)
+	for _, attr := range attrnames {
+		sz, err := unix.Fgetxattr(fd, attr, nil)
+		if err != nil {
+			return nil, err
+		}
+		buf := make([]byte, sz)
+		sz, err = unix.Fgetxattr(fd, attr, buf)
+		if err != nil {
+			return nil, err
+		}
+		attrs = append(attrs, squashfs.XattrFromAttr(attr, buf))
+	}
+	return attrs, nil
+}
 
 func cp(w *squashfs.Directory, dir string) error {
 	//log.Printf("cp(%s)", dir)
@@ -38,7 +80,11 @@ func cp(w *squashfs.Directory, dir string) error {
 				return err
 			}
 			defer in.Close()
-			f, err := w.File(fi.Name(), fi.ModTime(), uint16(fi.Sys().(*syscall.Stat_t).Mode))
+			attrs, err := readXattrs(int(in.Fd()))
+			if err != nil {
+				return err
+			}
+			f, err := w.File(fi.Name(), fi.ModTime(), uint16(fi.Sys().(*syscall.Stat_t).Mode), attrs)
 			if err != nil {
 				return err
 			}

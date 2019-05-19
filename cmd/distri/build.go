@@ -84,6 +84,10 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		Debug:    debug,
 	}
 
+	// Set fields from the perspective of an installed package so that variable
+	// substitution works within wrapper scripts.
+	b.Prefix = "/ro/" + b.fullName() // e.g. /ro/hello-amd64-1
+
 	{
 		tmpdir, err := ioutil.TempDir("", "distri-dest")
 		if err != nil {
@@ -151,6 +155,24 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 			return xerrors.Errorf("build: %v", err)
 		}
 
+		if err := setCaps(); err != nil {
+			return err
+		}
+
+		for _, cap := range b.Proto.GetInstall().GetCapability() {
+			setcap := exec.Command("setcap", cap.GetCapability(), cap.GetFilename())
+			setcap.Dir = filepath.Join(b.DestDir, b.Prefix)
+			log.Printf("%v in %v", setcap.Args, setcap.Dir)
+			setcap.Stdout = os.Stdout
+			setcap.Stderr = os.Stderr
+			setcap.SysProcAttr = &syscall.SysProcAttr{
+				AmbientCaps: []uintptr{CAP_SETFCAP},
+			}
+			if err := setcap.Run(); err != nil {
+				return err
+			}
+		}
+
 		pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
 			Name:  proto.String(b.Pkg),
 			Claim: []*pb.Claim{{Glob: proto.String("*")}},
@@ -208,9 +230,6 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 	// package installs into b.DestDir/ro/hello-1
 
 	rel := b.fullName()
-	// Set fields from the perspective of an installed package so that variable
-	// substitution works within wrapper scripts.
-	b.Prefix = "/ro/" + rel // e.g. /ro/hello-1
 
 	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/distri-dest123/hello-1
 

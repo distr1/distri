@@ -17,6 +17,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/sys/unix"
@@ -201,6 +202,20 @@ type Xattr struct {
 	Type     uint16
 	FullName string
 	Value    []byte
+}
+
+func XattrFromAttr(attr string, val []byte) Xattr {
+	for typ, prefix := range xattrPrefix {
+		if !strings.HasPrefix(attr, prefix) {
+			continue
+		}
+		return Xattr{
+			Type:     uint16(typ),
+			FullName: strings.TrimPrefix(attr, prefix),
+			Value:    val,
+		}
+	}
+	return Xattr{}
 }
 
 type xattrId struct {

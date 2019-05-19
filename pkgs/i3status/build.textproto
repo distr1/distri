@@ -32,3 +32,9 @@ build_step: <
   argv: "V=1"
 >
 
+install: <
+  capability: <
+    filename: "bin/i3status"
+    capability: "cap_net_admin=ep"
+  >
+>
