@@ -161,7 +161,7 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 
 		for _, cap := range b.Proto.GetInstall().GetCapability() {
 			setcap := exec.Command("setcap", cap.GetCapability(), cap.GetFilename())
-			setcap.Dir = filepath.Join(b.DestDir, b.Prefix)
+			setcap.Dir = filepath.Join(b.DestDir, b.Prefix, "out")
 			log.Printf("%v in %v", setcap.Args, setcap.Dir)
 			setcap.Stdout = os.Stdout
 			setcap.Stderr = os.Stderr
