@@ -1263,6 +1263,9 @@ func (fs *fuseFS) ListXattr(ctx context.Context, op *fuseops.ListXattrOp) error 
 		log.Println(err)
 		return fuse.EIO
 	}
+	if image == -1 {
+		return nil // no extended attributes
+	}
 
 	attrs, err := fs.reader(image).ReadXattrs(squashfsInode)
 	if err != nil {
@@ -1288,6 +1291,9 @@ func (fs *fuseFS) GetXattr(ctx context.Context, op *fuseops.GetXattrOp) error {
 	if err != nil {
 		log.Println(err)
 		return fuse.EIO
+	}
+	if image == -1 {
+		return nil // no extended attributes
 	}
 
 	attrs, err := fs.reader(image).ReadXattrs(squashfsInode)
