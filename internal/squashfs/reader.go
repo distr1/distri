@@ -445,7 +445,8 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	switch x := i.(type) {
 	case regInodeHeader,
 		dirInodeHeader,
-		ldirInodeHeader:
+		ldirInodeHeader,
+		symlinkInodeHeader:
 		return nil, nil // no extended attributes
 
 	case lregInodeHeader:
