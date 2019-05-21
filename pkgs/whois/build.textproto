@@ -1,0 +1,27 @@
+source: "http://ftp.debian.org/debian/pool/main/w/whois/whois_5.4.2.tar.xz"
+hash: "eee33a3b3a56912fbf115a7dd24ed60314e2707a3ad6aa604ca2752c1ed01f57"
+version: "5.4.2-2"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "perl"
+dep: "gettext"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "prefix=${DISTRI_PREFIX}"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "make install BASEDIR=${DISTRI_DESTDIR} prefix=${DISTRI_PREFIX}"
+>
