@@ -1293,6 +1293,10 @@ func (fs *fuseFS) GetXattr(ctx context.Context, op *fuseops.GetXattrOp) error {
 		return fuse.EIO
 	}
 	if image == -1 {
+		if len(op.Dst) > 0 {
+			op.Dst[0] = 0
+			op.BytesRead = 1
+		}
 		return nil // no extended attributes
 	}
 
