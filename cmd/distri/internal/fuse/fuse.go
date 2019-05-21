@@ -1257,6 +1257,62 @@ func (fs *fuseFS) ReadSymlink(ctx context.Context, op *fuseops.ReadSymlinkOp) er
 	return nil
 }
 
+func (fs *fuseFS) ListXattr(ctx context.Context, op *fuseops.ListXattrOp) error {
+	image, squashfsInode, err := fs.squashfsInode(op.Inode)
+	if err != nil {
+		log.Println(err)
+		return fuse.EIO
+	}
+
+	attrs, err := fs.reader(image).ReadXattrs(squashfsInode)
+	if err != nil {
+		return err
+	}
+	for _, attr := range attrs {
+		op.BytesRead += len(attr.FullName) + 1 /* NUL-terminated */
+	}
+	if op.BytesRead > len(op.Dst) {
+		return syscall.ERANGE
+	}
+	copied := 0
+	for _, attr := range attrs {
+		copy(op.Dst[copied:], []byte(attr.FullName))
+		copied += len(attr.FullName) + 1 /* NUL-terminated */
+		op.Dst[copied-1] = 0
+	}
+	return nil
+}
+
+func (fs *fuseFS) GetXattr(ctx context.Context, op *fuseops.GetXattrOp) error {
+	image, squashfsInode, err := fs.squashfsInode(op.Inode)
+	if err != nil {
+		log.Println(err)
+		return fuse.EIO
+	}
+
+	attrs, err := fs.reader(image).ReadXattrs(squashfsInode)
+	if err != nil {
+		return err
+	}
+	var val []byte
+	for _, attr := range attrs {
+		if attr.FullName != op.Name {
+			continue
+		}
+		val = attr.Value
+		break
+	}
+	if val == nil {
+		return syscall.ENODATA
+	}
+	op.BytesRead = len(val)
+	if op.BytesRead > len(op.Dst) {
+		return syscall.ERANGE
+	}
+	copy(op.Dst, val)
+	return nil
+}
+
 func (fs *fuseFS) Destroy() {
 	for _, rd := range fs.readers {
 		if rd == nil {
