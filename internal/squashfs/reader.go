@@ -443,6 +443,9 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	}
 	var xid uint32
 	switch x := i.(type) {
+	case regInodeHeader:
+		return nil, nil // file has no extended attributes
+
 	case lregInodeHeader:
 		if x.Xattr == invalidXattr {
 			return nil, nil // file has no extended attributes
