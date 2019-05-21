@@ -443,16 +443,19 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	}
 	var xid uint32
 	switch x := i.(type) {
-	case regInodeHeader:
-		return nil, nil // file has no extended attributes
+	case regInodeHeader,
+		dirInodeHeader,
+		ldirInodeHeader:
+		return nil, nil // no extended attributes
 
 	case lregInodeHeader:
 		if x.Xattr == invalidXattr {
 			return nil, nil // file has no extended attributes
 		}
 		xid = x.Xattr
+
 	default:
-		return nil, fmt.Errorf("unknown directory inode type %T", i)
+		return nil, fmt.Errorf("unknown inode type %T", i)
 	}
 
 	const idEntriesPerBlock = 512 // = 8192 / 16 /* sizeof(xattrId) */
