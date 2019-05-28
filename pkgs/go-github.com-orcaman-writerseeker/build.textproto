@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/orcaman/writerseeker@v0.0.0-20180723184025-774071c66cec"
+hash: "7b1f11e533aa9e38d0e73cc7a74ab6f15f107387382f4e2aa2db5042fad5ae24"
+version: "v0.0.0-20180723184025-774071c66cec"
+
+gomodbuilder: <>
+
+# build dependencies:
