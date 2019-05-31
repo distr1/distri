@@ -21,6 +21,7 @@ message CBuilder {
 }
 
 message CMakeBuilder {
+  repeated string extra_cmake_flag = 1;
 }
 
 message MesonBuilder {
