@@ -2,7 +2,9 @@ source: "https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-12.
 hash: "809668ffc296043779c984f53461c2b3987a45b7a25eb2f0a1d11d9f23ba4055"
 version: "12.2-3"
 
-cbuilder: <>
+cbuilder: <
+  extra_configure_flag: "--with-udev-rules-dir=${DISTRI_PREFIX}/lib/udev/rules.d"
+>
 
 # build dependencies:
 dep: "m4"
