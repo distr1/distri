@@ -1,0 +1,104 @@
+source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
+hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
+version: "2.22.7"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "cmake"
+dep: "gperf"
+dep: "perl"
+dep: "python2.7"
+dep: "ruby"
+dep: "cairo"
+dep: "libgcrypt"
+dep: "gtk+"
+dep: "libjpeg-turbo"
+dep: "libsoup"
+dep: "libpng"
+dep: "zlib"
+dep: "libwebp"
+dep: "libxslt"
+dep: "libsecret"
+#dep: "gobject-introspection"
+dep: "libtasn1"
+dep: "gtk+-2"
+dep: "libxt"
+dep: "libxcomposite"
+dep: "libnotify"
+dep: "gstreamer"
+dep: "gst-plugins-base"
+dep: "gettext" # TODO: not checked in cmake, build fails!
+
+# 1   0x7f76c4fe2ab9 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(WTFCrash+0x9) [0x7f76c4fe2ab9]
+# 2   0x7f76c4ffbe39 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xed1e39) [0x7f76c4ffbe39]
+# 3   0x7f76c4ffbe95 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xed1e95) [0x7f76c4ffbe95]
+# 4   0x7f76c336e4f7 /ro/glibc-amd64-2.27/out/lib/libpthread.so.0(+0xf4f7) [0x7f76c336e4f7]
+# 5   0x7f76c4ff7c40 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(_ZN3WTF35cryptographicallyRandomValuesFromOSEPhm+0x70) [0x7f76c4ff7c40]
+# 6   0x7f76c4fe62b5 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xebc2b5) [0x7f76c4fe62b5]
+# 7   0x7f76c4fe6540 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(_ZN3WTF29cryptographicallyRandomNumberEv+0x130) [0x7f76c4fe6540]
+# 8   0x7f76c4ffd5d9 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xed35d9) [0x7f76c4ffd5d9]
+# 9   0x7f76c336e4f7 /ro/glibc-amd64-2.27/out/lib/libpthread.so.0(+0xf4f7) [0x7f76c336e4f7]
+# 10  0x7f76c4ffdbbd /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(_ZN3WTF19initializeThreadingEv+0x5d) [0x7f76c4ffdbbd]
+# 11  0x7f76c4d5b936 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xc31936) [0x7f76c4d5b936]
+# 12  0x7f76c336e4f7 /ro/glibc-amd64-2.27/out/lib/libpthread.so.0(+0xf4f7) [0x7f76c336e4f7]
+# 13  0x7f76c4d5da5d /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(_ZN3JSC19initializeThreadingEv+0x5d) [0x7f76c4d5da5d]
+# 14  0x7f76c598ea09 /tmp/distri-build281472861/lib/libwebkit2gtk-4.0.so.37(+0x6c1a09) [0x7f76c598ea09]
+# 15  0x7f76c5ae956f /tmp/distri-build281472861/lib/libwebkit2gtk-4.0.so.37(+0x81c56f) [0x7f76c5ae956f]
+# 16  0x7f76c34fca6b /ro/glib-amd64-2.58.0/out/lib/libgobject-2.0.so.0(g_type_class_ref+0x4ab) [0x7f76c34fca6b]
+# 17  0x405205 /tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0() [0x405205]
+# 18  0x404c1c /tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0(main+0x8cc) [0x404c1c]
+# 19  0x7f76c31cb00b /ro/glibc-amd64-2.27/out/lib/libc.so.6(__libc_start_main+0xeb) [0x7f76c31cb00b]
+# 20  0x404f0a /tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0(_start+0x2a) [0x404f0a]
+# Command '['/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0', '--introspect-dump=/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/functions.txt,/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/dump.xml']' died with <Signals.SIGSEGV: 11>.
+
+
+build_step: <
+  argv: "/bin/cmake"
+  argv: "${DISTRI_SOURCEDIR}"
+  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
+  argv: "-DPORT=GTK"
+  argv: "-DJPEG_LIBRARY=/ro/libjpeg-turbo-amd64-2.0.0/out/lib64/libjpeg.so"
+  argv: "-DZLIB_LIBRARY=/ro/zlib-amd64-1.2.11/out/lib/libz.so"
+  argv: "-DPNG_LIBRARY=/ro/libpng-amd64-1.6.35/out/lib/libpng.so"
+  argv: "-DENABLE_GEOLOCATION:BOOL=OFF"
+  argv: "-DENABLE_SPELLCHECK:BOOL=OFF"
+  argv: "-DENABLE_INTROSPECTION:BOOL=OFF" # see backtrace above
+  argv: "-DUSE_LIBHYPHEN:BOOL=OFF"
+  argv: "-DUSE_WOFF2:BOOL=OFF"
+  argv: "-DUSE_GSTREAMER_GL:BOOL=OFF"
+  argv: "-DX11_X11_LIB=/ro/libx11-amd64-1.6.6/out/lib/libX11.so"
+  argv: "-DX11_Xcomposite_LIB=/ro/libxcomposite-amd64-0.4.4/out/lib/libXcomposite.so"
+  argv: "-DX11_Xdamage_LIB=/ro/libxdamage-amd64-1.1.4/out/lib/libXdamage.so"
+  argv: "-DX11_Xrender_LIB=/ro/libxrender-amd64-0.9.10/out/lib/libXrender.so"
+  argv: "-DX11_Xt_LIB=/ro/libxt-amd64-1.1.5/out/lib/libXt.so"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+>
+
+# TODO: should make the package install to lib, not lib64
+install: <
+  symlink: <
+    oldname: "../../lib64/pkgconfig/webkit2gtk-4.0.pc"
+    newname: "lib/pkgconfig/webkit2gtk-4.0.pc"
+  >
+  symlink: <
+    oldname: "../../lib64/pkgconfig/javascriptcoregtk-4.0.pc"
+    newname: "lib/pkgconfig/javascriptcoregtk-4.0.pc"
+  >
+  symlink: <
+    oldname: "../../lib64/pkgconfig/webkit2gtk-web-extension-4.0.pc"
+    newname: "lib/pkgconfig/webkit2gtk-web-extension-4.0.pc"
+  >
+>

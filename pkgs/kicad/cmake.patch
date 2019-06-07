@@ -1,0 +1,13 @@
+--- old/CMakeLists.txt	2019-06-07 09:23:03.714988535 +0200
++++ new/CMakeLists.txt	2019-06-07 09:23:23.626708018 +0200
+@@ -558,6 +558,10 @@
+ set( OpenGL_GL_PREFERENCE "LEGACY" )     # CMake 3.11+ setting; see 'cmake --help-policy CMP0072'
+ find_package( OpenGL REQUIRED )
+ 
++set( CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -lGL -lGLU -lGLEW -lcurl -lpython2.7" )
++set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lGL -lGLU -lGLEW -lcurl -lpython2.7" )
++set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lGL -lGLU -lGLEW -lcurl -lpython2.7" )
++
+ #
+ # Find GLEW library, required
+ #

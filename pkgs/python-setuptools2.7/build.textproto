@@ -1,0 +1,22 @@
+source: "https://t.zekjur.net/setuptools-41.0.1.tar.gz"
+hash: "125855e597d95dd0711078eaaa615523d39791a57c2de3f96805e5d0c64fa9b9"
+version: "41.0.1"
+
+cbuilder: <>
+
+dep: "python2.7"
+
+# build dependencies:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "python2.7"
+  argv: "setup.py"
+  argv: "install"
+  argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--root=${DISTRI_DESTDIR}"
+>

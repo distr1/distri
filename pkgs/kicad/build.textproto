@@ -1,0 +1,45 @@
+source: "https://launchpadlibrarian.net/414300296/kicad-5.1.0.tar.xz"
+hash: "7a9e018ee7372f144d9eb2b78bc1e7b5dfa92f6e293f4c1cff75781e8e9a0cbd"
+version: "5.1.0"
+
+cherry_pick: "cmake.patch"
+
+cmakebuilder: <
+  extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/mesa-amd64-18.2.0/out/lib"
+  extra_cmake_flag: "-DOPENGL_glu_LIBRARY=/ro/glu-amd64-9.0.0/out/lib"
+  extra_cmake_flag: "-DGLEW_LIBRARY=/ro/glew-amd64-2.1.0/out/lib64"
+  extra_cmake_flag: "-DCURL_LIBRARY=/ro/curl-amd64-7.61.1/out/lib"
+  extra_cmake_flag: "-DKICAD_SPICE:BOOL=false"
+  extra_cmake_flag: "-DKICAD_USE_OCE:BOOL=false"
+  extra_cmake_flag: "-DPYTHON_LIBRARY=/ro/python2.7-amd64-2.7.15/out/lib"
+  extra_cmake_flag: "-DKICAD_SCRIPTING_WXPYTHON_PHOENIX:BOOL=true"
+  extra_cmake_flag: "-DBOOST_ROOT=/ro/boost-amd64-1.69.0/out"
+  extra_cmake_flag: "-DBOOST_LIBRARYDIR=/ro/boost-amd64-1.69.0/out/lib"
+>
+
+# build dependencies:
+dep: "libglvnd"
+dep: "mesa"
+dep: "glu"
+dep: "glew"
+dep: "glm"
+dep: "curl"
+dep: "cairo"
+dep: "boost"
+dep: "swig"
+dep: "python2.7"
+dep: "wxwidgets"
+dep: "wxpython"
+dep: "dbus" # TODO: runtime_dep of wxpython (ldd gtk3u_core.so)
+
+# does not correctly link against glu: -lGLU is missing (pkg-config contains it,
+# but cmake does not consult pkg-config)
+# TODO: change the patch to set more of the linker flags
+
+
+# no rpath set on gtk3u_core.so :-/
+# no rpath set on /ro/wxpython-amd64-4.0.4/out/lib/python2.7/site-packages/wx/_core.so
+# wxpython installs the .so into pythonpath, but then looks for the .so in ld_library_path, not in pythonpath
+# confirmed by:
+# (unset LD_LIBRARY_PATH; /ro/strace-amd64-4.24/out/bin/strace -f -v -y LD_LIBRARY_PATH=/ro/wxpython-amd64-4.0.4/out/lib/python2.7/site-packages/wx /ro/python2.7-amd64-2.7.15/out/bin/python2.7 -c 'from wx.core import *' |& grep -i gtk3u_core)
+# bash-4.4# LD_LIBRARY_PATH=/ro/wxpython-amd64-4.0.4/out/lib/python2.7/site-packages/wx:/ro/lib /ro/strace-amd64-4.24/out/bin/strace -f -v -y /ro/python2.7-amd64-2.7.15/out/bin/python2.7 -c 'from wx.core import *'

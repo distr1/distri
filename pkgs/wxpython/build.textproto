@@ -1,0 +1,47 @@
+source: "https://files.pythonhosted.org/packages/17/74/7c3ced03c3c76b9f98e4a0edae1801755a7599ebf481c04d9f77dfff17e3/wxPython-4.0.4.tar.gz"
+hash: "0d9ef4260cb2f3e23ed9dcf6baa905ba585ac7d631613cddc299c4c83463ae29"
+version: "4.0.4"
+
+cherry_pick: "pythonpath.patch"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "gtk+"
+dep: "mesa"
+dep: "glu"
+dep: "tiff"
+dep: "sdl2"
+dep: "libnotify"
+dep: "gstreamer"
+dep: "gst-plugins-base"
+dep: "which"
+dep: "bzip2"
+dep: "wxwidgets"
+dep: "webkitgtk"
+dep: "python2.7"
+dep: "python-setuptools2.7"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "python2.7"
+  argv: "build.py"
+  argv: "build"
+  argv: "--jobs=8"
+  argv: "--use_syswx"
+  argv: "--release"
+  argv: "--prefix=${DISTRI_PREFIX}"
+>
+
+build_step: <
+  argv: "python2.7"
+  argv: "build.py"
+  argv: "install"
+  argv: "--destdir=${DISTRI_DESTDIR}"
+  argv: "--extra_setup=--prefix=${DISTRI_PREFIX}"
+>

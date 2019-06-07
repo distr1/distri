@@ -1,0 +1,10 @@
+--- old/build.py	2019-01-05 20:48:40.000000000 +0100
++++ new/build.py	2019-06-01 00:57:13.653938301 +0200
+@@ -157,7 +157,6 @@
+     setPythonVersion(args)
+     setDevModeOptions(args)
+ 
+-    os.environ['PYTHONPATH'] = phoenixDir()
+     os.environ['PYTHONUNBUFFERED'] = 'yes'
+     os.environ['WXWIN'] = wxDir()
+ 
