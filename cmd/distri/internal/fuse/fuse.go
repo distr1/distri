@@ -500,7 +500,9 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 				return err
 			}
 			mu.Lock()
-			fs.symlink(dir, rel)
+			if e, ok := dir.byName[sfi.Name()]; !ok || distri.PackageRevisionLess(e.linkTarget, rel) {
+				fs.symlink(dir, rel)
+			}
 			mu.Unlock()
 		}
 	}
