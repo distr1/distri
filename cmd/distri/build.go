@@ -252,14 +252,45 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 }
 
 var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
-	"quoteenv": func(env string) string {
-		return strings.Replace(env, `=`, `="`, 1) + `"`
+	"envkey": func(env string) string {
+		if idx := strings.IndexByte(env, '='); idx > -1 {
+			return env[:idx]
+		}
+		return env
 	},
-}).Parse(`#!/ro/bin/sh
+	"envval": func(env string) string {
+		if idx := strings.IndexByte(env, '='); idx > -1 {
+			return env[idx+1:]
+		}
+		return env
+	},
+}).Parse(`
+#define _GNU_SOURCE
+#include <stdio.h>
+
+#include <err.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+static char* filename = "{{ .Prefix }}/{{ .Bin }}";
+
+int main(int argc, char *argv[]) {
 {{ range $idx, $env := .Env }}
-export {{ quoteenv $env }}
+  {
+    char *dest = "{{ envval $env }}";
+    char *env = getenv("{{ envkey $env }}");
+    if (env != NULL) {
+      if (asprintf(&dest, "%s:%s", "{{ envval $env }}", env) == -1) {
+        err(EXIT_FAILURE, "asprintf");
+      }
+    }
+    setenv("{{ envkey $env }}", dest, 1);
+  }
 {{ end }}
-exec {{ .Prefix }}/{{ .Bin }} "$@"
+
+  execv(filename, argv);
+  return 1;
+}
 `))
 
 func (b *buildctx) fullName() string {
@@ -492,10 +523,10 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	}
 
 	env := []string{
-		"PATH=" + strings.Join(binDirs, ":") + ":$PATH",                       // for finding binaries
-		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":") + ":$LD_LIBRARY_PATH", // for ld
-		"PERL5LIB=" + strings.Join(perl5Dirs, ":") + ":$PERL5LIB",             // for perl
-		"PYTHONPATH=" + strings.Join(pythonDirs, ":") + ":$PYTHONPATH",        // for python
+		"PATH=" + strings.Join(binDirs, ":"),            // for finding binaries
+		"LD_LIBRARY_PATH=" + strings.Join(libDirs, ":"), // for ld
+		"PERL5LIB=" + strings.Join(perl5Dirs, ":"),      // for perl
+		"PYTHONPATH=" + strings.Join(pythonDirs, ":"),   // for python
 	}
 	return env
 }
@@ -1270,8 +1301,43 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				}); err != nil {
 					return nil, err
 				}
-
-				if err := ioutil.WriteFile(newname, buf.Bytes(), 0755); err != nil {
+				f, err := ioutil.TempFile("", "distri-wrapper.*.c")
+				if err != nil {
+					return nil, err
+				}
+				if _, err := io.Copy(f, &buf); err != nil {
+					return nil, err
+				}
+				if err := f.Close(); err != nil {
+					return nil, err
+				}
+				getenv := func(key string) string {
+					for _, v := range env {
+						idx := strings.IndexByte(v, '=')
+						if k := v[:idx]; k != key {
+							continue
+						}
+						return v[idx+1:]
+					}
+					return ""
+				}
+				gcc := exec.Command("gcc",
+					append([]string{
+						"-O3",       // optimize as much as possible
+						"-s",        // strip
+						"-Wall",     // enable all warnings
+						"-pedantic", // be more strict
+						"-static",
+						"-o", newname,
+						f.Name(),
+					},
+						strings.Split(strings.TrimSpace(getenv("LDFLAGS")), " ")...)...)
+				gcc.Env = env
+				gcc.Stderr = os.Stderr
+				if err := gcc.Run(); err != nil {
+					return nil, err
+				}
+				if err := os.Remove(f.Name()); err != nil {
 					return nil, err
 				}
 			}
