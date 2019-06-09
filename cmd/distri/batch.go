@@ -40,8 +40,21 @@ import (
 // milestone: run a build action on a remote machine using cpu(1)
 
 // build action
-// - input: source tarball, build.textproto, build dep images
-// - output: image
+// build(inputs []file, buildflags []string) []file
+// e.g. buildflags = []string{"-cross", "i686"}, passed to distri build
+// in an RPC, inputs and outputs should be streamed (uni-directional)
+// caching: calculate efficient hash over inputs in parallel
+//          cache-key := hash(file-hashes)
+// - inputs:
+//   - build/distri/pkg/<build dep images>
+//   - build/<pkg>source tarball
+//   - pkgs/<pkg>/build.textproto
+// - outputs:
+//   - build/distri/pkg/<image>
+//   - build/distri/debug/<image>
+//   - build/<pkg>/build-<version>.log
+//   - dev/stdout
+//   - dev/stderr
 
 // to rebuild the archive: increment version number of all packages (helper tool which does this and commits?)
 
