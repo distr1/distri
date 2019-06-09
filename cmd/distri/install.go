@@ -235,7 +235,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 
 func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	origpkg := pkg
-	if _, ok := hasArchSuffix(pkg); !ok && !likelyFullySpecified(pkg) {
+	if _, ok := distri.HasArchSuffix(pkg); !ok && !distri.LikelyFullySpecified(pkg) {
 		pkg += "-amd64" // TODO: configurable / auto-detect
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
@@ -270,7 +270,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		return xerrors.Errorf("package %s not found on any configured repo", pkg)
 	}
 
-	if _, ok := hasArchSuffix(pkg); ok {
+	if _, ok := distri.HasArchSuffix(pkg); ok {
 		pkg += "-" + pm.GetVersion()
 	}
 

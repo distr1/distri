@@ -26,6 +26,7 @@ import (
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/squashfs"
@@ -450,7 +451,9 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 	// e.g. [less-amd64-530-2.squashfs less-amd64-530.squashfs]
 	// to   [less-amd64-530.squashfs less-amd64-530-2.squashfs]
 	// ('.' > '-' because 0x2E > 0x2D)
-	sort.Strings(pkgs)
+	sort.Slice(pkgs, func(i, j int) bool {
+		return distri.PackageRevisionLess(pkgs[i], pkgs[j])
+	})
 	return pkgs, nil
 }
 
@@ -669,7 +672,9 @@ func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 				for idx, m := range matches {
 					matches[idx] = strings.TrimSuffix(filepath.Base(m), ".squashfs")
 				}
-				sort.Sort(sort.Reverse(sort.StringSlice(matches)))
+				sort.Slice(matches, func(i, j int) bool {
+					return distri.PackageRevisionLess(matches[j], matches[i]) // reverse
+				})
 				standin = matches[0]
 				break
 			}

@@ -22,6 +22,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/distr1/distri"
 	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/oninterrupt"
@@ -499,38 +500,12 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	return env
 }
 
-var archs = map[string]bool{
-	"amd64": true,
-	"i686":  true,
-}
-
-func hasArchSuffix(pkg string) (suffix string, ok bool) {
-	for a := range archs {
-		// unversioned, but ending in an architecture already (e.g. emacs-amd64)
-		if strings.HasSuffix(pkg, "-"+a) {
-			return a, true
-		}
-	}
-	return "", false
-}
-
-// likelyFullySpecified returns true if the provided pkg contains an
-// architecture suffix in the middle, e.g. systemd-amd64-239.
-func likelyFullySpecified(pkg string) bool {
-	for a := range archs {
-		if strings.Contains(pkg, "-"+a+"-") {
-			return true
-		}
-	}
-	return false
-}
-
 func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 	if st, err := os.Lstat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil && st.Mode().IsRegular() {
 		return pkg, nil // pkg already contains the version
 	}
 	pkgPattern := pkg
-	if suffix, ok := hasArchSuffix(pkg); !ok {
+	if suffix, ok := distri.HasArchSuffix(pkg); !ok {
 		pkgPattern = pkgPattern + "-" + b.Arch
 	} else {
 		pkg = strings.TrimSuffix(pkg, "-"+suffix)
