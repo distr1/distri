@@ -232,7 +232,7 @@ func TestUnversionedBuild(t *testing.T) {
 	}
 	deps, err := resolve(env.DefaultRepo, []string{
 		"bash-amd64-4.4.18",
-		"linux-amd64-4.18.7",
+		"linux-amd64-4.18.7-2",
 		"linux-firmware-amd64-20181104",
 		"pkg-config-amd64-0.29.2",
 	})
