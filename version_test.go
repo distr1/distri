@@ -26,6 +26,11 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 			filename: "../less-amd64-530-17/bin/less", // exchange dir link target
 			want:     17,
 		},
+
+		{
+			filename: "build/git/build-2.9.5-3.log", // build log
+			want:     3,
+		},
 	} {
 		t.Run(tt.filename, func(t *testing.T) {
 			got := extractPackageRevision(tt.filename)
