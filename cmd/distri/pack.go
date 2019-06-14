@@ -632,11 +632,11 @@ name=root`)
 		return err
 	}
 
-	if err := copyFile(filepath.Join(env.DistriRoot, "linux-4.18.7/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-4.18.7"); err != nil {
+	if err := copyFile(filepath.Join(env.DistriRoot, "linux-5.1.9/arch/x86/boot/bzImage"), "/mnt/boot/vmlinuz-5.1.9"); err != nil {
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-2/out/share/pkgconfig/ dracut /boot/initramfs-4.18.7.img 4.18.7")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-2/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9.img 5.1.9")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
