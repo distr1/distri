@@ -1,8 +1,10 @@
 source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.9.tar.xz"
 hash: "58c9eca99c3dd2fff5b559302996c985c3f3f2aad0b99b2172a61c4df7122a79"
-version: "5.1.9-4"
+version: "5.1.9-5"
 
-cbuilder: <>
+cbuilder: <
+  copy_to_builddir: true
+>
 
 cherry_pick: "config.patch"
 
@@ -31,7 +33,22 @@ build_step: <
   argv: "-j8"
   argv: "V=1"
   argv: "WERROR=0"
-  argv: "KBUILD_BUILD_HOST=zi0"
+  argv: "KBUILD_BUILD_HOST=distri0"
+>
+
+# The linux makefile does not seem to create the install destination directory:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "mkdir -p ${DISTRI_DESTDIR}${DISTRI_PREFIX}"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-C"
+  argv: "${DISTRI_SOURCEDIR}"
+  argv: "install"
+  argv: "INSTALL_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -39,7 +56,7 @@ build_step: <
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "modules_install"
-  argv: "INSTALL_MOD_PATH=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
+  argv: "INSTALL_MOD_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 >
 
 build_step: <
@@ -47,5 +64,5 @@ build_step: <
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
-  argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
+  argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 >
