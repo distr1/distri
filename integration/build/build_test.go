@@ -100,7 +100,7 @@ func resolve1(imgDir, pkg string) ([]string, error) {
 	resolved := []string{pkg}
 	fn := filepath.Join(imgDir, pkg+ext)
 	if target, err := os.Readlink(fn); err == nil {
-		resolved = append(resolved, strings.TrimSuffix(filepath.Base(target), ext))
+		resolved = []string{strings.TrimSuffix(filepath.Base(target), ext)}
 	}
 	meta, err := pb.ReadMetaFile(fn)
 	if err != nil {
@@ -148,8 +148,8 @@ func TestBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64-4.4.18",
-		"pkg-config-amd64-0.29.2",
+		"bash-amd64",
+		"pkg-config-amd64",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -231,10 +231,10 @@ func TestUnversionedBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64-4.4.18",
-		"linux-amd64-4.18.7-2",
-		"linux-firmware-amd64-20181104",
-		"pkg-config-amd64-0.29.2",
+		"bash-amd64",
+		"linux-amd64",
+		"linux-firmware-amd64",
+		"pkg-config-amd64",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -398,8 +398,8 @@ func TestMultiPackageBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64-4.4.18",
-		"coreutils-amd64-8.30",
+		"bash-amd64",
+		"coreutils-amd64",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -545,9 +545,9 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 	}
 	deps, err := resolve(env.DefaultRepo, []string{
 		//"mesa-amd64-18.2.0",
-		"bash-amd64-4.4.18",
-		"coreutils-amd64-8.30",
-		"libepoxy-amd64-1.5.2",
+		"bash-amd64",
+		"coreutils-amd64",
+		"libepoxy-amd64",
 	})
 	if err != nil {
 		t.Fatal(err)
