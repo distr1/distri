@@ -272,7 +272,7 @@ var wrapperTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 #include <unistd.h>
 #include <stdlib.h>
 
-static char* filename = "{{ .Prefix }}/{{ .Bin }}";
+static char filename[] __attribute__((section("distrifilename"))) = "{{ .Prefix }}/{{ .Bin }}";
 
 int main(int argc, char *argv[]) {
 {{ range $idx, $env := .Env }}

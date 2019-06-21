@@ -1,64 +1,126 @@
+diff --git i/Makefile w/Makefile
+index 414fb33..2015428 100644
+--- i/Makefile
++++ w/Makefile
+@@ -13,7 +13,7 @@ sysconfdir ?= ${prefix}/etc
+ bindir ?= ${prefix}/bin
+ mandir ?= ${prefix}/share/man
+ CFLAGS ?= -O2 -g -Wall
+-CFLAGS += -std=gnu99 -D_FILE_OFFSET_BITS=64 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 $(KMOD_CFLAGS)
++CFLAGS += -std=gnu99 -D_FILE_OFFSET_BITS=64 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 $(KMOD_CFLAGS) $(ELF_CFLAGS)
+ bashcompletiondir ?= ${datadir}/bash-completion/completions
+ pkgconfigdatadir ?= $(datadir)/pkgconfig
+ 
+@@ -61,7 +61,7 @@ install/util.o: install/util.c install/util.h install/macro.h install/log.h
+ install/strv.o: install/strv.c install/strv.h install/util.h install/macro.h install/log.h
+ 
+ install/dracut-install: $(DRACUT_INSTALL_OBJECTS)
+-	$(CC) $(LDFLAGS) -o $@ $(DRACUT_INSTALL_OBJECTS) $(LDLIBS) $(KMOD_LIBS)
++	$(CC) $(LDFLAGS) -o $@ $(DRACUT_INSTALL_OBJECTS) $(LDLIBS) $(KMOD_LIBS) $(ELF_LIBS)
+ 
+ dracut-install: install/dracut-install
+ 	ln -fs $< $@
+diff --git i/configure w/configure
+index b55fb60..d58c9f5 100755
+--- i/configure
++++ w/configure
+@@ -68,6 +68,8 @@ enable_documentation ?= ${enable_documentation:-yes}
+ bindir ?= ${bindir:-${prefix}/bin}
+ KMOD_CFLAGS ?= $(${PKG_CONFIG} --cflags " libkmod >= 23 ")
+ KMOD_LIBS ?= $(${PKG_CONFIG} --libs " libkmod >= 23 ")
++ELF_CFLAGS ?= $(${PKG_CONFIG} --cflags " libelf ")
++ELF_LIBS ?= $(${PKG_CONFIG} --libs " libelf ")
+ EOF
+ 
+ {
 diff --git i/install/dracut-install.c w/install/dracut-install.c
-index 5f352b36..9f42f5ed 100644
+index 001225b..9112c15 100644
 --- i/install/dracut-install.c
 +++ w/install/dracut-install.c
-@@ -393,6 +393,55 @@ static int library_install(const char *src, const char *lib)
+@@ -42,6 +42,9 @@
+ #include <fts.h>
+ #include <regex.h>
+ #include <sys/utsname.h>
++#include <err.h>
++#include <libelf.h>
++#include <gelf.h>
+ 
+ #include "log.h"
+ #include "hashmap.h"
+@@ -393,6 +396,72 @@ static int library_install(const char *src, const char *lib)
          return ret;
  }
  
-+static int resolve_deps_shell(const char *src, int *done)
++char *read_elf_section(const char *filename, const char *section_name) {
++  int fd = open(filename, O_RDONLY, 0);
++  if (fd < 0) {
++    err(EXIT_FAILURE, "open %s", filename);
++  }
++  Elf *e = elf_begin(fd, ELF_C_READ, NULL);
++  if (e == NULL) {
++    errx(EXIT_FAILURE, "elf_begin: %s", elf_errmsg(-1));
++  }
++  if (elf_kind(e) != ELF_K_ELF) {
++    return NULL;
++  }
++  size_t shstrndx;
++  if (elf_getshdrstrndx(e, &shstrndx) != 0) {
++    errx(EXIT_FAILURE, "elf_getshdrstrndx failed: %s", elf_errmsg(-1));
++  }
++  Elf_Scn *scn = NULL;
++  GElf_Shdr shdr;
++  while ((scn = elf_nextscn(e, scn)) != NULL) {
++    if (gelf_getshdr(scn, &shdr) != &shdr) {
++      errx(EXIT_FAILURE, "getshdr failed: %s", elf_errmsg(-1));
++    }
++    char *name;
++    if ((name = elf_strptr(e, shstrndx, shdr.sh_name)) == NULL) {
++      errx(EXIT_FAILURE, "elf_strptr failed: %s", elf_errmsg(-1));
++    }
++    if (strcmp(name, section_name) != 0) {
++      continue;
++    }
++    Elf_Data *data = NULL;
++    size_t n = 0;
++    char *out = calloc(shdr.sh_size, 1);
++    char *w = out;
++    while (n < shdr.sh_size && (data = elf_getdata(scn, data)) != NULL) {
++      char *p = (char*)data->d_buf;
++      while (p < (char*)data->d_buf + data->d_size) {
++	*w = *p;
++	n++;
++	p++;
++	w++;
++      }
++    }
++    return out;
++  }
++  close(fd);
++  return NULL;
++}
++
++static const char filenamesection[] = "distrifilename";
++
++static int resolve_deps_distriwrapper(const char *src, int *done)
 +{
 +  int ret = 0;
-+        _cleanup_free_ char *buf = NULL;
-+        size_t linesize = LINE_MAX;
-+	_cleanup_fclose_ FILE *fptr = NULL;
-+	fptr = fopen(src, "r");
-+	if (fptr == NULL)
-+	  return -errno;
-+	if (getline(&buf, &linesize, fptr) <= 0)
-+	  return 0;
-+	if (buf[0] != '#' || buf[1] != '!') {
-+	  /* no shebang, not a shell script */
-+	  return 0;
-+	}
-+	*done = 1;
 +
-+	/* we have a shebang */
-+	char *p, *q;
-+	for (p = &buf[2]; *p && isspace(*p); p++) ;
-+	for (q = p; *q && (!isspace(*q)); q++) ;
-+	*q = '\0';
-+	log_debug("Script install: '%s'", p);
-+	ret = dracut_install(p, p, false, true, false);
-+	if (ret != 0) {
-+	  log_error("ERROR: failed to install '%s'", p);
-+	  return ret;
-+	}
-+
-+	while (!feof(fptr)) {
-+	  if (getline(&buf, &linesize, fptr) <= 0)
-+	    continue;
-+	  log_debug("shell line: '%s'", buf);
-+	  if (strstr(buf, "exec ") == buf) {
-+	    log_debug("exec line: '%s'", buf);
-+	    for (p = &buf[strlen("exec ")]; *p && isspace(*p); p++) ;
-+	    for (q = p; *q && (!isspace(*q)); q++) ;
-+	    *q = '\0';
-+	    log_debug("exec '%s'", p);
-+	    ret = dracut_install(p, p, false, true, false);
-+	    if (ret != 0) {
-+	      log_error("ERROR: failed to install '%s'", p);
-+	      return ret;
-+	    }
-+	  }
-+	}
-+	return ret;
++  _cleanup_free_ char *data = read_elf_section(src, filenamesection);
++  log_debug("resolve_deps_distriwrapper(%s) = '%s'", src, data);
++  if (data == NULL) {
++    return 0; // not a distri wrapper binary
++  }
++  ret = dracut_install(data, data, false, true, false);
++  if (ret != 0) {
++    log_error("ERROR: failed to install '%s'", data);
++  }
++  return ret;
 +}
 +
  static int resolve_deps(const char *src)
  {
          int ret = 0;
-@@ -405,30 +454,14 @@ static int resolve_deps(const char *src)
+@@ -405,30 +474,14 @@ static int resolve_deps(const char *src)
          buf = malloc(LINE_MAX);
          if (buf == NULL)
                  return -errno;
@@ -88,7 +150,7 @@ index 5f352b36..9f42f5ed 100644
 -                        return ret;
 -                }
 +	  int done = 0;
-+	  ret = resolve_deps_shell(src, &done);
++	  ret = resolve_deps_distriwrapper(src, &done);
 +	  if (ret < 0)
 +	    return ret;
 +	  if (done == 1)
@@ -96,3 +158,15 @@ index 5f352b36..9f42f5ed 100644
          }
  
          /* run ldd */
+@@ -1692,6 +1745,11 @@ int main(int argc, char **argv)
+ 
+         log_open();
+ 
++	if (elf_version(EV_CURRENT) == EV_NONE) {
++	  log_error("ELF library initialization failed: %s", elf_errmsg(-1));
++	  exit(EXIT_FAILURE);
++	}
++
+         modules_loaded = hashmap_new(string_hash_func, string_compare_func);
+         if (arg_modalias) {
+                 Iterator i;
