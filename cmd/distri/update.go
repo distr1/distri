@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distr1/distri/pb"
 	"golang.org/x/xerrors"
 )
 
@@ -22,7 +23,8 @@ func update(args []string) error {
 			"/",
 			"root directory for optionally installing into a chroot")
 
-		repo = fset.String("repo", "", "repository from which to install packages from. path (default TODO) or HTTP URL (e.g. TODO)")
+		repo   = fset.String("repo", "", "repository from which to install packages from. path (default TODO) or HTTP URL (e.g. TODO)")
+		pkgset = fset.String("pkgset", "", "if non-empty, a package set to update")
 	)
 	fset.Parse(args)
 	if *repo == "" {
@@ -51,17 +53,29 @@ func update(args []string) error {
 	}
 
 	var pkgs []string
-	matches, err := filepath.Glob(filepath.Join(*root, "etc", "distri", "pkgset.d", "*.pkgset"))
-	if err != nil {
-		return err
-	}
-	for _, match := range matches {
-		b, err := ioutil.ReadFile(match)
+	if *pkgset != "" {
+		b, err := ioutil.ReadFile(filepath.Join(*root, "etc", "distri", "pkgset.d", *pkgset+".pkgset"))
 		if err != nil {
 			return err
 		}
 		for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
 			pkgs = append(pkgs, line)
+		}
+	} else {
+		// find all packages present on the system
+		fis, err := ioutil.ReadDir(filepath.Join(*root, "roimg"))
+		if err != nil {
+			return err
+		}
+		for _, fi := range fis {
+			if !strings.HasSuffix(fi.Name(), ".meta.textproto") {
+				continue
+			}
+			m, err := pb.ReadMetaFile(filepath.Join(*root, "roimg", fi.Name()))
+			if err != nil {
+				return err
+			}
+			pkgs = append(pkgs, m.GetSourcePkg())
 		}
 	}
 

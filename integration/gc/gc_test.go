@@ -58,7 +58,7 @@ func TestGC(t *testing.T) {
 	}
 	defer cleanup()
 
-	update := exec.Command("distri", "update", "-repo=http://"+addr, "-root="+tmpdir)
+	update := exec.Command("distri", "update", "-repo=http://"+addr, "-root="+tmpdir, "-pkgset=zkj-diag")
 	update.Stderr = os.Stderr
 	if err := update.Run(); err != nil {
 		t.Fatalf("%v: %v", update.Args, err)

@@ -121,7 +121,7 @@ func TestUpdate(t *testing.T) {
 	}
 	proxy := httptest.NewServer(rp)
 	defer proxy.Close()
-	update := exec.Command("distri", "update", "-repo="+proxy.URL, "-root="+tmpdir)
+	update := exec.Command("distri", "update", "-repo="+proxy.URL, "-root="+tmpdir, "-pkgset=extrabase")
 	update.Stderr = os.Stderr
 	if err := update.Run(); err != nil {
 		t.Fatalf("%v: %v", update.Args, err)
