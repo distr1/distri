@@ -1323,10 +1323,9 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				}
 				gcc := exec.Command("gcc",
 					append([]string{
-						"-O3",       // optimize as much as possible
-						"-s",        // strip
-						"-Wall",     // enable all warnings
-						"-pedantic", // be more strict
+						"-O3",   // optimize as much as possible
+						"-s",    // strip
+						"-Wall", // enable all warnings
 						"-static",
 						"-o", newname,
 						f.Name(),
