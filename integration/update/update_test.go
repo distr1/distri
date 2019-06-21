@@ -18,6 +18,7 @@ import (
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
+	"github.com/google/go-cmp/cmp"
 )
 
 func resolve1(imgDir, pkg string) ([]string, error) {
@@ -141,4 +142,30 @@ func TestUpdate(t *testing.T) {
 	if !straceUpgraded {
 		t.Errorf("strace was not upgraded (via base-full)")
 	}
+
+	t.Run("VerifyBeforeAfterLog", func(t *testing.T) {
+		matches, err := filepath.Glob(filepath.Join(tmpdir, "var", "log", "distri", "*"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		updateDir := matches[0]
+
+		b, err := ioutil.ReadFile(filepath.Join(updateDir, "files.before.txt"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := string(b)
+		if diff := cmp.Diff("", got); diff != "" {
+			t.Errorf("files.before.txt: unexpected content: diff (-want +got):\n%s", diff)
+		}
+
+		b, err = ioutil.ReadFile(filepath.Join(updateDir, "files.after.txt"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got = string(b)
+		if diff := cmp.Diff("", got); diff == "" {
+			t.Errorf("files.after.txt: unexpectedly empty")
+		}
+	})
 }

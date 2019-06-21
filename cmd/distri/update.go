@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/distr1/distri/pb"
 	"golang.org/x/xerrors"
@@ -31,7 +33,13 @@ func update(args []string) error {
 		return xerrors.Errorf("-repo flag is required")
 	}
 
+	updateStart := time.Now()
+
 	if os.Getenv("DISTRI_REEXEC") != "1" {
+		if err := persistFileListing(fileListingFileName(*root, updateStart, "files.before.txt"), filepath.Join(*root, "roimg")); err != nil {
+			return err
+		}
+
 		if err := install([]string{"-root=" + *root, "-repo=" + *repo, "distri1"}); err != nil {
 			return err
 		}
@@ -45,6 +53,11 @@ func update(args []string) error {
 		if err := cmd.Run(); err != nil {
 			return xerrors.Errorf("%v: %v", cmd.Args, err)
 		}
+
+		if err := persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg")); err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -88,4 +101,27 @@ func update(args []string) error {
 	}
 
 	return nil
+}
+
+func fileListingFileName(root string, timestamp time.Time, basename string) string {
+	return filepath.Join(root, "var", "log", "distri", fmt.Sprintf("update-%v", timestamp.Unix()), basename)
+}
+
+func persistFileListing(destfn string, dir string) error {
+	if err := os.MkdirAll(filepath.Dir(destfn), 0755); err != nil {
+		return err
+	}
+	d, err := os.Open(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ioutil.WriteFile(destfn, nil, 0644)
+		}
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(destfn, []byte(strings.Join(names, "\n")+"\n"), 0644)
 }
