@@ -1,8 +1,8 @@
 # latest google-chrome-stable .deb from
 # http://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages:
-source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_71.0.3578.98-1_amd64.deb" 
-hash: "c2b2b56d854b7666ba1e7c090c0e599d695ff40a8676eb018da4ccbb4ac7711e"
-version: "71.0.3578.98-1"
+source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_75.0.3770.100-1_amd64.deb"
+hash: "25c558f79e5b0461ee63ca8e95bf26030a917d6b96dbdf3e6f6c75dc829eb746"
+version: "75.0.3770.100-2"
 
 cbuilder: <>
 
@@ -26,6 +26,7 @@ dep: "nss"
 dep: "cups"
 dep: "libxscrnsaver"
 dep: "alsa-lib"
+dep: "patchelf"
 
 build_step: <
   argv: "tar"
