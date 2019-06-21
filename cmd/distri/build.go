@@ -1853,6 +1853,7 @@ func updateFromDistriroot(builddir string) error {
 		".git":         true,
 		"build":        true,
 		"linux-4.18.7": true,
+		"linux-5.1.9":  true,
 		"pkgs":         true,
 		"docs":         true,
 		"org":          true,
