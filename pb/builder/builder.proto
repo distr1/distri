@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package builder;
+
+message Chunk {
+  // path is discarded in all but the first Store Chunk message per stream.
+  // path is unset in all but the first Retrieve Chunk message per stream.
+  string path = 1; // relative, e.g. pkgs/emacs/build.textproto.
+  bytes chunk = 2;
+}
+
+message StoreResponse {
+}
+
+message RetrieveRequest {
+  string path = 1; // relative, typically output_path from BuildProgress
+}
+
+message BuildRequest {
+  string working_directory = 1; // relative
+  repeated string input_path = 2; // relative
+  repeated string build_flag = 3;
+}
+
+message BuildProgress {
+  // Build artifact paths (possibly empty, e.g. in keepalive progress updates),
+  // e.g. build/emacs/emacs-amd64-26.2.squashfs.
+  repeated string output_path = 1; // relative
+}
+
+service Build {
+  // Store persists a file on the builder.
+  //
+  // Simple implementations might write the file to a directory and clean up
+  // files older than a day every hour in a background (e.g. cron) job.
+  //
+  // Cluster implementations might write the file to a shared network directory
+  // (most pragmatic/common), introduce an custom disk abstraction layer (most
+  // elegant?) or stickily load-balance via a proxy job (only listed for
+  // completeness as it limits build throughput).
+  //
+  // Cloud implementations might write the file to a key/value store with a TTL
+  // of one day.
+  //
+  // Files are transferred as a stream of chunks with size 4096 bytes.
+  rpc Store(stream Chunk) returns (StoreResponse) {}
+
+  // Build ensures the specified input_path are available in the current working
+  // directory, changes into working_directory, then runs a distri build with
+  // any additional build_flag specified.
+  //
+  // Build output artifacts paths are streamed in BuildProgress messages.
+  rpc Build(BuildRequest) returns (stream BuildProgress) {}
+
+  // Retrieve streams the file located at path in chunks of size 4096 bytes.
+  rpc Retrieve(RetrieveRequest) returns (stream Chunk) {}
+}
