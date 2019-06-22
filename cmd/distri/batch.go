@@ -145,6 +145,7 @@ func batch(args []string) error {
 			fullname: fullname,
 		}
 		byPkg[n.pkg] = n
+		byPkg[n.pkg+"-"+arch] = n
 		byFullname[n.fullname] = n
 		g.AddNode(n)
 	}
@@ -170,8 +171,9 @@ func batch(args []string) error {
 
 		for _, dep := range deps {
 			if dep == n.pkg+"-"+arch+"-"+version ||
+				dep == n.pkg+"-"+arch ||
 				dep == n.pkg {
-				continue // TODO
+				continue // skip adding self edges
 			}
 			if d, ok := byFullname[dep]; ok {
 				g.SetEdge(g.NewEdge(n, d))
