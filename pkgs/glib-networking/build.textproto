@@ -6,7 +6,7 @@ cbuilder: <
   extra_configure_flag: "--with-ca-certificates=/ro/${DISTRI_RESOLVE:ca-certificates}/etc/ssl/certs"
 >
 
-cherry_pick: "0001-fix-path.patch"
+cherry_pick: "fix-path.patch"
 
 # build dependencies:
 dep: "gnutls"
