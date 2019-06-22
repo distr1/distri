@@ -288,6 +288,7 @@ int main(int argc, char *argv[]) {
   }
 {{ end }}
 
+  argv[0] = filename;
   execv(filename, argv);
   return 1;
 }
