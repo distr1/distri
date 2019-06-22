@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	// TODO: consider "github.com/klauspost/pgzip"
 	gzip "compress/gzip"
 
 	"github.com/distr1/distri"
