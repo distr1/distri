@@ -1,0 +1,11 @@
+--- a/configure	2019-03-10 10:56:43.000000000 +0100
++++ b/configure	2019-06-22 20:03:46.570980852 +0200
+@@ -41,7 +41,7 @@
+ OSNAME=
+ UTF8_LOCALE=
+ 
+-CC=`printf "all:\\n\\t@echo \\\$(CC)\\n" | env -i make -sf -`
++CC=`printf "all:\\n\\t@echo \\\$(CC)\\n" | env -i PATH=$PATH make -sf -`
+ CFLAGS=
+ LDADD=
+ LDFLAGS=
