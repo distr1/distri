@@ -1135,10 +1135,10 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	}
 
 	if b.Hermetic {
-		log.Printf("build environment variables:")
-		for _, kv := range env {
-			log.Printf("  %s", kv)
-		}
+		// log.Printf("build environment variables:")
+		// for _, kv := range env {
+		// 	log.Printf("  %s", kv)
+		// }
 	}
 	// custom build steps
 	times := make([]time.Duration, len(steps))

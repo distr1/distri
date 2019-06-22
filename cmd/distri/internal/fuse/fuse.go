@@ -62,6 +62,8 @@ var ExchangeDirs = []string{
 	"/debug",
 }
 
+// TODO: pprof label for each of the exchange dirs so that we can profile them
+
 const (
 	rootInode = 1
 	ctlInode  = 2
@@ -135,6 +137,8 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	}
 	mountpoint := fset.Arg(0)
 	//log.Printf("mounting FUSE file system at %q", mountpoint)
+
+	// TODO: do what fusermount -u does, i.e. umount2("/ro-dbg", UMOUNT_NOFOLLOW)
 
 	if *overlays != "" {
 		var filtered []string

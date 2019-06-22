@@ -706,6 +706,7 @@ name=root`)
 }
 
 func adduser(root, line string) error {
+	// TODO: pam requires an entry in /etc/shadow, too, even if the password is disabled
 	f, err := os.OpenFile(filepath.Join(root, "etc", "passwd"), os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		return err
