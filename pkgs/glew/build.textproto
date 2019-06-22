@@ -1,0 +1,38 @@
+source: "https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0.tgz"
+hash: "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95"
+version: "2.1.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "cmake"
+dep: "mesa"
+dep: "glu"
+dep: "libglvnd"
+
+# Debian/Ubuntu/Mint:    `$ sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libosmesa-dev`
+
+build_step: <
+  argv: "/bin/cmake"
+  argv: "${DISTRI_SOURCEDIR}/build/cmake"
+  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
+  argv: "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+  argv: "-DOPENGL_opengl_LIBRARY=/ro/${DISTRI_RESOLVE:libglvnd}/out/lib/libOpenGL.so"
+  argv: "-DOPENGL_glx_LIBRARY=/ro/${DISTRI_RESOLVE:libglvnd}/out/lib/libGLX.so"
+  # TODO: fix utils build (needs -lX11)
+  argv: "-DBUILD_UTILS:BOOL=OFF"
+>
+
+# TODO: switch to cmake --build instead?
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+>
