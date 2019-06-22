@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 	"text/template"
@@ -583,7 +584,12 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		candidates = append(candidates, strings.TrimSuffix(filepath.Base(m), ".meta.textproto"))
 	}
 	if len(candidates) > 1 {
-		return "", xerrors.Errorf("specify the package version to disambiguate between %q", candidates)
+		// default to the most recent package revision. If building against an
+		// older version is desired, that version must be specified explicitly.
+		sort.Slice(candidates, func(i, j int) bool {
+			return distri.PackageRevisionLess(candidates[i], candidates[j])
+		})
+		return candidates[len(candidates)-1], nil
 	}
 	if len(candidates) == 0 {
 		return "", xerrors.Errorf("package %q not found (pattern %s)", pkg, pattern)
