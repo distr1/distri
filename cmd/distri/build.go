@@ -1323,16 +1323,19 @@ func (b *buildctx) build() (*pb.Meta, error) {
 					}
 					return ""
 				}
-				gcc := exec.Command("gcc",
-					append([]string{
-						"-O3",   // optimize as much as possible
-						"-s",    // strip
-						"-Wall", // enable all warnings
-						"-static",
-						"-o", newname,
-						f.Name(),
-					},
-						strings.Split(strings.TrimSpace(getenv("LDFLAGS")), " ")...)...)
+				args := []string{
+					"-O3",   // optimize as much as possible
+					"-s",    // strip
+					"-Wall", // enable all warnings
+					"-static",
+					"-o", newname,
+					f.Name(),
+				}
+				if ldflags := strings.TrimSpace(getenv("LDFLAGS")); ldflags != "" {
+					args = append(args, strings.Split(ldflags, " ")...)
+				}
+				gcc := exec.Command("gcc", args...)
+				log.Printf("compiling wrapper program: %v", gcc.Args)
 				gcc.Env = env
 				gcc.Stderr = os.Stderr
 				if err := gcc.Run(); err != nil {
