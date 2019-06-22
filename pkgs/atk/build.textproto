@@ -1,0 +1,29 @@
+source: "https://ftp.gnome.org/pub/gnome/sources/atk/2.30/atk-2.30.0.tar.xz"
+hash: "dd4d90d4217f2a0c1fee708a555596c2c19d26fef0952e1ead1938ab632c027b"
+version: "2.30.0"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "meson"
+dep: "gobject-introspection"
+dep: "gettext"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR}"
+>
+
+# kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
+>
