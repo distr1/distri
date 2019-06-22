@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/distr1/distri/pb"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 const buildTextproto = `
