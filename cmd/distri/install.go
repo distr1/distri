@@ -340,6 +340,8 @@ func install(args []string) error {
 		return xerrors.Errorf("syntax: install [options] <package> [<package>...]")
 	}
 
+	atomic.StoreInt64(&totalBytes, 0)
+
 	repos, err := env.Repos()
 	if err != nil {
 		return err
@@ -365,6 +367,12 @@ func install(args []string) error {
 	}
 
 	start := time.Now()
+	defer func() {
+		dur := time.Since(start)
+
+		total := atomic.LoadInt64(&totalBytes)
+		log.Printf("done, %.2f MB/s (%v bytes in %v)", float64(total)/1024/1024/(float64(dur)/float64(time.Second)), total, dur)
+	}()
 
 	var eg errgroup.Group
 	for _, pkg := range fset.Args() {
