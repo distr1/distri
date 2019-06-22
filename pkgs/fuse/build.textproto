@@ -1,6 +1,6 @@
 source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.2.6/fuse-3.2.6.tar.xz"
 hash: "cea4dad559b3fbdbb8e4ad5f9df6083fdb7f2b904104bd507ef790d311d271cf"
-version: "3.2.6"
+version: "3.2.6-1"
 
 cbuilder: <>
 

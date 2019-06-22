@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/pixman-0.34.0.tar.bz2"
 hash: "39ba3438f3d17c464b0cb8be006dacbca0ab5aee97ebde69fec7ecdbf85794a0"
-version: "0.34.0"
+version: "0.34.0-1"
 
 cbuilder: <>
 

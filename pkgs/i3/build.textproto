@@ -1,6 +1,6 @@
 source: "https://i3wm.org/downloads/i3-4.15.tar.bz2"
 hash: "217d524d1fbc85ae346b25f6848d1b7bcd2c23184ec88d29114bf5a621385326"
-version: "4.15"
+version: "4.15-1"
 
 cbuilder: <>
 

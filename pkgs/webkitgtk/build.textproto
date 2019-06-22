@@ -1,6 +1,6 @@
 source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
 hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
-version: "2.22.7"
+version: "2.22.7-1"
 
 cbuilder: <>
 

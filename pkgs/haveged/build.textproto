@@ -1,6 +1,6 @@
 source: "https://github.com/jirka-h/haveged/archive/1.9.4.tar.gz"
 hash: "c4959d3cb1fa6391d16a3aa1ba4d82cd3a0d497206ae4b87d638088c0664e5aa"
-version: "1.9.4"
+version: "1.9.4-1"
 
 cbuilder: <
   extra_configure_flag: "--enable-init=service.forking"

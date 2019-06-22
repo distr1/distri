@@ -1,6 +1,6 @@
 source: "http://ftp.gnome.org/pub/gnome/sources/glib-networking/2.54/glib-networking-2.54.1.tar.xz"
 hash: "eaa787b653015a0de31c928e9a17eb57b4ce23c8cf6f277afaec0d685335012f"
-version: "2.54.1"
+version: "2.54.1-1"
 
 cbuilder: <
   extra_configure_flag: "--with-ca-certificates=/ro/ca-certificates-amd64-3.39/etc/ssl/certs"

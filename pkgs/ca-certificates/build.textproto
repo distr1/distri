@@ -1,6 +1,6 @@
 source: "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_39_RTM/src/nss-3.39.tar.gz"
 hash: "6be64dd76f212415cc8bc34343ac1e7389048db4db9a023a84873c411dc5864b"
-version: "3.39"
+version: "3.39-1"
 
 cherry_pick: "certdata2pem.py.patch"
 

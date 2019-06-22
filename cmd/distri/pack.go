@@ -200,7 +200,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemd-firstboot", "--hostname=distri0",
+		"chroot", *root, "/ro/systemd-amd64-239-7/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password=bleh",
 		"--copy-timezone",
 		"--copy-locale",
@@ -216,9 +216,9 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemd-sysusers",
-		"/ro/systemd-amd64-239-2/out/lib/sysusers.d/basic.conf",
-		"/ro/systemd-amd64-239-2/out/lib/sysusers.d/systemd.conf")
+		"chroot", *root, "/ro/systemd-amd64-239-7/bin/systemd-sysusers",
+		"/ro/systemd-amd64-239-7/out/lib/sysusers.d/basic.conf",
+		"/ro/systemd-amd64-239-7/out/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -231,7 +231,7 @@ func pack(args []string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", *root, "/ro/systemd-amd64-239-2/bin/systemctl",
+		"chroot", *root, "/ro/systemd-amd64-239-7/bin/systemctl",
 		"enable",
 		"systemd-networkd",
 		"containerd",
@@ -636,7 +636,7 @@ name=root`)
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-2/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9.img 5.1.9")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-7/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9.img 5.1.9")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {

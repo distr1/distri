@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/grub/grub-2.02.tar.xz"
 hash: "810b3798d316394f94096ec2797909dbf23c858e48f7b3830826b8daa06b7b0f"
-version: "2.02"
+version: "2.02-1"
 
 cherry_pick: "werror.patch"
 # http://lists.openembedded.org/pipermail/openembedded-core/2018-July/153054.html

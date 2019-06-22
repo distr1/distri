@@ -201,7 +201,7 @@ func TestBuild(t *testing.T) {
 			"glib-amd64-2.58.0",       // from pkg-config (transitive)
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32-2", // from glib-2.58.0
+			"util-linux-amd64-2.32-4", // from glib-2.58.0
 			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}
@@ -286,7 +286,7 @@ func TestUnversionedBuild(t *testing.T) {
 			"glib-amd64-2.58.0",       // from pkg-config (transitive)
 			"glibc-amd64-2.27",        // from glib-2.58.0
 			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32-2", // from glib-2.58.0
+			"util-linux-amd64-2.32-4", // from glib-2.58.0
 			"pam-amd64-1.3.1-7",       // from util-linux-2.32
 			"libffi-amd64-3.2.1",      // from glib-2.58.0
 		}

@@ -1,5 +1,5 @@
 source: "https://ftp.gnu.org/pub/gnu/findutils/findutils-4.6.0.tar.gz"
 hash: "ded4c9f73731cd48fec3b6bdaccce896473b6d8e337e9612e16cf1431bb1169d"
-version: "4.6.0"
+version: "4.6.0-1"
 
 cbuilder: <>

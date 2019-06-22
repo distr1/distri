@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/coreutils/coreutils-8.30.tar.xz"
 hash: "e831b3a86091496cdba720411f9748de81507798f6130adeaef872d206e1b057"
-version: "8.30"
+version: "8.30-1"
 
 cbuilder: <
   extra_configure_flag: "--without-selinux" # results in link errors when building with host deps

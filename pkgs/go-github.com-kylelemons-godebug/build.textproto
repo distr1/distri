@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/kylelemons/godebug@v0.0.0-20170820004349-d65d576e9348"
 hash: "9fb37f431692c3505bca03e1118163bdad8b7a807c14da630474bce16d616a90"
-version: "v0.0.0-20170820004349-d65d576e9348"
+version: "v0.0.0-20170820004349-d65d576e9348-1"
 
 gomodbuilder: <>
 

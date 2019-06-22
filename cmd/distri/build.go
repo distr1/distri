@@ -463,7 +463,8 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
-		if dep != "glibc-amd64-2.27" && dep != "glibc-i686-amd64-2.27" {
+		if dep != "glibc-amd64-2.27-1" && dep != "glibc-i686-amd64-2.27-1" &&
+			dep != "glibc-amd64-2.27" && dep != "glibc-i686-amd64-2.27" {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
@@ -494,7 +495,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" && b.Pkg != "glibc-i686" {
 		env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
-			"-Wl,--dynamic-linker=/ro/glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2 "+
+			"-Wl,--dynamic-linker=/ro/glibc-amd64-2.27-1/out/lib/ld-linux-x86-64.so.2 "+
 			strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
@@ -953,8 +954,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			//   /usr/share → /ro/share (for e.g. gobject-introspection)
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
-			// TODO: do we still need this for native builds?
-			if err := os.Symlink("/ro/glibc-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
+			// TODO: without this, gcc fails to produce binaries. /ro/gcc-amd64-8.2.0-1/out/bin/x86_64-pc-linux-gnu-gcc does not pick up our --dynamic-linker flag apparently
+			if err := os.Symlink("/ro/glibc-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err
 			}
 
@@ -964,13 +965,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				// meaning they will search for startup files (e.g. crt1.o) in
 				// $(sysroot)/lib.
 				// TODO: try compiling with --sysroot pointing to /ro/glibc-i686-amd64-2.27/out/lib directly?
-				if err := os.Symlink("/ro/glibc-i686-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "lib")); err != nil {
+				if err := os.Symlink("/ro/glibc-i686-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "lib")); err != nil {
 					return nil, err
 				}
 			}
 
 			if !b.FUSE {
-				if err := os.Symlink("/ro/glibc-amd64-2.27/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+				if err := os.Symlink("/ro/glibc-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
 					return nil, err
 				}
 			} else {

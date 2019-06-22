@@ -1,6 +1,6 @@
 source: "http://rpm5.org/files/popt/popt-1.16.tar.gz"
 hash: "e728ed296fe9f069a0e005003c3d6b2dde3d9cad453422a10d6558616d304cc8"
-version: "1.16"
+version: "1.16-1"
 
 cbuilder: <>
 

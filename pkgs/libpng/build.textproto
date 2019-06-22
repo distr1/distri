@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.35/libpng-1.6.35.tar.xz"
 hash: "23912ec8c9584917ed9b09c5023465d71709dce089be503c7867fec68a93bcd7"
-version: "1.6.35"
+version: "1.6.35-1"
 
 cbuilder: <>
 

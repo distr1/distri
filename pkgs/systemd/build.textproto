@@ -1,6 +1,6 @@
 source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
 hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
-version: "239-2"
+version: "239-7"
 
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
@@ -26,7 +26,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239-2/out/lib/systemd\" ./configure --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239-7/out/lib/systemd\" ./configure --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false"
 #  argv: "LDFLAGS=-static"
 >
 
@@ -54,7 +54,7 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239-2/out/lib/systemd\" ninja -C build -v"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/systemd-amd64-239-7/out/lib/systemd\" ninja -C build -v"
 >
 
 # TODO: glibc bug: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sys/mount.h;h=ce2838e3a79caf1f49c9aceacb143ff5e403e50e;hb=HEAD#l85 should read 1UL, not 1:

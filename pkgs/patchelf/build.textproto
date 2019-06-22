@@ -1,6 +1,6 @@
 source: "http://t.zekjur.net/patchelf-0.10.tar.bz2"
 hash: "c8ad2f7f950153f46589a09a1b8c6c78a8993f17373c934bead45ebddae4acc5"
-version: "0.10+git20181016" # before 0.10
+version: "0.10+git20181016-1" # before 0.10
 
 cbuilder: <>
 

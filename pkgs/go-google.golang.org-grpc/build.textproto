@@ -1,6 +1,6 @@
 source: "distri+gomod://google.golang.org/grpc@v1.16.0"
 hash: "f396ff89d5ae95dd143de642508314fccce23815128b0cd3208f64d45b8beb43"
-version: "v1.16.0"
+version: "v1.16.0-1"
 
 gomodbuilder: <>
 

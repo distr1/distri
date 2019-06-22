@@ -1,6 +1,6 @@
 source: "https://sourceware.org/elfutils/ftp/0.173/elfutils-0.173.tar.bz2"
 hash: "b76d8c133f68dad46250f5c223482c8299d454a69430d9aa5c19123345a000ff"
-version: "0.173"
+version: "0.173-1"
 
 # TODO: drop this patch after eliminating warnings
 cherry_pick: "http://t.zekjur.net/elfutils.patch"
