@@ -30,6 +30,7 @@ func init() {
 		if sig, ok := signal.(*syscall.Signal); ok {
 			os.Exit(128 + int(*sig))
 		}
+		os.Exit(1) // generic EXIT_FAILURE
 	}()
 }
 
