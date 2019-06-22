@@ -92,6 +92,7 @@ func main() {
 		"update":  {updateHelp, update},
 		"gc":      {gcHelp, gc},
 		"patch":   {patchHelp, patch},
+		"bump":    {bumpHelp, bump},
 	}
 
 	args := flag.Args()
