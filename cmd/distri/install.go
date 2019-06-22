@@ -168,7 +168,7 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
-func install1(root string, repo distri.Repo, pkg string, first bool) error {
+func install1(ctx context.Context, root string, repo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -188,7 +188,7 @@ func install1(root string, repo distri.Repo, pkg string, first bool) error {
 		if err != nil {
 			return err
 		}
-		in, err := repoReader(repo, "pkg/"+fn)
+		in, err := repoReader(ctx, repo, "pkg/"+fn)
 		if err != nil {
 			return err
 		}
@@ -255,7 +255,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
 	for _, repo := range repos {
-		rd, err := repoReader(repo, "pkg/"+pkg+".meta.textproto")
+		rd, err := repoReader(context.Background(), repo, "pkg/"+pkg+".meta.textproto")
 		if err != nil {
 			if isNotExist(err) {
 				continue
@@ -302,8 +302,13 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	for _, pkg := range pkgs {
 		pkg := pkg //copy
 		eg.Go(func() error {
-			if err := install1(root, repo, pkg, first); err != nil {
-				return xerrors.Errorf("installing %s: %v", pkg, err)
+			var err error
+			labels := pprof.Labels("package", pkg)
+			pprof.Do(context.Background(), labels, func(ctx context.Context) {
+				err = install1(ctx, root, repo, pkg, first)
+			})
+			if err != nil {
+				return fmt.Errorf("installing %s: %v", pkg, err)
 			}
 			return nil
 		})
