@@ -1,0 +1,27 @@
+source: "https://archive.mozilla.org/pub/nspr/releases/v4.20/src/nspr-4.20.tar.gz"
+hash: "2c8964913da89ffbaf464d49ce44d79e8804e1794ef9a8c52a7bff7224d1556e"
+version: "4.20"
+
+cbuilder: <>
+
+# build dependencies:
+
+# TODO: nspr contains a subdirectory. maybe make the unpacker take care of this?
+build_step: <
+  argv: "${DISTRI_SOURCEDIR}/nspr/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--enable-64bit"
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j1" # TODO: build fails with -j8
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+>
