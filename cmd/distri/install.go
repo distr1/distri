@@ -128,8 +128,21 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 				return err
 			}
 			if err := os.Symlink(target, destName); err != nil {
-				// TODO: if exists, re-create if target differs
-				return err
+				if os.IsExist(err) {
+					got, err := os.Readlink(destName)
+					if err != nil {
+						return err
+					}
+					if target != got {
+						if err := os.Remove(destName); err != nil {
+							log.Printf("remove(%s): %v", destName, err)
+						}
+						return os.Symlink(target, destName)
+					}
+					// fallthrough: target identical
+				} else {
+					return err
+				}
 			}
 		} else if fi.Mode().IsRegular() {
 			fr, err := rd.FileReader(fileInode)
