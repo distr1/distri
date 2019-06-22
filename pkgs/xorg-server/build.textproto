@@ -33,13 +33,13 @@ runtime_dep: "xkbcomp"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/xorg-server-amd64-1.20.1/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dlocalstatedir=/var -Dxdmcp=false -Dsecure-rpc=false"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dlocalstatedir=/var -Dxdmcp=false -Dsecure-rpc=false"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/xorg-server-amd64-1.20.1/out/lib/systemd\" ninja -v"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" ninja -v"
 >
 
 build_step: <

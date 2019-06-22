@@ -5,7 +5,7 @@ version: "0.9.27-1"
 cbuilder: <
   extra_configure_flag: "--enable-static"
   extra_configure_flag: "--extra-ldflags=-static"
-  extra_configure_flag: "--crtprefix=/ro/glibc-amd64-2.27/out/lib"
+  extra_configure_flag: "--crtprefix=/ro/${DISTRI_RESOLVE:glibc}/out/lib"
 >
 
 # build dependencies:

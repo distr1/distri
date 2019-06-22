@@ -53,6 +53,10 @@ type buildctx struct {
 	Debug     bool
 	FUSE      bool
 	ChrootDir string // only set if Hermetic is enabled
+
+	// substituteCache maps from a variable name like ${DISTRI_RESOLVE:expat} to
+	// the resolved package name like expat-amd64-2.2.6-1.
+	substituteCache map[string]string
 }
 
 func buildpkg(hermetic, debug, fuse bool, cross string) error {
@@ -426,12 +430,26 @@ func (b *buildctx) pkg() error {
 	return nil
 }
 
+func (b *buildctx) fillSubstituteCache(deps []string) {
+	cache := make(map[string]string)
+	for _, dep := range deps {
+		v := distri.ParseVersion(dep)
+		cache[v.Pkg] = dep
+		cache[v.Pkg+"-"+b.Arch] = dep
+	}
+	b.substituteCache = cache
+}
+
 func (b *buildctx) substitute(s string) string {
 	// TODO: different format? this might be mistaken for environment variables
-	s = strings.Replace(s, "${DISTRI_DESTDIR}", b.DestDir, -1)
-	s = strings.Replace(s, "${DISTRI_PREFIX}", filepath.Join(b.Prefix, "out"), -1)
-	s = strings.Replace(s, "${DISTRI_BUILDDIR}", b.BuildDir, -1)
-	s = strings.Replace(s, "${DISTRI_SOURCEDIR}", b.SourceDir, -1)
+	s = strings.ReplaceAll(s, "${DISTRI_DESTDIR}", b.DestDir)
+	s = strings.ReplaceAll(s, "${DISTRI_PREFIX}", filepath.Join(b.Prefix, "out"))
+	s = strings.ReplaceAll(s, "${DISTRI_BUILDDIR}", b.BuildDir)
+	s = strings.ReplaceAll(s, "${DISTRI_SOURCEDIR}", b.SourceDir)
+	s = strings.ReplaceAll(s, "${DISTRI_FULLNAME}", b.fullName())
+	for k, v := range b.substituteCache {
+		s = strings.ReplaceAll(s, "${DISTRI_RESOLVE:"+k+"}", v)
+	}
 	return s
 }
 
@@ -852,6 +870,23 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	deps, err := b.builddeps(b.Proto)
 	if err != nil {
 		return nil, err
+	}
+
+	{
+		// We can only resolve run-time dependecies specified on the
+		// build.textproto-level (not automatically discovered ones or those
+		// specified on the package level).
+		runtimeDeps, err := b.glob(env.DefaultRepo, b.Proto.GetRuntimeDep())
+		if err != nil {
+			return nil, err
+		}
+
+		resolved, err := resolve(env.DefaultRepo, runtimeDeps)
+		if err != nil {
+			return nil, err
+		}
+
+		b.fillSubstituteCache(append(deps, resolved...))
 	}
 
 	// TODO: link /bin to /ro/bin, then set PATH=/ro/bin

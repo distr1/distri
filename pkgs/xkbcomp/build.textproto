@@ -3,7 +3,7 @@ hash: "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"
 version: "1.4.2-1"
 
 cbuilder: <
-  extra_configure_flag: "--with-xkb-config-root=/ro/xkeyboard-config-amd64-2.25/out/share/X11/xkb"
+  extra_configure_flag: "--with-xkb-config-root=/ro/${DISTRI_RESOLVE:xkeyboard-config}/out/share/X11/xkb"
 >
 
 # build dependencies:

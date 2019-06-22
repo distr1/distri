@@ -58,20 +58,20 @@ build_step: <
   argv: "${DISTRI_SOURCEDIR}"
   argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
   argv: "-DPORT=GTK"
-  argv: "-DJPEG_LIBRARY=/ro/libjpeg-turbo-amd64-2.0.0/out/lib64/libjpeg.so"
-  argv: "-DZLIB_LIBRARY=/ro/zlib-amd64-1.2.11/out/lib/libz.so"
-  argv: "-DPNG_LIBRARY=/ro/libpng-amd64-1.6.35/out/lib/libpng.so"
+  argv: "-DJPEG_LIBRARY=/ro/${DISTRI_RESOLVE:libjpeg-turbo}/out/lib64/libjpeg.so"
+  argv: "-DZLIB_LIBRARY=/ro/${DISTRI_RESOLVE:zlib}/out/lib/libz.so"
+  argv: "-DPNG_LIBRARY=/ro/${DISTRI_RESOLVE:libpng}/out/lib/libpng.so"
   argv: "-DENABLE_GEOLOCATION:BOOL=OFF"
   argv: "-DENABLE_SPELLCHECK:BOOL=OFF"
   argv: "-DENABLE_INTROSPECTION:BOOL=OFF" # see backtrace above
   argv: "-DUSE_LIBHYPHEN:BOOL=OFF"
   argv: "-DUSE_WOFF2:BOOL=OFF"
   argv: "-DUSE_GSTREAMER_GL:BOOL=OFF"
-  argv: "-DX11_X11_LIB=/ro/libx11-amd64-1.6.6/out/lib/libX11.so"
-  argv: "-DX11_Xcomposite_LIB=/ro/libxcomposite-amd64-0.4.4/out/lib/libXcomposite.so"
-  argv: "-DX11_Xdamage_LIB=/ro/libxdamage-amd64-1.1.4/out/lib/libXdamage.so"
-  argv: "-DX11_Xrender_LIB=/ro/libxrender-amd64-0.9.10/out/lib/libXrender.so"
-  argv: "-DX11_Xt_LIB=/ro/libxt-amd64-1.1.5/out/lib/libXt.so"
+  argv: "-DX11_X11_LIB=/ro/${DISTRI_RESOLVE:libx11}/out/lib/libX11.so"
+  argv: "-DX11_Xcomposite_LIB=/ro/${DISTRI_RESOLVE:libxcomposite}/out/lib/libXcomposite.so"
+  argv: "-DX11_Xdamage_LIB=/ro/${DISTRI_RESOLVE:libxdamage}/out/lib/libXdamage.so"
+  argv: "-DX11_Xrender_LIB=/ro/${DISTRI_RESOLVE:libxrender}/out/lib/libXrender.so"
+  argv: "-DX11_Xt_LIB=/ro/${DISTRI_RESOLVE:libxt}/out/lib/libXt.so"
 >
 
 build_step: <

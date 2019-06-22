@@ -9,7 +9,7 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 	}{
 		{
 			filename: "less-amd64-530",
-			want:     PackageVersion{Upstream: "530", DistriRevision: 0},
+			want:     PackageVersion{Pkg: "less", Upstream: "530", DistriRevision: 0},
 		},
 
 		{
@@ -29,27 +29,27 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 
 		{
 			filename: "gcc-i686-amd64-8.2.0-3.squashfs",
-			want:     PackageVersion{Upstream: "8.2.0", DistriRevision: 3},
+			want:     PackageVersion{Pkg: "gcc-i686", Upstream: "8.2.0", DistriRevision: 3},
 		},
 
 		{
 			filename: "gcc-i686-amd64-8.2.0.squashfs",
-			want:     PackageVersion{Upstream: "8.2.0", DistriRevision: 0},
+			want:     PackageVersion{Pkg: "gcc-i686", Upstream: "8.2.0", DistriRevision: 0},
 		},
 
 		{
 			filename: "less-amd64-530-2",
-			want:     PackageVersion{Upstream: "530", DistriRevision: 2},
+			want:     PackageVersion{Pkg: "less", Upstream: "530", DistriRevision: 2},
 		},
 
 		{
 			filename: "less-amd64-530-17.squashfs.gz",
-			want:     PackageVersion{Upstream: "530", DistriRevision: 17},
+			want:     PackageVersion{Pkg: "less", Upstream: "530", DistriRevision: 17},
 		},
 
 		{
 			filename: "../less-amd64-530-17/bin/less", // exchange dir link target
-			want:     PackageVersion{Upstream: "530", DistriRevision: 17},
+			want:     PackageVersion{Pkg: "less", Upstream: "530", DistriRevision: 17},
 		},
 
 		{

@@ -5,16 +5,16 @@ version: "5.1.0-1"
 cherry_pick: "cmake.patch"
 
 cmakebuilder: <
-  extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/mesa-amd64-18.2.0/out/lib"
-  extra_cmake_flag: "-DOPENGL_glu_LIBRARY=/ro/glu-amd64-9.0.0/out/lib"
-  extra_cmake_flag: "-DGLEW_LIBRARY=/ro/glew-amd64-2.1.0/out/lib64"
-  extra_cmake_flag: "-DCURL_LIBRARY=/ro/curl-amd64-7.61.1/out/lib"
+  extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/${DISTRI_RESOLVE:mesa}/out/lib"
+  extra_cmake_flag: "-DOPENGL_glu_LIBRARY=/ro/${DISTRI_RESOLVE:glu}/out/lib"
+  extra_cmake_flag: "-DGLEW_LIBRARY=/ro/${DISTRI_RESOLVE:glew}/out/lib64"
+  extra_cmake_flag: "-DCURL_LIBRARY=/ro/${DISTRI_RESOLVE:curl}/out/lib"
   extra_cmake_flag: "-DKICAD_SPICE:BOOL=false"
   extra_cmake_flag: "-DKICAD_USE_OCE:BOOL=false"
-  extra_cmake_flag: "-DPYTHON_LIBRARY=/ro/python2.7-amd64-2.7.15/out/lib"
+  extra_cmake_flag: "-DPYTHON_LIBRARY=/ro/${DISTRI_RESOLVE:python2.7}/out/lib"
   extra_cmake_flag: "-DKICAD_SCRIPTING_WXPYTHON_PHOENIX:BOOL=true"
-  extra_cmake_flag: "-DBOOST_ROOT=/ro/boost-amd64-1.69.0/out"
-  extra_cmake_flag: "-DBOOST_LIBRARYDIR=/ro/boost-amd64-1.69.0/out/lib"
+  extra_cmake_flag: "-DBOOST_ROOT=/ro/${DISTRI_RESOLVE:boost}/out"
+  extra_cmake_flag: "-DBOOST_LIBRARYDIR=/ro/${DISTRI_RESOLVE:boost}/out/lib"
 >
 
 # build dependencies:

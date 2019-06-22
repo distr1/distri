@@ -36,19 +36,19 @@ runtime_dep: "shared-mime-info"
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp -r /ro/fontconfig-amd64-2.13.1/etc/fonts /etc/"
+  argv: "cp -r /ro/${DISTRI_RESOLVE:fontconfig}/etc/fonts /etc/"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "sed -i 's,/usr/share/fonts,/ro/dejavu-fonts-ttf-amd64-2.37/out/share/fonts/,g' /etc/fonts/fonts.conf"
+  argv: "sed -i 's,/usr/share/fonts,/ro/${DISTRI_RESOLVE:dejavu-fonts-ttf}/out/share/fonts/,g' /etc/fonts/fonts.conf"
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${DISTRI_SOURCEDIR} -Dgpg=false -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/gnu-efi-amd64-3.0.9/out/lib -Dsystemdunitdir=${DISTRI_PREFIX}/lib/systemd/system"
+  argv: "meson --prefix=${DISTRI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${DISTRI_SOURCEDIR} -Dgpg=false -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/${DISTRI_RESOLVE:gnu-efi}/out/lib -Dsystemdunitdir=${DISTRI_PREFIX}/lib/systemd/system"
 >
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.

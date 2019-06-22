@@ -49,5 +49,5 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "ln -s /ro/gdk-pixbuf-amd64-2.38.0/ro/gdk-pixbuf-amd64-2.38.0/out/* /ro/gdk-pixbuf-amd64-2.38.0/out/ && ${DISTRI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+  argv: "ln -s /ro/${DISTRI_FULLNAME}/ro/${DISTRI_FULLNAME}/out/* /ro/${DISTRI_FULLNAME}/out/ && ${DISTRI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
 >

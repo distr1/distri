@@ -8,6 +8,8 @@ import (
 // PackageVersion describes one released version of a package. It is assumed
 // that files never change in the archive, but may become unavailable.
 type PackageVersion struct {
+	Pkg string
+
 	// Upstream is the upstream version number. It is never parsed or compared,
 	// and is meant for human consumption only.
 	Upstream string
@@ -40,6 +42,7 @@ func buildFile(filename string) bool {
 // e.g. glibc-amd64-2.27-37, which parses into PackageVersion{Upstream: "2.27",
 // DistriRevision: 37}.
 func ParseVersion(filename string) PackageVersion {
+	var pkg string
 	parts := strings.Split(filename, "-")
 	// Discard everything up to the architecture identifier, including the first
 	// minus-separated part following it (the upstream version).
@@ -50,12 +53,16 @@ func ParseVersion(filename string) PackageVersion {
 			for Architectures[parts[i]] && i < len(parts) {
 				i++
 			}
+			pkg = strings.Join(parts[:i-1], "-")
+			if idx := strings.LastIndexByte(pkg, '/'); idx > -1 {
+				pkg = pkg[idx+1:]
+			}
 			parts = parts[i:]
 			break
 		}
 	}
 	if len(parts) == 0 {
-		return PackageVersion{}
+		return PackageVersion{Pkg: pkg}
 	}
 	upstream := strings.Join(parts, "-")
 	// TODO: make build log files contain the architecture and delete this conditional:
@@ -66,7 +73,7 @@ func ParseVersion(filename string) PackageVersion {
 		upstream = strings.TrimSuffix(upstream, "."+ext)
 	}
 	if len(parts) == 1 {
-		return PackageVersion{Upstream: upstream}
+		return PackageVersion{Pkg: pkg, Upstream: upstream}
 	}
 	rev := parts[len(parts)-1]
 	if idx := strings.IndexByte(rev, '.'); idx > -1 {
@@ -84,7 +91,11 @@ func ParseVersion(filename string) PackageVersion {
 		}
 
 	}
-	return PackageVersion{Upstream: upstream, DistriRevision: revision}
+	return PackageVersion{
+		Pkg:            pkg,
+		Upstream:       upstream,
+		DistriRevision: revision,
+	}
 }
 
 // PackageRevisionLess returns true if the distri package revision extracted
