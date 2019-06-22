@@ -36,10 +36,12 @@ const installHelp = `TODO
 // operation.
 var totalBytes int64
 
-type errNotFound struct{}
+type errNotFound struct {
+	url *url.URL
+}
 
-func (errNotFound) Error() string {
-	return "HTTP status 404"
+func (e errNotFound) Error() string {
+	return fmt.Sprintf("%v: HTTP status 404", e.url)
 }
 
 func isNotExist(err error) bool {
