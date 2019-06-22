@@ -118,7 +118,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "syntax: distri <command> [options]\n")
 		os.Exit(2)
 	}
-	fmt.Fprintf(os.Stderr, "%s", v.helpText)
 	if err := v.fn(args); err != nil {
 		if *debug {
 			fmt.Fprintf(os.Stderr, "%s: %+v\n", verb, err)
