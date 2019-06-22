@@ -732,6 +732,7 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 		case *pb.Build_Cmakebuilder:
 			deps = append(deps, []string{
 				"cmake-" + native,
+				"ninja-" + native,
 			}...)
 			deps = append(deps, cdeps...)
 
