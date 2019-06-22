@@ -379,32 +379,34 @@ func install(args []string) error {
 		pkg := pkg // copy
 		eg.Go(func() error { return installTransitively1(*root, repos, pkg) })
 	}
+	ctx := context.Background()
+	var cl pb.FUSEClient
+	eg.Go(func() error {
+		// Make the FUSE daemon update its packages.
+		ctl, err := os.Readlink(filepath.Join(*root, "ro", "ctl"))
+		if err != nil {
+			log.Printf("not updating FUSE daemon: %v", err)
+			return nil // no FUSE daemon running?
+		}
+
+		log.Printf("connecting to %s", ctl)
+
+		conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
+		if err != nil {
+			return err
+		}
+		cl = pb.NewFUSEClient(conn)
+		return nil
+	})
 	if err := eg.Wait(); err != nil {
 		return err
 	}
 
-	// Make the FUSE daemon update its packages.
-	ctl, err := os.Readlink(filepath.Join(*root, "ro", "ctl"))
-	if err != nil {
-		log.Printf("not updating FUSE daemon: %v", err)
-		return nil // no FUSE daemon running?
+	if cl != nil {
+		if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
+			return err
+		}
 	}
-
-	log.Printf("connecting to %s", ctl)
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	cl := pb.NewFUSEClient(conn)
-	if _, err := cl.ScanPackages(ctx, &pb.ScanPackagesRequest{}); err != nil {
-		return err
-	}
-
-	dur := time.Since(start)
-
-	total := atomic.LoadInt64(&totalBytes)
-	log.Printf("done, %.2f MB/s (%v bytes in %v)", float64(total)/1024/1024/(float64(dur)/float64(time.Second)), total, dur)
 
 	return nil
 }
