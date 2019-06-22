@@ -1,0 +1,46 @@
+--- old/CMakeModules/FindwxWidgets.cmake	2019-06-22 23:06:59.305620835 +0200
++++ new/CMakeModules/FindwxWidgets.cmake	2019-06-22 23:08:11.164647400 +0200
+@@ -653,7 +653,7 @@
+     #
+     macro(WX_CONFIG_SELECT_GET_DEFAULT)
+       execute_process(
+-        COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}"
++        COMMAND "${wxWidgets_CONFIG_EXECUTABLE}"
+           ${wxWidgets_CONFIG_OPTIONS} --selected-config
+         OUTPUT_VARIABLE _wx_selected_config
+         RESULT_VARIABLE _wx_result
+@@ -682,14 +682,14 @@
+     #
+     macro(WX_CONFIG_SELECT_QUERY_BOOL _OPT_NAME _OPT_HELP)
+       execute_process(
+-        COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}"
++        COMMAND "${wxWidgets_CONFIG_EXECUTABLE}"
+           ${wxWidgets_CONFIG_OPTIONS} --${_OPT_NAME}=yes
+         RESULT_VARIABLE _wx_result_yes
+         OUTPUT_QUIET
+         ERROR_QUIET
+         )
+       execute_process(
+-        COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}"
++        COMMAND "${wxWidgets_CONFIG_EXECUTABLE}"
+           ${wxWidgets_CONFIG_OPTIONS} --${_OPT_NAME}=no
+         RESULT_VARIABLE _wx_result_no
+         OUTPUT_QUIET
+@@ -757,7 +757,7 @@
+ 
+       # run the wx-config program to get cxxflags
+       execute_process(
+-        COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}"
++        COMMAND "${wxWidgets_CONFIG_EXECUTABLE}"
+           ${wxWidgets_SELECT_OPTIONS} --cxxflags
+         OUTPUT_VARIABLE wxWidgets_CXX_FLAGS
+         RESULT_VARIABLE RET
+@@ -808,7 +808,7 @@
+       string(REPLACE ";" ","
+         wxWidgets_FIND_COMPONENTS "${wxWidgets_FIND_COMPONENTS}")
+       execute_process(
+-        COMMAND sh "${wxWidgets_CONFIG_EXECUTABLE}"
++        COMMAND "${wxWidgets_CONFIG_EXECUTABLE}"
+           ${wxWidgets_SELECT_OPTIONS} --libs ${wxWidgets_FIND_COMPONENTS}
+         OUTPUT_VARIABLE wxWidgets_LIBRARIES
+         RESULT_VARIABLE RET

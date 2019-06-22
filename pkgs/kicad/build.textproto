@@ -3,6 +3,7 @@ hash: "7a9e018ee7372f144d9eb2b78bc1e7b5dfa92f6e293f4c1cff75781e8e9a0cbd"
 version: "5.1.0-1"
 
 cherry_pick: "cmake.patch"
+cherry_pick: "cmakewxwidgets.patch"
 
 cmakebuilder: <
   extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/${DISTRI_RESOLVE:mesa}/out/lib"
