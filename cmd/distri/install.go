@@ -45,6 +45,14 @@ func (e errNotFound) Error() string {
 	return fmt.Sprintf("%v: HTTP status 404", e.url)
 }
 
+type errPackageNotFound struct {
+	pkg string
+}
+
+func (e errPackageNotFound) Error() string {
+	return fmt.Sprintf("package %s not found on any configured repo", e.pkg)
+}
+
 func isNotExist(err error) bool {
 	if _, ok := err.(*errNotFound); ok {
 		return true
@@ -283,7 +291,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		}
 	}
 	if pm == nil {
-		return xerrors.Errorf("package %s not found on any configured repo", pkg)
+		return &errPackageNotFound{pkg: pkg}
 	}
 
 	if _, ok := distri.HasArchSuffix(pkg); ok {
@@ -334,6 +342,8 @@ func install(args []string) error {
 
 		repo = fset.String("repo", "", "repository from which to install packages from. path (default TODO) or HTTP URL (e.g. TODO)")
 
+		update = fset.Bool("update", false, "internal flag set by distri update, do not use")
+
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
 	fset.Parse(args)
@@ -378,7 +388,13 @@ func install(args []string) error {
 	var eg errgroup.Group
 	for _, pkg := range fset.Args() {
 		pkg := pkg // copy
-		eg.Go(func() error { return installTransitively1(*root, repos, pkg) })
+		eg.Go(func() error {
+			err := installTransitively1(*root, repos, pkg)
+			if _, ok := err.(*errPackageNotFound); ok && *update {
+				return nil // ignore package not found
+			}
+			return err
+		})
 	}
 	ctx := context.Background()
 	var cl pb.FUSEClient

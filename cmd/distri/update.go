@@ -91,7 +91,7 @@ func update(args []string) error {
 		return nil
 	}
 
-	if err := install(append([]string{"-root=" + *root, "-repo=" + *repo}, pkgs...)); err != nil {
+	if err := install(append([]string{"-root=" + *root, "-repo=" + *repo, "-update"}, pkgs...)); err != nil {
 		// try to persist an after file listing (best effort)
 		persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg"))
 		return err
