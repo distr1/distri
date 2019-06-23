@@ -1,0 +1,8 @@
+--- old/config/Xservers.ws.cpp	2018-11-22 02:01:20.000000000 +0100
++++ new/config/Xservers.ws.cpp	2019-06-23 12:21:50.225166727 +0200
+@@ -9,4 +9,4 @@
+ XCOMM look like:
+ XCOMM	XTerminalName:0 foreign
+ XCOMM
+-:0 local BINDIR/X :0 DEFAULTVT
++:0 local /ro/bin/Xorg :0 DEFAULTVT

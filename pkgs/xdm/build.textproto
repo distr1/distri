@@ -4,6 +4,7 @@ version: "16d74befa4430eb024d81ee4070520afff697d60-1"
 
 # https://git.archlinux.org/svntogit/packages.git/plain/trunk/libsystemd.patch?h=packages/xorg-xdm
 cherry_pick: "libsystemd.patch"
+cherry_pick: "xservers.patch"
 
 cbuilder: <
   copy_to_builddir: true
