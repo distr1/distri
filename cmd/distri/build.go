@@ -35,6 +35,10 @@ import (
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	bpb "github.com/distr1/distri/pb/builder"
 )
 
 const buildHelp = `TODO
@@ -58,9 +62,11 @@ type buildctx struct {
 	// substituteCache maps from a variable name like ${DISTRI_RESOLVE:expat} to
 	// the resolved package name like expat-amd64-2.2.6-1.
 	substituteCache map[string]string
+
+	artifactWriter io.Writer
 }
 
-func buildpkg(hermetic, debug, fuse bool, cross string) error {
+func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) error {
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
 		return err
@@ -80,14 +86,19 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 	}
 
 	b := &buildctx{
-		Proto:    &buildProto,
-		PkgDir:   pwd,
-		Pkg:      filepath.Base(pwd),
-		Arch:     cross,
-		Version:  buildProto.GetVersion(),
-		Hermetic: hermetic,
-		FUSE:     fuse,
-		Debug:    debug,
+		Proto:          &buildProto,
+		PkgDir:         pwd,
+		Pkg:            filepath.Base(pwd),
+		Arch:           cross,
+		Version:        buildProto.GetVersion(),
+		Hermetic:       hermetic,
+		FUSE:           fuse,
+		Debug:          debug,
+		artifactWriter: ioutil.Discard,
+	}
+
+	if artifactFd > -1 {
+		b.artifactWriter = os.NewFile(uintptr(artifactFd), "")
 	}
 
 	// Set fields from the perspective of an installed package so that variable
@@ -112,7 +123,7 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		return err
 	}
 
-	log.Printf("building %s-%s-%s", b.Pkg, b.Arch, b.Version)
+	log.Printf("building %s", b.fullName())
 
 	b.SourceDir = trimArchiveSuffix(filepath.Base(b.Proto.GetSource()))
 
@@ -155,7 +166,111 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 		return err
 	}
 
-	{
+	if remote != "" {
+		log.Printf("building on %s", remote)
+
+		ctx := context.Background()
+		conn, err := grpc.DialContext(ctx, remote, grpc.WithInsecure(), grpc.WithBlock())
+		if err != nil {
+			return err
+		}
+		cl := bpb.NewBuildClient(conn)
+
+		deps, err := b.builddeps(b.Proto)
+		if err != nil {
+			return xerrors.Errorf("builddeps: %v", err)
+		}
+
+		alldeps := make([]string, len(deps))
+		copy(alldeps, deps)
+		alldeps = append(alldeps, b.Proto.GetRuntimeDep()...)
+		globbed, err := b.glob(env.DefaultRepo, alldeps)
+		if err != nil {
+			return err
+		}
+		resolved, err := resolve(env.DefaultRepo, globbed)
+		if err != nil {
+			return err
+		}
+		expanded := make([]string, 0, 2*len(resolved))
+		for _, r := range resolved {
+			expanded = append(expanded, r+".meta.textproto")
+			expanded = append(expanded, r+".squashfs")
+		}
+
+		prefixed := make([]string, len(expanded))
+		for i, e := range expanded {
+			prefixed[i] = "build/distri/pkg/" + e
+		}
+
+		inputs := append([]string{
+			"pkgs/" + b.Pkg + "/build.textproto",
+		}, prefixed...)
+		for _, input := range inputs {
+			log.Printf("store(%s)", input)
+			if err := store(ctx, cl, input); err != nil {
+				return err
+			}
+		}
+
+		var artifacts []string
+		bcl, err := cl.Build(ctx, &bpb.BuildRequest{
+			WorkingDirectory: "pkgs/" + b.Pkg,
+			InputPath:        inputs,
+		})
+		if err != nil {
+			return err
+		}
+		for {
+			progress, err := bcl.Recv()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+			artifacts = append(artifacts, progress.GetOutputPath()...)
+			log.Printf("progress: %+v", progress)
+		}
+
+		for _, fn := range artifacts {
+			log.Printf("retrieve(%s)", fn)
+			downcl, err := cl.Retrieve(ctx, &bpb.RetrieveRequest{
+				Path: fn,
+			})
+			if err != nil {
+				return err
+			}
+			var f *renameio.PendingFile
+			for {
+				chunk, err := downcl.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					return err
+				}
+				if f == nil {
+					if chunk.GetPath() == "" {
+						return fmt.Errorf("protocol error: first chunk did not contain a path")
+					}
+					f, err = renameio.TempFile("", filepath.Join(env.DistriRoot, chunk.GetPath()))
+					if err != nil {
+						return err
+					}
+					defer f.Cleanup()
+				}
+				if _, err := f.Write(chunk.GetChunk()); err != nil {
+					return err
+				}
+			}
+			if err := f.CloseAtomicallyReplace(); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	} else {
 		meta, err := b.build()
 		if err != nil {
 			return xerrors.Errorf("build: %v", err)
@@ -223,7 +338,9 @@ func buildpkg(hermetic, debug, fuse bool, cross string) error {
 				Version:      proto.String(b.Version),
 				RuntimeUnion: unions,
 			})
-			if err := renameio.WriteFile(filepath.Join("../distri/pkg/"+fullName+".meta.textproto"), []byte(c), 0644); err != nil {
+			fn := filepath.Join("../distri/pkg/" + fullName + ".meta.textproto")
+			b.artifactWriter.Write([]byte("build/" + strings.TrimPrefix(fn, "../") + "\n"))
+			if err := renameio.WriteFile(fn, []byte(c), 0644); err != nil {
 				return err
 			}
 			if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
@@ -425,6 +542,7 @@ func (b *buildctx) pkg() error {
 		if err := f.CloseAtomicallyReplace(); err != nil {
 			return err
 		}
+		b.artifactWriter.Write([]byte("build/distri/" + pkg.subdir + "/" + fullName + ".squashfs" + "\n"))
 		log.Printf("package successfully created in %s", dest)
 	}
 
@@ -791,6 +909,51 @@ func fuseMkdirAll(ctl string, dir string) error {
 	cl := pb.NewFUSEClient(conn)
 	if _, err := cl.MkdirAll(ctx, &pb.MkdirAllRequest{Dir: proto.String(dir)}); err != nil {
 		return err
+	}
+	return nil
+}
+
+func store(ctx context.Context, cl bpb.BuildClient, fn string) error {
+	f, err := os.Open(filepath.Join(env.DistriRoot, fn))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	upcl, err := cl.Store(ctx)
+	if err != nil {
+		return err
+	}
+	path := fn
+	var buf [4096]byte
+	for {
+		n, err := f.Read(buf[:])
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return xerrors.Errorf("Read: %v", err)
+		}
+		chunk := buf[:n]
+		if err := upcl.Send(&bpb.Chunk{
+			Path:  path,
+			Chunk: chunk,
+		}); err != nil {
+			if status.Code(err) == codes.AlreadyExists {
+				return nil
+			}
+			if err == io.EOF {
+				return nil // server closed stream, file already present
+			}
+			return xerrors.Errorf("Send: %v", err)
+		}
+		path = ""
+	}
+	if _, err := upcl.CloseAndRecv(); err != nil {
+		if status.Code(err) == codes.AlreadyExists {
+			return nil
+		}
+		return xerrors.Errorf("CloseAndRecv: %v", err)
 	}
 	return nil
 }
@@ -2063,6 +2226,14 @@ func build(args []string) error {
 		cross = fset.String("cross",
 			"",
 			"If non-empty, cross-build for the specified architecture (e.g. i686)")
+
+		remote = fset.String("remote",
+			"",
+			"If non-empty, a host:port address of a remote builder")
+
+		artifactFd = fset.Int("artifactfd",
+			-1,
+			"INTERNAL protocol, do not use! file descriptor number on which to print line-separated groups of NUL-separated file names of build artifacts")
 	)
 	fset.Parse(args)
 
@@ -2087,7 +2258,7 @@ func build(args []string) error {
 		return err
 	}
 
-	if err := buildpkg(*hermetic, *debug, *fuse, *cross); err != nil {
+	if err := buildpkg(*hermetic, *debug, *fuse, *cross, *remote, *artifactFd); err != nil {
 		return err
 	}
 

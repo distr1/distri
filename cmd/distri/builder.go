@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"hash/fnv"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/distr1/distri/internal/env"
+	"golang.org/x/sync/errgroup"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -98,7 +100,21 @@ func (b *buildsrv) Build(req *bpb.BuildRequest, srv bpb.Build_BuildServer) error
 
 	// TODO: enforce inputs can only be read
 
-	build := exec.CommandContext(srv.Context(), "distri", "build")
+	for _, subdir := range []string{"pkg", "debug"} {
+		if err := os.MkdirAll(filepath.Join(b.uploadBaseDir, "build", "distri", subdir), 0755); err != nil {
+			return err
+		}
+	}
+
+	build := exec.CommandContext(srv.Context(),
+		"distri",
+		"build",
+		"--artifactfd=3") // Go dup2()s ExtraFiles to 3 and onwards
+	r, w, err := os.Pipe()
+	if err != nil {
+		return err
+	}
+	build.ExtraFiles = []*os.File{w}
 	build.Dir = filepath.Join(b.uploadBaseDir, req.GetWorkingDirectory())
 	if !strings.HasPrefix(build.Dir, filepath.Clean(b.uploadBaseDir)+"/") {
 		return status.Errorf(codes.InvalidArgument, "path traversal detected")
@@ -113,29 +129,37 @@ func (b *buildsrv) Build(req *bpb.BuildRequest, srv bpb.Build_BuildServer) error
 	if err := build.Start(); err != nil {
 		return err
 	}
-	// TODO: send keepalive build progress messages
-	if err := build.Wait(); err != nil {
+	// Close the write end of the pipe in the parent process.
+	if err := w.Close(); err != nil {
 		return err
 	}
-	if err := srv.Send(&bpb.BuildProgress{
-		OutputPath: []string{
-			"build/distri/pkg/hello-amd64-1-1.squashfs",
-			"build/distri/debug/hello-amd64-1-1.squashfs",
-			"build/hello/build-1-1.log",
-		},
-	}); err != nil {
+	var eg errgroup.Group
+	eg.Go(func() error {
+		scanner := bufio.NewScanner(r)
+		for scanner.Scan() {
+			if err := srv.Send(&bpb.BuildProgress{
+				OutputPath: strings.Split(scanner.Text(), "\x00"),
+			}); err != nil {
+				return err
+			}
+		}
+		return scanner.Err()
+	})
+	eg.Go(build.Wait)
+	// TODO: send keepalive build progress messages
+	if err := eg.Wait(); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (b *buildsrv) Retrieve(req *bpb.RetrieveRequest, srv bpb.Build_RetrieveServer) error {
-	path := filepath.Join(b.uploadBaseDir, req.GetPath())
-	if !strings.HasPrefix(path, filepath.Clean(b.uploadBaseDir)+"/") {
+	fn := filepath.Join(b.uploadBaseDir, req.GetPath())
+	if !strings.HasPrefix(fn, filepath.Clean(b.uploadBaseDir)+"/") {
 		return status.Errorf(codes.InvalidArgument, "path traversal detected")
 	}
 
-	f, err := os.Open(path)
+	f, err := os.Open(fn)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return status.Errorf(codes.NotFound, "%v", err)
@@ -145,6 +169,7 @@ func (b *buildsrv) Retrieve(req *bpb.RetrieveRequest, srv bpb.Build_RetrieveServ
 	defer f.Close()
 	const chunkSize = 1 * 1024 * 1024 // 1 MiB
 	buf := make([]byte, chunkSize)
+	path := req.GetPath()
 	for {
 		n, err := f.Read(buf)
 		if err != nil {
@@ -153,9 +178,10 @@ func (b *buildsrv) Retrieve(req *bpb.RetrieveRequest, srv bpb.Build_RetrieveServ
 			}
 			return err
 		}
-		if err := srv.Send(&bpb.Chunk{Chunk: buf[:n]}); err != nil {
+		if err := srv.Send(&bpb.Chunk{Path: path, Chunk: buf[:n]}); err != nil {
 			return err
 		}
+		path = ""
 	}
 	return nil
 }

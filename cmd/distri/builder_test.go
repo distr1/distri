@@ -22,42 +22,6 @@ import (
 	bpb "github.com/distr1/distri/pb/builder"
 )
 
-func upload(ctx context.Context, cl bpb.BuildClient, fn string) error {
-	f, err := os.Open(filepath.Join(env.DistriRoot, fn))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	upcl, err := cl.Store(ctx)
-	if err != nil {
-		return err
-	}
-	path := fn
-	var buf [4096]byte
-	for {
-		n, err := f.Read(buf[:])
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-		chunk := buf[:n]
-		if err := upcl.Send(&bpb.Chunk{
-			Path:  path,
-			Chunk: chunk,
-		}); err != nil {
-			return err
-		}
-		path = ""
-	}
-	if _, err := upcl.CloseAndRecv(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func TestBuilder(t *testing.T) {
 	tmp, err := ioutil.TempDir("", "distri-test-builder")
 	if err != nil {
@@ -153,8 +117,8 @@ func TestBuilder(t *testing.T) {
 		"pkgs/hello/build.textproto",
 	}, prefixed...)
 	for _, input := range inputs {
-		log.Printf("upload(%s)", input)
-		if err := upload(ctx, cl, input); err != nil {
+		log.Printf("store(%s)", input)
+		if err := store(ctx, cl, input); err != nil {
 			t.Fatal(err)
 		}
 	}
