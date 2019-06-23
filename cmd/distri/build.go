@@ -435,8 +435,10 @@ func (b *buildctx) fillSubstituteCache(deps []string) {
 	cache := make(map[string]string)
 	for _, dep := range deps {
 		v := distri.ParseVersion(dep)
-		cache[v.Pkg] = dep
-		cache[v.Pkg+"-"+b.Arch] = dep
+		if cur, exists := cache[v.Pkg]; !exists || distri.PackageRevisionLess(cur, dep) {
+			cache[v.Pkg] = dep
+			cache[v.Pkg+"-"+b.Arch] = dep
+		}
 	}
 	b.substituteCache = cache
 }
