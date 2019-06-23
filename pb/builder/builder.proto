@@ -7,9 +7,14 @@ message Chunk {
   // path is unset in all but the first Retrieve Chunk message per stream.
   string path = 1; // relative, e.g. pkgs/emacs/build.textproto.
   bytes chunk = 2;
+
+  // TODO: as a performance optimization, send a hash algorithm/digest tuple so
+  // that the file transfer can be skipped if the server already has the file.
 }
 
 message StoreResponse {
+  // TODO: return new path for this file. This makes it easy to implement Store
+  // on top of a Content-Addressible Storage (CAS) system.
 }
 
 message RetrieveRequest {
