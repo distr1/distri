@@ -94,6 +94,7 @@ func main() {
 		"patch":   {patchHelp, patch},
 		"bump":    {bumpHelp, bump},
 		"builder": {builderHelp, builder},
+		"reset":   {resetHelp, reset},
 	}
 
 	args := flag.Args()
