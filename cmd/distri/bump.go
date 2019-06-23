@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -45,7 +46,7 @@ func (i *versionIncrement) Perform() error {
 func incrementVersion(current string) string {
 	v := distri.ParseVersion(current)
 	v.DistriRevision++
-	return v.String()
+	return fmt.Sprintf("%s-%d", v.Upstream, v.DistriRevision)
 }
 
 func bumpAll(write bool) ([]versionIncrement, error) {
