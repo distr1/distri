@@ -1658,6 +1658,31 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
+	bin := filepath.Join(destDir, "out", "bin")
+	if err := filepath.Walk(bin, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		b, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if !strings.HasPrefix(string(b), "#!/ro/") {
+			return nil
+		}
+		lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+		pv := distri.ParseVersion(lines[0])
+		if pv.DistriRevision > 0 {
+			depPkgs[pv.String()] = true
+		}
+		return nil
+	}); err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+
 	// TODO(optimization): these could be build-time dependencies, as they are
 	// only required when building against the library, not when using it.
 	pkgconfig := filepath.Join(destDir, "out", "lib", "pkgconfig")
