@@ -1752,15 +1752,16 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
-	// prevent circular runtime dependencies
-	delete(depPkgs, b.Pkg)
-	delete(depPkgs, b.fullName())
-
-	log.Printf("run-time dependencies: %+v", depPkgs)
 	deps = make([]string, 0, len(depPkgs))
 	for pkg := range depPkgs {
+		// prevent circular runtime dependencies
+		if distri.ParseVersion(pkg).Pkg == b.Pkg {
+			continue
+		}
 		deps = append(deps, pkg)
 	}
+	sort.Strings(deps)
+	log.Printf("run-time dependencies: %v", deps)
 	return &pb.Meta{
 		RuntimeDep: deps,
 	}, nil
