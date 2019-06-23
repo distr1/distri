@@ -7,8 +7,8 @@ func (b *buildctx) buildmeson(opts *pb.MesonBuilder, env []string) (newSteps []*
 	steps = append(steps, [][]string{
 		append([]string{
 			"meson",
-			// TODO: should we set -Drootprefix or is that fuse-specific?
 			"--prefix=${DISTRI_PREFIX}",
+			"--sysconfdir=/etc",
 			".", // build dir
 			"${DISTRI_SOURCEDIR}",
 		}, opts.GetExtraMesonFlag()...),
