@@ -18,8 +18,8 @@ type libDep struct {
 	path string
 }
 
-func findShlibDeps(fn string, env []string) ([]libDep, error) {
-	cmd := exec.Command("ldd", fn)
+func findShlibDeps(ldd, fn string, env []string) ([]libDep, error) {
+	cmd := exec.Command(ldd, fn)
 	cmd.Env = env
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()

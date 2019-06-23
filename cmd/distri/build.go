@@ -1601,7 +1601,11 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			return nil
 		}
 		// TODO: detect whether the binary is statically or dynamically linked (the latter has an INTERP section)
-		libDeps, err := findShlibDeps(path, env)
+
+		// We intentionally skip the wrapper program so that relevant
+		// environment variables (e.g. LIBRARY_PATH) do not get changed.
+		ldd := filepath.Join("/ro", b.substituteCache["glibc-amd64"], "out", "bin", "ldd")
+		libDeps, err := findShlibDeps(ldd, path, env)
 		if err != nil {
 			if err == errLddFailed {
 				return nil // skip patchelf
