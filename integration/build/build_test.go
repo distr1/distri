@@ -22,9 +22,9 @@ source: "empty://"
 hash: ""
 version: "1"
 
-dep: "bash-amd64-4.4.18"
+dep: "bash-amd64-4.4.18-1"
 
-runtime_dep: "pkg-config-amd64-0.29.2"
+runtime_dep: "pkg-config-amd64-0.29.2-1"
 
 build_step: <
   argv: "/bin/sh"
@@ -215,13 +215,13 @@ func TestBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-amd64-0.29.2", // from hello-1 (direct)
-			"glib-amd64-2.58.0",       // from pkg-config (transitive)
-			"glibc-amd64-2.27",        // from glib-2.58.0
-			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32-4", // from glib-2.58.0
-			"pam-amd64-1.3.1-7",       // from util-linux-2.32
-			"libffi-amd64-3.2.1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
+			"glib-amd64-2.58.0",         // from pkg-config (transitive)
+			"glibc-amd64-2.27",          // from glib-2.58.0
+			"zlib-amd64-1.2.11",         // from glib-2.58.0
+			"util-linux-amd64-2.32-3",   // from glib-2.58.0
+			"pam-amd64-1.3.1-7",         // from util-linux-2.32
+			"libffi-amd64-3.2.1",        // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -300,13 +300,13 @@ func TestUnversionedBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-amd64-0.29.2", // from hello-1 (direct)
-			"glib-amd64-2.58.0",       // from pkg-config (transitive)
-			"glibc-amd64-2.27",        // from glib-2.58.0
-			"zlib-amd64-1.2.11",       // from glib-2.58.0
-			"util-linux-amd64-2.32-4", // from glib-2.58.0
-			"pam-amd64-1.3.1-7",       // from util-linux-2.32
-			"libffi-amd64-3.2.1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
+			"glib-amd64-2.58.0",         // from pkg-config (transitive)
+			"glibc-amd64-2.27",          // from glib-2.58.0
+			"zlib-amd64-1.2.11",         // from glib-2.58.0
+			"util-linux-amd64-2.32-3",   // from glib-2.58.0
+			"pam-amd64-1.3.1-7",         // from util-linux-2.32
+			"libffi-amd64-3.2.1",        // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -524,7 +524,7 @@ func TestMultiPackageBuild(t *testing.T) {
 		{
 			meta: "multi-libs-amd64-1.meta.textproto",
 			want: []string{
-				"bash-amd64-4.4.18",
+				"bash-amd64-4.4.18-1",
 				"glibc-amd64-2.27", // from bash
 			},
 		},
@@ -614,8 +614,8 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		{
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27",     // from shlibdeps
-				"libepoxy-amd64-1.5.2", // from pkgconfig
+				"glibc-amd64-2.27",       // from shlibdeps
+				"libepoxy-amd64-1.5.2-1", // from pkgconfig
 			},
 		},
 	} {

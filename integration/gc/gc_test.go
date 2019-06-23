@@ -15,8 +15,8 @@ import (
 
 func verifyStracePresent(tmpdir string) error {
 	for _, fn := range []string{
-		"strace-amd64-4.24.squashfs",
-		"strace-amd64-4.24.meta.textproto",
+		"strace-amd64-5.1-3.squashfs",
+		"strace-amd64-5.1-3.meta.textproto",
 	} {
 		if _, err := os.Stat(filepath.Join(tmpdir, "roimg", fn)); err != nil {
 			return err
