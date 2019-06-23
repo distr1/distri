@@ -471,6 +471,16 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		perl5Dirs     []string
 		pythonDirs    []string
 	)
+
+	sort.Slice(deps, func(i, j int) bool {
+		vi := distri.ParseVersion(deps[i])
+		vj := distri.ParseVersion(deps[j])
+		if vi.Pkg != vj.Pkg {
+			return vi.Pkg >= vj.Pkg // gcc-libs before gcc
+		}
+		return vi.DistriRevision >= vj.DistriRevision
+	})
+
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
 	for _, dep := range append(deps, b.fullName()) {
