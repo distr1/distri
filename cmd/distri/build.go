@@ -515,7 +515,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" && b.Pkg != "glibc-i686" {
 		env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
-			"-Wl,--dynamic-linker=/ro/glibc-amd64-2.27-1/out/lib/ld-linux-x86-64.so.2 "+
+			"-Wl,--dynamic-linker=/ro/"+b.substituteCache["glibc-amd64"]+"/out/lib/ld-linux-x86-64.so.2 "+
 			strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
 	}
 	return env
