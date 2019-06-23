@@ -43,13 +43,12 @@ build_step: <
   argv: "meson.build"
 >
 
-# TODO: this results in no rpath at all :/
-# build_step: <
-#   argv: "sed"
-#   argv: "-i"
-#   argv: "/install_rpath/d"
-#   argv: "meson.build"
-# >
+build_step: <
+  argv: "sed"
+  argv: "-i"
+  argv: "/install_rpath/d"
+  argv: "meson.build"
+>
 
 build_step: <
   argv: "/bin/sh"
