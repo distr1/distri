@@ -582,6 +582,15 @@ func (b *buildctx) substituteStrings(strings []string) []string {
 	return output
 }
 
+func depLess(i, j string) bool {
+	vi := distri.ParseVersion(i)
+	vj := distri.ParseVersion(j)
+	if vi.Pkg != vj.Pkg {
+		return vi.Pkg >= vj.Pkg // gcc-libs before gcc
+	}
+	return vi.DistriRevision >= vj.DistriRevision
+}
+
 func (b *buildctx) env(deps []string, hermetic bool) []string {
 	// TODO: this should go into the C builder once the C builder is used by all packages
 	var (
@@ -593,12 +602,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 	)
 
 	sort.Slice(deps, func(i, j int) bool {
-		vi := distri.ParseVersion(deps[i])
-		vj := distri.ParseVersion(deps[j])
-		if vi.Pkg != vj.Pkg {
-			return vi.Pkg >= vj.Pkg // gcc-libs before gcc
-		}
-		return vi.DistriRevision >= vj.DistriRevision
+		return depLess(deps[i], deps[j])
 	})
 
 	// add the package itself, not just its dependencies: the package might
@@ -659,6 +663,11 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 		perl5Dirs  []string
 		pythonDirs []string
 	)
+
+	sort.Slice(deps, func(i, j int) bool {
+		return depLess(deps[i], deps[j])
+	})
+
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
 	for _, dep := range append(deps, b.fullName()) {
