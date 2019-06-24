@@ -56,6 +56,11 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 			filename: "build/git/build-2.9.5-3.log", // build log
 			want:     PackageVersion{Upstream: "2.9.5", DistriRevision: 3},
 		},
+
+		{
+			filename: "build/git/build-2.9.5.log", // build log
+			want:     PackageVersion{Upstream: "2.9.5", DistriRevision: 0},
+		},
 	} {
 		t.Run(tt.filename, func(t *testing.T) {
 			got := ParseVersion(tt.filename)

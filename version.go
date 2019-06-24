@@ -66,11 +66,11 @@ func ParseVersion(filename string) PackageVersion {
 	if len(parts) == 0 {
 		return PackageVersion{Pkg: pkg, Arch: arch}
 	}
-	upstream := strings.Join(parts, "-")
 	// TODO: make build log files contain the architecture and delete this conditional:
 	if buildFile(parts[0]) {
-		upstream = strings.Join(parts[1:], "-")
+		parts = parts[1:]
 	}
+	upstream := strings.Join(parts, "-")
 	for ext := range fileExtensions {
 		upstream = strings.TrimSuffix(upstream, "."+ext)
 	}
@@ -87,11 +87,6 @@ func ParseVersion(filename string) PackageVersion {
 	revision, _ := strconv.ParseInt(rev, 0, 64)
 	if revision > 0 {
 		upstream = strings.Join(parts[:len(parts)-1], "-")
-		// TODO: make build log files contain the architecture and delete this conditional:
-		if buildFile(parts[0]) {
-			upstream = strings.Join(parts[1:len(parts)-1], "-")
-		}
-
 	}
 	return PackageVersion{
 		Pkg:            pkg,
