@@ -1750,14 +1750,14 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		case *pb.Build_Gomodbuilder:
 			// no extra runtime deps
 		case *pb.Build_Perlbuilder:
-			depPkgs["perl-amd64-5.28.0"] = true
+			depPkgs[b.substituteCache["perl-amd64"]] = true
 			// pass through all deps to run-time deps
 			// TODO: distinguish test-only deps from actual deps based on Makefile.PL
 			for _, pkg := range b.Proto.GetDep() {
 				depPkgs[pkg] = true
 			}
 		case *pb.Build_Pythonbuilder:
-			depPkgs["python3-amd64-3.7.0"] = true
+			depPkgs[b.substituteCache["python3-amd64"]] = true
 		default:
 			return nil, xerrors.Errorf("BUG: unknown builder")
 		}
