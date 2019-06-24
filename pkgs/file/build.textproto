@@ -3,3 +3,5 @@ hash: "b83618b2b1e269d65a28b068460add53a690e53fa11c53174df293bb04d231b2"
 version: "5.34-1"
 
 cbuilder: <>
+
+dep: "zlib"
