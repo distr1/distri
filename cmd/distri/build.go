@@ -1723,7 +1723,9 @@ func (b *buildctx) build() (*pb.Meta, error) {
 						return nil, err
 					}
 					for _, fi := range fis {
-						byPkg[fi.Name()] = dep
+						if cur, exists := byPkg[fi.Name()]; !exists || distri.PackageRevisionLess(cur, dep) {
+							byPkg[fi.Name()] = dep
+						}
 					}
 				}
 			}
