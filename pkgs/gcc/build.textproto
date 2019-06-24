@@ -30,6 +30,9 @@ dep: "mpfr"
 dep: "mpc"
 dep: "tar"
 
+# TODO: remove once splitting files out of a package leaves a runtime dep behind
+dep: "gcc-libs" # to pick up the latest version
+
 # kludge: the C++ header cstdlib uses the #include_next pragma, which requires
 # that /ro/glibc-amd64-2.27/out/include comes _after_ the g++ includes. This
 # requires /ro/glibc-amd64-2.27/out/include to be a system include, which we
