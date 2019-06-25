@@ -210,7 +210,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		// provide a symlink to ld-linux.so, which is used as the .interp of our
 		// ELF binaries.
 		fs.mkExchangeDirAll(&nopLocker{}, "/lib")
-		fs.symlink(fs.dirs["/lib"], "../glibc-amd64-2.27/out/lib/ld-linux-x86-64.so.2")
+		fs.symlink(fs.dirs["/lib"], "../glibc-amd64-2.27-1/out/lib/ld-linux-x86-64.so.2")
 	}
 
 	server := fuseutil.NewFileSystemServer(fs)
