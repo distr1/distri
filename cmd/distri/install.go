@@ -24,6 +24,7 @@ import (
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/renameio"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
@@ -177,6 +178,45 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
+type fileNotFoundError struct {
+	path string
+}
+
+func (e *fileNotFoundError) Error() string {
+	return fmt.Sprintf("%q not found", e.path)
+}
+
+// TODO: de-duplicate with internal/fuse/fuse.go
+func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component string) (squashfs.Inode, error) {
+	rfis, err := rd.Readdir(parent)
+	if err != nil {
+		return 0, err
+	}
+	for _, rfi := range rfis {
+		if rfi.Name() == component {
+			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
+		}
+	}
+	return 0, &fileNotFoundError{path: component}
+}
+
+// TODO: de-duplicate with internal/fuse/fuse.go
+func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
+	inode := rd.RootInode()
+	parts := strings.Split(path, "/")
+	for _, part := range parts {
+		var err error
+		inode, err = lookupComponent(rd, inode, part)
+		if err != nil {
+			if _, ok := err.(*fileNotFoundError); ok {
+				return 0, &fileNotFoundError{path: path}
+			}
+			return 0, err
+		}
+	}
+	return inode, nil
+}
+
 func install1(ctx context.Context, root string, repo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
@@ -220,6 +260,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		if err != nil {
 			return xerrors.Errorf("copying /etc: %v", err)
 		}
+		defer readerAt.Close()
 
 		rd, err := squashfs.NewReader(readerAt)
 		if err != nil {
@@ -239,6 +280,40 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 				return xerrors.Errorf("copying /etc: %v", err)
 			}
 			break
+		}
+	}
+
+	// hook: distri1
+	if strings.HasPrefix(pkg, "distri1-") {
+		readerAt, err := mmap.Open(filepath.Join(tmpDir, pkg+".squashfs"))
+		if err != nil {
+			return xerrors.Errorf("copying out/bin/distri: %v", err)
+		}
+		defer readerAt.Close()
+
+		rd, err := squashfs.NewReader(readerAt)
+		if err != nil {
+			return err
+		}
+
+		inode, err := lookupPath(rd, "out/bin/distri")
+		if err != nil {
+			return err
+		}
+
+		r, err := rd.FileReader(inode)
+		if err != nil {
+			return err
+		}
+		f, err := renameio.TempFile("", filepath.Join(root, "init"))
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(f, r); err != nil {
+			return err
+		}
+		if err := f.CloseAtomicallyReplace(); err != nil {
+			return err
 		}
 	}
 

@@ -322,6 +322,48 @@ func TestInstall(t *testing.T) {
 	}
 }
 
+func TestInstallHooks(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
+	tmpdir, err := ioutil.TempDir("", "integrationinstall")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	if err := installFile(ctx, tmpdir, "distri1"); err != nil {
+		t.Fatal(err)
+	}
+
+	initfn := filepath.Join(tmpdir, "init")
+	if _, err := os.Stat(initfn); err != nil {
+		t.Fatalf("distri1 hook not active: %v", err)
+	}
+
+	// Clobber the file
+	if err := ioutil.WriteFile(initfn, nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Remove the package so that it will be installed again
+	if err := os.RemoveAll(filepath.Join(tmpdir, "roimg")); err != nil {
+		t.Fatal(err)
+	}
+	if err := installFile(ctx, tmpdir, "distri1"); err != nil {
+		t.Fatal(err)
+	}
+
+	st, err := os.Stat(initfn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Size() == 0 {
+		t.Fatalf("%s not updated: still clobbered", initfn)
+	}
+}
+
 func BenchmarkInstallChrome(b *testing.B) {
 	ctx := context.Background()
 	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
