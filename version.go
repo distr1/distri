@@ -43,6 +43,18 @@ func buildFile(filename, full string) bool {
 // e.g. glibc-amd64-2.27-37, which parses into PackageVersion{Upstream: "2.27",
 // DistriRevision: 37}.
 func ParseVersion(filename string) PackageVersion {
+	// zero in on the correct path component first, if we can identify it
+	var component string
+	for _, c := range strings.Split(filename, "/") {
+		if LikelyFullySpecified(c) {
+			component = c
+			break
+		}
+	}
+	if component != "" {
+		filename = component
+	}
+
 	var pkg, arch string
 	parts := strings.Split(filename, "-")
 	// Discard everything up to the architecture identifier, including the first

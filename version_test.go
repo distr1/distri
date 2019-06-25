@@ -53,6 +53,11 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 		},
 
 		{
+			filename: "../libxslt-amd64-1.1.32-1/bin/xslt-config",
+			want:     PackageVersion{Pkg: "libxslt", Arch: "amd64", Upstream: "1.1.32", DistriRevision: 1},
+		},
+
+		{
 			filename: "build/git/build-2.9.5-3.log", // build log
 			want:     PackageVersion{Upstream: "2.9.5", DistriRevision: 3},
 		},
@@ -71,6 +76,28 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 			got := ParseVersion(tt.filename)
 			if got != tt.want {
 				t.Fatalf("extractVersion(%v) = %v, want %v", tt.filename, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPackageRevisionLess(t *testing.T) {
+	for _, tt := range []struct {
+		a, b string
+		want bool
+	}{
+		{
+			a:    "../libxslt-amd64-1.1.32/bin/xslt-config",
+			b:    "../libxslt-amd64-1.1.32-1/bin/xslt-config",
+			want: true,
+		},
+	} {
+		t.Run(tt.a+"_"+tt.b, func(t *testing.T) {
+			got := PackageRevisionLess(tt.a, tt.b)
+			if got != tt.want {
+				t.Logf("ParseVersion(%s) = %v", tt.a, ParseVersion(tt.a))
+				t.Logf("ParseVersion(%s) = %v", tt.b, ParseVersion(tt.b))
+				t.Errorf("PackageRevisionLess(%s, %s) = %v, want %v", tt.a, tt.b, got, tt.want)
 			}
 		})
 	}
