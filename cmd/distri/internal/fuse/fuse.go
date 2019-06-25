@@ -418,11 +418,6 @@ func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
 
 func (fs *fuseFS) symlink(dir *dir, target string) {
 	base := filepath.Base(target)
-	dirent := &dirent{
-		name:       base,
-		linkTarget: target,
-		inode:      fs.allocateInodeLocked(),
-	}
 	for idx, entry := range dir.entries {
 		if entry == nil || entry.name != base {
 			continue
@@ -430,8 +425,17 @@ func (fs *fuseFS) symlink(dir *dir, target string) {
 		if entry.linkTarget == "" {
 			return // do not shadow exchange directories
 		}
+		if distri.ParseVersion(target).Pkg == distri.ParseVersion(entry.linkTarget).Pkg &&
+			distri.PackageRevisionLess(target, entry.linkTarget) {
+			return // more recent link target already in place
+		}
 		dir.entries[idx] = nil // tombstone
 		break
+	}
+	dirent := &dirent{
+		name:       base,
+		linkTarget: target,
+		inode:      fs.allocateInodeLocked(),
 	}
 	dir.entries = append(dir.entries, dirent)
 	dir.byName[base] = dirent
@@ -504,9 +508,7 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 				return err
 			}
 			mu.Lock()
-			if e, ok := dir.byName[sfi.Name()]; !ok || distri.PackageRevisionLess(e.linkTarget, rel) {
-				fs.symlink(dir, rel)
-			}
+			fs.symlink(dir, rel)
 			mu.Unlock()
 		}
 	}
