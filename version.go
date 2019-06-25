@@ -34,9 +34,9 @@ var fileExtensions = map[string]bool{
 	"log":            true,
 }
 
-func buildFile(filename string) bool {
+func buildFile(filename, full string) bool {
 	parts := strings.Split(filename, "/")
-	return parts[len(parts)-1] == "build"
+	return parts[len(parts)-1] == "build" && strings.HasSuffix(full, ".log")
 }
 
 // ParseVersion constructs a PackageVersion from filename,
@@ -67,14 +67,17 @@ func ParseVersion(filename string) PackageVersion {
 		return PackageVersion{Pkg: pkg, Arch: arch}
 	}
 	// TODO: make build log files contain the architecture and delete this conditional:
-	if buildFile(parts[0]) {
+	if buildFile(parts[0], filename) {
 		parts = parts[1:]
 	}
 	upstream := strings.Join(parts, "-")
 	for ext := range fileExtensions {
 		upstream = strings.TrimSuffix(upstream, "."+ext)
 	}
-	if len(parts) == 1 {
+	if idx := strings.IndexByte(upstream, '/'); idx > -1 {
+		upstream = upstream[:idx] // constrain ourselves to this path component
+	}
+	if len(parts) <= 1 {
 		return PackageVersion{Pkg: pkg, Arch: arch, Upstream: upstream}
 	}
 	rev := parts[len(parts)-1]
