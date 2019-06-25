@@ -216,12 +216,12 @@ func TestBuild(t *testing.T) {
 		}
 		want := []string{
 			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
-			"glib-amd64-2.58.0",         // from pkg-config (transitive)
-			"glibc-amd64-2.27",          // from glib-2.58.0
-			"zlib-amd64-1.2.11",         // from glib-2.58.0
-			"util-linux-amd64-2.32-3",   // from glib-2.58.0
-			"pam-amd64-1.3.1-7",         // from util-linux-2.32
-			"libffi-amd64-3.2.1",        // from glib-2.58.0
+			"glib-amd64-2.58.0-1",       // from pkg-config (transitive)
+			"glibc-amd64-2.27-1",        // from glib-2.58.0
+			"zlib-amd64-1.2.11-1",       // from glib-2.58.0
+			"util-linux-amd64-2.32-4",   // from glib-2.58.0
+			"pam-amd64-1.3.1-8",         // from util-linux-2.32
+			"libffi-amd64-3.2.1-1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -301,12 +301,12 @@ func TestUnversionedBuild(t *testing.T) {
 		}
 		want := []string{
 			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
-			"glib-amd64-2.58.0",         // from pkg-config (transitive)
-			"glibc-amd64-2.27",          // from glib-2.58.0
-			"zlib-amd64-1.2.11",         // from glib-2.58.0
-			"util-linux-amd64-2.32-3",   // from glib-2.58.0
-			"pam-amd64-1.3.1-7",         // from util-linux-2.32
-			"libffi-amd64-3.2.1",        // from glib-2.58.0
+			"glib-amd64-2.58.0-1",       // from pkg-config (transitive)
+			"glibc-amd64-2.27-1",        // from glib-2.58.0
+			"zlib-amd64-1.2.11-1",       // from glib-2.58.0
+			"util-linux-amd64-2.32-4",   // from glib-2.58.0
+			"pam-amd64-1.3.1-8",         // from util-linux-2.32
+			"libffi-amd64-3.2.1-1",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -525,7 +525,7 @@ func TestMultiPackageBuild(t *testing.T) {
 			meta: "multi-libs-amd64-1.meta.textproto",
 			want: []string{
 				"bash-amd64-4.4.18-1",
-				"glibc-amd64-2.27", // from bash
+				"glibc-amd64-2.27-1", // from bash
 			},
 		},
 	} {
@@ -614,7 +614,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		{
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27",       // from shlibdeps
+				"glibc-amd64-2.27-1",     // from shlibdeps
 				"libepoxy-amd64-1.5.2-1", // from pkgconfig
 			},
 		},
@@ -704,7 +704,7 @@ func TestShebangRuntimeDep(t *testing.T) {
 		{
 			meta: "shebang-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27",    // from shlibdeps
+				"glibc-amd64-2.27-1",  // from shlibdeps
 				"perl-amd64-5.28.0-1", // from shebang
 			},
 		},

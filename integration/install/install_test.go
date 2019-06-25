@@ -18,7 +18,7 @@ import (
 
 const (
 	systemd = "systemd-amd64-239-7"
-	bash    = "bash-amd64-4.4.18"
+	bash    = "bash-amd64-4.4.18-1"
 )
 
 func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
