@@ -344,8 +344,12 @@ func TestInstallHooks(t *testing.T) {
 		}
 
 		initfn := filepath.Join(tmpdir, "init")
-		if _, err := os.Stat(initfn); err != nil {
+		st, err := os.Stat(initfn)
+		if err != nil {
 			t.Fatalf("distri1 hook not active: %v", err)
+		}
+		if got, want := st.Mode()&0755, os.FileMode(0755); got != want {
+			t.Fatalf("unexpected file mode: got %v, want %v", got, want)
 		}
 
 		// Clobber the file
@@ -361,7 +365,7 @@ func TestInstallHooks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		st, err := os.Stat(initfn)
+		st, err = os.Stat(initfn)
 		if err != nil {
 			t.Fatal(err)
 		}

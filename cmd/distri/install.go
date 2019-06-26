@@ -315,6 +315,9 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		if _, err := io.Copy(f, r); err != nil {
 			return err
 		}
+		if strings.HasSuffix(dest, "/init") {
+			f.Chmod(0755)
+		}
 		if err := f.CloseAtomicallyReplace(); err != nil {
 			return err
 		}
