@@ -342,8 +342,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 			}
 
 			if root == "/" {
-				cmd := exec.Command("grub-mkconfig",
-					"-o", "/boot/grub/grub.cfg")
+				cmd := exec.Command("/etc/update-grub")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 				if err := cmd.Run(); err != nil {

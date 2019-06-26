@@ -653,21 +653,26 @@ name=root`)
 	if bootDebug {
 		params = append(params, "systemd.log_level=debug systemd.log_target=console")
 	}
-	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 "+strings.Join(params, " ")+" init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg")
+	mkconfigCmd := "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg"
+	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", mkconfigCmd)
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
 	if err := mkconfig.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", mkconfig.Args, err)
 	}
 
-	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02/bin/grub-install", "--target=i386-pc", base)
+	if err := ioutil.WriteFile("/mnt/etc/update-grub", []byte("#!/bin/sh\n"+mkconfigCmd), 0755); err != nil {
+		return xerrors.Errorf("writing /etc/update-grub: %v", err)
+	}
+
+	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02-1/bin/grub-install", "--target=i386-pc", base)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", install.Args, err)
 	}
 
-	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/esp", "--removable", "--no-nvram", "--boot-directory=/boot")
+	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02-1/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/esp", "--removable", "--no-nvram", "--boot-directory=/boot")
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
