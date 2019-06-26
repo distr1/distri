@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
@@ -333,35 +334,54 @@ func TestInstallHooks(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
-	if err := installFile(ctx, tmpdir, "distri1"); err != nil {
-		t.Fatal(err)
-	}
+	t.Run("distri1", func(t *testing.T) {
+		if err := installFile(ctx, tmpdir, "distri1"); err != nil {
+			t.Fatal(err)
+		}
 
-	initfn := filepath.Join(tmpdir, "init")
-	if _, err := os.Stat(initfn); err != nil {
-		t.Fatalf("distri1 hook not active: %v", err)
-	}
+		initfn := filepath.Join(tmpdir, "init")
+		if _, err := os.Stat(initfn); err != nil {
+			t.Fatalf("distri1 hook not active: %v", err)
+		}
 
-	// Clobber the file
-	if err := ioutil.WriteFile(initfn, nil, 0644); err != nil {
-		t.Fatal(err)
-	}
+		// Clobber the file
+		if err := ioutil.WriteFile(initfn, nil, 0644); err != nil {
+			t.Fatal(err)
+		}
 
-	// Remove the package so that it will be installed again
-	if err := os.RemoveAll(filepath.Join(tmpdir, "roimg")); err != nil {
-		t.Fatal(err)
-	}
-	if err := installFile(ctx, tmpdir, "distri1"); err != nil {
-		t.Fatal(err)
-	}
+		// Remove the package so that it will be installed again
+		if err := os.RemoveAll(filepath.Join(tmpdir, "roimg")); err != nil {
+			t.Fatal(err)
+		}
+		if err := installFile(ctx, tmpdir, "distri1"); err != nil {
+			t.Fatal(err)
+		}
 
-	st, err := os.Stat(initfn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if st.Size() == 0 {
-		t.Fatalf("%s not updated: still clobbered", initfn)
-	}
+		st, err := os.Stat(initfn)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Size() == 0 {
+			t.Fatalf("%s not updated: still clobbered", initfn)
+		}
+	})
+
+	t.Run("linux", func(t *testing.T) {
+		target, err := os.Readlink(filepath.Join(env.DefaultRepo, "linux-amd64.meta.textproto"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		pv := distri.ParseVersion(target)
+		version := fmt.Sprintf("%s-%d", pv.Upstream, pv.DistriRevision)
+		if err := installFile(ctx, tmpdir, "linux"); err != nil {
+			t.Fatal(err)
+		}
+
+		vmlinuz := filepath.Join(tmpdir, "boot", "vmlinuz-"+version)
+		if _, err := os.Stat(vmlinuz); err != nil {
+			t.Fatalf("linux hook not active: %v", err)
+		}
+	})
 }
 
 func BenchmarkInstallChrome(b *testing.B) {

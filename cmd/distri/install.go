@@ -283,11 +283,10 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		}
 	}
 
-	// hook: distri1
-	if strings.HasPrefix(pkg, "distri1-") {
+	hookinstall := func(dest, src string) error {
 		readerAt, err := mmap.Open(filepath.Join(tmpDir, pkg+".squashfs"))
 		if err != nil {
-			return xerrors.Errorf("copying out/bin/distri: %v", err)
+			return xerrors.Errorf("copying %s: %v", src, err)
 		}
 		defer readerAt.Close()
 
@@ -296,7 +295,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 			return err
 		}
 
-		inode, err := lookupPath(rd, "out/bin/distri")
+		inode, err := lookupPath(rd, src)
 		if err != nil {
 			return err
 		}
@@ -305,7 +304,10 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		if err != nil {
 			return err
 		}
-		f, err := renameio.TempFile("", filepath.Join(root, "init"))
+		if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+			return err
+		}
+		f, err := renameio.TempFile("", dest)
 		if err != nil {
 			return err
 		}
@@ -314,6 +316,26 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		}
 		if err := f.CloseAtomicallyReplace(); err != nil {
 			return err
+		}
+		return nil
+	}
+
+	// hook: distri1
+	if strings.HasPrefix(pkg, "distri1-") && distri.ParseVersion(pkg).Pkg == "distri1" {
+		if err := hookinstall(filepath.Join(root, "init"), "out/bin/distri"); err != nil {
+			return err
+		}
+	}
+
+	// hook: linux
+	if strings.HasPrefix(pkg, "linux-") {
+		pv := distri.ParseVersion(pkg)
+		if pv.Pkg == "linux" {
+			version := fmt.Sprintf("%s-%d", pv.Upstream, pv.DistriRevision)
+			dest := filepath.Join(root, "boot", "vmlinuz-"+version)
+			if err := hookinstall(dest, "out/vmlinuz"); err != nil {
+				return err
+			}
 		}
 	}
 
