@@ -334,6 +334,10 @@ func TestInstallHooks(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
+	// TODO: refactor user namespace setup code (like in build.go) so that we
+	// can test install with -root=/ (within the namespace) and test the linux
+	// hook’s grub-mkconfig call.
+
 	t.Run("distri1", func(t *testing.T) {
 		if err := installFile(ctx, tmpdir, "distri1"); err != nil {
 			t.Fatal(err)

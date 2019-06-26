@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/pprof"
 	"strings"
@@ -335,6 +336,16 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 			dest := filepath.Join(root, "boot", "vmlinuz-"+version)
 			if err := hookinstall(dest, "out/vmlinuz"); err != nil {
 				return err
+			}
+
+			if root == "/" {
+				cmd := exec.Command("grub-mkconfig",
+					"-o", "/boot/grub/grub.cfg")
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					return xerrors.Errorf("%v: %w", cmd.Args, err)
+				}
 			}
 		}
 	}
