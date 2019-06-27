@@ -708,17 +708,9 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		return "", err
 	}
 	var candidates []string
-	var meta pb.Meta
 	for _, m := range matches {
 		if st, err := os.Lstat(m); err != nil || !st.Mode().IsRegular() {
 			continue
-		}
-		c, err := ioutil.ReadFile(m)
-		if err != nil {
-			return "", err
-		}
-		if err := proto.UnmarshalText(string(c), &meta); err != nil {
-			return "", err
 		}
 		candidates = append(candidates, strings.TrimSuffix(filepath.Base(m), ".meta.textproto"))
 	}
