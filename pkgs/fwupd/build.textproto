@@ -1,6 +1,6 @@
 source: "https://github.com/hughsie/fwupd/archive/1.2.1.tar.gz"
 hash: "7ff2bb6979a7f7dbecf03e5e817d3835a698d5114a0c780a3c8de64a2fe4ae63"
-version: "1.2.1-1"
+version: "1.2.1-2"
 
 cbuilder: <>
 

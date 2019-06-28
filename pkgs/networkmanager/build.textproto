@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/NetworkManager/1.12/NetworkManager-1.12.2.tar.xz"
 hash: "6be06ff93a05f3ee4da9e58e4a0d974eef245c08b6f02b00a9e44154c9801a26"
-version: "1.12.2-1"
+version: "1.12.2-2"
 
 cbuilder: <
   extra_configure_flag: "--disable-ppp"

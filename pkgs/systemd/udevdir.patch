@@ -1,0 +1,11 @@
+--- old/meson.build	2018-06-22 13:11:49.000000000 +0200
++++ new/meson.build	2019-06-29 11:59:48.870126854 +0200
+@@ -124,7 +124,7 @@
+ systemsleepdir = join_paths(rootlibexecdir, 'system-sleep')
+ systemunitdir = join_paths(rootprefixdir, 'lib/systemd/system')
+ systempresetdir = join_paths(rootprefixdir, 'lib/systemd/system-preset')
+-udevlibexecdir = join_paths(rootprefixdir, 'lib/udev')
++udevlibexecdir = '/ro/lib/udev'
+ udevhomedir = udevlibexecdir
+ udevrulesdir = join_paths(udevlibexecdir, 'rules.d')
+ udevhwdbdir = join_paths(udevlibexecdir, 'hwdb.d')

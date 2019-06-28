@@ -1,6 +1,6 @@
 source: "https://i3wm.org/i3status/i3status-2.12.tar.bz2"
 hash: "6fc6881536043391ab4bed369d956f99d1088965d8bcebed18d1932de3ba791a"
-version: "2.12-1"
+version: "2.12-2"
 
 cbuilder: <>
 

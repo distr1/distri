@@ -1,11 +1,14 @@
 source: "https://sourceware.org/pub/lvm2/LVM2.2.03.00.tgz"
 hash: "405992bf76960e60c7219d84d5f1e22edc34422a1ea812e21b2ac3c813d0da4e"
-version: "2.03.00-3"
+version: "2.03.00-4"
 
 cbuilder: <
   copy_to_builddir: true
+  extra_configure_flag: "--enable-udev_rules"
+  extra_configure_flag: "--enable-udev_sync"
 >
 
 # build dependencies:
 dep: "libaio"
 dep: "which"
+dep: "systemd" # for udev

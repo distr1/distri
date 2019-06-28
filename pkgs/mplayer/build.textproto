@@ -1,6 +1,6 @@
 source: "https://t.zekjur.net/mplayer-export-2019-02-19%2Bffmpeg.tar.bz2"
 hash: "ac054bad4754a2ee4e185ac94598906562aa4a30eaf63ff02b899e22f9756ac5"
-version: "0.2019-02-19-6"
+version: "0.2019-02-19-7"
 
 cbuilder: <
 #  extra_configure_flag: "--without-bash-malloc"

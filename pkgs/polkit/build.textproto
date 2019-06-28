@@ -1,6 +1,6 @@
 source: "https://www.freedesktop.org/software/polkit/releases/polkit-0.115.tar.gz"
 hash: "2f87ecdabfbd415c6306673ceadc59846f059b18ef2fce42bac63fe283f12131"
-version: "0.115-1"
+version: "0.115-2"
 
 cbuilder: <
   extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"

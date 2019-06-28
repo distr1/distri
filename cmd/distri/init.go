@@ -46,6 +46,6 @@ func pid1() error {
 
 	log.Printf("starting systemd")
 
-	const systemd = "/ro/systemd-amd64-239-7/out/lib/systemd/systemd" // TODO(later): glob?
+	const systemd = "/ro/systemd-amd64-239-8/out/lib/systemd/systemd" // TODO(later): glob?
 	return syscall.Exec(systemd, []string{systemd}, nil)
 }
