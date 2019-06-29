@@ -26,7 +26,7 @@ const scaffoldHelp = `TODO
 
 var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
 hash: "{{.Hash}}"
-version: "{{.Version}}"
+version: "{{.Version}}-1"
 
 {{.Builder}}: <>
 
