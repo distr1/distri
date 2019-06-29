@@ -17,6 +17,7 @@ cbuilder: <
 dep: "bison"
 dep: "flex"
 dep: "m4" # TODO: remove (runtime-dep of flex)
+dep: "freetype" # for grub-mkfont
 
 # grub-mkconfig needs:
 runtime_dep: "sed"
