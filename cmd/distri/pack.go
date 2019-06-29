@@ -549,13 +549,10 @@ name=root`)
 			return xerrors.Errorf("%v: %v", luksFormat.Args, err)
 		}
 
-		lsblk := exec.Command("lsblk", root, "-no", "uuid")
-		lsblk.Stderr = os.Stderr
-		uuid, err := lsblk.Output()
+		luksUUID, err = uuid(root, "fs")
 		if err != nil {
 			return xerrors.Errorf("lsblk: %v", err)
 		}
-		luksUUID = strings.TrimSpace(string(uuid))
 
 		luksOpen := exec.Command("sudo", "cryptsetup", "open", "--type=luks", "--key-file=-", root, "cryptroot")
 		luksOpen.Stdin = strings.NewReader("bleh")
@@ -636,7 +633,31 @@ name=root`)
 		return err
 	}
 
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-8/out/share/pkgconfig/ dracut --debug /boot/initramfs-5.1.9.img 5.1.9")
+	{
+		crypttab := fmt.Sprintf("cryptroot UUID=%s none luks,discard\n", luksUUID)
+		if err := ioutil.WriteFile("/mnt/etc/crypttab", []byte(crypttab), 0644); err != nil {
+			return err
+		}
+	}
+
+	{
+		fstab := "/dev/mapper/cryptroot / ext4 defaults,x-systemd.device-timeout=0 1 1\n"
+		bootUUID, err := uuid(boot, "part")
+		if err != nil {
+			return xerrors.Errorf(`uuid(boot=%v, "part"): %v`, boot, err)
+		}
+		fstab = fstab + "PARTUUID=" + bootUUID + " /boot ext2 defaults 1 2\n"
+		espUUID, err := uuid(esp, "part")
+		if err != nil {
+			return xerrors.Errorf(`uuid(esp=%v, "part"): %v`, esp, err)
+		}
+		fstab = fstab + "PARTUUID=" + espUUID + " /boot/efi vfat defaults 0 1\n"
+		if err := ioutil.WriteFile("/mnt/etc/fstab", []byte(fstab), 0644); err != nil {
+			return err
+		}
+	}
+
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-8/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9.img 5.1.9")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
@@ -733,4 +754,31 @@ func addgroup(root, line string) error {
 		return err
 	}
 	return f.Close()
+}
+
+func uuid(blockdev, kind string) (string, error) {
+	st, err := os.Stat(blockdev)
+	if err != nil {
+		return "", err
+	}
+	rdev := st.Sys().(*syscall.Stat_t).Rdev
+	const (
+		// hard-coded, as in systemd-241/src/libsystemd/sd-device/sd-device.c
+		udevDb = "/run/udev/data/b%d:%d"
+	)
+	b, err := ioutil.ReadFile(fmt.Sprintf(udevDb, unix.Major(rdev), unix.Minor(rdev)))
+	if err != nil {
+		return "", err
+	}
+	prefix := "E:ID_FS_UUID_ENC=" // kind == fs
+	if kind == "part" {
+		prefix = "E:ID_PART_ENTRY_UUID="
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+		if !strings.HasPrefix(line, prefix) {
+			continue
+		}
+		return strings.TrimPrefix(line, prefix), nil
+	}
+	return "", nil
 }
