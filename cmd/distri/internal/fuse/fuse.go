@@ -58,6 +58,8 @@ var ExchangeDirs = []string{
 	"/out/share/fonts/truetype",
 	"/out/share/X11/xorg.conf.d",
 	"/out/share/terminfo",
+	"/out/share/xgreeters",
+	"/out/share/xsessions",
 	"/out/gopath",
 	"/debug",
 }

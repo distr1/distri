@@ -1,0 +1,14 @@
+source: "http://files.itstool.org/itstool/itstool-2.0.5.tar.bz2"
+hash: "100506f8df62cca6225ec3e631a8237e9c04650c77495af4919ac6a100d4b308"
+version: "2.0.5-1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "python3"
+dep: "libxml2"
+
+# TODO: should this package use the pythonbuilder? it uses autotools, but is
+# implemented in python.
+runtime_dep: "python3"
+runtime_dep: "libxml2"
