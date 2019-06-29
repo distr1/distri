@@ -9,6 +9,8 @@ import (
 	"os"
 	"runtime/pprof"
 	"runtime/trace"
+	"sync"
+	"sync/atomic"
 
 	"github.com/distr1/distri/cmd/distri/internal/fuse"
 	"golang.org/x/xerrors"
@@ -24,6 +26,21 @@ var (
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
 	httpListen = flag.String("listen", "", "host:port to listen on for HTTP")
 )
+
+var atExit struct {
+	sync.Mutex
+	fns    []func() error
+	closed uint32
+}
+
+func registerAtExit(fn func() error) {
+	if atomic.LoadUint32(&atExit.closed) != 0 {
+		panic("BUG: registerAtExit must not be called from an atExit func")
+	}
+	atExit.Lock()
+	defer atExit.Unlock()
+	atExit.fns = append(atExit.fns, fn)
+}
 
 func main() {
 	flag.Parse()
@@ -128,5 +145,13 @@ func main() {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", verb, err)
 		}
 		os.Exit(1)
+	}
+
+	atomic.StoreUint32(&atExit.closed, 1)
+	for _, fn := range atExit.fns {
+		if err := fn(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 }

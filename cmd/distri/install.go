@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -326,6 +327,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 
 	// hook: distri1
 	if strings.HasPrefix(pkg, "distri1-") && distri.ParseVersion(pkg).Pkg == "distri1" {
+		log.Println("hook/distri1: updating /init")
 		if err := hookinstall(filepath.Join(root, "init"), "out/bin/distri"); err != nil {
 			return err
 		}
@@ -337,17 +339,30 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		if pv.Pkg == "linux" {
 			version := fmt.Sprintf("%s-%d", pv.Upstream, pv.DistriRevision)
 			dest := filepath.Join(root, "boot", "vmlinuz-"+version)
+			log.Printf("hook/linux: updating %s", dest)
 			if err := hookinstall(dest, "out/vmlinuz"); err != nil {
 				return err
 			}
 
 			if root == "/" {
 				cmd := exec.Command("/etc/update-grub")
+				log.Printf("hook/linux: running %v", cmd.Args)
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 				if err := cmd.Run(); err != nil {
 					return xerrors.Errorf("%v: %w", cmd.Args, err)
 				}
+
+				registerAtExit(func() error {
+					dracut := exec.Command("sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-8/out/share/pkgconfig/ dracut --force /boot/initramfs-"+pv.Upstream+"-"+strconv.FormatInt(pv.DistriRevision, 10)+".img "+pv.Upstream)
+					dracut.Stderr = os.Stderr
+					dracut.Stdout = os.Stdout
+					log.Printf("hook/linux: running %v", dracut.Args)
+					if err := dracut.Run(); err != nil {
+						return xerrors.Errorf("%v: %v", dracut.Args, err)
+					}
+					return nil
+				})
 			}
 		}
 	}
