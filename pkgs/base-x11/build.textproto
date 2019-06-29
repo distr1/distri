@@ -1,5 +1,5 @@
 source: "empty://"
-version: "2-2"
+version: "2-3"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
@@ -23,3 +23,5 @@ runtime_dep: "xrdb"
 runtime_dep: "dejavu-fonts-ttf"
 runtime_dep: "google-chrome"
 runtime_dep: "xdm"
+runtime_dep: "kbd"
+runtime_dep: "kbd-neo"
