@@ -1424,6 +1424,18 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
+	for _, f := range b.Proto.GetInstall().GetFile() {
+		fn := filepath.Join(b.SourceDir, f.GetSrcpath())
+		dest := filepath.Join(b.DestDir, b.Prefix, "out", f.GetDestpath())
+		log.Printf("installing file: cp %s %s/", fn, dest)
+		if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+			return nil, err
+		}
+		if err := copyFile(fn, dest); err != nil {
+			return nil, err
+		}
+	}
+
 	for _, link := range b.Proto.GetInstall().GetSymlink() {
 		oldname := link.GetOldname()
 		newname := link.GetNewname()
@@ -1870,11 +1882,8 @@ func (b *buildctx) extract() error {
 		}
 	}
 
-	for _, u := range b.Proto.GetCherryPick() {
-		if err := b.cherryPick(u, tmp); err != nil {
-			return xerrors.Errorf("cherry picking %s: %v", u, err)
-		}
-		log.Printf("cherry picked %s", u)
+	if err := b.applyPatches(tmp); err != nil {
+		return err
 	}
 
 	if err := os.Rename(tmp, b.SourceDir); err != nil {
@@ -2077,6 +2086,39 @@ func (b *buildctx) downloadHTTP(fn string) error {
 	return f.Close()
 }
 
+func (b *buildctx) applyPatches(tmp string) error {
+	for _, u := range b.Proto.GetCherryPick() {
+		if err := b.cherryPick(u, tmp); err != nil {
+			return xerrors.Errorf("cherry picking %s: %v", u, err)
+		}
+		log.Printf("cherry picked %s", u)
+	}
+	for _, ef := range b.Proto.GetExtraFile() {
+		// copy the file into tmp
+		fn := filepath.Join(b.PkgDir, ef)
+		inf, err := os.Open(fn)
+		if err != nil {
+			return err
+		}
+		defer inf.Close()
+		outf, err := os.Create(filepath.Join(tmp, ef))
+		if err != nil {
+			return err
+		}
+		defer outf.Close()
+		if _, err := io.Copy(outf, inf); err != nil {
+			return err
+		}
+		if err := outf.Close(); err != nil {
+			return err
+		}
+		if err := inf.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *buildctx) makeEmpty() error {
 	if _, err := os.Stat(b.SourceDir); err == nil {
 		return nil // already exists
@@ -2091,11 +2133,8 @@ func (b *buildctx) makeEmpty() error {
 	}
 	defer os.RemoveAll(tmp)
 
-	for _, u := range b.Proto.GetCherryPick() {
-		if err := b.cherryPick(u, tmp); err != nil {
-			return xerrors.Errorf("cherry picking %s: %v", u, err)
-		}
-		log.Printf("cherry picked %s", u)
+	if err := b.applyPatches(tmp); err != nil {
+		return err
 	}
 
 	return os.Rename(tmp, b.SourceDir)

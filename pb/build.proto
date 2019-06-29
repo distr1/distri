@@ -62,6 +62,12 @@ message Install {
     optional string capability = 2; // specified in cap_from_text(3)
   }
   repeated Cap capability = 5;
+
+  message File {
+    optional string srcpath = 1; // relative to ${DISTRI_SOURCEDIR}
+    optional string destpath = 2; // relative to ${DISTRI_PREFIX}
+  }
+  repeated File file = 6;
 }
 
 message Claim {
@@ -111,6 +117,10 @@ message Build {
   // URLs to patches to cherry-pick after extracting the source, e.g.:
   // https://git.savannah.gnu.org/cgit/make.git/patch/?id=48c8a116a914a325a0497721f5d8b58d5bba34d4
   repeated string cherry_pick = 6;
+
+  // Copied as-is into the source directory. Could also be achieved by using
+  // patches, but files are a little bit easier to maintain this way.
+  repeated string extra_file = 17;
 
   optional Install install = 8;
 
