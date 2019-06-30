@@ -1,6 +1,6 @@
 source: "https://github.com/CanonicalLtd/lightdm/releases/download/1.28.0/lightdm-1.28.0.tar.xz"
 hash: "f20f599d8d7cf90b77a2df33c6e9e615abc443123b1b228de1c20a636aecfa07"
-version: "1.28.0-1"
+version: "1.28.0-2"
 extra_file: "lightdm.service"
 extra_file: "lightdm.sysusers"
 extra_file: "lightdm.tmpfiles"
@@ -32,10 +32,10 @@ install: <
 
   file: <
     srcpath: "lightdm.sysusers"
-    destpath: "lib/sysusers.d/lightdm.sysusers"
+    destpath: "lib/sysusers.d/lightdm.conf"
   >
   file: <
     srcpath: "lightdm.tmpfiles"
-    destpath: "lib/tmpfiles.d/lightdm.tmpfiles"
+    destpath: "lib/tmpfiles.d/lightdm.conf"
   >
 >
