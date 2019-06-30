@@ -301,19 +301,25 @@ func (p *packctx) pack(root string) error {
 	}
 
 	// TODO: dynamically find which units to enable (test: xdm)
-	cmd = exec.Command("unshare",
-		"--user",
-		"--map-root-user", // for mount permissions in the namespace
-		"--mount",
-		"--",
-		"chroot", root, "/ro/systemd-amd64-239-8/bin/systemctl",
-		"enable",
+	units := []string{
 		"systemd-networkd",
 		"containerd",
 		"docker",
 		"ssh",
 		"haveged",
-		"debugfs")
+	}
+	if p.extraBase == "base-x11" {
+		units = append(units, "debugfs")
+	}
+	cmd = exec.Command("unshare",
+		append([]string{
+			"--user",
+			"--map-root-user", // for mount permissions in the namespace
+			"--mount",
+			"--",
+			"chroot", root, "/ro/systemd-amd64-239-8/bin/systemctl",
+			"enable",
+		}, units...)...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
