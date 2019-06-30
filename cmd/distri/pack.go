@@ -654,6 +654,17 @@ name=root`)
 		}
 	}
 
+	{
+		shells := strings.Join([]string{
+			"/bin/zsh",
+			"/bin/bash",
+			"/bin/sh",
+		}, "\n") + "\n"
+		if err := ioutil.WriteFile("/mnt/etc/shells", []byte(shells), 0644); err != nil {
+			return err
+		}
+	}
+
 	if err := ioutil.WriteFile("/mnt/etc/dracut.conf.d/kbddir.conf", []byte("kbddir=/ro/share\n"), 0644); err != nil {
 		return err
 	}
