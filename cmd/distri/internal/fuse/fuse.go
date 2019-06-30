@@ -48,6 +48,11 @@ var ExchangeDirs = []string{
 	"/out/lib/girepository-1.0",
 	"/out/include",
 	"/out/share",
+	"/out/share/aclocal",
+	"/out/share/gettext",
+	"/out/share/gir-1.0",
+	"/out/share/glib-2.0/schemas",
+	"/out/share/mime",
 	"/out/gopath",
 	"/debug",
 }
