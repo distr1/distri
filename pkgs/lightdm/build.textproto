@@ -21,6 +21,8 @@ dep: "intltool"
 dep: "gobject-introspection"
 dep: "vala"
 
+runtime_dep: "accountsservice"
+
 install: <
   systemd_unit: "${DISTRI_SOURCEDIR}/lightdm.service"
 
