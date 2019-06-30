@@ -1,0 +1,20 @@
+--- old/data/lightdm.conf	2018-08-21 01:58:09.000000000 +0200
++++ new/data/lightdm.conf	2019-06-30 14:59:51.841457601 +0200
+@@ -92,7 +92,7 @@
+ #pam-autologin-service=lightdm-autologin
+ #pam-greeter-service=lightdm-greeter
+ #xserver-backend=
+-#xserver-command=X
++xserver-command=Xorg
+ #xmir-command=Xmir
+ #xserver-config=
+ #xserver-layout=
+@@ -105,7 +105,7 @@
+ #xdmcp-key=
+ #unity-compositor-command=unity-system-compositor
+ #unity-compositor-timeout=60
+-#greeter-session=example-gtk-gnome
++greeter-session=lightdm-gtk-greeter
+ #greeter-hide-users=false
+ #greeter-allow-guest=true
+ #greeter-show-manual-login=false
