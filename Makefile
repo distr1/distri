@@ -1,3 +1,47 @@
+# My preferred way to quickly test distri in a somewhat real environment is to
+# use qemu (with KVM acceleration).
+#
+# To build an image in DISKIMG (default /tmp/root.img) which is ready to be used
+# via qemu-serial¹, use e.g.:
+#   % make image serial=1
+#   % make qemu-serial
+#
+# If you want a graphical output instead, use e.g.:
+#   % make image
+#   % make qemu-graphic
+#
+# To test an encrypted root file system, substitute the image target with the
+# cryptimage target.
+#
+# ① Unfortunately, the linux console can only print to one device.
+
+DISKIMG=/tmp/distri-disk.img
+GCSDISKIMG=/tmp/distri-gcs.tar.gz
+
+QEMU=qemu-system-x86_64 \
+	-device e1000,netdev=net0 \
+	-netdev user,id=net0,hostfwd=tcp::5555-:22 \
+	-device virtio-rng-pci \
+	-smp 8 \
+	-machine accel=kvm \
+	-m 4096 \
+	-drive if=none,id=hd,file=${DISKIMG},format=raw \
+	-device virtio-scsi-pci,id=scsi \
+	-device scsi-hd,drive=hd
+
+IMAGE=distri pack \
+	-diskimg=${DISKIMG} \
+	-base=base-x11
+
+GCSIMAGE=distri pack \
+	-gcsdiskimg=${GCSDISKIMG} \
+	-base=base-cloud
+
+# for when you want to see non-kernel console output (e.g. systemd), useful with qemu
+ifdef serial
+IMAGE+= -serialonly
+endif
+
 .PHONY: install
 
 all: install
@@ -10,25 +54,16 @@ test: install
 	DISTRIROOT=$$PWD go test -v ./cmd/distri/... ./integration/...
 
 image:
-	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4
+	DISTRIROOT=$$PWD ${IMAGE}
 
 cryptimage:
-	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4 -encrypt -base=base-x11 # -serialonly # for when you want to see non-kernel console output (e.g. systemd), useful with qemu
+	DISTRIROOT=$$PWD ${IMAGE} -encrypt
 
 gcsimage:
-	sudo rm -rf /tmp/inst; DISTRIROOT=$$PWD distri pack -root=/tmp/inst -diskimg=/tmp/root.ext4 -gcsdiskimg=/tmp/distri-gcs.tar.gz -base=base-cloud
+	DISTRIROOT=$$PWD ${GCSIMAGE}
 
-qemu:
-	qemu-system-x86_64 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-rng-pci -smp 8 -machine accel=kvm -m 4096 -kernel $$PWD/linux-4.18.7/arch/x86/boot/bzImage  -append "console=ttyS0,115200 root=/dev/sda4 rootfstype=ext4 init=/init rw" -nographic -drive if=none,id=hd,file=/tmp/root.ext4,format=raw -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd
-
-qemu-fastnet:
-	qemu-system-x86_64 -device virtio-rng-pci -smp 8 -machine accel=kvm -m 4096 -kernel $$PWD/linux-4.18.7/arch/x86/boot/bzImage  -append "console=ttyS0,115200 root=/dev/sda4 rootfstype=ext4 init=/init rw" -nographic -drive if=none,id=hd,file=/tmp/root.ext4,format=raw -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd
+qemu-serial:
+	${QEMU} -nographic
 
 qemu-graphic:
-	qemu-system-x86_64 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-rng-pci -smp 8 -machine accel=kvm -m 4096 -kernel $$PWD/linux-4.18.7/arch/x86/boot/bzImage  -append "root=/dev/sda4 rootfstype=ext4 init=/init rw" -drive if=none,id=hd,file=/tmp/root.ext4,format=raw -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd
-
-qemu-bios:
-	qemu-system-x86_64 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-rng-pci -smp 8 -machine accel=kvm -m 4096 -drive if=none,id=hd,file=/tmp/root.ext4,format=raw -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd -nographic
-
-qemu-bios-graphic:
-	qemu-system-x86_64 -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-rng-pci -smp 8 -machine accel=kvm -m 4096 -drive if=none,id=hd,file=/tmp/root.ext4,format=raw -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd
+	${QEMU}
