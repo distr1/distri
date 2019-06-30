@@ -306,7 +306,7 @@ func (r *Reader) lookupComponent(parent Inode, component string) (Inode, error) 
 	return 0, &FileNotFoundError{path: component}
 }
 
-func (r *Reader) LookupPath(path string) (Inode, error) {
+func (r *Reader) lookupPath(path string, followSymlink bool) (Inode, error) {
 	inode := r.RootInode()
 	parts := strings.Split(path, "/")
 	for idx, part := range parts {
@@ -317,6 +317,9 @@ func (r *Reader) LookupPath(path string) (Inode, error) {
 				return 0, &FileNotFoundError{path: path}
 			}
 			return 0, err
+		}
+		if !followSymlink {
+			continue
 		}
 		fi, err := r.Stat("", inode)
 		if err != nil {
@@ -334,6 +337,16 @@ func (r *Reader) LookupPath(path string) (Inode, error) {
 		}
 	}
 	return inode, nil
+}
+
+func (r *Reader) LookupPath(path string) (Inode, error) {
+	return r.lookupPath(path, true)
+}
+
+// LlookupPath is like LookupPath, but does not follow symbolic links, i.e. will
+// instead return the inode of the link itself.
+func (r *Reader) LlookupPath(path string) (Inode, error) {
+	return r.lookupPath(path, false)
 }
 
 func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {

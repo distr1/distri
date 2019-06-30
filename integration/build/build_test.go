@@ -1,7 +1,6 @@
 package build_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,7 +13,6 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"golang.org/x/xerrors"
 )
 
 const buildTextproto = `
@@ -339,62 +337,8 @@ func list(rd *squashfs.Reader, dir string, inode squashfs.Inode) ([]string, erro
 	return files, nil
 }
 
-type fileNotFoundError struct {
-	path string
-}
-
-func (e *fileNotFoundError) Error() string {
-	return fmt.Sprintf("%q not found", e.path)
-}
-
-func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component string) (squashfs.Inode, error) {
-	rfis, err := rd.Readdir(parent)
-	if err != nil {
-		return 0, err
-	}
-	for _, rfi := range rfis {
-		if rfi.Name() == component {
-			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
-		}
-	}
-	return 0, &fileNotFoundError{path: component}
-}
-
-func lookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
-	inode := rd.RootInode()
-	parts := strings.Split(path, "/")
-	for idx, part := range parts {
-		var err error
-		inode, err = lookupComponent(rd, inode, part)
-		if err != nil {
-			if _, ok := err.(*fileNotFoundError); ok {
-				return 0, &fileNotFoundError{path: path}
-			}
-			return 0, err
-		}
-		if idx == len(parts)-1 {
-			return inode, nil
-		}
-		fi, err := rd.Stat("", inode)
-		if err != nil {
-			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
-		}
-		if fi.Mode()&os.ModeSymlink > 0 {
-			target, err := rd.ReadLink(inode)
-			if err != nil {
-				return 0, err
-			}
-			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
-			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
-			//log.Printf("-> %s", target)
-			return lookupPath(rd, target)
-		}
-	}
-	return inode, nil
-}
-
 func readLink(rd *squashfs.Reader, name string) (string, error) {
-	inode, err := lookupPath(rd, name)
+	inode, err := rd.LlookupPath(name)
 	if err != nil {
 		return "", nil
 	}
