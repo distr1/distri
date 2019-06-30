@@ -251,6 +251,7 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
+	skipContentHooks = true
 	if err := install(append([]string{
 		"-root=" + root,
 		"-repo=" + p.repo,

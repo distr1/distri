@@ -180,6 +180,8 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
+var skipContentHooks = false
+
 func install1(ctx context.Context, root string, repo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
@@ -325,6 +327,53 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 					return nil
 				})
 			}
+		}
+	}
+
+	readerAt, err := mmap.Open(filepath.Join(tmpDir, pkg+".squashfs"))
+	if err != nil {
+		return err
+	}
+	defer readerAt.Close()
+
+	rd, err := squashfs.NewReader(readerAt)
+	if err != nil {
+		return err
+	}
+
+	if !skipContentHooks {
+		if _, err := rd.LookupPath("out/lib/sysusers.d"); err == nil {
+			registerAtExit(func() error {
+				path, err := exec.LookPath("systemd-sysusers")
+				if err != nil {
+					log.Printf("systemd-sysusers not found, not creating users")
+					return nil
+				}
+				cmd := exec.Command(path, "--root="+root)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					return xerrors.Errorf("%v: %v", cmd.Args, err)
+				}
+				return nil
+			})
+		}
+
+		if _, err := rd.LookupPath("out/lib/tmpfiles.d"); err == nil {
+			registerAtExit(func() error {
+				path, err := exec.LookPath("systemd-tmpfiles")
+				if err != nil {
+					log.Printf("systemd-tmpfiles not found, not creating tmpfiles")
+					return nil
+				}
+				cmd := exec.Command(path, "--create", "--root="+root)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					return xerrors.Errorf("%v: %v", cmd.Args, err)
+				}
+				return nil
+			})
 		}
 	}
 

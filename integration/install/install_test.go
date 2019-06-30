@@ -392,6 +392,42 @@ func TestInstallHooks(t *testing.T) {
 	})
 }
 
+func TestInstallContentHooks(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
+	tmpdir, err := ioutil.TempDir("", "integrationinstall")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	called := filepath.Join(tmpdir, "called")
+
+	if err := ioutil.WriteFile(filepath.Join(tmpdir, "systemd-sysusers"), []byte("#!/bin/sh\ntouch "+called), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	os.Setenv("PATH", tmpdir+":"+os.Getenv("PATH"))
+
+	if err := installFile(ctx, tmpdir, "distri1"); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(called); err == nil {
+		t.Fatalf("systemd-sysusers unexpectedly called for distri1")
+	}
+
+	if err := installFile(ctx, tmpdir, "systemd"); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(called); err != nil {
+		t.Fatalf("systemd-sysusers not called for systemd")
+	}
+}
+
 func BenchmarkInstallChrome(b *testing.B) {
 	ctx := context.Background()
 	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
