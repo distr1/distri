@@ -631,7 +631,7 @@ name=root`)
 		return err
 	}
 
-	{
+	if p.encrypt {
 		crypttab := fmt.Sprintf("cryptroot UUID=%s none luks,discard\n", luksUUID)
 		if err := ioutil.WriteFile("/mnt/etc/crypttab", []byte(crypttab), 0644); err != nil {
 			return err
