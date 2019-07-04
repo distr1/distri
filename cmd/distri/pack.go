@@ -700,7 +700,7 @@ name=root`)
 		return xerrors.Errorf("%v: %v", mkconfig.Args, err)
 	}
 
-	if err := ioutil.WriteFile("/mnt/etc/update-grub", []byte("#!/bin/sh\n"+mkconfigCmd), 0755); err != nil {
+	if err := ioutil.WriteFile("/mnt/etc/update-grub", []byte("#!/bin/sh\n"+mkconfigCmd+"\n"), 0755); err != nil {
 		return xerrors.Errorf("writing /etc/update-grub: %v", err)
 	}
 
