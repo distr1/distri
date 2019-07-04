@@ -1,0 +1,11 @@
+source: "https://www.musl-libc.org/releases/musl-1.1.22.tar.gz"
+hash: "8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3"
+version: "1.1.22-1"
+
+cbuilder: <
+  # To prevent the musl configure from thinking we are cross-compiling:
+  extra_configure_flag: "--build=x86_64-pc-linux-gnu"
+>
+
+# build dependencies:
+dep: "binutils"
