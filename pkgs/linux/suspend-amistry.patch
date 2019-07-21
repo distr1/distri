@@ -1,0 +1,124 @@
+From d8b9e7d1b424e39fb4b853b8d51693416cfadf3a Mon Sep 17 00:00:00 2001
+From: Anand K Mistry <amistry@chromium.org>
+Date: Wed, 10 Jul 2019 11:40:32 +1000
+Subject: [PATCH] Fix FUSE preventing system suspend.
+
+If a file system operation is done towards a FUSE process that has
+already been frozen, the requesting process is unable to be frozen. This
+is because request_wait_answer() utilises wait_event* functions that
+do not freeze. Specifically, wait_event_killable() and wait_event() do
+not freeze because:
+a. They use UNINTERRUPTIBLE sleep states
+b. They do not attempt to freeze after being woken up.
+
+Other attempts to fix this use wait_event_freezable(), but that changes
+the sleep to INTERRUPTIBLE without properly handling the signaled state.
+
+This is a common issue:
+https://bugzilla.kernel.org/show_bug.cgi?id=198879
+https://bugzilla.redhat.com/show_bug.cgi?id=656992
+https://bugs.launchpad.net/ubuntu/+source/sshfs-fuse/+bug/1702368
+https://github.com/libfuse/libfuse/issues/248
+
+The fix here is two part:
+1. Wake up all sleeping user processes, not just interruptible ones.
+   Assuming waiter functions are properly handling spurious wake-ups,
+   this should be a no-op other than a few spurious wake-ups of
+   UNINTERRUPTIBLE sleeps when freezing user processes.
+2. Introduce and use wait_event* specialisations that attempt to freeze
+   UNINTERRUPTIBLE sleeps after wake up.
+
+Unfortunatly, this fix isn't perfect. A number of issues still exist:
+- A number of other places in FUSE use non-freezable wait_event*
+  functions, such as __fuse_get_req().
+- request_wait_answer()'s use of a non-killable wait_event() as the
+  final wait condition can prevent a non-FUSE user process from being
+  SIGKILL'd if the FUSE process is 'stuck'.
+- This change does nothing to address freeze being prevented because of
+  a VFS lock acquisition (<insert link to mailing list post pointing
+  this out>).
+- Because the freezing of user processes involves setting the
+  TIF_SIGPENDING flag, any use of wait_event_freezable() on a user
+  process will result in an unnecessary interrruption of the wait and
+  restart of the syscall or EINTR. I've found other problematic use of
+  wait_event_freezable() in the kernel.
+- It's been argued that user space file systems are fundamentally an
+  issue. I respectfully disagree, in theory. In practice, it's a problem
+  for implementing a POSIX-y VFS layer.
+- Hijacking the signal handler for freezing user processes needs to be
+  reconsidered (IMHO).
+
+All this said, I don't think this CL is suitable for submission.
+Spuriously waking up UNINTERRUPTIBLE processes could cause unwanted
+side-effects for improper waiters. And the use of the 'private'
+__wait_event() macro is, to put it lightly, nasty. Yuck!
+
+DO NOT SUBMIT!!!
+
+BUG=b:134792837,chromium:968060
+
+Change-Id: I0a1765139e17144dbb1e273199b39dab9b87ca73
+---
+
+diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+index 6ee471b..3b0e201 100644
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -21,6 +21,7 @@
+ #include <linux/swap.h>
+ #include <linux/splice.h>
+ #include <linux/sched.h>
++#include <linux/freezer.h>
+ 
+ MODULE_ALIAS_MISCDEV(FUSE_MINOR);
+ MODULE_ALIAS("devname:fuse");
+@@ -440,6 +441,13 @@
+ 	kill_fasync(&fiq->fasync, SIGIO, POLL_IN);
+ }
+ 
++#define __fuse_wait_event(wq_head, condition)          \
++    (void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0, \
++                        freezable_schedule())
++
++#define __fuse_wait_event_killable(wq_head, condition)          \
++    ___wait_event(wq_head, condition, TASK_KILLABLE, 0, 0, freezable_schedule())
++
+ static void request_wait_answer(struct fuse_conn *fc, struct fuse_req *req)
+ {
+ 	struct fuse_iqueue *fiq = &fc->iq;
+@@ -461,7 +469,7 @@
+ 
+ 	if (!test_bit(FR_FORCE, &req->flags)) {
+ 		/* Only fatal signals may interrupt this */
+-		err = wait_event_killable(req->waitq,
++		err = __fuse_wait_event_killable(req->waitq,
+ 					test_bit(FR_FINISHED, &req->flags));
+ 		if (!err)
+ 			return;
+@@ -482,7 +490,7 @@
+ 	 * Either request is already in userspace, or it was forced.
+ 	 * Wait it out.
+ 	 */
+-	wait_event(req->waitq, test_bit(FR_FINISHED, &req->flags));
++	__fuse_wait_event(req->waitq, test_bit(FR_FINISHED, &req->flags));
+ }
+ 
+ static void __fuse_request_send(struct fuse_conn *fc, struct fuse_req *req)
+diff --git a/kernel/freezer.c b/kernel/freezer.c
+index b162b74..83b92ef 100644
+--- a/kernel/freezer.c
++++ b/kernel/freezer.c
+@@ -101,7 +101,12 @@
+ 	unsigned long flags;
+ 
+ 	if (lock_task_sighand(p, &flags)) {
+-		signal_wake_up(p, 0);
++		/* Wake up both interruptable and uninterrupable tasks.
++		 * For uninterruptable tasks, this will cause spurious
++		 * wake-ups, but any waiting code should already be handling
++		 * these.
++		 */
++		signal_wake_up_state(p, TASK_NORMAL);
+ 		unlock_task_sighand(p, &flags);
+ 	}
+ }

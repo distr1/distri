@@ -7,6 +7,7 @@ cbuilder: <
 >
 
 cherry_pick: "config.patch"
+cherry_pick: "suspend-amistry.patch"
 
 # build dependencies:
 dep: "bison"
