@@ -1,0 +1,22 @@
+--- old/src/polkitbackend/polkitbackendinteractiveauthority.c	2018-06-23 00:20:18.000000000 +0200
++++ new/src/polkitbackend/polkitbackendinteractiveauthority.c	2019-07-22 11:09:47.872541774 +0200
+@@ -299,7 +299,7 @@
+ 
+   priv = POLKIT_BACKEND_INTERACTIVE_AUTHORITY_GET_PRIVATE (authority);
+ 
+-  directory = g_file_new_for_path (PACKAGE_DATA_DIR "/polkit-1/actions");
++  directory = g_file_new_for_path ("/ro/share" "/polkit-1/actions");
+   priv->action_pool = polkit_backend_action_pool_new (directory);
+   g_object_unref (directory);
+   g_signal_connect (priv->action_pool,
+--- old/src/polkitbackend/polkitbackendjsauthority.cpp	2018-04-03 22:57:57.000000000 +0200
++++ new/src/polkitbackend/polkitbackendjsauthority.cpp	2019-07-22 11:09:36.618298420 +0200
+@@ -518,7 +518,7 @@
+       {
+         authority->priv->rules_dirs = g_new0 (gchar *, 3);
+         authority->priv->rules_dirs[0] = g_strdup (PACKAGE_SYSCONF_DIR "/polkit-1/rules.d");
+-        authority->priv->rules_dirs[1] = g_strdup (PACKAGE_DATA_DIR "/polkit-1/rules.d");
++        authority->priv->rules_dirs[1] = g_strdup ("/ro/share" "/polkit-1/rules.d");
+       }
+ 
+     authority->priv->rkt_context = g_main_context_new ();
