@@ -1,6 +1,6 @@
 source: "http://dist.schmorp.de/rxvt-unicode/rxvt-unicode-9.22.tar.bz2"
 hash: "e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd"
-version: "9.22-1"
+version: "9.22-2"
 
 cbuilder: <>
 
@@ -17,6 +17,7 @@ build_step: <
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--enable-xft"
   argv: "--with-terminfo=${DISTRI_DESTDIR}${DISTRI_PREFIX}/share/terminfo"
+  argv: "--enable-256-color"
 >
 
 build_step: <
