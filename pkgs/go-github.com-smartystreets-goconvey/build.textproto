@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/smartystreets/goconvey@v0.0.0-20190710185942-9d28bd7c0945"
+hash: "9be304d3d63c39f9084d72b5ac9369d7c9ea3322c0445e2b3cf9afb79c95669f"
+version: "v0.0.0-20190710185942-9d28bd7c0945-1"
+
+gomodbuilder: <>
+
+# build dependencies:

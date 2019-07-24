@@ -1,0 +1,73 @@
+source: "distri+gomod://github.com/junegunn/fzf@v0.0.0-20190719042446-65773882505b"
+hash: "f0f038bbaf3e9b1a907e15045cccd562e6c52777ffe7d3101dca030c987afc15"
+version: "v0.0.0-20190719042446-65773882505b-1"
+
+cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+
+# Go build environment:
+dep: "golang"
+
+# build dependencies:
+dep: "go-github.com-gdamore-encoding"
+dep: "go-github.com-gdamore-tcell"
+dep: "go-github.com-gopherjs-gopherjs"
+dep: "go-github.com-jtolds-gls"
+dep: "go-github.com-lucasb--eyer-go--colorful"
+dep: "go-github.com-mattn-go--isatty"
+dep: "go-github.com-mattn-go--runewidth"
+dep: "go-github.com-mattn-go--shellwords"
+dep: "go-github.com-smartystreets-assertions"
+dep: "go-github.com-smartystreets-goconvey"
+dep: "go-golang.org-x-crypto"
+dep: "go-golang.org-x-net"
+dep: "go-golang.org-x-sys"
+dep: "go-golang.org-x-text"
+dep: "go-golang.org-x-tools"
+dep: "go-github.com-DATA--DOG-go--sqlmock"
+
+# Using exchange directories directly does not work well with Go (resulting in
+# unexpected and uninformative error messages), because they contain symbolic
+# links. This is unlikely to change as per https://golang.org/doc/code.html:
+#   Note that symbolic links should not be used to link files or directories
+#   into your workspace.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "mkdir /tmp/gopath && cp -Lr /ro/gopath/pkg/ /tmp/gopath && cp -Lr ${DISTRI_SOURCEDIR}/pkg/ /tmp/gopath"
+>
+
+# To use this directory in the GOPROXY environment variable, we need to
+# synthesize list files.
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "find /tmp/gopath/pkg/mod/cache/download -name '*.mod' -exec sh -c 'echo $(basename {} .mod) > $(dirname {})/list' \\;"
+>
+
+# (Reported as https://github.com/golang/go/issues/29410)
+# /tmp/gopath/pkg/mod/gonum.org/v1/gonum@v0.0.0-20181012194325-406984d37414/go.mod
+# references golang.org/x/exp v0.0.0-20180321215751-8460e604b9de, which is not
+# packaged, and this makes the build fail. The following works around the issue:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "echo 'module golang.org/x/net' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/net/@v/v0.0.0-20190404232315-eb5bcb51f2a3.mod && echo 'module golang.org/x/tools' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/tools/@v/v0.0.0-20180917221912-90fa682c2a6e.mod && echo 'module golang.org/x/tools' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/tools/@v/v0.0.0-20190328211700-ab21143f2384.mod"
+>
+
+# Overwrite all versions with latest (will be resolved with the following go install):
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cd /tmp/gopath/pkg/mod/github.com/junegunn/fzf@v* && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin CGO_ENABLED=0 GOPROXY=file:///tmp/gopath/pkg/mod/cache/download go mod edit -json | grep 'Path\":' | cut -d\\\" -f 4 > /tmp/pkgs"
+>
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cd /tmp/gopath/pkg/mod/github.com/junegunn/fzf@v* && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin CGO_ENABLED=0 GOPROXY=file:///tmp/gopath/pkg/mod/cache/download go mod edit $(for p in $(</tmp/pkgs); do echo -replace ${p}=${p}@latest; done)"
+>
+   
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cd /tmp/gopath/pkg/mod/github.com/junegunn/fzf@v* && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin CGO_ENABLED=0 GOPROXY=file:///tmp/gopath/pkg/mod/cache/download go install -v"
+>

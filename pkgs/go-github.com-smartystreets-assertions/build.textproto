@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/smartystreets/assertions@v1.0.1"
+hash: "06a2a2a6ca2c8864508f28c0f97e39bdfac65baa658934c3560c03fa10bb928d"
+version: "v1.0.1-1"
+
+gomodbuilder: <>
+
+# build dependencies:

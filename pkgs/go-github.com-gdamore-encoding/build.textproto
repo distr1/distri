@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/gdamore/encoding@v1.0.0"
+hash: "8266bc81264360a72b5e74cf7ac284c547576690a3aa1330adf58af3afc86463"
+version: "v1.0.0-1"
+
+gomodbuilder: <>
+
+# build dependencies:
