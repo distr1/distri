@@ -215,6 +215,7 @@ func newBumpctx() (*bumpctx, error) {
 				dep == n.pkg {
 				continue // skip adding self edges
 			}
+			log.Printf("dep n=%s to=%s (byfn %v, bypkg %v)", n.pkg, dep, b.byFullname[dep], b.byPkg[dep])
 			if d, ok := b.byFullname[dep]; ok {
 				b.graph.SetEdge(b.graph.NewEdge(n, d))
 			}
@@ -224,6 +225,11 @@ func newBumpctx() (*bumpctx, error) {
 		}
 	}
 
+	// TODO: how do we break cycles for bootstrap packages (e.g. util-linux)?
+	// just fall back to -all when cycles are detected?
+	// confirm that the pkgs we use in bootstrapping are equal to the detected ones here
+	// TODO: try removing builderdeps from the graph?
+
 	// Break cycles
 	if _, err := topo.Sort(b.graph); err != nil {
 		uo, ok := err.(topo.Unorderable)
@@ -231,9 +237,10 @@ func newBumpctx() (*bumpctx, error) {
 			return nil, err
 		}
 		for _, component := range uo { // cyclic component
+
 			//log.Printf("uo %d", idx)
 			for _, n := range component {
-				//log.Printf("  bootstrap %v", n.(*bumpnode).pkg)
+				log.Printf("  bootstrap %v", n.(*bumpnode).pkg)
 				from := b.graph.From(n.ID())
 				for from.Next() {
 					b.graph.RemoveEdge(n.ID(), from.Node().ID())
@@ -254,6 +261,7 @@ func (b *bumpctx) bumpPkg(pkg string) ([]versionIncrement, error) {
 	}
 	n := b.byPkg[pkg]
 	nodes := b.graph.To(n.id)
+	log.Printf("to(%s) = %d nodes", pkg, nodes.Len())
 	inc := []versionIncrement{
 		versionIncrement{
 			pkg:     n.pkg,

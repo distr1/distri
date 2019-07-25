@@ -138,7 +138,6 @@ func batch(args []string) error {
 			}
 		}
 
-		// TODO: to conserve work, only add nodes which need to be rebuilt
 		n := &node{
 			id:       int64(idx),
 			pkg:      pkg,
@@ -447,3 +446,7 @@ func (s *scheduler) canBuild(candidate graph.Node) bool {
 // help2man needs perl
 // perl needs glibc
 // glibc needs bison
+
+// For bootstrapping, add explicit deps, even if they are already present in the
+// builder deps. e.g. glibc should dep: "bison"
+// This way, we can reduce the size of cycles which need to be built twice.
