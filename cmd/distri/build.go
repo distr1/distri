@@ -863,6 +863,14 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 				"coreutils-" + native,
 			}...)
 
+		case *pb.Build_Gobuilder:
+			deps = append(deps, []string{
+				"bash-" + native,
+				"coreutils-" + native,
+				"golang-" + native,
+			}...)
+			deps = append(deps, cdeps...) // for cgo
+
 		case *pb.Build_Cbuilder:
 			deps = append(deps, cdeps...)
 
@@ -1345,6 +1353,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
+		case *pb.Build_Gobuilder:
+			var err error
+			steps, env, err = b.buildgo(v.Gobuilder, env, deps, b.Proto.GetSource())
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return nil, xerrors.Errorf("BUG: unknown builder")
 		}
@@ -1753,6 +1767,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			// no extra runtime deps
 		case *pb.Build_Gomodbuilder:
 			// no extra runtime deps
+		case *pb.Build_Gobuilder:
+			// no extra runtime deps
 		case *pb.Build_Perlbuilder:
 			depPkgs[b.substituteCache["perl-amd64"]] = true
 			// pass through all deps to run-time deps
@@ -2147,6 +2163,7 @@ func updateFromDistriroot(builddir string) error {
 		"build":        true,
 		"linux-4.18.7": true,
 		"linux-5.1.9":  true,
+		"linux-5.1.10": true,
 		"pkgs":         true,
 		"docs":         true,
 		"org":          true,
@@ -2162,7 +2179,7 @@ func updateFromDistriroot(builddir string) error {
 		if err != nil {
 			return err
 		}
-		dest := filepath.Join(builddir, rel)
+		dest := filepath.Join(builddir, "pkg/mod/distri1@v0", rel)
 		if info.IsDir() {
 			return os.MkdirAll(dest, 0755)
 		}

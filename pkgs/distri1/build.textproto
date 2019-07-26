@@ -2,10 +2,10 @@ source: "distriroot://distri1-1.tar.gz"
 hash: ""
 version: "native-11"
 
-cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
-
-# Go build environment:
-dep: "golang"
+gobuilder: <
+  install: "./cmd/distri"
+  import_path: "distri1"
+>
 
 # build dependencies:
 dep: "go-cloud.google.com-go"
@@ -22,6 +22,7 @@ dep: "go-github.com-kisielk-gotool"
 dep: "go-github.com-kylelemons-godebug"
 dep: "go-github.com-lpar-gzipped"
 dep: "go-golang.org-x-exp"
+dep: "go-golang.org-x-crypto"
 dep: "go-golang.org-x-lint"
 dep: "go-golang.org-x-net"
 dep: "go-golang.org-x-oauth2"
@@ -37,45 +38,3 @@ dep: "go-google.golang.org-grpc"
 dep: "go-honnef.co-go-tools"
 dep: "go-golang.org-x-xerrors"
 dep: "go-github.com-orcaman-writerseeker"
-
-# Using exchange directories directly does not work well with Go (resulting in
-# unexpected and uninformative error messages), because they contain symbolic
-# links. This is unlikely to change as per https://golang.org/doc/code.html:
-#   Note that symbolic links should not be used to link files or directories
-#   into your workspace.
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "mkdir /tmp/gopath && cp -Lr /ro/gopath/pkg/ /tmp/gopath"
->
-
-# (Reported as https://github.com/golang/go/issues/29410)
-# /tmp/gopath/pkg/mod/gonum.org/v1/gonum@v0.0.0-20181012194325-406984d37414/go.mod
-# references golang.org/x/exp v0.0.0-20180321215751-8460e604b9de, which is not
-# packaged, and this makes the build fail. The following works around the issue:
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "echo 'module golang.org/x/exp' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/exp/@v/v0.0.0-20180321215751-8460e604b9de.mod"
->
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "echo 'module golang.org/x/tools' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/tools/@v/v0.0.0-20180525024113-a5b4c53f6e8b.mod"
->
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "echo 'module golang.org/x/net' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/net/@v/v0.0.0-20180826012351-8a410e7b638d.mod"
->
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "echo 'module golang.org/x/sys' > /tmp/gopath/pkg/mod/cache/download/golang.org/x/sys/@v/v0.0.0-20180830151530-49385e6e1522.mod"
->
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cd ${DISTRI_SOURCEDIR} && HOME=/tmp GOPATH=/tmp/gopath GOBIN=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin CGO_ENABLED=0 go install -v ./cmd/distri"
->

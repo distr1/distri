@@ -40,6 +40,17 @@ message PythonBuilder {
 message GomodBuilder {
 }
 
+message GoBuilder {
+  // Additional flags to pass to “go install”, e.g. “./...” or “cmd/distri”.
+  optional string install = 1;
+
+  // Import path of the package that is being built,
+  // e.g. “github.com/junegunn/fzf”.
+  //
+  // Derived from the source URL by default; should usually not be specified.
+  optional string import_path = 2;
+}
+
 message Install {
   repeated string systemd_unit = 1;
 
@@ -105,6 +116,7 @@ message Build {
     PerlBuilder perlbuilder = 10;
     PythonBuilder pythonbuilder = 12;
     GomodBuilder gomodbuilder = 13;
+    GoBuilder gobuilder = 18;
   }
 
   // TODO: move this field into a custom builder
