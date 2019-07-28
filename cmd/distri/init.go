@@ -8,9 +8,7 @@ import (
 	"syscall"
 )
 
-func pid1() error {
-	log.Printf("FUSE-mounting package store /roimg on /ro")
-
+func bootfuse() error {
 	// TODO: start fuse in separate process, make argv[0] be '@' as per
 	// https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/
 
@@ -41,6 +39,16 @@ func pid1() error {
 
 	// Wait until the read end of the pipe returns EOF
 	if _, err := ioutil.ReadAll(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func pid1() error {
+	log.Printf("FUSE-mounting package store /roimg on /ro")
+
+	if err := bootfuse(); err != nil {
 		return err
 	}
 
