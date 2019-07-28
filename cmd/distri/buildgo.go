@@ -46,13 +46,14 @@ func (b *buildctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, sour
 	steps := [][]string{
 		// TODO: do we need this? []string{"/bin/sh", "-c", "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/gopath/; mkdir -p $d && cp -r ${DISTRI_SOURCEDIR}/* $d"},
 
-		// Make a writable GOPATH (which contains the module cache) because
-		// “go install” locks it.
-		[]string{"/bin/sh", "-c", "cp -Lr /ro/gopath /tmp"},
+		// Put together a GOPATH with a writable module cache, because “go
+		// install” uses a side lock located in the module cache around go.mod
+		// and go.sum updates, which are currently required. See also:
+		// https://github.com/golang/go/issues/33326
+		[]string{"/bin/sh", "-c", "MODCACHE=/tmp/gopath/pkg/mod/cache; mkdir -p $MODCACHE && ln -s /ro/gopath/pkg/mod/cache/download $MODCACHE && for dir in $(ls -d /ro/gopath/pkg/mod/* | grep -v '/cache$'); do ln -s $dir /tmp/gopath/pkg/mod/; done"},
 
-		// Make a writable copy so that we can update go.mod
+		// Make a writable source dir copy so that we can update go.mod
 		[]string{"/bin/sh", "-c", "cp -T -ar ${DISTRI_SOURCEDIR}/pkg/mod/" + importPath + "@v*/ ."},
-		//[]string{"/bin/sh", "-c", "cp -T -ar ${DISTRI_SOURCEDIR}/pkg/mod/github.com/junegunn/fzf@v*/ ."},
 
 		// Overwrite all versions with latest (will be resolved with the following go install):
 		gotool("go mod edit " + strings.Join(replace, " ")),
