@@ -130,9 +130,6 @@ func directmount(dir string, cfg *MountConfig) (*os.File, error) {
 	if err != nil {
 		return nil, errFallback
 	}
-	if err := syscall.SetNonblock(fd, false); err != nil {
-		return nil, err
-	}
 	dev := os.NewFile(uintptr(fd), "/dev/fuse")
 	// As per libfuse/fusermount.c:847: https://bit.ly/2SgtWYM#L847
 	data := fmt.Sprintf("fd=%d,rootmode=40000,user_id=%d,group_id=%d",
