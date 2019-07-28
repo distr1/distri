@@ -259,7 +259,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("fuse.Mount: %v", err)
 	}
 	join = mfs.Join
 

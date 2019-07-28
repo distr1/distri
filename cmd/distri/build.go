@@ -990,7 +990,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 
 		if b.FUSE {
 			if _, err = cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
-				return nil, err
+				return nil, xerrors.Errorf("cmdfuse.Mount: %v", err)
 			}
 			defer fuse.Unmount(depsdir)
 		} else {
@@ -1165,7 +1165,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				// shlibdeps works for binaries which depend on libraries they
 				// install.
 				if err := fuseMkdirAll(filepath.Join(b.ChrootDir, "ro", "ctl"), b.fullName()); err != nil {
-					return nil, err
+					return nil, xerrors.Errorf("fuseMkdirAll: %v", err)
 				}
 				if err := syscall.Mount(dst, prefix, "none", syscall.MS_BIND, ""); err != nil {
 					return nil, xerrors.Errorf("bind mount %s %s: %v", dst, prefix, err)
