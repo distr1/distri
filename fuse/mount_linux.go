@@ -126,10 +126,14 @@ var mountflagopts = map[string]func(uintptr) uintptr{
 var errFallback = errors.New("sentinel: fallback to fusermount(1)")
 
 func directmount(dir string, cfg *MountConfig) (*os.File, error) {
-	dev, err := os.OpenFile("/dev/fuse", os.O_RDWR, 0644)
+	fd, err := syscall.Open("/dev/fuse", syscall.O_RDWR, 0644)
 	if err != nil {
 		return nil, errFallback
 	}
+	if err := syscall.SetNonblock(fd, false); err != nil {
+		return nil, err
+	}
+	dev := os.NewFile(uintptr(fd), "/dev/fuse")
 	// As per libfuse/fusermount.c:847: https://bit.ly/2SgtWYM#L847
 	data := fmt.Sprintf("fd=%d,rootmode=40000,user_id=%d,group_id=%d",
 		dev.Fd(), os.Getuid(), os.Getgid())
