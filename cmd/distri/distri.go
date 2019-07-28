@@ -67,6 +67,12 @@ func main() {
 		go http.ListenAndServe(*httpListen, nil)
 	}
 
+	if os.Args[0] == "/entrypoint" {
+		if err := entrypoint(); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	if os.Getpid() == 1 {
 		if err := pid1(); err != nil {
 			log.Fatal(err)
