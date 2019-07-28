@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-11"
+version: "native-12"
 
 gobuilder: <
   install: "./cmd/distri"
@@ -38,3 +38,4 @@ dep: "go-google.golang.org-grpc"
 dep: "go-honnef.co-go-tools"
 dep: "go-golang.org-x-xerrors"
 dep: "go-github.com-orcaman-writerseeker"
+dep: "go-github.com-BurntSushi-toml"

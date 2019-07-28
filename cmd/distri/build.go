@@ -867,7 +867,7 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			deps = append(deps, []string{
 				"bash-" + native,
 				"coreutils-" + native,
-				"golang-" + native,
+				"golang113beta1-" + native,
 			}...)
 			deps = append(deps, cdeps...) // for cgo
 

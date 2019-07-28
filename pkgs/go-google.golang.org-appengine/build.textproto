@@ -1,6 +1,6 @@
-source: "distri+gomod://google.golang.org/appengine@v1.1.0"
-hash: "27860d72153108566ac459a6b1936a5c48ff63fd0df7923aea98320f1ef4e0a3"
-version: "v1.1.0-1"
+source: "distri+gomod://google.golang.org/appengine@v1.4.0"
+hash: "05075693ac5d5de6b0ffc5b7aaea246d9729009002e4ceccd9c829986325a082"
+version: "v1.4.0-1"
 
 gomodbuilder: <>
 

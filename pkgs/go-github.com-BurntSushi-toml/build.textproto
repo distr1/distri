@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/BurntSushi/toml@v0.3.1"
+hash: "57f00f1e265930a7d43bbd70bcdeae920032b6e1121483f797be0a842b7f5a13"
+version: "v0.3.1-1"
+
+gomodbuilder: <>
+
+# build dependencies:
