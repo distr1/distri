@@ -1423,6 +1423,15 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 	}
 
+	for _, path := range b.Proto.GetInstall().GetDelete() {
+		log.Printf("deleting %s", path)
+		dest := filepath.Join(b.DestDir, b.Prefix, "out", path)
+		if err := os.Remove(dest); err != nil {
+			// TODO: if EISDIR, call RemoveAll
+			return nil, err
+		}
+	}
+
 	for _, unit := range b.Proto.GetInstall().GetSystemdUnit() {
 		fn := b.substitute(unit)
 		if _, err := os.Stat(fn); err != nil {
@@ -1485,6 +1494,19 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		log.Printf("creating empty dir %s", dir)
 		dest := filepath.Join(b.DestDir, b.Prefix, "out")
 		if err := os.MkdirAll(filepath.Join(dest, dir), 0755); err != nil {
+			return nil, err
+		}
+	}
+
+	for _, rename := range b.Proto.GetInstall().GetRename() {
+		oldname := rename.GetOldname()
+		newname := rename.GetNewname()
+		log.Printf("renaming %s → %s", oldname, newname)
+		dest := filepath.Join(b.DestDir, b.Prefix, "out")
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(dest, newname)), 0755); err != nil {
+			return nil, err
+		}
+		if err := os.Rename(filepath.Join(dest, oldname), filepath.Join(dest, newname)); err != nil {
 			return nil, err
 		}
 	}

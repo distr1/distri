@@ -79,6 +79,14 @@ message Install {
     optional string destpath = 2; // relative to ${DISTRI_PREFIX}
   }
   repeated File file = 6;
+
+  message Rename {
+    optional string oldname = 1; // relative to ${DISTRI_PREFIX}/out
+    optional string newname = 2; // relative to ${DISTRI_PREFIX}/out
+  }
+  repeated Rename rename = 7;
+
+  repeated string delete = 8; // relative to ${DISTRI_PREFIX}/out
 }
 
 message Claim {

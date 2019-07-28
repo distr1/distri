@@ -1,0 +1,50 @@
+source: "http://repository.spotify.com/pool/non-free/s/spotify-client/spotify-client_1.1.10.546.ge08ef575-19_amd64.deb"
+hash: "da49fd4d222ff7d719345fba6298f38a6422ef293bb43ada13cf857a694a12e6"
+version: "1.1.10.546.ge08ef575_19-9"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "tar" # for unpacking the data.tar.gz part of the .deb
+dep: "gzip"
+
+# TODO: the following block possibly is an over-approximation (copied from google-chrome):
+dep: "expat"
+dep: "pango"
+dep: "cairo"
+dep: "libxext"
+dep: "libxdamage"
+dep: "libxfixes"
+dep: "libxrender"
+dep: "libxrandr"
+dep: "gdk-pixbuf"
+dep: "gtk+"
+dep: "libxcomposite"
+dep: "libxcursor"
+dep: "libxtst"
+dep: "nss"
+dep: "cups"
+dep: "libxscrnsaver"
+dep: "alsa-lib"
+dep: "patchelf"
+
+dep: "curl-gnutls"
+dep: "gnutls"
+dep: "gtk+-2"
+
+build_step: <
+  argv: "tar"
+  argv: "xf"
+  argv: "${DISTRI_SOURCEDIR}/data.tar.gz"
+>
+
+build_step: <
+  argv: "ldd"
+  argv: "usr/share/spotify/spotify"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/; mkdir -p $d/share $d/bin; cp -ar usr/share/spotify $d/share; ln -s ../share/spotify/spotify $d/bin/spotify"
+>
