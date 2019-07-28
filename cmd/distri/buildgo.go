@@ -40,7 +40,7 @@ func (b *buildctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, sour
 	}
 
 	gotool := func(args string) []string {
-		return []string{"/bin/sh", "-c", "GOCACHE=/tmp/throwaway GOPATH=/tmp/gopath GOPROXY=off " + args}
+		return []string{"/bin/sh", "-c", "GOSUMDB=off GOCACHE=/tmp/throwaway GOPATH=/tmp/gopath GOPROXY=off " + args}
 	}
 
 	steps := [][]string{
