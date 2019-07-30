@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/google/renameio@v0.0.0-20181108174601-76365acd908f"
 hash: "1298ccfc3188d9691838040c74902c05934a26f3df6fb846abff5ed0bd899d0b"
-version: "v0.0.0-20181108174601-76365acd908f-1"
+version: "v0.0.0-20181108174601-76365acd908f-2"
 
 gomodbuilder: <>
 

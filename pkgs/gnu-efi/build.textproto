@@ -1,6 +1,6 @@
 source: "https://vorboss.dl.sourceforge.net/project/gnu-efi/gnu-efi-3.0.9.tar.bz2"
 hash: "6715ea7eae1c7e4fc5041034bd3f107ec2911962ed284a081e491646b12277f0"
-version: "3.0.9-1"
+version: "3.0.9-2"
 
 cbuilder: <>
 

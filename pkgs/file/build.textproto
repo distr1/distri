@@ -1,6 +1,6 @@
 source: "http://http.debian.net/debian/pool/main/f/file/file_5.34.orig.tar.xz"
 hash: "b83618b2b1e269d65a28b068460add53a690e53fa11c53174df293bb04d231b2"
-version: "5.34-1"
+version: "5.34-2"
 
 cbuilder: <>
 

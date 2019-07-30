@@ -1,6 +1,6 @@
 source: "https://curl.haxx.se/download/curl-7.61.1.tar.bz2"
 hash: "a308377dbc9a16b2e994abd55455e5f9edca4e31666f8f8fcfe7a1a4aea419b9"
-version: "7.61.1-1"
+version: "7.61.1-2"
 
 cbuilder: <
   extra_configure_flag: "--with-ca-path=/etc/ssl/certs"

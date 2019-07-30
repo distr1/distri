@@ -1,6 +1,6 @@
 source: "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.1.tar.bz2"
 hash: "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741"
-version: "2.13.1-1"
+version: "2.13.1-2"
 
 cbuilder: <>
 

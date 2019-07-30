@@ -1,6 +1,6 @@
 source: "https://github.com/mesonbuild/meson/archive/0.47.1.tar.gz"
 hash: "c227ae37c1d4c8fc1531d536b38ff1fbf7afb08c59fc54a5321645164e5f92a8"
-version: "0.47.1-1"
+version: "0.47.1-2"
 
 pythonbuilder: <>
 

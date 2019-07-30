@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/golang/glog@v0.0.0-20160126235308-23def4e6c14b"
 hash: "e3507f19aaab7c21ece2979f423713916179682309c2970921898299cf8682dc"
-version: "v0.0.0-20160126235308-23def4e6c14b-1"
+version: "v0.0.0-20160126235308-23def4e6c14b-2"
 
 gomodbuilder: <>
 

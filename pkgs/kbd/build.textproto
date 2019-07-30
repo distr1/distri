@@ -1,6 +1,6 @@
 source: "https://mirrors.edge.kernel.org/pub/linux/utils/kbd/kbd-2.0.4.tar.xz"
 hash: "5fd90af6beb225a9bb9b9fb414c090fba53c9a55793e172f508cd43652e59a88"
-version: "2.0.4-2"
+version: "2.0.4-3"
 
 # sed -i 's,DATADIR "/" KEYMAPDIR,"/ro/share/keymaps",g' src/loadkeys.c
 # sed -i 's,DATADIR "/" FONTDIR,"/ro/share/consolefonts",g' src/setfont.c

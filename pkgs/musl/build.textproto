@@ -1,6 +1,6 @@
 source: "https://www.musl-libc.org/releases/musl-1.1.22.tar.gz"
 hash: "8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3"
-version: "1.1.22-2"
+version: "1.1.22-3"
 
 cherry_pick: "static-linking.patch"
 

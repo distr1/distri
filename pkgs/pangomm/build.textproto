@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/pangomm/2.42/pangomm-2.42.0.tar.xz"
 hash: "ca6da067ff93a6445780c0b4b226eb84f484ab104b8391fb744a45cbc7edbf56"
-version: "2.42.0-1"
+version: "2.42.0-2"
 
 cbuilder: <>
 

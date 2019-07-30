@@ -1,6 +1,6 @@
 source: "https://releases.pagure.org/libaio/libaio-0.3.111.tar.gz"
 hash: "62cf871ad8fd09eb3418f00aca7a7d449299b8e1de31c65f28bf6a2ef1fa502a"
-version: "0.3.111-1"
+version: "0.3.111-2"
 
 cbuilder: <
   copy_to_builddir: true

@@ -1,6 +1,6 @@
 source: "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.15.2.tar.xz"
 hash: "27a3211eb5c3f6929c5f123ffecaac0ea6e9ed6b93be879c033a7d5af13ad7e6"
-version: "1.15.2"
+version: "1.15.2-1"
 
 cbuilder: <>
 

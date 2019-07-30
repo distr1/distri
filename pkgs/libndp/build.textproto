@@ -1,6 +1,6 @@
 source: "http://libndp.org/files/libndp-1.7.tar.gz"
 hash: "2c480afbffb02792dbae3c13bbfb71d89f735562f2795cca0640ed3428b491b6"
-version: "1.7-1"
+version: "1.7-2"
 
 cbuilder: <>
 

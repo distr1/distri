@@ -1,6 +1,6 @@
 source: "https://github.com/protocolbuffers/protobuf/archive/v3.7.0.tar.gz"
 hash: "a19dcfe9d156ae45d209b15e0faed5c7b5f109b6117bfc1974b6a7b98a850320"
-version: "3.7.0-1"
+version: "3.7.0-2"
 
 cbuilder: <
   copy_to_builddir: true # for autoreconf

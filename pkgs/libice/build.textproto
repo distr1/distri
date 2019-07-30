@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libICE-1.0.9.tar.bz2"
 hash: "8f7032f2c1c64352b5423f6b48a8ebdc339cc63064af34d66a6c9aa79759e202"
-version: "1.0.9-1"
+version: "1.0.9-2"
 
 cbuilder: <>
 

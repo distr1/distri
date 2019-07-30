@@ -20,9 +20,9 @@ source: "empty://"
 hash: ""
 version: "1"
 
-dep: "bash-amd64-4.4.18-1"
+dep: "bash-amd64-4.4.18-2"
 
-runtime_dep: "pkg-config-amd64-0.29.2-1"
+runtime_dep: "pkg-config-amd64-0.29.2-2"
 
 build_step: <
   argv: "/bin/sh"
@@ -102,11 +102,12 @@ dep: "coreutils"
 dep: "perl"
 dep: "gcc" # for wrapper programs
 dep: "binutils" # for wrapper programs
+dep: "musl" # for wrapper programs
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; echo '#!/ro/perl-amd64-5.28.0-1/bin/perl' > $d/foo"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; echo '#!/ro/perl-amd64-5.28.0-2/bin/perl' > $d/foo"
 >
 `
 
@@ -213,13 +214,13 @@ func TestBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
-			"glib-amd64-2.58.0-1",       // from pkg-config (transitive)
-			"glibc-amd64-2.27-1",        // from glib-2.58.0
-			"zlib-amd64-1.2.11-1",       // from glib-2.58.0
-			"util-linux-amd64-2.32-4",   // from glib-2.58.0
-			"pam-amd64-1.3.1-8",         // from util-linux-2.32
-			"libffi-amd64-3.2.1-1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2-2", // from hello-1 (direct)
+			"glib-amd64-2.58.0-2",       // from pkg-config (transitive)
+			"glibc-amd64-2.27-2",        // from glib-2.58.0
+			"zlib-amd64-1.2.11-2",       // from glib-2.58.0
+			"util-linux-amd64-2.32-5",   // from glib-2.58.0
+			"pam-amd64-1.3.1-9",         // from util-linux-2.32
+			"libffi-amd64-3.2.1-2",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -298,13 +299,13 @@ func TestUnversionedBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-amd64-0.29.2-1", // from hello-1 (direct)
-			"glib-amd64-2.58.0-1",       // from pkg-config (transitive)
-			"glibc-amd64-2.27-1",        // from glib-2.58.0
-			"zlib-amd64-1.2.11-1",       // from glib-2.58.0
-			"util-linux-amd64-2.32-4",   // from glib-2.58.0
-			"pam-amd64-1.3.1-8",         // from util-linux-2.32
-			"libffi-amd64-3.2.1-1",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2-2", // from hello-1 (direct)
+			"glib-amd64-2.58.0-2",       // from pkg-config (transitive)
+			"glibc-amd64-2.27-2",        // from glib-2.58.0
+			"zlib-amd64-1.2.11-2",       // from glib-2.58.0
+			"util-linux-amd64-2.32-5",   // from glib-2.58.0
+			"pam-amd64-1.3.1-9",         // from util-linux-2.32
+			"libffi-amd64-3.2.1-2",      // from glib-2.58.0
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
@@ -468,8 +469,8 @@ func TestMultiPackageBuild(t *testing.T) {
 		{
 			meta: "multi-libs-amd64-1.meta.textproto",
 			want: []string{
-				"bash-amd64-4.4.18-1",
-				"glibc-amd64-2.27-1", // from bash
+				"bash-amd64-4.4.18-2",
+				"glibc-amd64-2.27-2", // from bash
 			},
 		},
 	} {
@@ -558,8 +559,8 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		{
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27-1",     // from shlibdeps
-				"libepoxy-amd64-1.5.2-1", // from pkgconfig
+				"glibc-amd64-2.27-2",     // from shlibdeps
+				"libepoxy-amd64-1.5.2-2", // from pkgconfig
 			},
 		},
 	} {
@@ -602,6 +603,7 @@ func TestShebangRuntimeDep(t *testing.T) {
 		"perl-amd64",
 		"gcc-amd64",      // for wrapper programs
 		"binutils-amd64", // for wrapper programs
+		"musl-amd64",     // for wrapper programs
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -648,8 +650,8 @@ func TestShebangRuntimeDep(t *testing.T) {
 		{
 			meta: "shebang-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27-1",  // from shlibdeps
-				"perl-amd64-5.28.0-1", // from shebang
+				"glibc-amd64-2.27-2",  // from shlibdeps
+				"perl-amd64-5.28.0-2", // from shebang
 			},
 		},
 	} {

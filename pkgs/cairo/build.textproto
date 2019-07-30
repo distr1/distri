@@ -1,6 +1,6 @@
 source: "https://www.cairographics.org/releases/cairo-1.14.12.tar.xz"
 hash: "8c90f00c500b2299c0a323dd9beead2a00353752b2092ead558139bd67f7bf16"
-version: "1.14.12-1"
+version: "1.14.12-2"
 
 cbuilder: <>
 

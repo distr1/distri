@@ -24,7 +24,7 @@ index 523e05a..43bdfa0 100644
 -#_ssl _ssl.c \
 -#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
 -#	-L$(SSL)/lib -lssl -lcrypto
-+SSL=/ro/openssl-amd64-1.0.2p
++SSL=/ro/openssl-amd64-1.0.2p-2
 +_ssl _ssl.c \
 +	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
 +	-L$(SSL)/lib -lssl -lcrypto

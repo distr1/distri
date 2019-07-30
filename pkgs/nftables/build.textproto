@@ -1,6 +1,6 @@
 source: "https://netfilter.org/projects/nftables/files/nftables-0.9.0.tar.bz2"
 hash: "ad8181b5fcb9ca572f444bed54018749588522ee97e4c21922648bb78d7e7e91"
-version: "0.9.0-1"
+version: "0.9.0-2"
 
 # build dependencies:
 dep: "bison"

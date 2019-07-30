@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.bz2"
 hash: "3d1d001210d76c9f754c12824aa69f25de7cb27bb6765df63455b77601a0dcc9"
-version: "2.7.6-1"
+version: "2.7.6-2"
 
 cbuilder: <>
 

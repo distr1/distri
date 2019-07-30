@@ -1,6 +1,6 @@
 source: "https://github.com/containerd/containerd/archive/v1.2.0-beta.2.tar.gz"
 hash: "f83dca711bb2b496a55445da6fa18c1df1af7c37252110416b824abc50814e33"
-version: "1.2.0-beta.2-1"
+version: "1.2.0-beta.2-2"
 
 cherry_pick: "service-execstart.patch"
 

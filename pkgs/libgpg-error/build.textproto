@@ -1,6 +1,6 @@
 source: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.32.tar.bz2"
 hash: "c345c5e73cc2332f8d50db84a2280abfb1d8f6d4f1858b9daa30404db44540ca"
-version: "1.32-1"
+version: "1.32-2"
 
 cbuilder: <>
 

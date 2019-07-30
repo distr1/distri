@@ -617,7 +617,8 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
-		if dep != "glibc-amd64-2.27-1" && dep != "glibc-i686-amd64-2.27-1" &&
+		if dep != "glibc-amd64-2.27-2" && dep != "glibc-i686-amd64-2.27-2" &&
+			dep != "glibc-amd64-2.27-1" && dep != "glibc-i686-amd64-2.27-1" &&
 			dep != "glibc-amd64-2.27" && dep != "glibc-i686-amd64-2.27" {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
@@ -1183,7 +1184,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
 			// TODO: without this, gcc fails to produce binaries. /ro/gcc-amd64-8.2.0-1/out/bin/x86_64-pc-linux-gnu-gcc does not pick up our --dynamic-linker flag apparently
-			if err := os.Symlink("/ro/glibc-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
+			if err := os.Symlink("/ro/"+b.substituteCache["glibc-amd64"]+"/out/lib", filepath.Join(b.ChrootDir, "lib64")); err != nil {
 				return nil, err
 			}
 
@@ -1193,13 +1194,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				// meaning they will search for startup files (e.g. crt1.o) in
 				// $(sysroot)/lib.
 				// TODO: try compiling with --sysroot pointing to /ro/glibc-i686-amd64-2.27/out/lib directly?
-				if err := os.Symlink("/ro/glibc-i686-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "lib")); err != nil {
+				if err := os.Symlink("/ro/"+b.substituteCache["glibc-i686-amd64"]+"/out/lib", filepath.Join(b.ChrootDir, "lib")); err != nil {
 					return nil, err
 				}
 			}
 
 			if !b.FUSE {
-				if err := os.Symlink("/ro/glibc-amd64-2.27-1/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
+				if err := os.Symlink("/ro/"+b.substituteCache["glibc-amd64"]+"/out/lib", filepath.Join(b.ChrootDir, "ro", "lib")); err != nil {
 					return nil, err
 				}
 			} else {

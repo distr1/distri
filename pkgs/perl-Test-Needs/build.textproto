@@ -1,6 +1,6 @@
 source: "https://cpan.metacpan.org/authors/id/H/HA/HAARG/Test-Needs-0.002005.tar.gz"
 hash: "5a4f33983586edacdbe00a3b429a9834190140190dab28d0f873c394eb7df399"
-version: "0.002005-1"
+version: "0.002005-2"
 
 perlbuilder: <>
 

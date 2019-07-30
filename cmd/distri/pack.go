@@ -203,7 +203,7 @@ func (p *packctx) pack(root string) error {
 	}
 
 	// TODO: de-duplicate with build.go
-	if err := os.Symlink("/ro/glibc-amd64-2.27-1/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/glibc-amd64-2.27-2/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
@@ -275,7 +275,7 @@ func (p *packctx) pack(root string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", root, "/ro/systemd-amd64-239-8/bin/systemd-firstboot", "--hostname=distri0",
+		"chroot", root, "/ro/systemd-amd64-239-9/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password=bleh",
 		"--copy-timezone",
 		"--copy-locale",
@@ -291,9 +291,9 @@ func (p *packctx) pack(root string) error {
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", root, "/ro/systemd-amd64-239-8/bin/systemd-sysusers",
-		"/ro/systemd-amd64-239-8/out/lib/sysusers.d/basic.conf",
-		"/ro/systemd-amd64-239-8/out/lib/sysusers.d/systemd.conf")
+		"chroot", root, "/ro/systemd-amd64-239-9/bin/systemd-sysusers",
+		"/ro/systemd-amd64-239-9/out/lib/sysusers.d/basic.conf",
+		"/ro/systemd-amd64-239-9/out/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -317,7 +317,7 @@ func (p *packctx) pack(root string) error {
 			"--map-root-user", // for mount permissions in the namespace
 			"--mount",
 			"--",
-			"chroot", root, "/ro/systemd-amd64-239-8/bin/systemctl",
+			"chroot", root, "/ro/systemd-amd64-239-9/bin/systemctl",
 			"enable",
 		}, units...)...)
 	cmd.Stdout = os.Stdout
@@ -682,7 +682,7 @@ name=root`)
 	if err := ioutil.WriteFile("/mnt/etc/dracut.conf.d/kbddir.conf", []byte("kbddir=/ro/share\n"), 0644); err != nil {
 		return err
 	}
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-8/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9-7.img 5.1.9")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-9/out/share/pkgconfig/ dracut /boot/initramfs-5.1.9-8.img 5.1.9")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
@@ -711,14 +711,14 @@ name=root`)
 		return xerrors.Errorf("writing /etc/update-grub: %v", err)
 	}
 
-	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02-1/bin/grub-install", "--target=i386-pc", base)
+	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02-2/bin/grub-install", "--target=i386-pc", base)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", install.Args, err)
 	}
 
-	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02-1/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--removable", "--no-nvram", "--boot-directory=/boot")
+	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02-2/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--removable", "--no-nvram", "--boot-directory=/boot")
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {

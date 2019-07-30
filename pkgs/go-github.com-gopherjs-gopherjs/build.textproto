@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/gopherjs/gopherjs@v0.0.0-20190430165422-3e4dfb77656c"
 hash: "08d3a8f56f26144378465f9411587502b9e2c0a1a264984d20b83f6c37a2a601"
-version: "v0.0.0-20190430165422-3e4dfb77656c-1"
+version: "v0.0.0-20190430165422-3e4dfb77656c-2"
 
 gomodbuilder: <>
 

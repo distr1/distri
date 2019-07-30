@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/make/make-4.2.1.tar.bz2"
 hash: "d6e262bf3601b42d2b1e4ef8310029e1dcf20083c5446b4b7aa67081fdffc589"
-version: "4.2.1-1"
+version: "4.2.1-2"
 
 # see also PDF page 90 of LFS-BOOK-8.2.pdf
 # TODO: enable this once we can autoreconf :)
