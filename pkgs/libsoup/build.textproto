@@ -9,7 +9,6 @@ dep: "libxml2"
 dep: "sqlite3"
 dep: "libpsl"
 dep: "intltool"
-# TODO: this check fails, maybe because glib-networking contains loadable gio* .so files?
 dep: "glib-networking"
 dep: "gobject-introspection"
 dep: "vala"
