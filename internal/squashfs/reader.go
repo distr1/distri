@@ -259,7 +259,7 @@ func (r *Reader) ReadLink(i Inode) (string, error) {
 
 	// Assumption: r.r is positioned right after the inode
 	buf := make([]byte, si.SymlinkSize)
-	if _, err := br.Read(buf); err != nil {
+	if _, err := io.ReadFull(br, buf); err != nil {
 		return "", err
 	}
 	return string(buf), nil
