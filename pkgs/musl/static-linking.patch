@@ -1,0 +1,11 @@
+--- old/tools/musl-gcc.specs.sh	2019-04-10 02:39:21.000000000 +0200
++++ new/tools/musl-gcc.specs.sh	2019-07-30 14:56:22.986930180 +0200
+@@ -23,7 +23,7 @@
+ crtendS.o%s $libdir/crtn.o
+ 
+ *link:
+--dynamic-linker $ldso -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}
++--build-id -dynamic-linker $ldso -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}
+ 
+ *esp_link:
+ 
