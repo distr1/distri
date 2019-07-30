@@ -811,6 +811,7 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 			"glibc",
 			"linux",
 			"findutils", // find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+			"musl",      // for wrapper programs
 
 			"strace", // useful for interactive debugging
 		}
@@ -1579,16 +1580,16 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				if err := f.Close(); err != nil {
 					return nil, err
 				}
-				getenv := func(key string) string {
-					for _, v := range env {
-						idx := strings.IndexByte(v, '=')
-						if k := v[:idx]; k != key {
-							continue
-						}
-						return v[idx+1:]
-					}
-					return ""
-				}
+				// getenv := func(key string) string {
+				// 	for _, v := range env {
+				// 		idx := strings.IndexByte(v, '=')
+				// 		if k := v[:idx]; k != key {
+				// 			continue
+				// 		}
+				// 		return v[idx+1:]
+				// 	}
+				// 	return ""
+				// }
 				args := []string{
 					"-O3",   // optimize as much as possible
 					"-s",    // strip
@@ -1597,10 +1598,20 @@ func (b *buildctx) build() (*pb.Meta, error) {
 					"-o", newname,
 					f.Name(),
 				}
-				if ldflags := strings.TrimSpace(getenv("LDFLAGS")); ldflags != "" {
-					args = append(args, strings.Split(ldflags, " ")...)
+				// NOTE: currently, ldflags only influence dynamic linking,
+				// so we just drop all ldflags.
+				//
+				// if ldflags := strings.TrimSpace(getenv("LDFLAGS")); ldflags != "" {
+				// 	args = append(args, strings.Split(ldflags, " ")...)
+				// }
+				cmd := "musl-gcc"
+				if b.Pkg == "musl" ||
+					b.Pkg == "gcc" ||
+					b.Pkg == "gcc-i686" ||
+					b.Pkg == "gcc-i686-c" {
+					cmd = "gcc"
 				}
-				gcc := exec.Command("gcc", args...)
+				gcc := exec.Command(cmd, args...)
 				log.Printf("compiling wrapper program: %v", gcc.Args)
 				gcc.Env = env
 				gcc.Stderr = os.Stderr
