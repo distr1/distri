@@ -19,7 +19,7 @@ dep: "go-github.com-golang-mock"
 dep: "go-github.com-golang-protobuf"
 dep: "go-github.com-google-go--cmp"
 dep: "go-github.com-google-renameio"
-dep: "go-github.com-jacobsa-fuse"
+# dep: "go-github.com-jacobsa-fuse" # replaced with ./fuse
 dep: "go-github.com-kisielk-gotool"
 dep: "go-github.com-kylelemons-godebug"
 dep: "go-github.com-lpar-gzipped"
