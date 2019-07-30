@@ -5,6 +5,8 @@ version: "native-12"
 gobuilder: <
   install: "./cmd/distri"
   import_path: "distri1"
+  # Used as /init before the dynamic linker is available:
+  go_env: "CGO_ENABLED=0"
 >
 
 # build dependencies:

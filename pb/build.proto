@@ -49,6 +49,10 @@ message GoBuilder {
   //
   // Derived from the source URL by default; should usually not be specified.
   optional string import_path = 2;
+
+  // Additional go environment variable to set when calling e.g. “go install”.
+  // E.g. go_env: "CGO_ENABLED=0"
+  repeated string go_env = 3;
 }
 
 message Install {
