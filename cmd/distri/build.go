@@ -2345,6 +2345,10 @@ func build(args []string) error {
 		artifactFd = fset.Int("artifactfd",
 			-1,
 			"INTERNAL protocol, do not use! file descriptor number on which to print line-separated groups of NUL-separated file names of build artifacts")
+
+		pkg = fset.String("pkg",
+			"",
+			"If non-empty, a package to build. Otherwise inferred from $PWD")
 	)
 	fset.Parse(args)
 
@@ -2362,9 +2366,15 @@ func build(args []string) error {
 		}
 	}
 
+	if *pkg != "" {
+		if err := os.Chdir(filepath.Join(env.DistriRoot, "pkgs", *pkg)); err != nil {
+			return err
+		}
+	}
+
 	if _, err := os.Stat("build.textproto"); err != nil {
 		if os.IsNotExist(err) {
-			return xerrors.Errorf("syntax: distri build, in the pkg/<pkg>/ directory")
+			return xerrors.Errorf("syntax: distri build, in the pkgs/<pkg>/ directory")
 		}
 		return err
 	}
