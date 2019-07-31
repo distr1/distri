@@ -57,6 +57,9 @@ build_step: <
   argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
   # argv: "--with-stage1-ldflags=-static"
   # argv: "--with-boot-ldflags=-static"
+  # TODO: enable gccgo. enabling it as-is will result in it always being chosen
+  # when running “go”, because everything is built against gcc and hence puts it
+  # very early in $PATH.
   argv: "--enable-languages=c,c++"
   argv: "--enable-linker-build-id" # compiler will always pass --build-id to linker
 >
