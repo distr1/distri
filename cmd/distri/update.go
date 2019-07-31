@@ -29,9 +29,6 @@ func update(args []string) error {
 		pkgset = fset.String("pkgset", "", "if non-empty, a package set to update")
 	)
 	fset.Parse(args)
-	if *repo == "" {
-		return xerrors.Errorf("-repo flag is required")
-	}
 
 	updateStart := time.Now()
 
