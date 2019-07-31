@@ -443,7 +443,7 @@ veth
 
 	fuse.Unmount(filepath.Join(root, "ro"))
 
-	chown := exec.Command("sh", "-c", fmt.Sprintf(`find "%s" -xdev -print0 | sudo xargs -0 chown --changes --no-dereference --from="%s" root:root`, root, os.Getenv("USER")))
+	chown := exec.Command("sh", "-c", fmt.Sprintf(`find "%s" -xdev -print0 | sudo xargs -0 chown --no-dereference --from="%s" root:root`, root, os.Getenv("USER")))
 	chown.Stderr = os.Stderr
 	chown.Stdout = os.Stdout
 	if err := chown.Run(); err != nil {
