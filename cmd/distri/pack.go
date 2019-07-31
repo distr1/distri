@@ -63,6 +63,7 @@ type packctx struct {
 	encrypt    bool
 	serialOnly bool
 	bootDebug  bool
+	branch     string
 }
 
 func pack(args []string) error {
@@ -78,6 +79,7 @@ func pack(args []string) error {
 	fset.BoolVar(&p.encrypt, "encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
 	fset.BoolVar(&p.serialOnly, "serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
 	fset.BoolVar(&p.bootDebug, "bootdebug", false, "Whether to debug early boot, i.e. add systemd.log_level=debug systemd.log_target=console")
+	fset.StringVar(&p.branch, "branch", "master", "Which git branch to track in repo URL")
 	fset.Parse(args)
 
 	if p.gcsDiskImg == "" && p.diskImg == "" {
@@ -221,7 +223,7 @@ func (p *packctx) pack(root string) error {
 	if err := os.MkdirAll(filepath.Join(root, "etc/distri/repos.d"), 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte("https://repo.distr1.org/distri/master"), 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte("https://repo.distr1.org/distri/"+p.branch+"\n"), 0644); err != nil {
 		return err
 	}
 
