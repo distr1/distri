@@ -711,7 +711,7 @@ func (*nopLocker) Lock()   {}
 func (*nopLocker) Unlock() {}
 
 // TODO: read this from a config file, remove trailing slash if any (always added by caller)
-const remote = "http://kwalitaet:alpha@midna.zekjur.net:8045/export/debug"
+const remote = "https://repo.distr1.org/distri/master/debug"
 
 func (fs *fuseFS) updatePackages() error {
 	repos, err := env.Repos()
