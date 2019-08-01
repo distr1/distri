@@ -696,12 +696,12 @@ name=root`)
 		params = append(params, "console=tty1")
 	}
 	if p.encrypt {
-		params = append(params, "rd.luks=1 rd.luks.uuid="+luksUUID+" rd.luks.name="+luksUUID+"=cryptroot systemd.setenv=PATH=/bin")
+		params = append(params, "rd.luks=1 rd.luks.uuid="+luksUUID+" rd.luks.name="+luksUUID+"=cryptroot")
 	}
 	if p.bootDebug {
 		params = append(params, "systemd.log_level=debug systemd.log_target=console")
 	}
-	mkconfigCmd := "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg"
+	mkconfigCmd := "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init systemd.setenv=PATH=/bin rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg"
 	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", mkconfigCmd)
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
