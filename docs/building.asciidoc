@@ -13,7 +13,7 @@ The package build instructions are declared in a file called `build.textproto`. 
 ### upstream
 
 version (string)::
-The version number of this package. The name of the package is derived from the location of `build.textproto`, and the resulting package will be named `<pkg>-<version>`, e.g. `systemd-239`.
+The version number of this package. The name of the package is derived from the location of `build.textproto`, and the resulting package will be named `<pkg>-<version>`, e.g. `systemd-amd64-239-1`.
 source (string)::
 A https URL to the upstream archive that should be built.
 hash (string)::
@@ -138,6 +138,11 @@ SourceDir::
 Path of the extracted sources, e.g. `$DISTRIROOT/build/systemd/v239`.
 DestDir::
 A directory named "tmp" within a temporary directory, e.g. `/tmp/distri-dest-3129384/tmp`. This directory is mounted at `/dest/tmp` in the namespace. TODO: why the tmp indirection?
++
+Within DestDir, `ro/lib` and `ro/share` are symbolic links to
+`${DISTRI_PREFIX}/lib` and `${DISTRI_PREFIX}/share`, respectively.
+This allows packages to install files into exchange directories
+such as e.g. `--datadir=/ro/share`.
 ChrootDir::
 A temporary directory providing the root for the build subprocess, e.g. `/tmp/distri-buildchroot-1938422`.
 BuildDir::
@@ -170,6 +175,8 @@ The following build environment is created in ChrootDir:
 | `/etc/group` | minimal group file containing the build group
 | `/usr/src/<pkg>-<version>` | SourceDir (e.g. `$DISTRIROOT/build/systemd/v239`)
 | `/dest/tmp` | DestDir (e.g. `/tmp/distri-dest-3129384/tmp`)
+| `/dest/tmp/ro/share` | symlink to `$DESTDIR/ro/systemd-amd64-239-1/out/share`
+| `/dest/tmp/ro/lib` | symlink to `$DESTDIR/ro/systemd-amd64-239-1/out/lib`
 | `/lib64` | symlink to `/ro/glibc-2.27/out/lib`
 | `/usr/include` | symlink to `/ro/include`
 | `/bin` | symlink to `/ro/bin`
@@ -196,6 +203,21 @@ Builders (e.g. the C builder, or Perl builder) supply the default build steps:
 * etc.
 
 For odd packages which do not adhere to the standard conventions of whichever ecosystem they live in (e.g. `libcap`), the preferred course of action is to convince upstream to change that. In the meantime, custom build steps can be defined in the build instructions, overwriting the builder default build steps.
+
+The following variables will be substituted in build steps:
+
+[options="header"]
+|===
+| Variable | Usage | Example Value
+| `${DISTRI_DESTDIR}` | `DESTDIR` | `/dest/tmp`
+| `${DISTRI_PREFIX}` | `--prefix` | `/ro/systemd-amd64-239-1/out`
+| `${DISTRI_BUILDDIR}` | build directory | `/tmp/distri-build511672173`
+| `${DISTRI_SOURCEDIR}` | source directory | `/usr/src/systemd-amd64-239-1`
+| `${DISTRI_FULLNAME}` | distri package name | `systemd-amd64-239-1`
+| `${DISTRI_RESOLVE:<pkg>}` | resolves build dependency `<pkg>`
+| `${DISTRI_RESOLVE:lvm2}` = +
+`lvm2-amd64-2.03.00-5`
+|===
 
 Each build step is run with the following environment variables:
 
@@ -264,7 +286,7 @@ The install build instruction (if any) is processed, copying systemd unit files 
 #### run-time dependencies [[runtimedeps]]
 
 [NOTE]
-For the following techniques to work, the package is made available at its destination path `/ro/<pkg>-<version>` (e.g. `/ro/systemd-239`).
+For the following techniques to work, the package is made available at its destination path `/ro/<pkg>-<version>` (e.g. `/ro/systemd-amd64-239-1`).
 
 The following run-time dependencies are automatically found:
 
@@ -276,9 +298,9 @@ Unused paths are removed from the rpath to eliminate unnecessary lookups (which 
 
 ### package creation
 
-The auto-detected and specified run-time dependencies are now persisted into `<pkg>-<version>.meta.textproto`, e.g. `systemd-239.meta.textproto`.
+The auto-detected and specified run-time dependencies are now persisted into `<pkg>-<version>.meta.textproto`, e.g. `systemd-amd64-239-1.meta.textproto`.
 
-A SquashFS image is created from `DestDir/<pkg>-<version>`, e.g. `systemd-239.squashfs` is created from `DestDir/systemd-239`.
+A SquashFS image is created from `DestDir/<pkg>-<version>`, e.g. `systemd-amd64-239-1.squashfs` is created from `DestDir/systemd-amd64-239-1`.
 
 * move b.DestDir/tmp/ro/hello-1 to b.DestDir/hello-1 (TODO: why?)
 * move b.DestDir/tmp/etc to b.DestDir/hello-1/etc (TODO: why?)
