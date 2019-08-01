@@ -2380,11 +2380,19 @@ func build(args []string) error {
 		pkg = fset.String("pkg",
 			"",
 			"If non-empty, a package to build. Otherwise inferred from $PWD")
+
+		bootstrapFromPath = fset.String("bootstrap_from",
+			"",
+			"Bootstrap a distri build based on the specified packages")
 	)
 	fset.Parse(args)
 
 	if *job != "" {
 		return runJob(*job)
+	}
+
+	if *bootstrapFromPath != "" {
+		return bootstrapFrom(*bootstrapFromPath)
 	}
 
 	if !*ignoreGov {
