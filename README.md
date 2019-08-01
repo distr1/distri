@@ -5,7 +5,7 @@ This repository contains distri, a linux distribution research project.
 The contents form a proof-of-concept implementation of the simplest¹ linux
 distribution I can think of that is still useful². Interestingly enough, in some
 cases the simple solution has inherent advantages, which I explore and contrast
-in the articles released at https://michael.stapelberg.de/posts/tags/distri/
+in the articles released at https://michael.stapelberg.ch/posts/tags/distri/
 
 ① simple: while all the typical building blocks for a Linux distribution are
   present (a package builder, installer, tooling for creating patches, preparing
