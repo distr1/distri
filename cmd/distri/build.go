@@ -1174,6 +1174,20 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				}
 			}
 
+			for _, subdir := range []string{"lib", "share"} {
+				// Make available /dest/tmp/ro/<pkg>/out/subdir as
+				// /dest/tmp/ro/subdir so that packages can install “into”
+				// exchange dirs (their shadow copy within $DESTDIR, that is).
+				if err := os.MkdirAll(filepath.Join(dst, "ro", b.fullName(), "out", subdir), 0755); err != nil {
+					return nil, err
+				}
+				if err := os.Symlink(
+					filepath.Join("/dest/tmp/ro", b.fullName(), "out", subdir), // oldname
+					filepath.Join(b.ChrootDir, "dest", "tmp", "ro", subdir)); err != nil {
+					return nil, err
+				}
+			}
+
 			// Symlinks:
 			//   /bin → /ro/bin
 			//   /usr/bin → /ro/bin (for e.g. /usr/bin/env)
@@ -1423,6 +1437,11 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		if err := cmd.Run(); err != nil {
 			log.Printf("debug command failed: %v", err)
 		}
+	}
+
+	// Remove if empty (fails if non-empty):
+	for _, subdir := range []string{"lib", "share"} {
+		os.Remove(filepath.Join(b.DestDir, b.Prefix, "out", subdir))
 	}
 
 	for _, path := range b.Proto.GetInstall().GetDelete() {
