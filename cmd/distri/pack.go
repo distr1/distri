@@ -204,6 +204,10 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
+	if err := os.Symlink("/ro/include", filepath.Join(root, "include")); err != nil && !os.IsExist(err) {
+		return err
+	}
+
 	// TODO: de-duplicate with build.go
 	if err := os.Symlink("/ro/glibc-amd64-2.27-2/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
