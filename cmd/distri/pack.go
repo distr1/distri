@@ -66,6 +66,7 @@ type packctx struct {
 	branch        string
 	rootPassword  string
 	cryptPassword string
+	docker        bool
 }
 
 func pack(args []string) error {
@@ -84,9 +85,10 @@ func pack(args []string) error {
 	fset.StringVar(&p.branch, "branch", "master", "Which git branch to track in repo URL")
 	fset.StringVar(&p.rootPassword, "root_password", "peace", "password to set for the root account")
 	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
+	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
 	fset.Parse(args)
 
-	if p.gcsDiskImg == "" && p.diskImg == "" {
+	if p.gcsDiskImg == "" && p.diskImg == "" && !p.docker {
 		if p.root == "" {
 			return xerrors.Errorf("syntax: pack -root=<directory>")
 		}
@@ -155,6 +157,92 @@ func pack(args []string) error {
 		}
 		if err := f.Close(); err != nil {
 			return err
+		}
+	}
+
+	if p.docker {
+		root, err := ioutil.TempDir("", "distridocker")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(root)
+
+		skipContentHooks = true
+		if err := install(append(
+			[]string{
+				"-root=" + root,
+				"-repo=" + p.repo,
+			},
+			"base",
+			"rxvt-unicode",    // for its terminfo file
+			"ca-certificates", // so that we can install packages via https
+		)); err != nil {
+			return err
+		}
+
+		for _, dir := range []string{
+			"etc",
+			"etc/distri/repos.d",
+			"ro",
+			"ro-tmp",
+		} {
+			if err := os.MkdirAll(filepath.Join(root, dir), 0755); err != nil {
+				return err
+			}
+		}
+
+		if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd), 0644); err != nil {
+			return err
+		}
+
+		if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte("https://repo.distr1.org/distri/"+p.branch+"\n"), 0644); err != nil {
+			return err
+		}
+
+		type symlink struct {
+			oldname, newname string
+		}
+		for _, link := range []symlink{
+			{"/", "usr"},
+			{"/ro/bin", "bin"},
+			{"/ro/share", "share"},
+			{"/ro/lib", "lib"},
+			{"/ro/include", "include"},
+			{"/ro/sbin", "sbin"},
+			{"/init", "entrypoint"},
+		} {
+			if err := os.Symlink(link.oldname, filepath.Join(root, link.newname)); err != nil {
+				return err
+			}
+		}
+
+		// Remove packages we don’t need to reduce docker container size:
+		b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+		resolved, err := b.glob(filepath.Join(p.repo, "pkg"), []string{
+			"linux-firmware",
+			"docker-engine",
+			"dracut",
+			"binutils",
+			"elfutils",
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, pkg := range resolved {
+			for _, ext := range []string{"squashfs", "meta.textproto"} {
+				if err := os.Remove(filepath.Join(root, "roimg", pkg+"."+ext)); err != nil {
+					return err
+				}
+			}
+		}
+
+		tar := exec.Command("tar", "-c", ".")
+		tar.Dir = root
+		tar.Stdout = os.Stdout
+		tar.Stderr = os.Stderr
+		if err := tar.Run(); err != nil {
+			return fmt.Errorf("%v: %v", tar.Args, err)
 		}
 	}
 
