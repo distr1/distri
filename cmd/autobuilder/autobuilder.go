@@ -74,7 +74,8 @@ var steps = []step{
 	{"image", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img"}},
 	{"image-serial", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img"}},
 	{"image-gce", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make gceimage GCSDISKIMG=$DESTDIR/img/distri-gce.tar.gz"}},
-	// TODO(later): docker
+	// TODO(later): hook this up with credentials to push to the docker hub
+	{"docker", []string{"sh", "-c", "make dockertar | tar tf -"}},
 	{"docs", []string{"sh", "-c", "make docs DOCSDIR=$DESTDIR/docs"}},
 
 	{"cp-destdir", []string{"sh", "-c", "cp --link -r -f -a build/distri/* $DESTDIR/"}},
