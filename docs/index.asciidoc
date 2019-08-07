@@ -1,0 +1,10 @@
+# distri docs
+:toc: left
+:toclevels: 4
+:sectnums:
+
+The README file at https://distr1.org/ will get you started. What you find here
+is the full-detail reference documentation.
+
+* link:building.html[building]
+* link:package-format.html[package format]
