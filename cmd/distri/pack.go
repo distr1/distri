@@ -55,15 +55,17 @@ func copyFile(src, dest string) error {
 }
 
 type packctx struct {
-	root       string
-	repo       string
-	extraBase  string
-	diskImg    string
-	gcsDiskImg string
-	encrypt    bool
-	serialOnly bool
-	bootDebug  bool
-	branch     string
+	root          string
+	repo          string
+	extraBase     string
+	diskImg       string
+	gcsDiskImg    string
+	encrypt       bool
+	serialOnly    bool
+	bootDebug     bool
+	branch        string
+	rootPassword  string
+	cryptPassword string
 }
 
 func pack(args []string) error {
@@ -80,6 +82,8 @@ func pack(args []string) error {
 	fset.BoolVar(&p.serialOnly, "serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
 	fset.BoolVar(&p.bootDebug, "bootdebug", false, "Whether to debug early boot, i.e. add systemd.log_level=debug systemd.log_target=console")
 	fset.StringVar(&p.branch, "branch", "master", "Which git branch to track in repo URL")
+	fset.StringVar(&p.rootPassword, "root_password", "peace", "password to set for the root account")
+	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
 	fset.Parse(args)
 
 	if p.gcsDiskImg == "" && p.diskImg == "" {
@@ -282,7 +286,7 @@ func (p *packctx) pack(root string) error {
 		"--mount",
 		"--",
 		"chroot", root, "/ro/systemd-amd64-239-9/bin/systemd-firstboot", "--hostname=distri0",
-		"--root-password=bleh",
+		"--root-password="+p.rootPassword,
 		"--copy-timezone",
 		"--copy-locale",
 		"--setup-machine-id")
@@ -573,7 +577,7 @@ name=root`)
 	var luksUUID string
 	if p.encrypt {
 		luksFormat := exec.Command("sudo", "cryptsetup", "luksFormat", root, "-")
-		luksFormat.Stdin = strings.NewReader("bleh")
+		luksFormat.Stdin = strings.NewReader(p.cryptPassword)
 		luksFormat.Stdout = os.Stdout
 		luksFormat.Stderr = os.Stderr
 		if err := luksFormat.Run(); err != nil {
@@ -586,7 +590,7 @@ name=root`)
 		}
 
 		luksOpen := exec.Command("sudo", "cryptsetup", "open", "--type=luks", "--key-file=-", root, "cryptroot")
-		luksOpen.Stdin = strings.NewReader("bleh")
+		luksOpen.Stdin = strings.NewReader(p.cryptPassword)
 		luksOpen.Stdout = os.Stdout
 		luksOpen.Stderr = os.Stderr
 		if err := luksOpen.Run(); err != nil {
