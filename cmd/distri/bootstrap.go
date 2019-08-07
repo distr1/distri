@@ -73,7 +73,7 @@ var bootstrapSteps = []bootstrapStep{
 	{buildPkgArgv("cryptsetup")},
 }
 
-func bootstrapFrom(old string) error {
+func bootstrapFrom(old string, dryRun bool) error {
 	log.Printf("bootstrapping from %s", old)
 	packageSet := []string{
 		"musl",

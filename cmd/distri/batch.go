@@ -83,6 +83,9 @@ func batch(args []string) error {
 		ignoreGov = fset.Bool("dont_set_governor",
 			false,
 			"Don’t automatically set the “performance” CPU frequency scaling governor. Why wouldn’t you?")
+		bootstrapFromPath = fset.String("bootstrap_from",
+			"",
+			"Bootstrap a distri build based on the specified packages")
 	)
 	fset.Parse(args)
 
@@ -94,6 +97,10 @@ func batch(args []string) error {
 			oninterrupt.Register(cleanup)
 			defer cleanup()
 		}
+	}
+
+	if *bootstrapFromPath != "" {
+		return bootstrapFrom(*bootstrapFromPath, *dryRun)
 	}
 
 	log.Printf("distriroot %q", env.DistriRoot)
