@@ -41,6 +41,21 @@ dd if=distri-disk.img of=/dev/disk/by-id/usb-SanDisk_Extreme_Pro_D99B-0:0 bs=5M
 
 Insert the memory stick into a computer and select the memory stick as boot device.
 
+### Run distri in Docker
+
+**NOTE**: There is a [known issue about intermittent FUSE issues](https://github.com/stapelberg/distri/issues/27) within Docker.
+
+1. (If you’d rather use a local docker container, build it locally: `distri pack -docker | docker import - distri`).
+1. Then, run bash within the distri docker container:
+```shell
+docker run \
+	--privileged \
+	--entrypoint /entrypoint \
+	-ti \
+	-e TERM=$TERM \
+	distr1/distri
+```
+
 ### Run distri in qemu
 
 Depending on what you want to test, the text-only serial interface might be a bit more convenient: it side-steps keyboard configuration mismatches and makes it easily to run distri remotely via an SSH session:
