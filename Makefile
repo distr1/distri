@@ -38,6 +38,8 @@ GCEIMAGE=distri pack \
 	-gcsdiskimg=${GCEDISKIMG} \
 	-base=base-cloud
 
+DOCKERTAR=distri pack -docker
+
 # for when you want to see non-kernel console output (e.g. systemd), useful with qemu
 ifdef serial
 IMAGE+= -serialonly
@@ -62,6 +64,9 @@ cryptimage:
 
 gceimage:
 	DISTRIROOT=$$PWD ${GCEIMAGE}
+
+dockertar:
+	@DISTRIROOT=$$PWD ${DOCKERTAR}
 
 qemu-serial:
 	${QEMU} -nographic
