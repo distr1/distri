@@ -16,7 +16,7 @@
 # ① Unfortunately, the linux console can only print to one device.
 
 DISKIMG=/tmp/distri-disk.img
-GCSDISKIMG=/tmp/distri-gcs.tar.gz
+GCEDISKIMG=/tmp/distri-gcs.tar.gz
 
 QEMU=qemu-system-x86_64 \
 	-device e1000,netdev=net0 \
@@ -33,8 +33,8 @@ IMAGE=distri pack \
 	-diskimg=${DISKIMG} \
 	-base=base-x11
 
-GCSIMAGE=distri pack \
-	-gcsdiskimg=${GCSDISKIMG} \
+GCEIMAGE=distri pack \
+	-gcsdiskimg=${GCEDISKIMG} \
 	-base=base-cloud
 
 # for when you want to see non-kernel console output (e.g. systemd), useful with qemu
@@ -59,8 +59,8 @@ image:
 cryptimage:
 	DISTRIROOT=$$PWD ${IMAGE} -encrypt
 
-gcsimage:
-	DISTRIROOT=$$PWD ${GCSIMAGE}
+gceimage:
+	DISTRIROOT=$$PWD ${GCEIMAGE}
 
 qemu-serial:
 	${QEMU} -nographic
