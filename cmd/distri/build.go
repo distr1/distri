@@ -188,7 +188,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		if err != nil {
 			return err
 		}
-		resolved, err := resolve(env.DefaultRepo, globbed)
+		resolved, err := resolve(env.DefaultRepo, globbed, "")
 		if err != nil {
 			return err
 		}
@@ -310,7 +310,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 				return err
 			}
 
-			resolved, err := resolve(env.DefaultRepo, deps)
+			resolved, err := resolve(env.DefaultRepo, deps, pkg.GetName())
 			if err != nil {
 				return err
 			}
@@ -741,7 +741,10 @@ func (b *buildctx) glob(imgDir string, pkgs []string) ([]string, error) {
 	return globbed, nil
 }
 
-func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error) {
+func resolve1(imgDir string, pkg string, seen map[string]bool, prune string) ([]string, error) {
+	if distri.ParseVersion(pkg).Pkg == prune {
+		return nil, nil
+	}
 	resolved := []string{pkg}
 	meta, err := pb.ReadMetaFile(filepath.Join(imgDir, pkg+".meta.textproto"))
 	if err != nil {
@@ -755,7 +758,7 @@ func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error)
 			continue
 		}
 		seen[dep] = true
-		r, err := resolve1(imgDir, dep, seen)
+		r, err := resolve1(imgDir, dep, seen, prune)
 		if err != nil {
 			return nil, err
 		}
@@ -769,7 +772,7 @@ func resolve1(imgDir string, pkg string, seen map[string]bool) ([]string, error)
 //
 // E.g., if iptables depends on libnftnl, which depends on libmnl,
 // resolve("iptables") will return ["iptables", "libnftnl", "libmnl"].
-func resolve(imgDir string, pkgs []string) ([]string, error) {
+func resolve(imgDir string, pkgs []string, prune string) ([]string, error) {
 	var resolved []string
 	seen := make(map[string]bool)
 	for _, pkg := range pkgs {
@@ -777,7 +780,7 @@ func resolve(imgDir string, pkgs []string) ([]string, error) {
 			continue // a recursive call might have found this package already
 		}
 		seen[pkg] = true
-		r, err := resolve1(imgDir, pkg, seen)
+		r, err := resolve1(imgDir, pkg, seen, prune)
 		if err != nil {
 			return nil, err
 		}
@@ -902,7 +905,7 @@ func (b *buildctx) builddeps(p *pb.Build) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return resolve(env.DefaultRepo, deps)
+	return resolve(env.DefaultRepo, deps, "")
 }
 
 func fuseMkdirAll(ctl string, dir string) error {
@@ -1074,7 +1077,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			return nil, err
 		}
 
-		resolved, err := resolve(env.DefaultRepo, runtimeDeps)
+		resolved, err := resolve(env.DefaultRepo, runtimeDeps, "")
 		if err != nil {
 			return nil, err
 		}

@@ -174,7 +174,7 @@ func patch(args []string) error {
 			return err
 		}
 
-		deps, err = resolve(env.DefaultRepo, deps)
+		deps, err = resolve(env.DefaultRepo, deps, "")
 		if err != nil {
 			return err
 		}

@@ -22,12 +22,6 @@ var bootstrapSteps = []bootstrapStep{
 	{buildPkgArgv("mpc")},
 	{buildPkgArgv("gcc")},
 	{buildPkgArgv("gawk")},
-	// TODO: need manual cycle break in gcc-libs
-	// sed -i '/gcc-libs-amd64-8.2.0-1/d' gcc-libs-amd64-8.2.0-2.meta.textproto
-	// sed -i '/mpfr-amd64-4.0.1-1/d' gcc-libs-amd64-8.2.0-2.meta.textproto
-	// sed -i '/mpc-amd64-1.1.0-1/d' gcc-libs-amd64-8.2.0-2.meta.textproto
-	// sed -i '/glibc-amd64-2.27-1/d' gcc-libs-amd64-8.2.0-2.meta.textproto
-	// sed -i '/gmp-amd64-6.1.2-1/d' gcc-libs-amd64-8.2.0-2.meta.textproto
 
 	// group 1
 	{buildPkgArgv("bc")},
