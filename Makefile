@@ -17,6 +17,7 @@
 
 DISKIMG=/tmp/distri-disk.img
 GCEDISKIMG=/tmp/distri-gcs.tar.gz
+DOCSDIR=/tmp/distri-docs
 
 QEMU=qemu-system-x86_64 \
 	-device e1000,netdev=net0 \
@@ -67,3 +68,9 @@ qemu-serial:
 
 qemu-graphic:
 	${QEMU}
+
+.PHONY: docs
+
+docs: docs/building.asciidoc docs/package-format.asciidoc
+	mkdir -p ${DOCSDIR}
+	asciidoctor --destination-dir ${DOCSDIR} $^
