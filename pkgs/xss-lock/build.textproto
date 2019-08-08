@@ -1,9 +1,10 @@
 source: "https://bitbucket.org/raymonad/xss-lock/get/1e158fb20108.tar.gz"
 hash: "19c9e55fd14346e79a1cfaa400cb51ef467d9e3f482fb28a38ba2bbc2c972d91"
-version: "0.3.0+g20190419-2"
+version: "0.3.0+g20190419-3"
 
 cmakebuilder: <>
 
 # build dependencies:
 dep: "libxcb"
 dep: "xcb-util"
+dep: "glib"

@@ -1,6 +1,6 @@
 source: "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38.0.tar.xz"
 hash: "dd50973c7757bcde15de6bcd3a6d462a445efd552604ae6435a0532fbbadae47"
-version: "2.38.0-2"
+version: "2.38.0-3"
 
 cbuilder: <>
 
@@ -15,8 +15,7 @@ dep: "gobject-introspection"
 dep: "libx11"
 dep: "gettext"
 dep: "libxslt"
-
-dep: "strace"
+dep: "glib"
 
 # e.g. gdk-pixbuf-csource requires MIME data to load PNG files
 runtime_dep: "shared-mime-info"

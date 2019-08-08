@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXft-2.3.2.tar.bz2"
 hash: "f5a3c824761df351ca91827ac221090943ef28b248573486050de89f4bfcdc4c"
-version: "2.3.2-2"
+version: "2.3.2-3"
 
 cbuilder: <>
 

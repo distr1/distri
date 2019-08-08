@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/proto/xorgproto-2018.4.tar.bz2"
 hash: "fee885e0512899ea5280c593fdb2735beb1693ad170c22ebcc844470eec415a0"
-version: "2018.4-2"
+version: "2018.4-3"
 
 cbuilder: <>
 

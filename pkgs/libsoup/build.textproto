@@ -1,6 +1,6 @@
 source: "https://ftp.gnome.org/pub/GNOME/sources/libsoup/2.65/libsoup-2.65.1.tar.xz"
 hash: "3f3718623338f1bd7d7899dae2bdb613348212d59999a27432120afc1435ff04"
-version: "2.65.1-2"
+version: "2.65.1-3"
 
 cbuilder: <>
 
@@ -12,3 +12,4 @@ dep: "intltool"
 dep: "glib-networking"
 dep: "gobject-introspection"
 dep: "vala"
+dep: "glib"

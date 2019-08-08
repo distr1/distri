@@ -1,6 +1,6 @@
 source: "https://github.com/anholt/libepoxy/releases/download/1.5.2/libepoxy-1.5.2.tar.xz"
 hash: "a9562386519eb3fd7f03209f279f697a8cba520d3c155d6e253c3e138beca7d8"
-version: "1.5.2-2"
+version: "1.5.2-3"
 
 cbuilder: <>
 

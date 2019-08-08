@@ -1,6 +1,6 @@
 source: "http://repo.steamstatic.com/steam/pool/steam/s/steam/steam_1.0.0.56.tar.gz"
 hash: "da15bb347bd286c3a8818c3c910dc5bdbc43a744604d5372260ec79540ba4f06"
-version: "1.0.0.56-2"
+version: "1.0.0.56-3"
 
 cbuilder: <>
 

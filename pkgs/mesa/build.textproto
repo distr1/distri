@@ -1,6 +1,6 @@
 source: "https://mesa.freedesktop.org/archive/mesa-18.2.0.tar.xz"
 hash: "22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce"
-version: "18.2.0-2"
+version: "18.2.0-3"
 
 cbuilder: <
   extra_configure_flag: "--disable-llvm" # TODO

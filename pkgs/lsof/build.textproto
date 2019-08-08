@@ -1,6 +1,6 @@
 source: "https://github.com/lsof-org/lsof/archive/4.93.2.tar.gz"
 hash: "3df912bd966fc24dc73ddea3e36a61d79270b21b085936a4caabca56e5b486a2"
-version: "4.93.2-3"
+version: "4.93.2-4"
 
 cbuilder: <>
 

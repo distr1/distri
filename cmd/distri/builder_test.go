@@ -98,7 +98,7 @@ func TestBuilder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resolved, err := resolve(env.DefaultRepo, globbed)
+	resolved, err := resolve(env.DefaultRepo, globbed, "")
 	if err != nil {
 		t.Fatal(err)
 	}

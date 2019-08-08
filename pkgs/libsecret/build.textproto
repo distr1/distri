@@ -1,6 +1,6 @@
 source: "http://ftp.gnome.org/pub/gnome/sources/libsecret/0.18/libsecret-0.18.6.tar.xz"
 hash: "5efbc890ba41a323ffe0599cd260fd12bd8eb62a04aa1bd1b2762575d253d66f"
-version: "0.18.6-2"
+version: "0.18.6-3"
 
 cbuilder: <
   # I/O error : Attempt to load network entity http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl
@@ -12,3 +12,4 @@ dep: "intltool"
 dep: "libxslt"
 dep: "libgcrypt"
 dep: "python3"
+dep: "glib"

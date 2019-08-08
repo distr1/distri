@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/glib/2.58/glib-2.58.0.tar.xz"
 hash: "c0f4ce0730b4f95c47b711613b5406a887c2ee13ea6d25930d72a4fa7fdb77f6"
-version: "2.58.0-2"
+version: "2.58.0-3"
 
 cbuilder: <>
 
@@ -10,6 +10,7 @@ dep: "libffi"
 dep: "zlib"
 dep: "util-linux"
 dep: "m4" # so that glib’s m4macros are installed
+dep: "glib" # to pick up new versions
 
 build_step: <
   argv: "/bin/sh"

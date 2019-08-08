@@ -1,6 +1,6 @@
 source: "https://mesa.freedesktop.org/archive/glu/glu-9.0.0.tar.bz2"
 hash: "1f7ad0d379a722fcbd303aa5650c6d7d5544fde83196b42a73d1193568a4df12"
-version: "9.0.0-1"
+version: "9.0.0-2"
 
 cbuilder: <>
 

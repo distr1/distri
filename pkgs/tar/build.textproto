@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/tar/tar-1.30.tar.xz"
 hash: "f1bf92dbb1e1ab27911a861ea8dde8208ee774866c46c0bb6ead41f4d1f4d2d3"
-version: "1.30-2"
+version: "1.30-3"
 
 cbuilder: <
   extra_configure_flag: "FORCE_UNSAFE_CONFIGURE=1" # TODO: remove once we run as temporary uid/gid

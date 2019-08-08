@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/mattn/go-isatty@v0.0.8"
 hash: "f32ab2e85261c6ac1359f45589bec97b26267b608c8eb282d14749e4fbfd2acd"
-version: "v0.0.8-2"
+version: "v0.0.8-3"
 
 gomodbuilder: <>
 

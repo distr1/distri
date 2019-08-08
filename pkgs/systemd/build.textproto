@@ -1,6 +1,6 @@
 source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
 hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
-version: "239-9"
+version: "239-10"
 
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
@@ -17,6 +17,7 @@ dep: "gettext"
 dep: "meson"
 dep: "kmod"
 dep: "cryptsetup"
+dep: "systemd" # to pick up the latest version
 
 build_step: <
   argv: "/bin/sh"

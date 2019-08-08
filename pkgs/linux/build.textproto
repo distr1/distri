@@ -1,6 +1,6 @@
 source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.1.9.tar.xz"
 hash: "58c9eca99c3dd2fff5b559302996c985c3f3f2aad0b99b2172a61c4df7122a79"
-version: "5.1.9-8"
+version: "5.1.9-9"
 
 cbuilder: <
   copy_to_builddir: true

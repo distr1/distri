@@ -1,6 +1,6 @@
 source: "https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.44.tar.gz"
 hash: "1ae9d07ee9c35326b3d9aad56eae71a6730a73a116b9fe9e8a4758b7cc033216"
-version: "2.44-2"
+version: "2.44-3"
 
 perlbuilder: <
   extra_makefile_flag: "EXPATLIBPATH=/ro/${DISTRI_RESOLVE:expat}/out/lib"

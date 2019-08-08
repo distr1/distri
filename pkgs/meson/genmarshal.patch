@@ -1,0 +1,34 @@
+--- meson-0.47.1/mesonbuild/modules/gnome.py	2018-07-10 23:03:14.000000000 +0200
++++ /home/michael/distri/build/meson/0.47.1/mesonbuild/modules/gnome.py	2019-08-09 09:48:25.348319958 +0200
+@@ -63,11 +63,15 @@
+     gir_dep = None
+ 
+     @staticmethod
++    def _get_glib_dep(state):
++        return PkgConfigDependency('glib-2.0', state.environment,
++                                   {'native': True, 'required': False})
++
++    @staticmethod
+     def _get_native_glib_version(state):
+         global native_glib_version
+         if native_glib_version is None:
+-            glib_dep = PkgConfigDependency('glib-2.0', state.environment,
+-                                           {'native': True, 'required': False})
++            glib_dep = GnomeModule._get_glib_dep(state)
+             if glib_dep.found():
+                 native_glib_version = glib_dep.get_version()
+             else:
+@@ -1286,8 +1290,12 @@
+                 'Sources keyword argument must be a string or array.')
+ 
+         new_genmarshal = mesonlib.version_compare(self._get_native_glib_version(state), '>= 2.53.3')
++        glib_dep = self._get_glib_dep(state)
++        glib_genmarshal = glib_dep.get_pkgconfig_variable('glib_genmarshal', {'default': ''})
++        if not glib_genmarshal:
++            glib_genmarshal = self.interpreter.find_program_impl('glib-genmarshal')
+ 
+-        cmd = [self.interpreter.find_program_impl('glib-genmarshal')]
++        cmd = [glib_genmarshal]
+         known_kwargs = ['internal', 'nostdinc', 'skip_source', 'stdinc',
+                         'valist_marshallers', 'extra_args']
+         known_custom_target_kwargs = ['build_always', 'depends',

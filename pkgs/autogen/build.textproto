@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/autogen/autogen-5.18.7.tar.xz"
 hash: "a7a580a5e18931cb341b255cec2fee2dfd81bea5ddbf0d8ad722703e19aaa405"
-version: "5.18.7-2"
+version: "5.18.7-3"
 
 cbuilder: <>
 

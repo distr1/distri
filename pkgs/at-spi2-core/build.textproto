@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/at-spi2-core/2.30/at-spi2-core-2.30.0.tar.xz"
 hash: "0175f5393d19da51f4c11462cba4ba6ef3fa042abf1611a70bdfed586b7bfb2b"
-version: "2.30.0-2"
+version: "2.30.0-3"
 
 cbuilder: <>
 
@@ -8,6 +8,7 @@ cbuilder: <>
 dep: "meson"
 dep: "dbus"
 dep: "libxtst"
+dep: "glib"
 
 build_step: <
   argv: "/bin/sh"

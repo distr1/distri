@@ -60,6 +60,7 @@ var bootstrapSteps = []bootstrapStep{
 	{buildPkgArgv("coreutils")},  // for attr
 	{buildPkgArgv("gperf")},
 	{buildPkgArgv("musl")},
+	{buildPkgArgv("popt")}, // for cryptsetup
 
 	// group 3
 	{buildPkgArgv("file")},     // for glibc, zlib
@@ -137,6 +138,7 @@ func bootstrapFrom(old string, dryRun bool) error {
 		"libgcrypt",
 		"libgpg-error",
 		"gettext",    // for systemd
+		"popt",       // for cryptsetup
 		"cryptsetup", // for systemd
 
 		"lvm2",

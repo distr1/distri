@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/junegunn/fzf@v0.0.0-20190719042446-65773882505b"
 hash: "f0f038bbaf3e9b1a907e15045cccd562e6c52777ffe7d3101dca030c987afc15"
-version: "v0.0.0-20190719042446-65773882505b-3"
+version: "v0.0.0-20190719042446-65773882505b-4"
 
 gobuilder: <>
 

@@ -1,6 +1,6 @@
 source: "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.15.2.tar.xz"
 hash: "6952be988abe67b5affd46b194e97863b160cd58846199873b4315fe5e1cdbf0"
-version: "1.15.2-1"
+version: "1.15.2-2"
 
 cbuilder: <>
 

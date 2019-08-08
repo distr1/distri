@@ -1,6 +1,6 @@
 source: "distri+gomod://golang.org/x/xerrors@v0.0.0-20190717185122-a985d3407aa7"
 hash: "1928bd6cc334889f2a3e50cfa7df7b24b0c709ad15f3016e43f9b63462322e43"
-version: "v0.0.0-20190717185122-a985d3407aa7-2"
+version: "v0.0.0-20190717185122-a985d3407aa7-3"
 
 gomodbuilder: <>
 

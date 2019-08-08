@@ -54,6 +54,9 @@ func pid1() error {
 
 	log.Printf("starting systemd")
 
-	const systemd = "/ro/systemd-amd64-239-9/out/lib/systemd/systemd" // TODO(later): glob?
+	// TODO: readdir /ro (does not mount any images)
+	// TODO: keep most recent systemd entry
+
+	const systemd = "/ro/systemd-amd64-239-10/out/lib/systemd/systemd" // TODO(later): glob?
 	return syscall.Exec(systemd, []string{systemd}, nil)
 }

@@ -1,6 +1,6 @@
 source: "distri+gomod://google.golang.org/genproto@v0.0.0-20190502173448-54afdca5d873"
 hash: "fd84c371789f6c349053dec8bd2a49b252ac0880c350c19e7787ece7a911e3e5"
-version: "v0.0.0-20190502173448-54afdca5d873-2"
+version: "v0.0.0-20190502173448-54afdca5d873-3"
 
 gomodbuilder: <>
 

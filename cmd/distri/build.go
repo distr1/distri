@@ -617,7 +617,8 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
-		if dep != "glibc-amd64-2.27-2" && dep != "glibc-i686-amd64-2.27-2" &&
+		if dep != "glibc-amd64-2.27-3" && dep != "glibc-i686-amd64-2.27-3" &&
+			dep != "glibc-amd64-2.27-2" && dep != "glibc-i686-amd64-2.27-2" &&
 			dep != "glibc-amd64-2.27-1" && dep != "glibc-i686-amd64-2.27-1" &&
 			dep != "glibc-amd64-2.27" && dep != "glibc-i686-amd64-2.27" {
 			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")

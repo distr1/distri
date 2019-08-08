@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/at-spi2-atk/2.30/at-spi2-atk-2.30.0.tar.xz"
 hash: "e2e1571004ea7b105c969473ce455a95be4038fb2541471714aeb33a26da8a9a"
-version: "2.30.0-2"
+version: "2.30.0-3"
 
 cbuilder: <>
 
@@ -12,6 +12,7 @@ dep: "at-spi2-core"
 dep: "libxml2" # TODO: meson does not check for this
 #dep: "gobject-introspection-1.58.0"
 #dep: "gettext-0.19.8.1"
+dep: "glib"
 
 build_step: <
   argv: "/bin/sh"

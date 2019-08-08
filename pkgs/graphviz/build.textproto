@@ -1,7 +1,7 @@
 # TODO: figure out where the upstream tarball lives
 source: "http://deb.debian.org/debian/pool/main/g/graphviz/graphviz_2.40.1.orig.tar.gz"
 hash: "ca5218fade0204d59947126c38439f432853543b0818d9d728c589dfe7f3a421"
-version: "2.40.1-2"
+version: "2.40.1-3"
 
 cbuilder: <>
 

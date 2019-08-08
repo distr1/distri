@@ -1,6 +1,6 @@
 source: "https://launchpad.net/lightdm-gtk-greeter/2.0/2.0.6/+download/lightdm-gtk-greeter-2.0.6.tar.gz"
 hash: "255cf4039ab2536020ca8714bdc98300c8f71719183bbb5b18ef96f43c2e3ade"
-version: "2.0.6-3"
+version: "2.0.6-4"
 
 cbuilder: <>
 
