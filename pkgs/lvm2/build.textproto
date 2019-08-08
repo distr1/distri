@@ -11,4 +11,4 @@ cbuilder: <
 # build dependencies:
 dep: "libaio"
 dep: "which"
-dep: "systemd" # for udev
+dep: "libudev"

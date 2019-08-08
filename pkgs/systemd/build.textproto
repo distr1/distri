@@ -72,3 +72,14 @@ install: <
   # TODO: remove once both share/pkgconfig (arch-indep) and lib/pkgconfig (arch-dep) are union overlays
   symlink: < oldname: "../../share/pkgconfig/udev.pc" newname: "lib/pkgconfig/udev.pc" >
 >
+
+# TODO: this runtime_dep should be added automatically
+runtime_dep: "libudev"
+
+split_package: <
+  name: "libudev"
+  claim: < glob: "out/lib/libudev.so*" >
+  claim: < glob: "out/include/libudev.h" >
+  claim: < glob: "out/lib/pkgconfig/*udev.pc" >
+  claim: < glob: "out/share/pkgconfig/*udev.pc" >
+>
