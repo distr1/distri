@@ -1662,7 +1662,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 	// Find shlibdeps while we’re still in the chroot, so that ldd(1) locates
 	// the dependencies.
 	depPkgs := make(map[string]bool)
-	libs := make(map[string]bool)
+	libs := make(map[libDep]bool)
 	destDir := filepath.Join(b.DestDir, b.Prefix)
 	var buf [4]byte
 	err = filepath.Walk(destDir, func(path string, info os.FileInfo, err error) error {
@@ -1697,7 +1697,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 		for _, d := range libDeps {
 			depPkgs[d.pkg] = true
-			libs[d.path] = true
+			libs[d] = true
 		}
 
 		buildid, err := readBuildid(path)
@@ -1738,8 +1738,11 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		return nil, err
 	}
 	for lib := range libs {
-		newname := filepath.Join(libDir, filepath.Base(lib))
-		oldname := lib
+		newname := filepath.Join(libDir, lib.basename)
+		oldname, err := filepath.EvalSymlinks(lib.path)
+		if err != nil {
+			return nil, err
+		}
 		if err := os.Symlink(oldname, newname); err != nil && !os.IsExist(err) {
 			return nil, err
 		}

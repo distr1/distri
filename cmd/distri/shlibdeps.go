@@ -5,17 +5,19 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-var lddRe = regexp.MustCompile(`^\t([^ ]+) => (/ro/([^/]+)[^\s]+)`)
+var lddRe = regexp.MustCompile(`^\t([^ ]+) => (/ro/[^/]+[^\s]+)`)
 
 var errLddFailed = errors.New("ldd failed") // sentinel
 
 type libDep struct {
-	pkg  string
-	path string
+	pkg      string
+	path     string
+	basename string
 }
 
 func findShlibDeps(ldd, fn string, env []string) ([]libDep, error) {
@@ -34,9 +36,21 @@ func findShlibDeps(ldd, fn string, env []string) ([]libDep, error) {
 		if matches == nil {
 			continue
 		}
+		path, err := filepath.EvalSymlinks(matches[2])
+		if err != nil {
+			return nil, err
+		}
+		var pkg string
+		if strings.HasPrefix(path, "/ro/") {
+			pkg = strings.TrimPrefix(path, "/ro/")
+			if idx := strings.IndexByte(pkg, '/'); idx > -1 {
+				pkg = pkg[:idx]
+			}
+		}
 		pkgs = append(pkgs, libDep{
-			pkg:  matches[3],
-			path: matches[2],
+			pkg:      pkg,
+			path:     path,
+			basename: filepath.Base(matches[2]),
 		})
 	}
 	return pkgs, nil
