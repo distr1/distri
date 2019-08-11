@@ -45,6 +45,10 @@ ifdef serial
 IMAGE+= -serialonly
 endif
 
+ifdef authorized_keys
+IMAGE+= -authorized_keys=${authorized_keys}
+endif
+
 .PHONY: install
 
 all: install

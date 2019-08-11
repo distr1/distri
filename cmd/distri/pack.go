@@ -55,18 +55,19 @@ func copyFile(src, dest string) error {
 }
 
 type packctx struct {
-	root          string
-	repo          string
-	extraBase     string
-	diskImg       string
-	gcsDiskImg    string
-	encrypt       bool
-	serialOnly    bool
-	bootDebug     bool
-	branch        string
-	rootPassword  string
-	cryptPassword string
-	docker        bool
+	root           string
+	repo           string
+	extraBase      string
+	diskImg        string
+	gcsDiskImg     string
+	encrypt        bool
+	serialOnly     bool
+	bootDebug      bool
+	branch         string
+	rootPassword   string
+	cryptPassword  string
+	docker         bool
+	authorizedKeys string
 }
 
 func pack(args []string) error {
@@ -86,6 +87,7 @@ func pack(args []string) error {
 	fset.StringVar(&p.rootPassword, "root_password", "peace", "password to set for the root account")
 	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
 	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
+	fset.StringVar(&p.authorizedKeys, "authorized_keys", "", "if non-empty, path to an SSH authorized_keys file to include for the root user")
 	fset.Parse(args)
 
 	if p.gcsDiskImg == "" && p.diskImg == "" && !p.docker {
@@ -323,11 +325,13 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Join(root, "root/.ssh"), 0700); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(filepath.Join(root, "root/.ssh/authorized_keys"), []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDK+HnXfG/OsK2OVJTv/3YQPj/Yh21QRM6+bRN3NqYGhjVBTazkSaLASU19guV6mapXtjWYdoojPYzJ4HEY2RSwhpLxnjMhC+Nax8PPS+GVBq3IHku/7xSVWfRemJGNfHYVTmidur7NpjmYDCDvtF1MCfkWDRbs6txXABWCDbTeR83DUHDMlVB7bMxB44vktGWknudiFkBDlx7VL3njI6ohMi8d6pbWUU8Xuqut5fbkRTQEwU/7/9kC9vmFo8EsX4WtvUwJhQ7a4yEMbPHAhei+8GDpOcjppaqt0x3O4dRbpERafUmL5iMSIkLLb9YGn9fbzklj4sgwWSKuPemPGzq5 michael@midna"), 0644); err != nil {
-		return err
+	if p.authorizedKeys != "" {
+		if err := os.MkdirAll(filepath.Join(root, "root/.ssh"), 0700); err != nil {
+			return err
+		}
+		if err := copyFile(p.authorizedKeys, filepath.Join(root, "root/.ssh/authorized_keys")); err != nil {
+			return err
+		}
 	}
 
 	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
