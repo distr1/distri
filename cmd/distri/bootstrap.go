@@ -135,6 +135,7 @@ func bootstrapFrom(old string, dryRun bool) error {
 		"zlib",
 
 		"systemd",
+		"libudev",
 		"libgcrypt",
 		"libgpg-error",
 		"gettext",    // for systemd
