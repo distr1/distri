@@ -18,6 +18,8 @@ distri is published in the hope that other, more established distributions, will
 
 Please send feedback to the [distri mailing list](https://www.freelists.org/list/distri) so that everyone can participate!
 
+You can also talk to us by connecting to https://robustirc.net/ and joining the `#distri` channel. Please stick around for a while, not everyone is at their keyboard all the time :)
+
 ## Getting started
 
 Find current images of the `master` branch at https://repo.distr1.org/distri/master/img/.
