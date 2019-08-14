@@ -1,6 +1,9 @@
-source: "https://i3wm.org/i3status/i3status-2.12.tar.bz2"
-hash: "6fc6881536043391ab4bed369d956f99d1088965d8bcebed18d1932de3ba791a"
-version: "2.12-4"
+source: "https://i3wm.org/i3status/i3status-2.13.tar.bz2"
+hash: "ce89c9ff8565f62e88299f1a611229afdfc356b4e97368a5f8c4f06ad2fa1466"
+version: "2.13-5"
+
+# sed -i 's,@PATH_XMLTO@,XML_CATALOG_FILES=/ro/docbook-xsl-amd64-1.79.2-1/out/docbook-xsl.xmlcatalog @PATH_XMLTO@ --skip-validation,g' Makefile.in
+cherry_pick: "xmlto.patch"
 
 cbuilder: <>
 
@@ -11,26 +14,9 @@ dep: "alsa-lib"
 dep: "libnl"
 dep: "pulseaudio"
 dep: "which"
-
-build_step: <
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
-
-build_step: <
-  argv: "make"
-  argv: "SYSCONFDIR=/etc"
->
-
-build_step: <
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${DISTRI_DESTDIR}"
-  argv: "PREFIX=${DISTRI_PREFIX}"
-  argv: "SYSCONFDIR=/etc"
-  argv: "V=1"
->
+dep: "asciidoc"
+dep: "xmlto"
+dep: "docbook-xsl"
 
 install: <
   capability: <

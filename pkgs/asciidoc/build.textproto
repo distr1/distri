@@ -1,0 +1,16 @@
+source: "https://downloads.sourceforge.net/project/asciidoc/asciidoc/8.6.9/asciidoc-8.6.9.tar.gz"
+hash: "78db9d0567c8ab6570a6eff7ffdf84eadd91f2dfc0a92a2d0105d323cab4e1f0"
+version: "8.6.9-1"
+
+# sed -i 's,^#!/usr/bin/env python,#!/bin/python2.7,g' **/*.py
+cherry_pick: "python.patch"
+
+cbuilder: <
+  copy_to_builddir: true
+  # TODO: remove once https://github.com/distr1/distri/issues/31 is fixed
+  extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-1/etc"
+>
+
+# build dependencies:
+
+runtime_dep: "python2.7"

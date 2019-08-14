@@ -1,0 +1,22 @@
+source: "https://github.com/docbook/xslt10-stylesheets/releases/download/release/1.79.2/docbook-xsl-nons-1.79.2.tar.bz2"
+hash: "ee8b9eca0b7a8f89075832a2da7534bce8c5478fc8fc2676f512d5d87d832102"
+version: "1.79.2-1"
+
+cherry_pick: "catalog.patch"
+
+cbuilder: <>
+
+# build dependencies:
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}${DISTRI_PREFIX}; cd ${DISTRI_SOURCEDIR} && install -v -m755 -d $d/share/xml/docbook/xsl-stylesheets-nons-1.79.2 && cp -v -R VERSION assembly common eclipse epub epub3 extensions fo highlighting html htmlhelp images javahelp lib manpages params profiling roundtrip slides template tests tools webhelp website xhtml xhtml-1_1 xhtml5 $d/share/xml/docbook/xsl-stylesheets-nons-1.79.2 && ln -s VERSION $d/share/xml/docbook/xsl-stylesheets-nons-1.79.2/VERSION.xsl && install -v -m644 -D README $d/share/doc/docbook-xsl-nons-1.79.2/README.txt && install -v -m644    RELEASE-NOTES* NEWS* $d/share/doc/docbook-xsl-nons-1.79.2"
+>
+
+install: <
+  file: <
+    srcpath: "docbook-xsl.xmlcatalog"
+    destpath: "docbook-xsl.xmlcatalog"
+  >
+>

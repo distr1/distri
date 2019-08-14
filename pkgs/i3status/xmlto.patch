@@ -1,0 +1,20 @@
+--- old/Makefile.in	2019-06-30 19:54:48.000000000 +0200
++++ new/Makefile.in	2019-08-14 09:51:56.681934980 +0200
+@@ -523,7 +523,7 @@
+ PACKAGE_VERSION = @PACKAGE_VERSION@
+ PATH_ASCIIDOC = @PATH_ASCIIDOC@
+ PATH_SEPARATOR = @PATH_SEPARATOR@
+-PATH_XMLTO = @PATH_XMLTO@
++PATH_XMLTO = XML_CATALOG_FILES=/ro/docbook-xsl-amd64-1.79.2-1/out/docbook-xsl.xmlcatalog @PATH_XMLTO@ --skip-validation
+ PKG_CONFIG = @PKG_CONFIG@
+ PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+@@ -1857,7 +1857,7 @@
+ 	@echo "@I3STATUS_VERSION@"
+ 
+ $(asciidoc_MANS): man/%.1: man/%.xml man/$(dirstamp)
+-	$(AM_V_GEN) out='$@'; @PATH_XMLTO@ man -o "$${out%/*}" $<
++	$(AM_V_GEN) out='$@'; XML_CATALOG_FILES=/ro/docbook-xsl-amd64-1.79.2-1/out/docbook-xsl.xmlcatalog @PATH_XMLTO@ --skip-validation man -o "$${out%/*}" $<
+ 	@stamp='$@'; $(MKDIR_P) "$${stamp%/*}"
+ 
+ man/%.xml: man/%.man man/asciidoc.conf man/$(dirstamp)

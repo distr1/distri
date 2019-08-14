@@ -1,0 +1,64 @@
+--- old/a2x.py	2013-11-06 01:31:10.000000000 +0100
++++ new/a2x.py	2019-08-14 08:49:48.534091081 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ '''
+ a2x - A toolchain manager for AsciiDoc (converts Asciidoc text files to other
+       file formats)
+--- old/asciidoc.py	2013-11-06 22:33:00.000000000 +0100
++++ new/asciidoc.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ """
+ asciidoc - converts an AsciiDoc text file to HTML or DocBook
+ 
+--- old/asciidocapi.py	2012-09-28 01:34:02.000000000 +0200
++++ new/asciidocapi.py	2019-08-14 08:49:48.534091081 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ """
+ asciidocapi - AsciiDoc API wrapper class.
+ 
+--- old/filters/code/code-filter.py	2012-12-28 21:34:11.000000000 +0100
++++ new/filters/code/code-filter.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ '''
+ NAME
+     code-filter - AsciiDoc filter to highlight language keywords
+--- old/filters/graphviz/graphviz2png.py	2011-01-31 21:52:09.000000000 +0100
++++ new/filters/graphviz/graphviz2png.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ 
+ import os, sys, subprocess
+ from optparse import *
+--- old/filters/latex/latex2png.py	2012-02-29 03:05:58.000000000 +0100
++++ new/filters/latex/latex2png.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ '''
+ NAME
+     latex2png - Converts LaTeX source to PNG file
+--- old/filters/music/music2png.py	2012-07-10 23:32:19.000000000 +0200
++++ new/filters/music/music2png.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ '''
+ NAME
+     music2png - Converts textual music notation to classically notated PNG file
+--- old/tests/testasciidoc.py	2012-12-31 01:34:30.000000000 +0100
++++ new/tests/testasciidoc.py	2019-08-14 08:49:48.538091012 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/bin/python2.7
+ 
+ USAGE = '''Usage: testasciidoc.py [OPTIONS] COMMAND
+ 

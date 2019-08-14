@@ -1,0 +1,9 @@
+--- /dev/null	2019-08-07 16:40:56.348033595 +0200
++++ new/docbook-xsl.xmlcatalog	2019-08-14 09:44:40.355867957 +0200
+@@ -0,0 +1,6 @@
++<?xml version="1.0"?>
++<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN" "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
++<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
++  <rewriteSystem systemIdStartString="http://docbook.sourceforge.net/release/xsl/current" rewritePrefix="/ro/docbook-xsl-amd64-1.79.2-1/out/share/xml/docbook/xsl-stylesheets-nons-1.79.2/"/>
++</catalog>
++
