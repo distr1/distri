@@ -3,41 +3,122 @@
 :toclevels: 4
 :sectnums:
 
-* TODO: how to invoke the build tool
-* TODO: how to rebuild the entire distri
+TODO: document available substitutions
+
+This document describes building distri packages.
+
+For more details on what distri packages are, see
+link:package-format.html[package format].
+
+## use-cases
+
+To build a single package, use e.g. `distri build -pkg i3status`. For
+convenience, if you are working in a package directory
+(e.g. `distri/pkgs/i3status`), you can just run `distri build`, or even
+just `distri`, and the tool will infer your intention.
+
+Once you are happy with your change to the package, use e.g. `distri bump
+i3status` to display which packages need to have their version number increased
+when changing the `i3status` package. Use the `-w` flag to actually change the
+affected packages.
+
+To build *all* distri packages, use `distri batch`.
 
 ## build instructions
 
-The package build instructions are declared in a file called `build.textproto`. The following fields can be used:
+The package build instructions are declared in a file called
+`build.textproto`, for example:
+
+.pkgs/i3status/build.textproto
+--------------------------------------------------------------------------------
+source: "https://i3wm.org/i3status/i3status-2.13.tar.bz2"
+hash: "ce89c9ff8565f62e88299f1a611229afdfc356b4e97368a5f8c4f06ad2fa1466"
+version: "2.13-5"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "confuse"
+dep: "yajl2"
+dep: "alsa-lib"
+dep: "libnl"
+dep: "pulseaudio"
+dep: "which"
+dep: "asciidoc"
+dep: "xmlto"
+dep: "docbook-xsl"
+
+install: <
+  capability: <
+    filename: "bin/i3status"
+    capability: "cap_net_admin=ep"
+  >
+>
+--------------------------------------------------------------------------------
+
+TIP: The corresponding https://developers.google.com/protocol-buffers/[Protocol
+Buffers] definition file is
+https://github.com/distr1/distri/blob/master/pb/build.proto[build.proto].
+
+The following sections cover the available directives.
 
 ### upstream
 
-version (string)::
-The version number of this package. The name of the package is derived from the location of `build.textproto`, and the resulting package will be named `<pkg>-<version>`, e.g. `systemd-amd64-239-1`.
 source (string)::
+
 A https URL to the upstream archive that should be built.
+
 hash (string)::
+
 A SHA256 hash of the upstream archive, for verifying integrity.
+
+version (string)::
+
+The version number of this package, in format
+`<upstream-version>-<distri-revision>`, e.g. `2.12-4`. The distri package
+revision is a monotonically increasing number (even when the upstream version
+changes!).
++
+The name of the package is the directory which contains `build.textproto`, and
+the resulting package will be named `<package-name>-<version>`, so a full
+package can be referenced by e.g. `i3status-amd64-2.12-4`.
+
+extra_file (repeated string)::
+
+The filename of a file (relative to the directory containing `build.textproto`)
+to copy into the source directory as-is. Could also be achieved by using
+`cherry_pick`, but files are a little bit easier to maintain this way.
+
 cherry_pick (repeated string)::
-The filename of a patch (relative to the directory containing `build.textproto`) to apply after extracting the upstream archive.
+
+The filename of a patch (relative to the directory containing `build.textproto`)
+to apply after extracting the upstream archive. The order of directives is the
+order in which the patches are applied.
 
 ### builder
 
 dep (repeated string)::
+
 Additional build dependencies over what the chosen builder requires.
 +
 .Example:
 --------------------------------------------------------------------------------
-dep: "bison-3.0.5"
+dep: "bison"
 --------------------------------------------------------------------------------
+
 build_step (repeated)::
+
 Overwrites the chosen builder’s default build steps.
+
 +
 --
 argv (repeated string):::
-argv to pass to https://manpages.debian.org/stretch/manpages-dev/execve.2[`execve(2)`]
+
+argv to pass to https://manpages.debian.org/execve.2[`execve(2)`]
+
 --
 +
+
 .Example:
 --------------------------------------------------------------------------------
 build_step: <
@@ -49,7 +130,10 @@ build_step: <
 
 #### cbuilder
 
+The cbuilder builds autoconf (or compatible) projects.
+
 extra_configure_flag (repeated string)::
+
 Additional flag to pass to `configure`.
 +
 .Example (from ncurses):
@@ -59,8 +143,16 @@ cbuilder: <
   extra_configure_flag: "--enable-pc-files"
 >
 --------------------------------------------------------------------------------
+
+copy_to_builddir (bool)::
+
+Enable if this package does not support building from a separate directory
+(sometimes called “out-of-tree build”). A bug should be reported with the
+package upstream.
+
 extra_make_flag (repeated string)::
-Additional flag to pass to `make`.
+
+Additional flag to pass to https://manpages.debian.org/make.1[`make(1)`].
 +
 .Example (from glibc):
 --------------------------------------------------------------------------------
@@ -68,19 +160,56 @@ cbuilder: <
   extra_make_flag: "user-defined-trusted-dirs=/ro/lib"
 >
 --------------------------------------------------------------------------------
+
+autoreconf (bool)::
+
+Whether to run https://manpages.debian.org/autoreconf.1[`autoreconf(1)`].
+
 extra_ldflag (repeated string)::
+
 Additional flag to append to the `LDFLAGS` environment variable when building.
 +
 .Example:
 --------------------------------------------------------------------------------
-TODO
+TODO: add an example once we know of good use-cases
 --------------------------------------------------------------------------------
-copy_to_builddir (bool)::
-Enable if this package does not support building from a separate directory (sometimes called “out-of-tree build”). A bug should be reported with the package upstream.
+
+#### cmakebuilder
+
+The cmakebuilder builds CMake projects.
+
+extra_cmake_flag (repeated string)::
+
+Additional flag to pass to https://manpages.debian.org/cmake.1[`cmake(1)`].
++
+.Example (from kicad):
+--------------------------------------------------------------------------------
+cmakebuilder: <
+  extra_cmake_flag: "-DKICAD_SCRIPTING_WXPYTHON_PHOENIX:BOOL=true"
+>
+--------------------------------------------------------------------------------
+
+#### mesonbuilder
+
+The mesonbuilder builds meson projects.
+
+extra_meson_flag (repeated string)::
+
+Additional flag to pass to https://manpages.debian.org/meson.1[`meson(1)`].
++
+.Example (from accountsservice):
+--------------------------------------------------------------------------------
+cmakebuilder: <
+  extra_meson_flag: "-Dsystemdsystemunitdir=${DISTRI_PREFIX}/lib/systemd/system"
+>
+--------------------------------------------------------------------------------
 
 #### perlbuilder
 
+The perlbuilder builds Perl projects.
+
 extra_makefile_flag (repeated string)::
+
 Additional flag to pass to `perl Makefile.PL`.
 +
 .Example (from perl-XML-Parser):
@@ -90,19 +219,69 @@ perlbuilder: <
 >
 --------------------------------------------------------------------------------
 
+#### pythonbuilder
+
+The pythonbuilder builds Python projects.
+
+#### gomodbuilder
+
+#### gobuilder
+
+The gobuilder builds Go projects.
+
+install (string)::
+
+Additional flags to pass to “go install”.
++
+.Example (from distri1):
+--------------------------------------------------------------------------------
+gobuilder: <
+  install: "./cmd/distri"
+>
+--------------------------------------------------------------------------------
+
+import_path (string)::
+
+Import path of the package that is being built. Derived from the source URL by
+default; should usually not be specified.
++
+.Example (from distri1):
+--------------------------------------------------------------------------------
+gobuilder: <
+  import_path: "distri1"
+>
+--------------------------------------------------------------------------------
+
+go_env (repeated string)::
+
+Additional go environment variable to set when calling e.g. “go install”.
++
+.Example (from distri1):
+--------------------------------------------------------------------------------
+gobuilder: <
+  # Used as /init before the dynamic linker is available:
+  go_env: "CGO_ENABLED=0"
+>
+--------------------------------------------------------------------------------
+
 ### package building
 
 runtime_dep (repeated string)::
+
 Additional run-time dependencies which are not automatically found (see <<runtimedeps>>).
 +
 .Example (from bison):
 --------------------------------------------------------------------------------
-runtime_dep: "m4-1.4.18"
+runtime_dep: "m4"
 --------------------------------------------------------------------------------
 
+
 install::
-Additional steps to perform after the install build step completed.
+
+Additional steps to perform after the build completed.
+
 systemd_unit (repeated string):::
+
 Path to a systemd unit file which the build steps don’t install.
 +
 .Example (from containerd):
@@ -111,22 +290,256 @@ install: <
   systemd_unit: "${DISTRI_SOURCEDIR}/containerd.service"
 >
 --------------------------------------------------------------------------------
+
 symlink (repeated):::
+
+Create a symbolic link.
++
 The nomenclature comes from https://golang.org/pkg/os/#Symlink[Go’s `os.Symlink()`].
+
 +
 --
 oldname::::
 The symbolic link target.
+
 newname::::
 The name of the symbolic link to create.
 --
 +
+
 .Example (from bash):
 --------------------------------------------------------------------------------
 install: <
   symlink: < oldname: "bash" newname: "bin/sh" >
 >
 --------------------------------------------------------------------------------
+
+empty_dir (repeated string):::
+
+Create an empty directory with the specified name, relative to
+`${DISTRI_PREFIX}/out`.
++
+.Example (from irssi):
+--------------------------------------------------------------------------------
+install: <
+  empty_dir: "lib/irssi/modules"
+>
+--------------------------------------------------------------------------------
+
+
+chmod (repeated):::
+
+Change the mode of a file.
+
++
+--
+setuid (bool)::::
+
+Whether to set the setuid bit.
+
+name (string)::::
+
+The filename of the file whose mode to change, relative to
+`${DISTRI_PREFIX}/out`.
+--
++
+
+.Example (from pam):
+--------------------------------------------------------------------------------
+install: <
+  chmod: <
+    setuid: true
+    name: "sbin/unix_chkpwd"
+  >
+>
+--------------------------------------------------------------------------------
+
+
+capability (repeated):::
+
+Apply a file-based capability
+
++
+--
+capability (string)::::
+
+The capability to apply, specified in
+https://manpages.debian.org/cap_from_text.3[`cap_from_text(3)`] format.
+
+filename (string)::::
+
+The filename of the file onto which the capability should be applied, relative
+to `${DISTRI_PREFIX}/out`.
+
+--
++
+
+.Example (from mtr):
+--------------------------------------------------------------------------------
+install: <
+  capability: <
+    filename: "sbin/mtr-packet"
+    capability: "cap_net_raw+ep"
+  >
+>
+--------------------------------------------------------------------------------
+
+file (repeated):::
+
+Install a file.
+
++
+--
+
+srcpath (string)::::
+
+The filename of the file to install.
+
+destpath (string)::::
+
+The destination path, relative to `${DISTRI_PREFIX}/out`.
+
+--
++
+
+.Example (from lightdm):
+--------------------------------------------------------------------------------
+install: <
+  file: <
+    srcpath: "lightdm.sysusers"
+    destpath: "lib/sysusers.d/lightdm.conf"
+  >
+>
+--------------------------------------------------------------------------------
+
+rename (repeated):::
+
+Rename an installed file.
+
++
+--
+
+oldname (string)::::
+
+The filename of the file to rename, relative to `${DISTRI_PREFIX}/out`.
+
+newname (string)::::
+
+The new name, relative to `${DISTRI_PREFIX}/out`.
+
+--
++
+
+.Example (from curl-gnutls):
+--------------------------------------------------------------------------------
+install: <
+  rename: <
+    oldname: "lib/libcurl.so.4.5.0"
+    newname: "lib/libcurl-gnutls.so.4.5.0"
+  >
+>
+--------------------------------------------------------------------------------
+
+delete (repeated string):::
+
+Delete a file with the specified name, relative to `${DISTRI_PREFIX}/out`.
++
+.Example (from curl-gnutls):
+--------------------------------------------------------------------------------
+install: <
+  # This package is provided for compatibility with closed-source
+  # software that links against libcurl-gnutls.so, so there will
+  # not be any static linking.
+  delete: "lib/libcurl.a"
+  delete: "lib/libcurl.la"
+  delete: "lib/pkgconfig/libcurl.pc"
+  delete: "share/aclocal/libcurl.m4"
+  delete: "lib/libcurl.so"
+  delete: "lib/libcurl.so.4"
+>
+--------------------------------------------------------------------------------
+
+split_package (repeated)::
+
+Split files out of the resulting package into separate packages. This feature
+should be used sparingly: prefer sticking to the mental model that one package
+build instruction file results in one distri package.
++
+Use cases include fine grained dependencies (e.g. `gcc-libs` split out of `gcc`)
+or breaking dependency cycles for bootstrap packages (e.g. `libudev` split out
+of `systemd`).
+
++
+--
+
+name (string):::
+
+Name of the split package.
+
+claim (repeated):::
+
+A claim specifies which files this split package claims for itself.
+
+glob (string)::::
+
+glob pattern, interpreted by Go’s
+https://golang.org/pkg/path/filepath/#Glob[filepath.Glob]
+
+dir (string)::::
+
+Overwrite the destination directory within the split package.
+
+--
++
+
+.Example (from gcc):
+--------------------------------------------------------------------------------
+split_package: <
+  name: "gcc-libs"
+  claim: < glob: "out/lib64/libgcc_s.so*" >
+  claim: < glob: "out/lib64/libstdc++.so*" >
+  claim: < glob: "out/lib64/libgomp.so*" >
+  claim: <
+    glob: "out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt*.o"
+    dir: "out/lib64"
+  >
+>
+--------------------------------------------------------------------------------
+
+runtime_dep (repeated string):::
+
+Additional run-time dependencies which are not automatically found, for this
+split package.
+
+runtime_union (repeated)::
+
+Runtime union directories are used to implement per-package exchange directories
+(as opposed to global exchange directories). This is to be used for tight
+coupling situations, e.g. when a plugin mechanism does not guarantee ABI
+compatibility across versions.
+
++
+--
+
+dir (string):::
+
+Directory (within the package) to overlay on top of pkg.
+
+pkg (string):::
+
+distri package on top of which to overlay our files.
+
+--
++
+
+.Example (from irssi-robustirc):
+--------------------------------------------------------------------------------
+runtime_union: <
+  dir: "lib/irssi/modules"
+  pkg: "irssi"
+>
+--------------------------------------------------------------------------------
+
 
 ## build process
 
