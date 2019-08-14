@@ -3,8 +3,6 @@
 :toclevels: 4
 :sectnums:
 
-TODO: document available substitutions
-
 This document describes building distri packages.
 
 For more details on what distri packages are, see
@@ -275,7 +273,7 @@ Additional run-time dependencies which are not automatically found (see <<runtim
 runtime_dep: "m4"
 --------------------------------------------------------------------------------
 
-
+[[install]]
 install::
 
 Additional steps to perform after the build completed.
@@ -545,21 +543,37 @@ runtime_union: <
 
 When running `distri build`, the following directories are involved:
 
+TIP: run `distri env` to resolve e.g. `$DISTRIROOT`
+
 PkgDir::
-The current working directory (`$PWD`), containing `build.textproto`, e.g. `$DISTRIROOT/pkgs/systemd`.
+
+The directory containing `build.textproto`, e.g. `$DISTRIROOT/pkgs/i3status`.
+
 SourceDir::
-Path of the extracted sources, e.g. `$DISTRIROOT/build/systemd/v239`.
+
+Path of the extracted sources, e.g. `$DISTRIROOT/build/i3status/i3status-2.13`.
+
 DestDir::
-A directory named "tmp" within a temporary directory, e.g. `/tmp/distri-dest-3129384/tmp`. This directory is mounted at `/dest/tmp` in the namespace. TODO: why the tmp indirection?
+
+A directory named "tmp" within a temporary directory,
+e.g. `/tmp/distri-dest-3129384/tmp`. This directory is mounted at `/dest/tmp` in
+the namespace. TODO: why the tmp subdirectory instead of just installing to
+/dest or just destdir?
 +
 Within DestDir, `ro/lib` and `ro/share` are symbolic links to
-`${DISTRI_PREFIX}/lib` and `${DISTRI_PREFIX}/share`, respectively.
-This allows packages to install files into exchange directories
-such as e.g. `--datadir=/ro/share`.
+`${DISTRI_PREFIX}/lib` and `${DISTRI_PREFIX}/share`, respectively.  This allows
+packages to install files into exchange directories such as
+e.g. `--datadir=/ro/share`.
+
 ChrootDir::
-A temporary directory providing the root for the build subprocess, e.g. `/tmp/distri-buildchroot-1938422`.
+
+A temporary directory providing the file system root for the build subprocess,
+e.g. `/tmp/distri-buildchroot-1938422`.
+
 BuildDir::
-A temporary directory created in ChrootDir (TODO). The build steps will be run in this directory.
+
+A temporary directory created in ChrootDir (TODO). The build steps will be run
+in this directory.
 
 At a high level, the following steps are performed:
 
@@ -569,12 +583,15 @@ At a high level, the following steps are performed:
 
 ### download
 
-The specified `source` is downloaded to SourceDir/.., provided its SHA256 hash matches `hash`. If the file already exists, no network connectivity is needed for building.
+The specified `source` is downloaded to SourceDir/.., provided its SHA256 hash
+matches `hash`. If the file already exists, no network connectivity is needed
+for building.
 
 Then, the `source` archive is extracted.
 
-[NOTE]
-distri assumes that the source archive contains a directory named like the archive after stripping file extensions. E.g., systemd’s `v239.tar.gz` should contain a directory called `v239`.
+NOTE: distri assumes that the source archive contains a directory named like the
+archive after stripping file extensions. E.g., i3status’s `i3status-2.13.tar.gz`
+should contain a directory called `i3status-2.13`.
 
 ### build
 
@@ -586,11 +603,13 @@ The following build environment is created in ChrootDir:
 | `/dev/null` | device node
 | `/etc/passwd` | minimal passwd file containing the build user
 | `/etc/group` | minimal group file containing the build group
-| `/usr/src/<pkg>-<version>` | SourceDir (e.g. `$DISTRIROOT/build/systemd/v239`)
+| `/usr/src/<pkg>-<arch>-<version>` | SourceDir (e.g. `$DISTRIROOT/build/i3status/i3status-2.13`)
+| `/usr/src/wrappers` | PkgDir/wrappers (e.g. `$DISTRIROOT/pkgs/ssh/wrappers`)
+| `/ro` | distri packages declared as build dependencies
 | `/dest/tmp` | DestDir (e.g. `/tmp/distri-dest-3129384/tmp`)
-| `/dest/tmp/ro/share` | symlink to `$DESTDIR/ro/systemd-amd64-239-1/out/share`
-| `/dest/tmp/ro/lib` | symlink to `$DESTDIR/ro/systemd-amd64-239-1/out/lib`
-| `/lib64` | symlink to `/ro/glibc-2.27/out/lib`
+| `/dest/tmp/ro/share` | symlink to `$DESTDIR/ro/i3status-amd64-2.13-3/out/share`
+| `/dest/tmp/ro/lib` | symlink to `$DESTDIR/ro/i3status-amd64-2.13-3/out/lib`
+| `/lib64` | symlink to `/ro/glibc-amd64-2.27-3/out/lib`
 | `/usr/include` | symlink to `/ro/include`
 | `/bin` | symlink to `/ro/bin`
 | `/sbin` | symlink to `/ro/bin`
@@ -598,7 +617,7 @@ The following build environment is created in ChrootDir:
 | `/ro` | FUSE mount of `$DISTRIROOT/build/distri/pkg`
 |===
 
-Then, a subprocess is started in a separate user and mount https://manpages.debian.org/stretch/manpages/namespaces.7[namespace]. That subprocess then:
+Then, a subprocess is started in a separate user and mount https://manpages.debian.org/namespaces.7[namespace]. That subprocess then:
 
 * sets up logging to `build-<version>.log`
 * changes its root to ChrootDir
@@ -617,16 +636,17 @@ Builders (e.g. the C builder, or Perl builder) supply the default build steps:
 
 For odd packages which do not adhere to the standard conventions of whichever ecosystem they live in (e.g. `libcap`), the preferred course of action is to convince upstream to change that. In the meantime, custom build steps can be defined in the build instructions, overwriting the builder default build steps.
 
+[[substitutions]]
 The following variables will be substituted in build steps:
 
 [options="header"]
 |===
 | Variable | Usage | Example Value
 | `${DISTRI_DESTDIR}` | `DESTDIR` | `/dest/tmp`
-| `${DISTRI_PREFIX}` | `--prefix` | `/ro/systemd-amd64-239-1/out`
+| `${DISTRI_PREFIX}` | `--prefix` | `/ro/i3status-amd64-2.13-3/out`
 | `${DISTRI_BUILDDIR}` | build directory | `/tmp/distri-build511672173`
-| `${DISTRI_SOURCEDIR}` | source directory | `/usr/src/systemd-amd64-239-1`
-| `${DISTRI_FULLNAME}` | distri package name | `systemd-amd64-239-1`
+| `${DISTRI_SOURCEDIR}` | source directory | `/usr/src/i3status-amd64-2.13-3`
+| `${DISTRI_FULLNAME}` | distri package name | `i3status-amd64-2.13-3`
 | `${DISTRI_RESOLVE:<pkg>}` | resolves build dependency `<pkg>`
 | `${DISTRI_RESOLVE:lvm2}` = +
 `lvm2-amd64-2.03.00-5`
@@ -642,7 +662,7 @@ a|
 [unstyled]
 * `/ro/bin`
 * `/bin`
-| TODO
+| shell, https://manpages.debian.org/execl.3[`execlp(3)`] and similar
 | `PKG_CONFIG_PATH`
 a|
 [unstyled]
@@ -678,6 +698,11 @@ a|
 [unstyled]
 * `$deps/lib/perl5`
 | perl
+| `PYTHONPATH`
+a|
+[unstyled]
+* `$deps/lib/python*/site-packages`
+| python
 |===
 
 The `$deps` notation means the following path is appended to the `out` directory of all build dependencies. E.g., for a package with build dependencies `bison` and `libx11`, `PKG_CONFIG_PATH` is `/ro/bison-3.0.5/out/lib/pkgconfig:/ro/libx11-1.6.6/out/lib/pkgconfig`.
@@ -688,7 +713,8 @@ TODO: is PERL5LIB required? if so, also PYTHON etc.?
 
 #### instructions
 
-The install build instruction (if any) is processed, copying systemd unit files and creating symbolic links.
+The install build instructions are processed and any post-build installation
+instructions (see <<install>>) are processed.
 
 #### wrapper scripts
 
@@ -698,8 +724,8 @@ The install build instruction (if any) is processed, copying systemd unit files 
 
 #### run-time dependencies [[runtimedeps]]
 
-[NOTE]
-For the following techniques to work, the package is made available at its destination path `/ro/<pkg>-<version>` (e.g. `/ro/systemd-amd64-239-1`).
+NOTE: For the following techniques to work, the package is made available at its
+destination path `/ro/<pkg>-<arch>-<version>` (e.g. `/ro/i3status-amd64-2.13-3`).
 
 The following run-time dependencies are automatically found:
 
@@ -707,13 +733,18 @@ The following run-time dependencies are automatically found:
 * build dependencies, e.g. the Perl builder promotes all build dependencies to run-time dependencies
 * packages referenced by `Requires:` or `Requires.private:` lines in installed pkg-config files (`.pc`)
 
-Unused paths are removed from the rpath to eliminate unnecessary lookups (which can be costly when packages are mounted remotely) by calling `patchelf --shrink-rpath` on dynamically linked ELF objects (binaries and libraries).
-
 ### package creation
 
-The auto-detected and specified run-time dependencies are now persisted into `<pkg>-<version>.meta.textproto`, e.g. `systemd-amd64-239-1.meta.textproto`.
+All library dependencies are symlinked into `lib` (which is placed in the
+`rpath` of ELF executables).
 
-A SquashFS image is created from `DestDir/<pkg>-<version>`, e.g. `systemd-amd64-239-1.squashfs` is created from `DestDir/systemd-amd64-239-1`.
+The auto-detected and specified run-time dependencies are now persisted into
+`<pkg>-<arch>-<version>.meta.textproto`,
+e.g. `i3status-amd64-2.13-3.meta.textproto`.
+
+A SquashFS image is created from `DestDir/<pkg>-<arch>-<version>`,
+e.g. `i3status-amd64-2.13-3.squashfs` is created from
+`DestDir/i3status-amd64-2.13-3`.
 
 * move b.DestDir/tmp/ro/hello-1 to b.DestDir/hello-1 (TODO: why?)
 * move b.DestDir/tmp/etc to b.DestDir/hello-1/etc (TODO: why?)
