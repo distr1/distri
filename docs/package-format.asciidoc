@@ -5,7 +5,8 @@
 
 This document describes the distri package format.
 
-TODO: add a reference to the package building doc
+For more details on how to build distri packages, see
+link:building.html[distri building].
 
 ## Design Goals
 
@@ -15,24 +16,57 @@ TODO: add a reference to the package building doc
 
 ## Terminology
 
+TIP: run `distri env` to resolve e.g. `$DISTRIROOT`
+
 package build instructions::
-references the contents of a directory underneath the `pkgs` directory in the distri root, e.g. `distri/pkgs/bash`. At a minimum, a `build.textproto` file declares how the package should be built. Some packages require patches and custom wrapper scripts, see e.g. `openssh`.
+
+refers to a directory containing `build.textproto`,
+e.g. `$DISTRIROOT/pkgs/i3status`.
+
++
+
+At a minimum, the `build.textproto` file declares how the package should be
+built. Some packages require patches and custom wrapper scripts, see
+e.g. `openssh`.
 
 package metadata file::
-is a textproto file which contains metadata necessary to work with the package, e.g. the transitive run-time dependency closure so that the package management tool can install the package.
+
+is a textproto file which contains metadata
+(e.g. `bash-amd64-4.4.18-3.meta.textproto`) necessary to work with the package,
+e.g. the transitive run-time dependency closure so that the package management
+tool can install the package.
 
 package::
-references a read-only SquashFS image and an accompanying package metadata file, e.g. `bash-4.4.18.squashfs` and `bash-4.4.18.meta.textproto`.
 
-wrapper script::
-is an auto-generated shell script for every binary,footnoteref:[binsh,To break a circular dependency, `bin/sh` does not point to a wrapper script. It is a symbolic link to the `bash` binary, which does not need any environment variables.] which sets up the required environment variables for the wrapped binary to function correctly. This includes setting `PATH` such that all binaries will be found in the correct versions, setting `PERL5LIB` such that all Perl modules will be found in the correct versions, etc.
+A distri package refers to a read-only SquashFS image and an accompanying
+package metadata file, e.g. `bash-amd64-4.4.18-3.squashfs` and
+`bash-amd64-4.4.18-3.meta.textproto`.
+
+wrapper program::
+
+is an auto-generated small program for every binary,footnoteref:[binsh,Wrapper
+programs used to be shell scripts, so to break the circular dependency, `bin/sh`
+does not point to a wrapper. It is a symbolic link to the `bash` binary, which
+does not need any environment variables. It seems prudent to keep it that way,
+even after moving from shell scripts to compiled programs.] which sets up the
+required environment variables for the wrapped binary to function
+correctly. This includes setting `PATH` such that all binaries will be found in
+the correct versions, setting `PERL5LIB` such that all Perl modules will be
+found in the correct versions, etc.
 
 custom wrapper script::
-is an executable program (the build process only allows for scripts) contained in the package build instructions which performs package-specific setup. E.g., `distri/pkgs/openssh/wrappers/sshd` wraps the `sshd` binary, creating SSH host keys when they don’t exist.
+
+is an executable program (the build process only allows for scripts) contained
+in the package build instructions which performs package-specific setup. E.g.,
+`$DISTRIROOT/pkgs/openssh/wrappers/sshd` wraps the `sshd` binary, creating SSH host
+keys when they don’t exist.
 
 ### Exchange Directories
 
-Many pieces of software exchange data by placing files in well-known file system locations. For example, C library packages place their header files in `/usr/include` so that the C compiler can find them. Here are a couple of examples:
+Many pieces of software exchange data by placing files in well-known file system
+locations. For example, C library packages place their header files in
+`/usr/include` so that the C compiler can find them. Here are a couple of
+examples:
 
 [options="header"]
 |===
@@ -46,14 +80,21 @@ Many pieces of software exchange data by placing files in well-known file system
 | … | … | …
 |===
 
-Packages can declare one or more exchange directories in their metadata file. Exchange directories are lazily created. In other words: if you don’t have the `man` package installed, even though many other packages will ship man pages, the `/ro/share/man` exchange directory will not be filled.
+Packages can declare one or more exchange directories in their metadata
+file. Exchange directories are lazily created. In other words: if you don’t have
+the `man` package installed, even though many other packages will ship man
+pages, the `/ro/share/man` exchange directory will not be filled.
 
-[NOTE]
-Overlays are recursive, since a number of exchange directories are hierarchical. For example, several Xorg libraries ship files not in `/usr/include`, but in `/usr/include/X11`.
+NOTE: Overlays are recursive, since a number of exchange directories are
+hierarchical. For example, several Xorg libraries ship files not in
+`/usr/include`, but in `/usr/include/X11`.
 
+[[runtimeunion]]
 #### Per-package Union Directories
 
-The exchange directories listed above are global. For packages with a plugin architecture, the plugin packages can specify they want to be overlaid onto another package. E.g., the `irssi-robustirc` package specifies:
+The exchange directories listed above are global. For packages with a plugin
+architecture, the plugin packages can specify they want to be overlaid onto
+another package. E.g., the `irssi-robustirc` package specifies:
 
 ```
 runtime_union: <
@@ -62,37 +103,70 @@ runtime_union: <
 >
 ```
 
-When the `irssi` package is mounted, its `/ro/irssi-amd64-1.1.1/out/lib/irssi/modules` directory will contain the union of the `lib/irssi/modules` directories of all plugins.
+When the `irssi` package is mounted, its
+`/ro/irssi-amd64-1.1.1-3/out/lib/irssi/modules` directory will contain the union
+of the `lib/irssi/modules` directories of all plugins.
 
-Note that this mechanism is strongly versioned: `irssi-amd64-1.1.1` will only see plugins which were built for `irssi-amd64-1.1.1`.
+Note that this mechanism is strongly versioned: `irssi-amd64-1.1.1-3` will only
+see plugins which were built for `irssi-amd64-1.1.1-3`.
 
 ## Package Contents
 
 ### SquashFS Image
 
-[NOTE]
-Our SquashFS images do not use compression. This way, we need to decompress at most once (when downloading over compressing transports), not on every usage, giving us faster program starts at the expense of more disk usage.
+NOTE: Our SquashFS images do not use compression. This way, we need to
+decompress at most once (when downloading over compressing transports), not on
+every usage, giving us faster program starts at the expense of more disk usage.
 
 Our SquashFS images contain the following directories:
 
 out::
+
 The result of building and installing the software, e.g. lib, share, …
+
 etc::
-Files which the software installed to /etc, if any. These live in a special location because they are copied over to `/etc` on first installation.
+
+Files which the software installed to /etc, if any. These live in a special
+location because they are copied over to `/etc` on first installation.
+
 bin::
+
 One wrapper script for each binary in `out/bin` and `out/sbin`.
 
-Empty directories are omitted from the package, e.g. `bin` will not be present for a C library package such as `libx11`.
+lib::
 
-To achieve this directory structure, we instruct the build system by using an invocation such as the following autotools command: `configure --prefix=/ro/haveged-1.9.4/out --sysconfdir=/etc`
+A directory containing symbolic links for all libraries used by any binary
+program of the package (in `out/bin`).
+
++
+
+This directory is used in the `rpath` and results in faster dependency
+resolution (thanks to caching, and a flattened search path) than using an
+`rpath` containing all individual paths (e.g. `/ro/glibc-amd64-2.27-3/out/lib`
+etc.).
+
+debug::
+
+A symbolic link to the corresponding debug distri package.
+
+Empty directories are omitted from the package, e.g. `bin` will not be present
+for a C library package such as `libx11`.
+
+To achieve this directory structure, we instruct the build system by using an
+invocation such as the following autotools command: `./configure
+--prefix=/ro/haveged-amd64-1.9.4-3/out --sysconfdir=/etc`
 
 As an example, here are the image contents of `haveged`:
 
-.Output of `unsquashfs -l haveged-1.9.4.squashfs`:
+.Output of `unsquashfs -l haveged-amd64-1.9.4-3.squashfs`:
 --------------------------------------------------------------------------------
 squashfs-root
 squashfs-root/bin
 squashfs-root/bin/haveged
+squashfs-root/debug -> ../haveged-amd64-1.9.4-3-debug/debug
+squashfs-root/lib
+squashfs-root/lib/libc.so.6 -> /ro/glibc-amd64-2.27-3/out/lib/libc-2.27.so
+squashfs-root/lib/libhavege.so.1 -> /ro/haveged-amd64-1.9.4-3/out/lib/libhavege.so.1.1.0
 squashfs-root/out
 squashfs-root/out/include
 squashfs-root/out/include/haveged
@@ -101,8 +175,8 @@ squashfs-root/out/include/haveged/havegecmd.h
 squashfs-root/out/lib
 squashfs-root/out/lib/libhavege.a
 squashfs-root/out/lib/libhavege.la
-squashfs-root/out/lib/libhavege.so
-squashfs-root/out/lib/libhavege.so.1
+squashfs-root/out/lib/libhavege.so -> libhavege.so.1.1.0
+squashfs-root/out/lib/libhavege.so.1 -> libhavege.so.1.1.0
 squashfs-root/out/lib/libhavege.so.1.1.0
 squashfs-root/out/lib/systemd
 squashfs-root/out/lib/systemd/system
@@ -122,16 +196,31 @@ squashfs-root/out/share/man/man8/haveged.8
 The metadata file contains the following information about a package:
 
 run-time dependency::
-The transitive closure (dependencies, their dependencies, and so on) of run-time dependencies, i.e. other packages which need to be present for this package to work after installation.
+
+The transitive closure (dependencies, their dependencies, and so on) of run-time
+dependencies, i.e. other packages which need to be present for this package to
+work after installation.
+
+source package::
+
+The source package from which this package was built. Useful to tie split
+packages back to their source, and for globbing versions.
+
+version::
+
+The version of the package. In some contexts, the version is already included in
+the filename, but not when e.g. `distri install` is obtaining meta.textproto
+files by accessing a symbolic link.
+
+runtime_union::
+
+Runtime union directories (see <<runtimeunion>>) are used to implement
+per-package exchange directories (as opposed to global exchange
+directories). This is to be used for tight coupling situations, e.g. when a
+plugin mechanism does not guarantee ABI compatibility across versions.
 
 ## Intentionally Left Out
 
-### Hooks And Triggers
-
-There are no hooks (e.g. post-installation scripts) or triggers (e.g. man database updates). This ensures that package installation and package upgrades are fast and do not require sequencing, i.e. can happen in any order and with maximum concurrency.
-
-All package-specific work required for upgrading old state (e.g. databases) must be done by the program when starting (if the program doesn’t do that, a custom wrapper script can be used) or manually by the user (think https://manpages.debian.org/stretch/postgresql-common/pg_upgradecluster.1[`pg_upgradecluster`]). This eliminates unnecessary work for packages which are installed, but not actually used.
-
-A small number of special cases which legitimately require post-installation work are hard-coded in the package management tool: the bootloader must be copied to the hard disk.
-
-TODO: what about the initrd, once we have it? how do we know what influences the build results, how do we build it? also for grub-install, in what sort of environment do we run it?
+distri intentionally doesn’t provide any kind of hooks or triggers. See
+https://michael.stapelberg.ch/posts/2019-07-20-hooks-and-triggers/[“Can we do
+without hooks and triggers?”] for more details.
