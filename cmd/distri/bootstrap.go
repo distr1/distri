@@ -156,6 +156,7 @@ func bootstrapFrom(old string, dryRun bool) error {
 		if err != nil {
 			return err
 		}
+		links := make(map[string]string) // package → version to link
 		for _, m := range matches {
 			pkg := strings.TrimSuffix(filepath.Base(m), ".squashfs")
 			for _, ext := range []string{"meta.textproto", "squashfs"} {
@@ -172,6 +173,11 @@ func bootstrapFrom(old string, dryRun bool) error {
 			pv := distri.ParseVersion(pkg)
 			oldname := pkg + ".meta.textproto"
 			newname := filepath.Join(env.DefaultRepo, pv.Pkg+"-"+pv.Arch+".meta.textproto")
+			if cur, ok := links[newname]; !ok || pv.DistriRevision > distri.ParseVersion(cur).DistriRevision {
+				links[newname] = oldname
+			}
+		}
+		for newname, oldname := range links {
 			if dryRun {
 				log.Printf("ln -s %s %s", oldname, newname)
 				continue
