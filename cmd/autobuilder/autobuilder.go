@@ -332,6 +332,7 @@ func (a *autobuilder) run() error {
 		commit := c.GetSHA()
 		if err := a.runCommit(commit); err != nil {
 			log.Printf("runCommit(%s): %v", commit, err)
+			break // TODO: continue: change after debugging
 		} else {
 			log.Printf("commit %s built", commit)
 		}
