@@ -1088,15 +1088,6 @@ func (b *buildctx) build() (*pb.Meta, error) {
 
 	// TODO: link /bin to /ro/bin, then set PATH=/ro/bin
 
-	// The hermetic build environment contains the following paths:
-	//  /bin/sh → /ro/bin/bash (scripts expect /bin/sh to be present)
-	//  /dev/null
-	//	/dest/<destdir>
-	//	/ro/<deps>
-	//  /ro/bin (PATH=/ro/bin:/bin)
-	//	/usr/src/<srcdir>
-	//  /tmp/<builddir>
-
 	if b.Hermetic {
 
 		// Set up device nodes under /dev:
