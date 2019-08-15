@@ -393,7 +393,7 @@ func TestInstallHooks(t *testing.T) {
 }
 
 func TestInstallContentHooks(t *testing.T) {
-	t.Parallel()
+	// Not marked t.Parallel(): uses os.Setenv to modify PATH
 	ctx := context.Background()
 
 	// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
