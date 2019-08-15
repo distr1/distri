@@ -487,11 +487,12 @@ func (a *autobuilder) serveStatusPage(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var (
-		repo   = flag.String("repo", "https://github.com/stapelberg/distri", "distri git repository to build")
-		branch = flag.String("branch", "master", "which branch of -repo to build")
-		srvDir = flag.String("srv_dir", "/srv/repo.distr1.org", "TODO")
-		dryRun = flag.Bool("dry_run", false, "print build commands instead of running them")
-		job    = flag.String("job", "", "TODO")
+		repo     = flag.String("repo", "https://github.com/stapelberg/distri", "distri git repository to build")
+		branch   = flag.String("branch", "master", "which branch of -repo to build")
+		srvDir   = flag.String("srv_dir", "/srv/repo.distr1.org", "TODO")
+		dryRun   = flag.Bool("dry_run", false, "print build commands instead of running them")
+		job      = flag.String("job", "", "TODO")
+		interval = flag.Duration("interval", 15*time.Minute, "how frequently to check for new tags (independent of any webhook notifications)")
 	)
 	flag.Parse()
 	if *job != "" {
@@ -528,7 +529,7 @@ func main() {
 		select {
 		// TODO: webhook support for triggering a run
 		case <-hup:
-		case <-time.After(15 * time.Minute): // TODO: -interval flag
+		case <-time.After(*interval):
 		}
 	}
 }
