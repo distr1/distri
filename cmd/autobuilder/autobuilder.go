@@ -102,7 +102,7 @@ func (b *buildctx) run() error {
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
-			return err
+			return xerrors.Errorf("%v: %w", build.Args, err)
 		}
 		if err := ioutil.WriteFile(stampFile, nil, 0644); err != nil {
 			return err
@@ -173,7 +173,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		clone.Stdout = os.Stdout
 		clone.Stderr = os.Stderr
 		if err := clone.Run(); err != nil {
-			return err
+			return xerrors.Errorf("%v: %w", clone.Args, err)
 		}
 
 		for _, subdir := range []string{"pkg", "debug"} {
@@ -206,7 +206,7 @@ func (a *autobuilder) runCommit(commit string) error {
 			cp.Stdout = os.Stdout
 			cp.Stderr = os.Stderr
 			if err := cp.Run(); err != nil {
-				return err
+				return xerrors.Errorf("%v: %w", cp.Args, err)
 			}
 		}
 	}
