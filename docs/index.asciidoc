@@ -6,5 +6,7 @@
 The README file at https://distr1.org/ will get you started. What you find here
 is the full-detail reference documentation.
 
-* link:building.html[building]
-* link:package-format.html[package format]
+* link:rosetta-stone.html[rosetta stone] lists common actions in other Linux package managers and their equivalent in distri.
+* link:package-format.html[package format] describes distri packages.
+* link:building.html[building] describes building distri packages.
+

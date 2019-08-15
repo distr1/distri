@@ -1,0 +1,25 @@
+# distri rosetta stone
+:toc: left
+:toclevels: 4
+:sectnums:
+
+This document lists common actions in other Linux package managers (using Debian
+as an example) and their equivalent in distri.
+
+[options="header"]
+|===
+| Debian | distri equivalent | Description
+| `dpkg -S $(readlink -f $(which setfacl))` | `ls -l /bin/setfacl` | List the package providing a specific file
+| `dpkg -l` | `ls /ro` | List installed packages
+| `apt search` | `ls $DISTRIROOT/pkgs` (TODO) | Find a package by name
+| `apt update && apt install` | `distri install` | Install a package
+| `apt update && apt full-upgrade` | `distri update` | Update installed packages
+| https://manpages.debian.org/deborphan.1[`deborphan`] | `distri gc` | Remove no longer referenced packages
+| n/a | `distri reset` | Reset packages to before an update
+| https://manpages.debian.org/dh_make.1[`dh_make`] and variants | `distri scaffold` | Generate package scaffolding
+| https://manpages.debian.org/dpkg-buildpackage.1[`dpkg-buildpackage`] and wrappers | `distri build` | Build a package
+| n/a | `distri log` | Show package build log (local)
+| ≈ https://manpages.debian.org/reprepro.1[`reprepro`] | `distri export` | Serve local package store to others
+| `apt source` | `ls /usr/src` | Obtain source code of a package
+|===
+
