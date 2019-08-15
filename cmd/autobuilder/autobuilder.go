@@ -335,7 +335,7 @@ func (a *autobuilder) run() error {
 		} else {
 			log.Printf("commit %s built", commit)
 		}
-		if idx == 0 {
+		if idx == 0 && !a.dryRun {
 			if err := renameio.Symlink(commit, filepath.Join(a.srvDir, "distri", a.branch)); err != nil {
 				log.Printf("updating symlink: %v", err)
 			}
