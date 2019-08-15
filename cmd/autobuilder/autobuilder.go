@@ -266,14 +266,15 @@ func (a *autobuilder) runCommit(commit string) error {
 	}
 	defer stdout.Close()
 	cmd.Stdout = stdout
-	stderr, err := os.Create(filepath.Join(logDir, "stderr.log"))
+	errlog := filepath.Join(logDir, "stderr.log")
+	stderr, err := os.Create(errlog)
 	if err != nil {
 		return err
 	}
 	defer stderr.Close()
 	cmd.Stderr = stderr
 	if err := cmd.Run(); err != nil {
-		return xerrors.Errorf("%v: %w", cmd.Args, err)
+		return xerrors.Errorf("%v (log %s): %w", cmd.Args, errlog, err)
 	}
 
 	oldpath := filepath.Join(workdir, "dest")
