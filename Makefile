@@ -55,7 +55,7 @@ all: install
 
 install:
 # TODO: inherit CAP_SETFCAP
-	CGO_ENABLED=0 go install ./cmd/distri && sudo setcap 'CAP_SYS_ADMIN,CAP_DAC_OVERRIDE=ep CAP_SETFCAP=eip' ~/go/bin/distri
+	CGO_ENABLED=0 go install ./cmd/... && sudo setcap 'CAP_SYS_ADMIN,CAP_DAC_OVERRIDE=ep CAP_SETFCAP=eip' ~/go/bin/distri
 
 test: install
 	DISTRIROOT=$$PWD go test -v ./cmd/... ./integration/...
