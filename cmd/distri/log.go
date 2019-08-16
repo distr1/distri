@@ -13,7 +13,12 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const logHelp = `TODO
+const logHelp = `distri log [-flags] <package>
+
+Show package build log (local).
+
+Example:
+  % distri log i3status
 `
 
 func showlog(args []string) error {
@@ -21,6 +26,7 @@ func showlog(args []string) error {
 	var (
 		version = fset.String("version", "", "package version (default: most recent)")
 	)
+	fset.Usage = usage(fset, logHelp)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return xerrors.Errorf("syntax: log <package>")

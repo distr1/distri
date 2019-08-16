@@ -10,7 +10,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-const fusectlHelp = `TODO
+const fusectlHelp = `distri fusectl [-flags]
+
+Send a control instruction to the FUSE file system.
+
+Typically only used under the covers, or for debugging.
+
+Example:
+  % distri fusectl -scan_packages
 `
 
 func fusectl(args []string) error {
@@ -19,6 +26,7 @@ func fusectl(args []string) error {
 		mkdirAll     = fset.String("mkdirall", "", "if non-empty, sends a MkdirAll request")
 		scanPackages = fset.Bool("scan_packages", false, "sends a ScanPackages request")
 	)
+	fset.Usage = usage(fset, fusectlHelp)
 	fset.Parse(args)
 
 	ctl, err := os.Readlink("/ro/ctl")

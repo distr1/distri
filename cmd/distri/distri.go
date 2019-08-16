@@ -80,22 +80,21 @@ func main() {
 	}
 
 	type cmd struct {
-		helpText string
-		fn       func(args []string) error
+		fn func(args []string) error
 	}
 	verbs := map[string]cmd{
-		"build": {buildHelp, build},
-		"mount": {mountHelp, func(args []string) error {
+		"build": {build},
+		"mount": {func(args []string) error {
 			_, err := mount(args)
 			return err
 		}},
-		"umount": {umountHelp, umount},
+		"umount": {umount},
 		// TODO: remove this once we build to SquashFS by default
-		"convert":  {convertHelp, convert},
-		"pack":     {packHelp, pack},
-		"scaffold": {scaffoldHelp, scaffold},
-		"install":  {installHelp, install},
-		"fuse": {fuse.Help, func(args []string) error {
+		"convert":  {convert},
+		"pack":     {pack},
+		"scaffold": {scaffold},
+		"install":  {install},
+		"fuse": {func(args []string) error {
 			join, err := fuse.Mount(args)
 			if err != nil {
 				return err
@@ -105,19 +104,19 @@ func main() {
 			}
 			return nil
 		}},
-		"fusectl": {fusectlHelp, fusectl},
-		"export":  {exportHelp, export},
-		"env":     {envHelp, printenv},
-		"mirror":  {mirrorHelp, mirror},
-		"batch":   {batchHelp, batch},
-		"log":     {logHelp, showlog},
-		"unpack":  {unpackHelp, unpack},
-		"update":  {updateHelp, update},
-		"gc":      {gcHelp, gc},
-		"patch":   {patchHelp, patch},
-		"bump":    {bumpHelp, bump},
-		"builder": {builderHelp, builder},
-		"reset":   {resetHelp, reset},
+		"fusectl": {fusectl},
+		"export":  {export},
+		"env":     {printenv},
+		"mirror":  {mirror},
+		"batch":   {batch},
+		"log":     {showlog},
+		"unpack":  {unpack},
+		"update":  {update},
+		"gc":      {gc},
+		"patch":   {patch},
+		"bump":    {bump},
+		"builder": {builder},
+		"reset":   {reset},
 	}
 
 	args := flag.Args()
@@ -128,11 +127,28 @@ func main() {
 
 	if verb == "help" {
 		if len(args) != 1 {
-			fmt.Fprintf(os.Stderr, "syntax: distri help <verb>\n")
-			fmt.Fprintf(os.Stderr, "\n")
-			fmt.Fprintf(os.Stderr, "Verbs:\n")
-			fmt.Fprintf(os.Stderr, "\tbuild - build a distri package\n")
-			// TODO: complete short descriptions
+			fmt.Fprintf(os.Stderr, "distri [-flags] <command> [-flags] <args>\n")
+			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, "To get help on any command, use distri <command> -help or distri help <command>.\n")
+			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, "Installation commands:\n")
+			fmt.Fprintf(os.Stderr, "\tinstall  - install a distri package from a repository\n")
+			fmt.Fprintf(os.Stderr, "\tupdate   - update installed packages\n")
+			fmt.Fprintf(os.Stderr, "\treset    - reset packages to before an update\n")
+			fmt.Fprintf(os.Stderr, "\tgc       - garbage collect unreferenced packages\n")
+			fmt.Fprintf(os.Stderr, "\tpack     - pack a distri system image\n")
+			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, "Package build commands:\n")
+			fmt.Fprintf(os.Stderr, "\tbuild    - build a distri package\n")
+			fmt.Fprintf(os.Stderr, "\tscaffold - generate distri package build instructions\n")
+			fmt.Fprintf(os.Stderr, "\tpatch    - interactively create a patch for a package\n")
+			fmt.Fprintf(os.Stderr, "\tlog      - show package build log (local)\n")
+			fmt.Fprintf(os.Stderr, "\tbump     - increase revision of package and rdeps\n")
+			fmt.Fprintf(os.Stderr, "\tbatch    - build all distri packages\n")
+			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, "Package store commands:\n")
+			fmt.Fprintf(os.Stderr, "\texport   - serve local package store to others\n")
+			fmt.Fprintf(os.Stderr, "\tmirror   - make a package store usable as a repository\n")
 			os.Exit(2)
 		}
 		verb = args[0]

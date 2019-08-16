@@ -13,11 +13,20 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const unpackHelp = `TODO
+const unpackHelp = `distri unpack [-flags]
+
+Unpack the upstream source for building.
+
+Useful largely when debugging.
+
+Example:
+  % cd build/i3status
+  % distri unpack
 `
 
 func unpack(args []string) error {
 	fset := flag.NewFlagSet("unpack", flag.ExitOnError)
+	fset.Usage = usage(fset, unpackHelp)
 	fset.Parse(args)
 
 	wd, err := os.Getwd()

@@ -21,7 +21,16 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const patchHelp = `TODO
+const patchHelp = `distri patch [-flags]
+
+Interactively create a patch for a package.
+
+distri patch spawns a shell in a temporary directory with the
+upstream sources. Any modifications you do to the source will
+be persisted into the specified patch file.
+
+Example:
+  % distri patch -pkg=i3status fix-build.patch
 `
 
 type patchctx struct {
@@ -82,6 +91,7 @@ func patch(args []string) error {
 	var (
 		pkg = fset.String("pkg", "", "package to patch")
 	)
+	fset.Usage = usage(fset, patchHelp)
 	fset.Parse(args)
 
 	if job := os.Getenv("DISTRI_PATCH_JOB"); job != "" {

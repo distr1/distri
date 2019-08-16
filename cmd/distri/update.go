@@ -15,7 +15,12 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const updateHelp = `TODO
+const updateHelp = `distri update [-flags]
+
+Update installed packages.
+
+Example:
+  % distri update
 `
 
 func update(args []string) error {
@@ -28,6 +33,7 @@ func update(args []string) error {
 		repo   = fset.String("repo", "", "repository from which to install packages from. path (default TODO) or HTTP URL (e.g. TODO)")
 		pkgset = fset.String("pkgset", "", "if non-empty, a package set to update")
 	)
+	fset.Usage = usage(fset, updateHelp)
 	fset.Parse(args)
 
 	updateStart := time.Now()

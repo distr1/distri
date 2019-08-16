@@ -17,7 +17,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const convertHelp = `TODO
+const convertHelp = `distri convert [-flags]
+
+Convert a tarball to a distri SquashFS image.
+
+Useful during distri development only.
 `
 
 // stringsFromByteSlice converts a sequence of attributes to a []string.
@@ -113,6 +117,7 @@ func cp(w *squashfs.Directory, dir string) error {
 func convert(args []string) error {
 	fset := flag.NewFlagSet("convert", flag.ExitOnError)
 	var pkg = fset.String("pkg", "", "path to tar.gz package to convert to squashfs")
+	fset.Usage = usage(fset, convertHelp)
 	fset.Parse(args)
 	if *pkg == "" {
 		return xerrors.Errorf("required: -pkg")

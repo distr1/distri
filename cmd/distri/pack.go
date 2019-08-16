@@ -23,7 +23,15 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const packHelp = `TODO
+const packHelp = `distri pack [-flags]
+
+Pack a distri system image (for a USB memory stick, qemu, cloud, …).
+
+This command is typically invoked through the distri Makefile:
+
+Example:
+  % make image serial=1
+  % make qemu-serial
 `
 
 const passwd = `root:x:0:0:root:/root:/bin/sh
@@ -88,6 +96,7 @@ func pack(args []string) error {
 	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
 	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
 	fset.StringVar(&p.authorizedKeys, "authorized_keys", "", "if non-empty, path to an SSH authorized_keys file to include for the root user")
+	fset.Usage = usage(fset, packHelp)
 	fset.Parse(args)
 
 	if p.gcsDiskImg == "" && p.diskImg == "" && !p.docker {

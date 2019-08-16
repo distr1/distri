@@ -21,8 +21,11 @@ import (
 
 const bumpHelp = `distri bump [-flags] [package]
 
-bump increases the version number of the specified packages and their reverse
-dependencies.
+Increase the distri revision number of the specified packages and their affected
+reverse dependencies.
+
+Example:
+  % distri bump i3status
 `
 
 type versionIncrement struct {

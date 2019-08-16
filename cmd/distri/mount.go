@@ -17,7 +17,9 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const mountHelp = `TODO
+const mountHelp = `distri mount [-flags] <package>
+
+Mount distri package. OBSOLETE: use distri fuse instead.
 `
 
 func mountpoint(fn string) bool {
@@ -120,6 +122,7 @@ func mount(args []string) (cleanup func(), _ error) {
 		repo = fset.String("repo", env.DefaultRepo, "TODO")
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
+	fset.Usage = usage(fset, mountHelp)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return nil, xerrors.Errorf("syntax: mount <package>")

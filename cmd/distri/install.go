@@ -33,7 +33,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-const installHelp = `TODO
+const installHelp = `distri install [-flags] <package>…
+
+Install a distri package from a repository.
+
+Example:
+  % distri install i3status
 `
 
 // totalBytes counts the number of bytes written to the disk for this install
@@ -481,6 +486,7 @@ func install(args []string) error {
 
 		//pkg = fset.String("pkg", "", "path to .squashfs package to mount")
 	)
+	fset.Usage = usage(fset, installHelp)
 	fset.Parse(args)
 	if fset.NArg() < 1 {
 		return xerrors.Errorf("syntax: install [options] <package> [<package>...]")

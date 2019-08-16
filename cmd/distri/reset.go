@@ -12,8 +12,11 @@ import (
 
 const resetHelp = `distri reset [-flags] <path/to/files.before.txt>
 
-resets your package store to the contents specified by the provided
-files.before.txt.
+Reset your package store to the contents specified by the provided
+files.before.txt, which distri updates writes.
+
+Example:
+  % distri reset /var/log/distri/update-1561126278/files.before.txt
 `
 
 func reset(args []string) error {

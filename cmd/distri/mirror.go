@@ -15,8 +15,16 @@ import (
 	"github.com/google/renameio"
 )
 
-const mirrorHelp = `Makes a package store usable as a mirror
+const mirrorHelp = `distri mirror [-flags]
+
+Make a package store fully usable as a repository
 by bundling metadata from packages into meta.binaryproto.
+
+This is not required for distri install to work, but e.g. for debugfs.
+
+Example:
+  % cd distri/build/distri/pkg
+  % distri mirror
 `
 
 // TODO: have export automatically call mirror
@@ -44,6 +52,7 @@ func walk(rd *squashfs.Reader, dirInode squashfs.Inode, dir string) ([]string, e
 
 func mirror(args []string) error {
 	fset := flag.NewFlagSet("mirror", flag.ExitOnError)
+	fset.Usage = usage(fset, mirrorHelp)
 	fset.Parse(args)
 
 	var mm pb.MirrorMeta

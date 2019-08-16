@@ -33,7 +33,12 @@ import (
 	"github.com/distr1/distri/pb"
 )
 
-const Help = `TODO
+const help = `distri fuse [-flags] <mountpoint>
+
+Mount the distri FUSE file system.
+
+Example:
+  % distri fuse /ro
 `
 
 // wellKnown lists paths which should be created as a union overlay underneath
@@ -126,6 +131,11 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		autoDownload = fset.Bool("autodownload", false, "simulate availability of all packages, automatically downloading them as required. works well for e.g. /ro-dbg")
 		section      = fset.String("section", "pkg", "repository section to serve (one of pkg, debug)")
 	)
+	fset.Usage = func() {
+		fmt.Fprintln(os.Stderr, help)
+		fmt.Fprintf(os.Stderr, "Flags for distri %s:\n", fset.Name())
+		fset.PrintDefaults()
+	}
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return nil, xerrors.Errorf("syntax: fuse <mountpoint>")

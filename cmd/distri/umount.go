@@ -9,7 +9,9 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const umountHelp = `TODO
+const umountHelp = `distri umount [-flags] <package>
+
+Unmount distri package. OBSOLETE: use distri fuse instead.
 `
 
 func umount(args []string) error {
@@ -19,7 +21,7 @@ func umount(args []string) error {
 			"/ro",
 			"TODO")
 	)
-
+	fset.Usage = usage(fset, umountHelp)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return xerrors.Errorf("syntax: umount <package>")

@@ -15,7 +15,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-const gcHelp = `TODO
+const gcHelp = `distri gc [-flags]
+
+Garbage collect unreferenced packages.
+
+Example:
+  % distri gc -dry_run
 `
 
 func gc(args []string) error {
@@ -29,6 +34,7 @@ func gc(args []string) error {
 			false,
 			"only print packages which would otherwise be deleted")
 	)
+	fset.Usage = usage(fset, gcHelp)
 	fset.Parse(args)
 
 	// src2pkg is a lookup table from the source package name of the wanted

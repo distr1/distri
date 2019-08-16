@@ -58,10 +58,14 @@ import (
 
 // to rebuild the archive: increment version number of all packages (helper tool which does this and commits?)
 
-const batchHelp = `TODO
+const batchHelp = `distri batch [-flags]
+
+Build all distri packages.
 
 Packages which are already built (i.e. their .squashfs image exists) are skipped.
 
+Example:
+  % distri batch -dry_run
 `
 
 type node struct {
@@ -87,6 +91,7 @@ func batch(args []string) error {
 			"",
 			"Bootstrap a distri build based on the specified packages")
 	)
+	fset.Usage = usage(fset, batchHelp)
 	fset.Parse(args)
 
 	if !*ignoreGov {

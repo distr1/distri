@@ -11,7 +11,13 @@ import (
 	"github.com/lpar/gzipped"
 )
 
-const exportHelp = `TODO
+const exportHelp = `distri export [-flags]
+
+Serve local package store to others.
+
+Example:
+  ws % distri export
+  laptop % distri install -repo http://ws:7080 i3status
 `
 
 // Copied from src/net/http/server.go
@@ -35,6 +41,7 @@ func export(args []string) error {
 		gzip   = fset.Bool("gzip", true, "serve .gz files (if they exist). Typically desired on all networks but local loopback")
 		repo   = fset.String("repo", env.DefaultRepoRoot, "repository to serve")
 	)
+	fset.Usage = usage(fset, exportHelp)
 	fset.Parse(args)
 
 	ln, err := net.Listen("tcp", *listen)

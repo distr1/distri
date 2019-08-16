@@ -41,7 +41,12 @@ import (
 	bpb "github.com/distr1/distri/pb/builder"
 )
 
-const buildHelp = `TODO
+const buildHelp = `distri build [-flags]
+
+Build a distri package.
+
+Example:
+  % distri build -pkg=i3status
 `
 
 type buildctx struct {
@@ -2379,6 +2384,7 @@ func build(args []string) error {
 			"",
 			"If non-empty, a package to build. Otherwise inferred from $PWD")
 	)
+	fset.Usage = usage(fset, buildHelp)
 	fset.Parse(args)
 
 	if *job != "" {

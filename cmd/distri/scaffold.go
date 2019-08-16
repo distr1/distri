@@ -21,7 +21,13 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const scaffoldHelp = `TODO
+const scaffoldHelp = `distri scaffold [-flags] <upstream-source-url>
+
+Generate distri package build instructions from an upstream source.
+
+Example:
+  % distri scaffold https://releases.pagure.org/xmlto/xmlto-0.0.28.tar.bz2
+  % distri build -pkg xmlto
 `
 
 var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
@@ -180,6 +186,7 @@ func scaffold(args []string) error {
 		version = fset.String("version", "", "If non-empty and specified with -name, overrides the detected package version")
 		gomod   = fset.String("gomod", "", "if non-empty, a path to a go.mod file from which to take targets to scaffold")
 	)
+	fset.Usage = usage(fset, scaffoldHelp)
 	fset.Parse(args)
 	if *gomod != "" {
 		return scaffoldGo(*gomod)
