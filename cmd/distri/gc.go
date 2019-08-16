@@ -4,13 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/pb"
 	"google.golang.org/grpc"
 )
@@ -28,7 +28,11 @@ func gc(args []string) error {
 	var (
 		root = fset.String("root",
 			"/",
-			"root directory for optionally installing into a chroot")
+			"root directory for optionally operating on a chroot")
+
+		storeFlag = fset.String("store",
+			"",
+			"if non-empty, operate on the specified package store directly (operate on the package store in -root/roimg otherwise)")
 
 		dryRun = fset.Bool("dry_run",
 			false,
@@ -37,89 +41,89 @@ func gc(args []string) error {
 	fset.Usage = usage(fset, gcHelp)
 	fset.Parse(args)
 
-	// src2pkg is a lookup table from the source package name of the wanted
-	// packages, e.g. “bash” or “base”, to the package names of the found
-	// packages, e.g. “bash-amd64-4.4.18” and “bash-amd64-4.4.19”).
-	src2pkg := make(map[string][]string)
-	{
-		matches, err := filepath.Glob(filepath.Join(*root, "etc", "distri", "pkgset.d", "*.pkgset"))
-		if err != nil {
-			return err
-		}
-		for _, match := range matches {
-			b, err := ioutil.ReadFile(match)
-			if err != nil {
-				return err
-			}
-			for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
-				src2pkg[line] = nil
-			}
-		}
-		src2pkg["base"] = nil
+	store := *storeFlag
+	if store == "" {
+		store = filepath.Join(*root, "roimg")
 	}
 
-	var gcpkgs []string
-	// transitive contains the package names of the transitive closure of
-	transitive := make(map[string]bool)
+	// eligible maps from package (e.g. libudev) to a list of package
+	// versions (e.g. libudev-amd64-239-10) to be garbage collected.
+	eligible := make(map[string]map[string]bool)
 	{
-		// Discover which package versions are installed for the desired source packages
-		matches, err := filepath.Glob(filepath.Join(*root, "roimg", "*.meta.textproto"))
+		matches, err := filepath.Glob(filepath.Join(store, "*.squashfs"))
 		if err != nil {
 			return err
 		}
 		for _, match := range matches {
-			meta, err := pb.ReadMetaFile(match)
-			if err != nil {
-				return err
+			pkg := strings.TrimSuffix(filepath.Base(match), ".squashfs")
+			pv := distri.ParseVersion(pkg)
+			if _, ok := eligible[pv.Pkg]; !ok {
+				eligible[pv.Pkg] = make(map[string]bool)
 			}
-			src := meta.GetSourcePkg()
-			if _, ok := src2pkg[src]; !ok {
-				continue // to be garbage collected in the next pass
-			}
-			pkg := strings.TrimSuffix(filepath.Base(match), ".meta.textproto")
-			src2pkg[src] = append(src2pkg[src], pkg)
+			eligible[pv.Pkg][pkg] = true
 		}
 
-		// Select the most recent package and read in all (already-flattened)
-		// runtime_deps:
-		for _, pkgs := range src2pkg {
-			if pkgs == nil {
+		// Keep the most recent package version around.
+		var kept []string
+		for pkg, pkgs := range eligible {
+			if len(pkgs) == 0 {
 				continue
 			}
-			sort.Sort(sort.Reverse(sort.StringSlice(pkgs))) // select the most recent package
-			transitive[pkgs[0]] = true
-			meta, err := pb.ReadMetaFile(filepath.Join(*root, "roimg", pkgs[0]+".meta.textproto"))
+			if len(pkgs) == 1 {
+				for pkg := range pkgs {
+					kept = append(kept, pkg)
+				}
+				eligible[pkg] = nil // keep the only revision around
+				continue
+			}
+			revs := make([]distri.PackageVersion, 0, len(pkgs))
+			for pkg := range pkgs {
+				revs = append(revs, distri.ParseVersion(pkg))
+			}
+			sort.Slice(revs, func(i, j int) bool {
+				revI := revs[i].DistriRevision
+				revJ := revs[j].DistriRevision
+				return revI >= revJ // reverse
+			})
+			mostRecent := revs[0].String()
+			delete(eligible[pkg], mostRecent) // keep in store
+			kept = append(kept, mostRecent)
+		}
+
+		// Keep all of their runtime dependencies around, too. This happens in a
+		// separate pass so that we can clearly attribute which package causes
+		// which other packages to stick around.
+		for _, mostRecent := range kept {
+			meta, err := pb.ReadMetaFile(filepath.Join(store, mostRecent+".meta.textproto"))
 			if err != nil {
 				return err
 			}
 			for _, rd := range meta.GetRuntimeDep() {
-				transitive[rd] = true
+				pv := distri.ParseVersion(rd)
+				delete(eligible[pv.Pkg], rd)
 			}
-		}
-
-		// Mark all packages for garbage collection which were not referenced
-		for _, match := range matches {
-			pkg := strings.TrimSuffix(filepath.Base(match), ".meta.textproto")
-			if transitive[pkg] {
-				continue
-			}
-			gcpkgs = append(gcpkgs, pkg)
 		}
 	}
 
-	// delete all gcpkgs (first .meta.textproto, then .squashfs)
-	for _, gcpkg := range gcpkgs {
-		for _, suffix := range []string{".meta.textproto", ".squashfs"} {
-			fn := filepath.Join(*root, "roimg", gcpkg+suffix)
-			if *dryRun {
-				fmt.Printf("would delete %s\n", fn)
-				return nil
-			} else {
-				if err := os.Remove(fn); err != nil {
-					return err
+	// delete all eligible packages (first .meta.textproto, then .squashfs)
+	for _, pkgs := range eligible {
+		for pkg := range pkgs {
+			for _, suffix := range []string{".meta.textproto", ".squashfs"} {
+				fn := filepath.Join(store, pkg+suffix)
+				if *dryRun {
+					fmt.Printf("rm '%s'\n", fn)
+				} else {
+					if err := os.Remove(fn); err != nil {
+						return err
+					}
 				}
 			}
 		}
+	}
+
+	if *storeFlag != "" {
+		// Not operating on a running system; skip the ScanPackages call.
+		return nil
 	}
 
 	// TODO(correctness): delete all .squashfs without corresponding

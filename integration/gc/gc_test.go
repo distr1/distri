@@ -1,32 +1,28 @@
 package gc_test
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
-
-	"github.com/distr1/distri/internal/distritest"
-	"github.com/distr1/distri/internal/env"
 )
 
-func verifyStracePresent(tmpdir string) error {
-	for _, fn := range []string{
-		"strace-amd64-5.1-5.squashfs",
-		"strace-amd64-5.1-5.meta.textproto",
+func stracePresent(store, pkg string) bool {
+	for _, suffix := range []string{
+		".squashfs",
+		".meta.textproto",
 	} {
-		if _, err := os.Stat(filepath.Join(tmpdir, "roimg", fn)); err != nil {
-			return err
+		if _, err := os.Stat(filepath.Join(store, pkg+suffix)); err != nil {
+			return false
 		}
 	}
-	return nil
+	return true
 }
 
 func gc(tmpdir string) error {
-	distrigc := exec.Command("distri", "gc", "-root="+tmpdir)
+	distrigc := exec.Command("distri", "gc", "-store="+tmpdir)
 	distrigc.Stderr = os.Stderr
 	if err := distrigc.Run(); err != nil {
 		return fmt.Errorf("%v: %v", distrigc.Args, err)
@@ -35,57 +31,75 @@ func gc(tmpdir string) error {
 }
 
 func TestGC(t *testing.T) {
-	ctx, canc := context.WithCancel(context.Background())
-	defer canc()
-
-	tmpdir, err := ioutil.TempDir("", "distrigc")
+	store, err := ioutil.TempDir("", "distrigc")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer os.RemoveAll(store)
 
-	pkgset := filepath.Join(tmpdir, "etc", "distri", "pkgset.d", "zkj-diag.pkgset")
-	if err := os.MkdirAll(filepath.Dir(pkgset), 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := ioutil.WriteFile(pkgset, []byte("strace\n"), 0644); err != nil {
-		t.Fatal(err)
-	}
+	const (
+		oldPkg = "strace-amd64-5.1-4"
+		newPkg = "strace-amd64-5.1-5"
+	)
 
-	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cleanup()
-
-	update := exec.Command("distri", "update", "-repo=http://"+addr, "-root="+tmpdir, "-pkgset=zkj-diag")
-	update.Stderr = os.Stderr
-	if err := update.Run(); err != nil {
-		t.Fatalf("%v: %v", update.Args, err)
+	setup := func() {
+		for _, fn := range []string{
+			oldPkg + ".squashfs",
+			oldPkg + ".meta.textproto",
+			newPkg + ".squashfs",
+			newPkg + ".meta.textproto",
+		} {
+			if err := ioutil.WriteFile(filepath.Join(store, fn), nil, 0644); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 
-	if err := verifyStracePresent(tmpdir); err != nil {
-		t.Error(err)
-	}
+	t.Run("MostRecent", func(t *testing.T) {
+		setup()
 
-	t.Run("strace present after gc", func(t *testing.T) {
-		if err := gc(tmpdir); err != nil {
+		if !stracePresent(store, oldPkg) || !stracePresent(store, newPkg) {
+			t.Error("BUG: strace package not present after creation")
+		}
+
+		if err := gc(store); err != nil {
 			t.Fatal(err)
 		}
-		if err := verifyStracePresent(tmpdir); err != nil {
-			t.Error(err)
+
+		if !stracePresent(store, newPkg) {
+			t.Errorf("gc unexpectedly deleted new version %s", newPkg)
+		}
+
+		if stracePresent(store, oldPkg) {
+			t.Errorf("gc unexpectedly did not delete old version %s", oldPkg)
 		}
 	})
 
-	t.Run("strace present after gc without pkgset", func(t *testing.T) {
-		if err := os.Remove(pkgset); err != nil {
+	t.Run("Referenced", func(t *testing.T) {
+		setup()
+
+		if err := ioutil.WriteFile(filepath.Join(store, "i3status-amd64-2.13-3.squashfs"), nil, 0644); err != nil {
 			t.Fatal(err)
 		}
-		if err := gc(tmpdir); err != nil {
+
+		if err := ioutil.WriteFile(filepath.Join(store, "i3status-amd64-2.13-3.meta.textproto"), []byte(`runtime_dep: "`+oldPkg+`"`), 0644); err != nil {
 			t.Fatal(err)
 		}
-		if err := verifyStracePresent(tmpdir); err == nil {
-			t.Errorf("strace unexpectedly still present after distri gc")
+
+		if !stracePresent(store, oldPkg) || !stracePresent(store, newPkg) {
+			t.Error("BUG: strace package not present after creation")
+		}
+
+		if err := gc(store); err != nil {
+			t.Fatal(err)
+		}
+
+		if !stracePresent(store, newPkg) {
+			t.Errorf("gc unexpectedly deleted new version %s", newPkg)
+		}
+
+		if !stracePresent(store, oldPkg) {
+			t.Errorf("gc unexpectedly deleted old version %s", oldPkg)
 		}
 	})
 }
