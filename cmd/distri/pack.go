@@ -527,10 +527,21 @@ netgroup:       nis
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(network, "ether.network"), []byte(`
+	if err := ioutil.WriteFile(filepath.Join(network, "en.network"), []byte(`
 [Match]
 #Type=ether
 Name=en*
+
+[Network]
+DHCP=yes
+`), 0644); err != nil {
+		return err
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(network, "eth.network"), []byte(`
+[Match]
+#Type=ether
+Name=eth*
 
 [Network]
 DHCP=yes
