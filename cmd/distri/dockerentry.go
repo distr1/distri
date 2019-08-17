@@ -1,9 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"syscall"
+	"os/exec"
 )
 
 func entrypoint() error {
@@ -22,6 +23,12 @@ func entrypoint() error {
 		// This is how e.g. the debian Docker container behaves.
 		args = os.Args[2:]
 	}
-	const bash = "/ro/bin/bash"
-	return syscall.Exec(bash, append([]string{bash}, args...), os.Environ())
+	bash := exec.Command("/ro/bin/bash", args...)
+	bash.Stdin = os.Stdin
+	bash.Stdout = os.Stdout
+	bash.Stderr = os.Stderr
+	if err := bash.Run(); err != nil {
+		return fmt.Errorf("%v: %v", bash.Args, err)
+	}
+	return nil
 }

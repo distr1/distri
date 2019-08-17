@@ -71,6 +71,7 @@ func main() {
 		if err := entrypoint(); err != nil {
 			log.Fatal(err)
 		}
+		os.Exit(0)
 	}
 
 	if os.Getpid() == 1 {
