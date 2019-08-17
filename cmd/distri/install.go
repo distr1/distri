@@ -322,7 +322,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 				}
 
 				registerAtExit(func() error {
-					dracut := exec.Command("sh", "-c", "PKG_CONFIG_PATH=/ro/systemd-amd64-239-8/out/share/pkgconfig/ dracut --force /boot/initramfs-"+pv.Upstream+"-"+strconv.FormatInt(pv.DistriRevision, 10)+".img "+pv.Upstream)
+					dracut := exec.Command("sh", "-c", "dracut --force /boot/initramfs-"+pv.Upstream+"-"+strconv.FormatInt(pv.DistriRevision, 10)+".img "+pv.Upstream)
 					dracut.Stderr = os.Stderr
 					dracut.Stdout = os.Stdout
 					log.Printf("hook/linux: running %v", dracut.Args)
