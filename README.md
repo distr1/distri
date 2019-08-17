@@ -81,8 +81,8 @@ make qemu-graphic DISKIMG=distri-disk.img
 
 ```shell
 vbox-img convert \
-	--srcfilename /srv/repo.distr1.org/distri/master/img/distri-disk.img \
-	--dstfilename ~/vbox-distri.vdi \
+	--srcfilename distri-disk.img \
+	--dstfilename vbox-distri.vdi \
 	--srcformat RAW \
 	--dstformat VDI
 ```
