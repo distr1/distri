@@ -12,7 +12,7 @@ Note that due to its research project status, it is **NOT RECOMMENDED** to use d
 
 distri is published in the hope that other, more established distributions, will find some parts of it interesting and decide to integrate those.
 
-**For more details, please see my [blog article “introducing distri”](https://michael.stapelberg.ch/posts/2019-08-02-introducing-distri/).** You can subscribe to all distri-related posts by subscribing to https://michael.stapelberg.ch/posts/tags/distri/feed.xml.
+**For more details, please see my [blog article “introducing distri”](https://michael.stapelberg.ch/posts/2019-08-17-introducing-distri/).** You can subscribe to all distri-related posts by subscribing to https://michael.stapelberg.ch/posts/tags/distri/feed.xml.
 
 ## Giving feedback
 
