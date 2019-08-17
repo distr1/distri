@@ -107,6 +107,8 @@ vbox-img convert \
 
 ### Run distri on Google Cloud
 
+**TIP**: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay to cost, creating the VM in Europe will result in faster installation.
+
 1. (If you’d rather use your own Google Cloud Storage bucket, import the `distri-gce.tar.gz` image into your Google Cloud Storage: `gsutil cp distri-gce.tar.gz gs://distri-gce`.)
 1. Create a Compute Engine Image: `gcloud compute images create distri0 --source-uri gs://distri-gce/distri-gce.tar.gz`
 1. Create VM using that image: `gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0`
