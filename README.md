@@ -1,4 +1,4 @@
-# distri — a linux research project
+# distri — a Linux distribution to research fast package management
 
 This repository contains distri, a linux distribution research project.
 
