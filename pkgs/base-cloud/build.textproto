@@ -1,0 +1,14 @@
+source: "empty://"
+version: "1-3"
+
+# This is the shortest and fastest way to build an empty package:
+dep: "bash"
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: ""
+>
+
+# The following packages will be installed on ALL distri cloud machines:
+runtime_dep: "base-full"
+runtime_dep: "haveged" # for gathering entropy on e.g. Google Cloud
