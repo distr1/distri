@@ -86,6 +86,6 @@ qemu-graphic:
 
 .PHONY: docs
 
-docs: docs/building.asciidoc docs/package-format.asciidoc docs/index.asciidoc
+docs: docs/building.asciidoc docs/package-format.asciidoc docs/index.asciidoc docs/rosetta-stone.asciidoc
 	mkdir -p ${DOCSDIR}
 	asciidoctor --destination-dir ${DOCSDIR} $^
