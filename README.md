@@ -57,8 +57,6 @@ Insert the memory stick into a computer and select the memory stick as boot devi
 
 ### Run distri in Docker
 
-**NOTE**: There is a [known issue about intermittent FUSE issues](https://github.com/distr1/distri/issues/27) within Docker.
-
 **NOTE**: As a heads-up, the docker [container image is pretty large](https://github.com/distr1/distri/issues/28)
 
 1. (If you’d rather use a local docker container, build it locally: `distri pack -docker | docker import - distri`).
