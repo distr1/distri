@@ -1,0 +1,9 @@
+source: "https://download.qemu.org/qemu-3.1.0.tar.xz"
+hash: "6a0508df079a0a33c2487ca936a56c12122f105b8a96a44374704bef6c69abfc"
+version: "3.1.0-4"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "python3"
+dep: "pixman"
