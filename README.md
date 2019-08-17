@@ -69,7 +69,7 @@ docker run \
 	--entrypoint /entrypoint \
 	-ti \
 	-e TERM=$TERM \
-	distr1/distri
+	distr1/distri:jackherer
 ```
 
 ### Run distri in qemu
