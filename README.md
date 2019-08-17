@@ -22,7 +22,9 @@ You can also talk to us by connecting to https://robustirc.net/ and joining the 
 
 ## Getting started
 
-Find current images of the `master` branch at https://repo.distr1.org/distri/master/img/.
+Find current images of the `jackherer` release branch at https://repo.distr1.org/distri/jackherer/img/.
+
+**TIP**: If you can, use BitTorrent: [distri-disk.img.zst](magnet:?xt=urn:btih:0aa9282c0644608c1ff50a278f4d3fb19950e654&dn=distri-disk.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce) and [distri-qemu-serial.img.zst](magnet:?xt=urn:btih:a818059365fb49d9a44e5bd3b1c0d5a25c858592&dn=distri-qemu-serial.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce). repo.distr1.org is located in Europe, so transfers to other continents may be slow.
 
 With all images, use the `root` account, password `peace`, to log in.
 
