@@ -30,24 +30,30 @@ QEMU=qemu-system-x86_64 \
 	-device virtio-scsi-pci,id=scsi \
 	-device scsi-hd,drive=hd
 
-IMAGE=distri pack \
-	-diskimg=${DISKIMG} \
-	-base=base-x11
-
-GCEIMAGE=distri pack \
-	-gcsdiskimg=${GCEDISKIMG} \
-	-base=base-cloud
-
-DOCKERTAR=distri pack -docker
+PACKFLAGS=
 
 # for when you want to see non-kernel console output (e.g. systemd), useful with qemu
 ifdef serial
-IMAGE+= -serialonly
+PACKFLAGS+= -serialonly
 endif
 
 ifdef authorized_keys
-IMAGE+= -authorized_keys=${authorized_keys}
+PACKFLAGS+= -authorized_keys=${authorized_keys}
 endif
+
+ifdef branch
+PACKFLAGS+= -branch=${branch}
+endif
+
+IMAGE=distri pack \
+	-diskimg=${DISKIMG} \
+	-base=base-x11 ${PACKFLAGS}
+
+GCEIMAGE=distri pack \
+	-gcsdiskimg=${GCEDISKIMG} \
+	-base=base-cloud ${PACKFLAGS}
+
+DOCKERTAR=distri pack -docker ${PACKFLAGS}
 
 .PHONY: install
 
