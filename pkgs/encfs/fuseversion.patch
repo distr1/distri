@@ -1,0 +1,11 @@
+--- old/CMakeLists.txt	2018-04-27 10:52:22.000000000 +0200
++++ new/CMakeLists.txt	2019-08-23 21:00:45.448274805 +0200
+@@ -97,7 +97,7 @@
+ # Check for FUSE.
+ find_package (FUSE REQUIRED)
+ include_directories (SYSTEM ${FUSE_INCLUDE_DIR})
+-add_definitions (-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=29)
++add_definitions (-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=32)
+ if (CYGWIN)
+   # Cygwin build is intended to use WinFsp
+   add_definitions(-DCYGFUSE)

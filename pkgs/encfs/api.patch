@@ -1,0 +1,209 @@
+--- old/encfs/DirNode.cpp	2018-04-27 10:52:22.000000000 +0200
++++ new/encfs/DirNode.cpp	2019-08-23 21:17:42.875413058 +0200
+@@ -199,10 +199,12 @@
+       }
+ 
+       if (preserve_mtime) {
+-        struct utimbuf ut;
+-        ut.actime = st.st_atime;
+-        ut.modtime = st.st_mtime;
+-        ::utime(last->newCName.c_str(), &ut);
++	const struct timespec times =
++	  {
++	   st.st_atime,
++	   st.st_mtime,
++	  };
++        ::utimensat(AT_FDCWD, last->newCName.c_str(), &times, 0);
+       }
+ 
+       ++last;
+@@ -614,10 +616,12 @@
+       }
+ #endif
+       if (preserve_mtime) {
+-        struct utimbuf ut;
+-        ut.actime = st.st_atime;
+-        ut.modtime = st.st_mtime;
+-        ::utime(toCName.c_str(), &ut);
++	const struct timespec times =
++	  {
++	   st.st_atime,
++	   st.st_mtime,
++	  };
++        ::utimensat(AT_FDCWD, toCName.c_str(), &times, 0);
+       }
+     }
+   } catch (encfs::Error &err) {
+--- old/encfs/encfs.cpp	2018-04-27 10:52:22.000000000 +0200
++++ new/encfs/encfs.cpp	2019-08-23 21:36:32.818345542 +0200
+@@ -228,7 +228,7 @@
+   return res;
+ }
+ 
+-int encfs_getattr(const char *path, struct stat *stbuf) {
++int encfs_getattr(const char *path, struct stat *stbuf, fuse_file_info *info) {
+   return withFileNode("getattr", path, nullptr, bind(_do_getattr, _1, stbuf));
+ }
+ 
+@@ -238,7 +238,7 @@
+ }
+ 
+ int encfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+-                  off_t offset, struct fuse_file_info *finfo) {
++                  off_t offset, struct fuse_file_info *finfo, fuse_readdir_flags flags) {
+   EncFS_Context *ctx = context();
+ 
+   //unused parameters
+@@ -271,7 +271,7 @@
+ #if defined(fuse_fill_dir_flags)
+         if (filler(buf, name.c_str(), &st, 0, 0)) break;
+ #else
+-        if (filler(buf, name.c_str(), &st, 0) != 0) {
++        if (filler(buf, name.c_str(), &st, 0, (fuse_fill_dir_flags)0) != 0) {
+           break;
+         }
+ #endif
+@@ -532,7 +532,7 @@
+   return res;
+ }
+ 
+-int encfs_rename(const char *from, const char *to) {
++  int encfs_rename(const char *from, const char *to, unsigned int flags) {
+   EncFS_Context *ctx = context();
+ 
+   if (isReadOnly(ctx)) {
+@@ -557,7 +557,7 @@
+   return chmod(cipherPath.c_str(), mode);
+ }
+ 
+-int encfs_chmod(const char *path, mode_t mode) {
++int encfs_chmod(const char *path, mode_t mode, fuse_file_info* unused) {
+   EncFS_Context *ctx = context();
+   if (isReadOnly(ctx)) {
+     return -EROFS;
+@@ -570,7 +570,7 @@
+   return (res == -1) ? -errno : ESUCCESS;
+ }
+ 
+-int encfs_chown(const char *path, uid_t uid, gid_t gid) {
++  int encfs_chown(const char *path, uid_t uid, gid_t gid, fuse_file_info *fi) {
+   EncFS_Context *ctx = context();
+   if (isReadOnly(ctx)) {
+     return -EROFS;
+@@ -580,7 +580,7 @@
+ 
+ int _do_truncate(FileNode *fnode, off_t size) { return fnode->truncate(size); }
+ 
+-int encfs_truncate(const char *path, off_t size) {
++  int encfs_truncate(const char *path, off_t size, fuse_file_info *fi) {
+   EncFS_Context *ctx = context();
+   if (isReadOnly(ctx)) {
+     return -EROFS;
+@@ -597,7 +597,9 @@
+ }
+ 
+ int _do_utime(EncFS_Context *, const string &cyName, struct utimbuf *buf) {
+-  int res = utime(cyName.c_str(), buf);
++  (void)cyName;
++  (void)buf;
++  int res = -1;
+   return (res == -1) ? -errno : ESUCCESS;
+ }
+ 
+@@ -625,7 +627,7 @@
+   return (res == -1) ? -errno : ESUCCESS;
+ }
+ 
+-int encfs_utimens(const char *path, const struct timespec ts[2]) {
++  int encfs_utimens(const char *path, const struct timespec ts[2], fuse_file_info *fi) {
+   EncFS_Context *ctx = context();
+   if (isReadOnly(ctx)) {
+     return -EROFS;
+--- old/encfs/encfs.h	2018-04-27 10:52:22.000000000 +0200
++++ new/encfs/encfs.h	2019-08-23 21:36:22.592549509 +0200
+@@ -58,22 +58,22 @@
+ }
+ #endif
+ 
+-int encfs_getattr(const char *path, struct stat *stbuf);
++  int encfs_getattr(const char *path, struct stat *stbuf, fuse_file_info *info);
+ int encfs_fgetattr(const char *path, struct stat *stbuf,
+                    struct fuse_file_info *fi);
+ int encfs_readlink(const char *path, char *buf, size_t size);
+ int encfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+-                  off_t offset, struct fuse_file_info *finfo);
++                  off_t offset, struct fuse_file_info *finfo, fuse_readdir_flags flags);
+ int encfs_mknod(const char *path, mode_t mode, dev_t rdev);
+ int encfs_mkdir(const char *path, mode_t mode);
+ int encfs_unlink(const char *path);
+ int encfs_rmdir(const char *path);
+ int encfs_symlink(const char *from, const char *to);
+-int encfs_rename(const char *from, const char *to);
++  int encfs_rename(const char *from, const char *to, unsigned int flags);
+ int encfs_link(const char *to, const char *from);
+-int encfs_chmod(const char *path, mode_t mode);
+-int encfs_chown(const char *path, uid_t uid, gid_t gid);
+-int encfs_truncate(const char *path, off_t size);
++int encfs_chmod(const char *path, mode_t mode, fuse_file_info *unused);
++  int encfs_chown(const char *path, uid_t uid, gid_t gid, fuse_file_info *fi);
++  int encfs_truncate(const char *path, off_t size, fuse_file_info *fi);
+ int encfs_ftruncate(const char *path, off_t size, struct fuse_file_info *fi);
+ int encfs_utime(const char *path, struct utimbuf *buf);
+ int encfs_open(const char *path, struct fuse_file_info *info);
+@@ -105,7 +105,7 @@
+ int encfs_removexattr(const char *path, const char *name);
+ #endif
+ 
+-int encfs_utimens(const char *path, const struct timespec ts[2]);
++  int encfs_utimens(const char *path, const struct timespec ts[2], fuse_file_info *fi);
+ 
+ }  // namespace encfs
+ 
+--- old/encfs/FileUtils.cpp	2018-04-27 10:52:22.000000000 +0200
++++ new/encfs/FileUtils.cpp	2019-08-23 21:21:21.150313926 +0200
+@@ -1734,7 +1734,8 @@
+ 
+ void unmountFS(const char *mountPoint) {
+   // fuse_unmount returns void, is assumed to succeed
+-  fuse_unmount(mountPoint, nullptr);
++  // TODO: switch from fuse_main to fuse_new
++  // fuse_unmount(mountPoint, nullptr);
+ #ifdef __APPLE__
+   // fuse_unmount does not work on Mac OS, see #428
+   // However it makes encfs to hang, so we must unmount
+--- old/encfs/main.cpp	2018-04-27 10:52:22.000000000 +0200
++++ new/encfs/main.cpp	2019-08-23 21:36:53.872826488 +0200
+@@ -615,11 +615,11 @@
+ 
+ static void *idleMonitor(void *);
+ 
+-void *encfs_init(fuse_conn_info *conn) {
++void *encfs_init(fuse_conn_info *conn, fuse_config *config) {
+   auto *ctx = (EncFS_Context *)fuse_get_context()->private_data;
+ 
+   // set fuse connection options
+-  conn->async_read = 1u;
++  // conn->async_read = 1u;
+ 
+ #ifdef __CYGWIN__
+   // WinFsp needs this to partially handle read-only FS
+@@ -705,7 +705,7 @@
+   encfs_oper.chmod = encfs_chmod;
+   encfs_oper.chown = encfs_chown;
+   encfs_oper.truncate = encfs_truncate;
+-  encfs_oper.utime = encfs_utime;  // deprecated for utimens
++  // encfs_oper.utime = encfs_utime;  // deprecated for utimens
+   encfs_oper.open = encfs_open;
+   encfs_oper.read = encfs_read;
+   encfs_oper.write = encfs_write;
+@@ -726,8 +726,8 @@
+   encfs_oper.init = encfs_init;
+   // encfs_oper.access = encfs_access;
+   encfs_oper.create = encfs_create;
+-  encfs_oper.ftruncate = encfs_ftruncate;
+-  encfs_oper.fgetattr = encfs_fgetattr;
++  // encfs_oper.ftruncate = encfs_ftruncate;
++  // encfs_oper.fgetattr = encfs_fgetattr;
+   // encfs_oper.lock = encfs_lock;
+   encfs_oper.utimens = encfs_utimens;
+   // encfs_oper.bmap = encfs_bmap;

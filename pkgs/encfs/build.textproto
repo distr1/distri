@@ -1,0 +1,22 @@
+source: "https://github.com/vgough/encfs/releases/download/v1.9.5/encfs-1.9.5.tar.gz"
+hash: "4709f05395ccbad6c0a5b40a4619d60aafe3473b1a79bafb3aa700b1f756fd63"
+version: "download-1"
+
+cherry_pick: "fuseversion.patch"
+
+# echo 'set( CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -lfuse3" )' >> cmake/FindFUSE.cmake
+# echo 'set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lfuse3" )' >> cmake/FindFUSE.cmake
+# echo 'set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lfuse3" )' >> cmake/FindFUSE.cmake
+cherry_pick: "link.patch"
+
+cherry_pick: "api.patch"
+
+cmakebuilder: <
+  extra_cmake_flag: "-DFUSE_LIBRARIES=/ro/${DISTRI_RESOLVE:fuse}/out/lib"
+  extra_cmake_flag: "-DFUSE_INCLUDE_DIR=/ro/${DISTRI_RESOLVE:fuse}/out/include/fuse3"
+>
+
+# build dependencies:
+dep: "fuse"
+dep: "openssl"
+dep: "gettext"
