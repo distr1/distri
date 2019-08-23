@@ -2302,7 +2302,7 @@ func updateFromDistriroot(builddir string) error {
 	return nil
 }
 
-func runJob(job string) error {
+func runBuildJob(job string) error {
 	f := os.NewFile(uintptr(3), "")
 
 	var b buildctx
@@ -2388,7 +2388,7 @@ func build(args []string) error {
 	fset.Parse(args)
 
 	if *job != "" {
-		return runJob(*job)
+		return runBuildJob(*job)
 	}
 
 	if !*ignoreGov {
