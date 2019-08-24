@@ -78,6 +78,7 @@ func patchJob(job string) error {
 	}
 
 	cmd := exec.Command("/bin/zsh", "-i")
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
