@@ -1,0 +1,14 @@
+--- old/encfs/main.cpp	2019-08-24 10:56:07.179046533 +0200
++++ new/encfs/main.cpp	2019-08-24 15:17:26.950910313 +0200
+@@ -506,8 +506,8 @@
+   if (useDefaultFlags) {
+ 
+     // Expose the underlying stable inode number
+-    PUSHARG("-o");
+-    PUSHARG("use_ino");
++    // PUSHARG("-o");
++    // PUSHARG("use_ino");
+ 
+     // "default_permissions" comes with a performance cost, and only makes
+     // sense if "allow_other"" is used.
+Binary files /dev/null and new/encfs/main.cpp~ differ
