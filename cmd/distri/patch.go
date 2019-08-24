@@ -59,11 +59,13 @@ func patchJob(job string) error {
 		if err := os.MkdirAll(dev, 0755); err != nil {
 			return err
 		}
-		if err := ioutil.WriteFile(filepath.Join(dev, "null"), nil, 0644); err != nil {
-			return err
-		}
-		if err := syscall.Mount("/dev/null", filepath.Join(dev, "null"), "none", syscall.MS_BIND, ""); err != nil {
-			return err
+		for _, fn := range []string{"null", "tty"} {
+			if err := ioutil.WriteFile(filepath.Join(dev, fn), nil, 0644); err != nil {
+				return err
+			}
+			if err := syscall.Mount(filepath.Join("/dev", fn), filepath.Join(dev, fn), "none", syscall.MS_BIND, ""); err != nil {
+				return err
+			}
 		}
 	}
 
