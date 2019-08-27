@@ -112,6 +112,72 @@ vbox-img convert \
 1. Create VM using that image: `gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0`
 1. Log in via the serial console and set up an authorized SSH key.
 
+### Run distri inside LXD container
+1. download the image:
+```
+wget https://repo.distr1.org/distri/jackherer/img/distri-disk.img.gz
+--2019-08-27 10:11:20--  https://repo.distr1.org/distri/jackherer/img/distri-disk.img.gz
+Resolving repo.distr1.org (repo.distr1.org)... 2606:4700:30::6818:75da, 2606:4700:30::6818:74da, 104.24.117.218, ...
+Connecting to repo.distr1.org (repo.distr1.org)|2606:4700:30::6818:75da|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1049980737 (1001M) [application/octet-stream]
+Saving to: ‘distri-disk.img.gz’
+
+distri-disk.img.gz                                       100%[===============================================================================================================================>]   1001M  33.6MB/s    in 16s     
+
+2019-08-27 10:11:37 (61.3 MB/s) - ‘distri-disk.img.gz’ saved [1049980737/1049980737]
+```
+1. unzip the image
+`gunzip distri-disk.img.gz`
+
+1. create loop device from the image file
+`udisksctl loop-setup -f distri-disk.img`
+
+1. mount the 4th partition as /mnt/distri
+`mkdir /mnt/distri; mount /dev/loop0p4 /mnt/distri`
+
+1. repackage the rootfs as archive
+```
+cd /mnt/distri
+tar -caf ~/distri-rootfs.tar.xz .
+```
+1. create metadata.yaml file
+```
+cat > metadata.yaml << EOF
+architecture: x86_64
+creation_date: 1566894155
+properties:
+  description: Distri
+  os: distri
+  release: distri jackherer
+templates:
+EOF
+```
+1. create tar from metadata.yaml
+`tar -caf metadata.yaml.tar metadata.yaml`
+
+1. import the image to LXD
+`lxc image import metadata.yaml.tar distri-rootfs.tar.xz --alias distri`
+
+1. use the image and create your first distri container
+`lxc init distri distri-01`
+
+1. modify the default init called
+`lxc config set distri-01 raw.lxc lxc.init.cmd=/init`
+
+1. start the container
+`lxc start distri-01`
+
+1. use the container
+`lxc exec distri-01 bash`
+
+1. cleanup
+```
+umount /mnt/distri
+udisksctl loop-delete -b /dev/loop0
+```
+
+
 ## Cool things to try
 
 ### Fast package installation
