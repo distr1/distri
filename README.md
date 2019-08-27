@@ -89,13 +89,13 @@ make qemu-graphic DISKIMG=distri-disk.img
 
 1. Convert the distri disk image into a VDI disk image so that virtualbox can use it as a root disk:
 
-```shell
-vbox-img convert \
-	--srcfilename distri-disk.img \
-	--dstfilename vbox-distri.vdi \
-	--srcformat RAW \
-	--dstformat VDI
-```
+    ```shell
+    vbox-img convert \
+    	--srcfilename distri-disk.img \
+    	--dstfilename vbox-distri.vdi \
+    	--srcformat RAW \
+    	--dstformat VDI
+    ```
 
 1. Create a new VM:
     * click new button
@@ -117,49 +117,49 @@ vbox-img convert \
 See https://linuxcontainers.org/ for details on LXD, the latest LXC experience.
 
 1. Loop-mount the root partition of the distri disk image:
-```shell
-udisksctl loop-setup -f distri-disk.img
-mount /dev/loop0p4 /mnt/distri
-```
+    ```shell
+    udisksctl loop-setup -f distri-disk.img
+    mount /dev/loop0p4 /mnt/distri
+    ```
 
 1. Archive the root file system:
-```shell
-tar -C /mnt/distri -caf distri-rootfs.tar .
-umount /mnt/distri
-udisksctl loop-delete -b /dev/loop0
-```
+    ```shell
+    tar -C /mnt/distri -caf distri-rootfs.tar .
+    umount /mnt/distri
+    udisksctl loop-delete -b /dev/loop0
+    ```
 
 1. Create an archive containing the `metadata.yaml` file for LXC:
-```shell
-cat > metadata.yaml << EOF
-architecture: x86_64
-creation_date: 1566894155
-properties:
-  description: distri
-  os: distri
-  release: distri jackherer
-templates:
-EOF
-
-tar -caf metadata.yaml.tar metadata.yaml
-```
+    ```shell
+    cat > metadata.yaml << EOF
+    architecture: x86_64
+    creation_date: 1566894155
+    properties:
+      description: distri
+      os: distri
+      release: distri jackherer
+    templates:
+    EOF
+    
+    tar -caf metadata.yaml.tar metadata.yaml
+    ```
 
 1. Import the image:
-```shell
-lxc image import metadata.yaml.tar distri-rootfs.tar --alias distri
-```
+    ```shell
+    lxc image import metadata.yaml.tar distri-rootfs.tar --alias distri
+    ```
 
 1. Create an LXC container using the image:
-```shell
-lxc init distri distri-01
-lxc config set distri-01 raw.lxc lxc.init.cmd=/init
-```
+    ```shell
+    lxc init distri distri-01
+    lxc config set distri-01 raw.lxc lxc.init.cmd=/init
+    ```
 
 1. Start the container and run a shell in it:
-```shell
-lxc start distri-01
-lxc exec distri-01 bash
-```
+    ```shell
+    lxc start distri-01
+    lxc exec distri-01 bash
+    ```
 
 ## Cool things to try
 
