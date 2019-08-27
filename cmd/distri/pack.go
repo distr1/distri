@@ -316,7 +316,7 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(root, "etc/resolv.conf"), []byte("nameserver 8.8.8.8"), 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/resolv.conf"), []byte("nameserver 8.8.8.8\nnameserver 2001:4860:4860::8888\n"), 0644); err != nil {
 		return err
 	}
 
