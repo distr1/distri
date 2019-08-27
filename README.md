@@ -115,6 +115,7 @@ vbox-img convert \
 ### Run distri inside LXD container
 1. download the image:
 ```
+cd ~
 wget https://repo.distr1.org/distri/jackherer/img/distri-disk.img.gz
 --2019-08-27 10:11:20--  https://repo.distr1.org/distri/jackherer/img/distri-disk.img.gz
 Resolving repo.distr1.org (repo.distr1.org)... 2606:4700:30::6818:75da, 2606:4700:30::6818:74da, 104.24.117.218, ...
@@ -140,6 +141,7 @@ distri-disk.img.gz                                       100%[==================
 ```
 cd /mnt/distri
 tar -caf ~/distri-rootfs.tar.xz .
+cd ~
 ```
 1. create metadata.yaml file
 ```
@@ -174,7 +176,11 @@ EOF
 1. cleanup
 ```
 umount /mnt/distri
+rmdir /mnt/distri
 udisksctl loop-delete -b /dev/loop0
+rm ~/distri-disk.img*
+rm ~/distri-rootfs.tar.xz
+rm ~/metadata.yaml*
 ```
 
 
