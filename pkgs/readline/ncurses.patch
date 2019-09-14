@@ -1,0 +1,10 @@
+--- old/configure	2016-09-07 23:15:16.000000000 +0200
++++ new/configure	2019-09-14 18:40:36.087079678 +0200
+@@ -6101,6 +6101,7 @@
+ TERMCAP_DEP=
+ fi
+ 
++TERMCAP_LIB=-lncurses
+ if test "$TERMCAP_LIB" = "./lib/termcap/libtermcap.a"; then
+ 	if test "$prefer_curses" = yes; then
+ 		TERMCAP_LIB=-lcurses
