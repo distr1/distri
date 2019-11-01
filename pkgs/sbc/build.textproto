@@ -1,0 +1,8 @@
+source: "https://mirrors.edge.kernel.org/pub/linux/bluetooth/sbc-1.4.tar.xz"
+hash: "518bf46e6bb3dc808a95e1eabad26fdebe8a099c1e781c27ed7fca6c2f4a54c9"
+version: "1.4-1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "libsndfile"
