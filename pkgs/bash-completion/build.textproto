@@ -1,0 +1,9 @@
+source: "https://github.com/scop/bash-completion/archive/2.9.tar.gz"
+hash: "fddd9e6739c972eea95d1f0e0e84fa9a17a5935ba21eab37308b27580cc4d790"
+version: "2.9-1"
+
+cbuilder: <
+  autoreconf: true
+  copy_to_builddir: true
+>
+

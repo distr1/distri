@@ -1,0 +1,11 @@
+source: "https://github.com/tmux/tmux/releases/download/2.9/tmux-2.9.tar.gz"
+hash: "34901232f486fd99f3a39e864575e658b5d49f43289ccc6ee57c365f2e2c2980"
+version: "2.9"
+
+cbuilder: <
+  copy_to_builddir: true
+>
+
+dep: "libevent"
+dep: "ncurses"
+

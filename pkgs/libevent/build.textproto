@@ -1,0 +1,7 @@
+source: "https://github.com/libevent/libevent/releases/download/release-2.1.11-stable/libevent-2.1.11-stable.tar.gz"
+hash: "a65bac6202ea8c5609fd5c7e480e6d25de467ea1917c08290c521752f147283d"
+version: "2.1.11"
+
+cbuilder: <
+  copy_to_builddir: true
+>
