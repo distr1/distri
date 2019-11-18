@@ -6,4 +6,3 @@ cbuilder: <
   autoreconf: true
   copy_to_builddir: true
 >
-
