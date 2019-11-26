@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestMain(m *testing.M) {
@@ -74,13 +76,13 @@ func TestAutobuilderCommands(t *testing.T) {
 [batch] distri batch -dry_run
 [image] sh -c mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img
 [image-serial] sh -c mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img
-[image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCSDISKIMG=$DESTDIR/img/distri-gce.tar.gz
+[image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz
 [docker] sh -c make dockertar | tar tf -
 [docs] sh -c make docs DOCSDIR=$DESTDIR/docs
 [cp-destdir] sh -c cp --link -r -f -a build/distri/* $DESTDIR/
 `
-	if got := string(b); got != want {
-		t.Fatalf("unexpected build log: got %q, want %q", got, want)
+	if diff := cmp.Diff(want, string(b)); diff != "" {
+		t.Fatalf("unexpected build log: diff (-want +got):\n%s", diff)
 	}
 	if err := os.RemoveAll(mustGlob1(t, filepath.Join(tempdir, "buildlogs", commit, "*"))); err != nil {
 		t.Fatal(err)
@@ -116,13 +118,13 @@ func TestAutobuilderCommands(t *testing.T) {
 [batch] distri batch -dry_run
 [image] already built, skipping
 [image-serial] already built, skipping
-[image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCSDISKIMG=$DESTDIR/img/distri-gce.tar.gz
+[image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz
 [docker] sh -c make dockertar | tar tf -
 [docs] sh -c make docs DOCSDIR=$DESTDIR/docs
 [cp-destdir] already built, skipping
 `
-		if got := string(b); got != want {
-			t.Fatalf("unexpected build log: got %q, want %q", got, want)
+		if diff := cmp.Diff(want, string(b)); diff != "" {
+			t.Fatalf("unexpected build log: diff (-want +got):\n%s", diff)
 		}
 	})
 }

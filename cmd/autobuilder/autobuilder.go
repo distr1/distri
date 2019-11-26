@@ -73,7 +73,7 @@ var steps = []step{
 	{"batch", []string{"distri", "batch", "-dry_run"}}, // TODO: enable actual build
 	{"image", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img"}},
 	{"image-serial", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img"}},
-	{"image-gce", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make gceimage GCSDISKIMG=$DESTDIR/img/distri-gce.tar.gz"}},
+	{"image-gce", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz"}},
 	// TODO(later): hook this up with credentials to push to the docker hub
 	{"docker", []string{"sh", "-c", "make dockertar | tar tf -"}},
 	{"docs", []string{"sh", "-c", "make docs DOCSDIR=$DESTDIR/docs"}},
