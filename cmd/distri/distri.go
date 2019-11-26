@@ -4,15 +4,19 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"runtime/pprof"
 	"runtime/trace"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 
 	"github.com/distr1/distri/cmd/distri/internal/fuse"
+	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 
 	_ "github.com/distr1/distri/internal/oninterrupt"
@@ -26,6 +30,41 @@ var (
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
 	httpListen = flag.String("listen", "", "host:port to listen on for HTTP")
 )
+
+func bumpRlimitNOFILE() error {
+	// The smaller of the two is the highest which Linux will let us set:
+	// https://github.com/torvalds/linux/blob/2be7d348fe924f0c5583c6a805bd42cecda93104/kernel/sys.c#L1526-L1541
+	var fileMax, nrOpen uint64
+	{
+		b, err := ioutil.ReadFile("/proc/sys/fs/file-max")
+		if err != nil {
+			return err
+		}
+		fileMax, err = strconv.ParseUint(strings.TrimSpace(string(b)), 0, 64)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		b, err := ioutil.ReadFile("/proc/sys/fs/nr_open")
+		if err != nil {
+			return err
+		}
+		nrOpen, err = strconv.ParseUint(strings.TrimSpace(string(b)), 0, 64)
+		if err != nil {
+			return err
+		}
+	}
+	max := fileMax
+	if nrOpen < max {
+		max = nrOpen
+	}
+	set := unix.Rlimit{
+		Max: max,
+		Cur: max,
+	}
+	return unix.Setrlimit(unix.RLIMIT_NOFILE, &set)
+}
 
 var atExit struct {
 	sync.Mutex
@@ -96,6 +135,9 @@ func main() {
 		"scaffold": {scaffold},
 		"install":  {install},
 		"fuse": {func(args []string) error {
+			if err := bumpRlimitNOFILE(); err != nil {
+				log.Printf("Warning: bumping RLIMIT_NOFILE failed: %v", err)
+			}
 			join, err := fuse.Mount(args)
 			if err != nil {
 				return err

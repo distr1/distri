@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-17"
+version: "native-18"
 
 gobuilder: <
   install: "./cmd/distri"
