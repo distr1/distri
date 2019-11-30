@@ -1,0 +1,10 @@
+--- old/src/dhcp.c	2018-10-18 20:21:55.000000000 +0200
++++ new/src/dhcp.c	2019-11-30 13:38:12.894682967 +0100
+@@ -14,6 +14,7 @@
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include <linux/sockios.h>
+ #include "dnsmasq.h"
+ 
+ #ifdef HAVE_DHCP

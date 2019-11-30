@@ -1,0 +1,38 @@
+source: "http://www.thekelleys.org.uk/dnsmasq/dnsmasq-2.80.tar.xz"
+hash: "cdaba2785e92665cf090646cba6f94812760b9d7d8c8d0cfb07ac819377a63bb"
+version: "2.80-1"
+
+cbuilder: <>
+
+# sed -i 's,#include,#include <linux/sockios.h>\n#include,' src/dhcp.c
+cherry_pick: "siocgstamp.patch"
+
+# build dependencies:
+dep: "gettext"
+dep: "dbus"
+dep: "libidn2"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "COPTS=\"-DHAVE_DBUS -DHAVE_LIBIDN2\""
+  argv: "PREFIX=${DISTRI_PREFIX}"
+  argv: "BINDIR=${DISTRI_PREFIX}/bin"
+  argv: "all-i18n"
+>
+
+build_step: <
+  argv: "make"
+  argv: "install"
+  argv: "install-i18n"
+  argv: "COPTS=\"-DHAVE_DBUS -DHAVE_LIBIDN2\""
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "PREFIX=${DISTRI_PREFIX}"
+  argv: "BINDIR=${DISTRI_PREFIX}/bin"
+>
