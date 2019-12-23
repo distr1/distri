@@ -1,8 +1,8 @@
 # latest google-chrome-stable .deb from
 # http://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages:
-source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_75.0.3770.100-1_amd64.deb"
-hash: "25c558f79e5b0461ee63ca8e95bf26030a917d6b96dbdf3e6f6c75dc829eb746"
-version: "75.0.3770.100-6"
+source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_79.0.3945.88-1_amd64.deb"
+hash: "9f2ec10cfc313de21ca7c7100b50e088df741cd20812e76890e3d840ac7584cc"
+version: "79.0.3945.88-1-8"
 
 cbuilder: <>
 
