@@ -804,7 +804,7 @@ name=root`)
 	if err := ioutil.WriteFile("/mnt/etc/dracut.conf.d/kbddir.conf", []byte("kbddir=/ro/share\n"), 0644); err != nil {
 		return err
 	}
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-5.1.9-9.img 5.1.9")
+	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-5.4.6-11.img 5.4.6")
 	dracut.Stderr = os.Stderr
 	dracut.Stdout = os.Stdout
 	if err := dracut.Run(); err != nil {
