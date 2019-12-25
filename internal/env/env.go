@@ -40,7 +40,7 @@ func Repos() ([]distri.Repo, error) {
 	fis, err := ioutil.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []distri.Repo{{Path: DefaultRepo}}, nil
+			return []distri.Repo{{Path: DefaultRepoRoot}}, nil
 		}
 		return nil, err
 	}
