@@ -730,19 +730,26 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		return candidates[len(candidates)-1], nil
 	}
 	if len(candidates) == 0 {
+		if !b.Hermetic {
+			// no package found, fall back to host tools in non-hermetic mode
+			return "", nil
+		}
 		return "", xerrors.Errorf("package %q not found (pattern %s)", pkg, pattern)
 	}
 	return candidates[0], nil
 }
 
 func (b *buildctx) glob(imgDir string, pkgs []string) ([]string, error) {
-	globbed := make([]string, len(pkgs))
-	for idx, pkg := range pkgs {
-		var err error
-		globbed[idx], err = b.glob1(imgDir, pkg)
+	globbed := make([]string, 0, len(pkgs))
+	for _, pkg := range pkgs {
+		tmp, err := b.glob1(imgDir, pkg)
 		if err != nil {
 			return nil, err
 		}
+		if tmp == "" {
+			continue
+		}
+		globbed = append(globbed, tmp)
 	}
 	return globbed, nil
 }
@@ -1299,7 +1306,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err != nil {
 				return nil, err
 			}
-			if err := install(append([]string{"-root=/ro"}, deps...)); err != nil {
+			if len(deps) > 0 {
+				if err := install(append([]string{"-root=/ro"}, deps...)); err != nil {
+					return nil, err
+				}
+			}
+
+			if err := os.MkdirAll("/ro/bin", 0755); err != nil {
 				return nil, err
 			}
 
