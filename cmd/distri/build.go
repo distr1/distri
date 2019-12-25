@@ -1307,7 +1307,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				return nil, err
 			}
 			if len(deps) > 0 {
-				if err := install(append([]string{"-root=/ro"}, deps...)); err != nil {
+				if err := install(deps); err != nil {
 					return nil, err
 				}
 			}
