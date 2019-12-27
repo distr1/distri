@@ -1,0 +1,74 @@
+--- old/install/dracut-install.c	2019-12-27 07:27:56.108073122 +0100
++++ new/install/dracut-install.c	2019-12-27 07:40:36.491387209 +0100
+@@ -461,6 +461,60 @@
+   }
+   return ret;
+ }
++char *read_elf_interp(const char *filename) {
++  char *res = NULL;
++  int fd = open(filename, O_RDONLY, 0);
++  if (fd < 0) {
++    err(EXIT_FAILURE, "open %s", filename);
++  }
++  Elf *e = elf_begin(fd, ELF_C_READ, NULL);
++  if (e == NULL) {
++    errx(EXIT_FAILURE, "elf_begin: %s", elf_errmsg(-1));
++  }
++  if (elf_kind(e) != ELF_K_ELF) {
++    goto out;
++  }
++
++  GElf_Ehdr ehdr;
++  if (gelf_getehdr(e, &ehdr) == NULL) {
++    goto out;
++  }
++
++  for (int i = 0; i < ehdr.e_phnum; i++) {
++    GElf_Phdr mem;
++    GElf_Phdr *phdr = gelf_getphdr(e, i, &mem);
++    if (phdr->p_type != PT_INTERP) {
++      continue;
++    }
++    size_t maxsize;
++    char *filedata = elf_rawfile(e, &maxsize);
++    if (filedata == NULL || phdr->p_offset >= maxsize) {
++      continue;
++    }
++    res = strdup(filedata + phdr->p_offset);
++    break;
++  }
++
++ out:
++  elf_end(e);
++  close(fd);
++  return res;
++}
++
++
++static int resolve_deps_interp(const char *src) {
++  int ret = 0;
++  _cleanup_free_ char *data = read_elf_interp(src);
++  log_debug("resolve_deps_interp(%s) = '%s'", src, data);
++  if (data == NULL) {
++    return 0; // not an ELF binary
++  }
++  ret = dracut_install(data, data, false, true, false);
++  if (ret != 0) {
++    log_error("ERROR: failed to install '%s'", data);
++  }
++  return ret;
++}
+ 
+ static int resolve_deps(const char *src)
+ {
+@@ -482,6 +536,9 @@
+ 	    return ret;
+ 	  if (done == 1)
+ 	    return ret;
++	  ret = resolve_deps_interp(src);
++	  if (ret < 0)
++	    return ret;
+         }
+ 
+         /* run ldd */
+Binary files /dev/null and new/install/dracut-install.c~ differ
