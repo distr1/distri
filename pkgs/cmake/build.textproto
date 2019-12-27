@@ -13,8 +13,7 @@ build_step: <
   argv: "--parallel=8"
   argv: "--"
   argv: "-DBUILD_CursesDialog=ON"
-# argv: "-DCURSES_LIBRARY=/usr/lib/libncurses.so"
-  argv: "-DCURSES_LIBRARY=/ro/ncurses-amd64-6.1-5/lib/libncurses.so.6"
+  argv: "-DCURSES_LIBRARY=/ro/lib/libncurses.so"
   argv: "-DCMAKE_VERBOSE_MAKEFILE=ON"
 >
 
