@@ -163,7 +163,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 			if !ok {
 				var err error
 				g, err = bld.glob(env.DefaultRepo, []string{r})
-				if err != nil {
+				if err != nil || len(g) == 0 {
 					continue // build.textproto present, but no build artifact
 				}
 				b.globCache[r] = g
