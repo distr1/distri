@@ -1,6 +1,6 @@
 source: "https://github.com/vgough/encfs/releases/download/v1.9.5/encfs-1.9.5.tar.gz"
 hash: "4709f05395ccbad6c0a5b40a4619d60aafe3473b1a79bafb3aa700b1f756fd63"
-version: "1.9.5-2"
+version: "1.9.5-3"
 
 cherry_pick: "fuseversion.patch"
 

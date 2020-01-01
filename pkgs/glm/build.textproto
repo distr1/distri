@@ -1,6 +1,6 @@
 source: "https://github.com/g-truc/glm/archive/0.9.9.2.tar.gz"
 hash: "39ed8d2fff3de053c98f1381dccfa9cee524a89c5b00d204d58dec56cf4ffb33"
-version: "0.9.9.2-3"
+version: "0.9.9.2-4"
 
 cmakebuilder: <>
 

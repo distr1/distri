@@ -1,6 +1,6 @@
 source: "https://files.pythonhosted.org/packages/17/74/7c3ced03c3c76b9f98e4a0edae1801755a7599ebf481c04d9f77dfff17e3/wxPython-4.0.4.tar.gz"
 hash: "0d9ef4260cb2f3e23ed9dcf6baa905ba585ac7d631613cddc299c4c83463ae29"
-version: "4.0.4-4"
+version: "4.0.4-5"
 
 cherry_pick: "pythonpath.patch"
 

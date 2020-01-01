@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/driver/xf86-input-libinput-0.28.2.tar.bz2"
 hash: "b8b346962c6b62b8069928c29c0db83b6f544863bf2fc6830f324de841de2820"
-version: "0.28.2-4"
+version: "0.28.2-5"
 
 cbuilder: <>
 
