@@ -1,0 +1,24 @@
+source: "https://zlib.net/pigz/pigz-2.4.tar.gz"
+hash: "a4f816222a7b4269bd232680590b579ccc72591f1bb5adafcd7208ca77e14f73"
+version: "2.4-1"
+
+cbuilder: <>
+
+# build dependencies:
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+>
+
+build_step: <
+  argv: "make"
+  argv: "-j8"
+  argv: "V=1"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; install pigz unpigz $d/"
+>
