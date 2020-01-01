@@ -5,10 +5,16 @@ version: "3.12.2-3"
 cbuilder: <>
 
 # build dependencies:
+dep: "ncurses"
 
 build_step: <
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--parallel=8"
+  argv: "--"
+  argv: "-DBUILD_CursesDialog=ON"
+  argv: "-DCURSES_LIBRARY=/ro/lib/libncurses.so"
+  argv: "-DCMAKE_VERBOSE_MAKEFILE=ON"
 >
 
 build_step: <
