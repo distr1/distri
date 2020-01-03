@@ -735,7 +735,7 @@ name=root`)
 		{"/mnt/boot", boot, "ext2", 0},
 		{"/mnt/boot/efi", esp, "vfat", 0},
 		{"/mnt/dev", "/dev", "", syscall.MS_BIND},
-		{"/mnt/sys", "/sys", "", syscall.MS_BIND},
+		{"/mnt/sys", "/sys", "", syscall.MS_BIND | syscall.MS_PRIVATE},
 	} {
 		if err := os.MkdirAll(entry.dest, 0755); err != nil {
 			return err
