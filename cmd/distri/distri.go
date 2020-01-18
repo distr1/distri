@@ -161,6 +161,7 @@ func main() {
 		"builder": {builder},
 		"reset":   {reset},
 		"run":     {run},
+		"initrd":  {initrd},
 	}
 
 	args := flag.Args()
@@ -181,6 +182,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "\treset    - reset packages to before an update\n")
 			fmt.Fprintf(os.Stderr, "\tgc       - garbage collect unreferenced packages\n")
 			fmt.Fprintf(os.Stderr, "\tpack     - pack a distri system image\n")
+			fmt.Fprintf(os.Stderr, "\tinitrd   - pack a distri initramfs\n")
 			fmt.Fprintf(os.Stderr, "\trun      - run a command in a mount namespace with /ro\n")
 			fmt.Fprintln(os.Stderr)
 			fmt.Fprintf(os.Stderr, "Package build commands:\n")

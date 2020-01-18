@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/klauspost/compress@v1.9.7"
+hash: "310352eb6a6748847a8dfd51a3aa0491a5260787b8a701c4003a96147527134d"
+version: "v1.9.7-1"
+
+gomodbuilder: <>
+
+# build dependencies:

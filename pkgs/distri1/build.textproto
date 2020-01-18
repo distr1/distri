@@ -1,9 +1,9 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-18"
+version: "native-19"
 
 gobuilder: <
-  install: "./cmd/distri"
+  install: "./cmd/distri ./cmd/minitrd"
   import_path: "distri1"
   # Used as /init before the dynamic linker is available:
   go_env: "CGO_ENABLED=0"
@@ -43,3 +43,7 @@ dep: "go-github.com-orcaman-writerseeker"
 dep: "go-github.com-BurntSushi-toml"
 dep: "go-github.com-google-go--github-v27"
 dep: "go-github.com-google-go--querystring"
+dep: "go-github.com-cavaliercoder-go--cpio"
+dep: "go-github.com-klauspost-compress"
+dep: "go-github.com-klauspost-pgzip"
+dep: "go-github.com-s--urbaniak-uevent"

@@ -63,19 +63,20 @@ func copyFile(src, dest string) error {
 }
 
 type packctx struct {
-	root           string
-	repo           string
-	extraBase      string
-	diskImg        string
-	gcsDiskImg     string
-	encrypt        bool
-	serialOnly     bool
-	bootDebug      bool
-	branch         string
-	rootPassword   string
-	cryptPassword  string
-	docker         bool
-	authorizedKeys string
+	root               string
+	repo               string
+	extraBase          string
+	diskImg            string
+	gcsDiskImg         string
+	encrypt            bool
+	serialOnly         bool
+	bootDebug          bool
+	branch             string
+	rootPassword       string
+	cryptPassword      string
+	docker             bool
+	authorizedKeys     string
+	initramfsGenerator string
 }
 
 func pack(args []string) error {
@@ -96,6 +97,7 @@ func pack(args []string) error {
 	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
 	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
 	fset.StringVar(&p.authorizedKeys, "authorized_keys", "", "if non-empty, path to an SSH authorized_keys file to include for the root user")
+	fset.StringVar(&p.initramfsGenerator, "initramfs_generator", "minitrd", "Which initramfs generator to use: minitrd or dracut. Chose minitrd for fastest initramfs generation and boot, chose dracut for customizeability or features that minitrd does not implement.")
 	fset.Usage = usage(fset, packHelp)
 	fset.Parse(args)
 
@@ -804,11 +806,25 @@ name=root`)
 	if err := ioutil.WriteFile("/mnt/etc/dracut.conf.d/kbddir.conf", []byte("kbddir=/ro/share\n"), 0644); err != nil {
 		return err
 	}
-	dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-5.4.6-11.img 5.4.6")
-	dracut.Stderr = os.Stderr
-	dracut.Stdout = os.Stdout
-	if err := dracut.Run(); err != nil {
-		return xerrors.Errorf("%v: %v", dracut.Args, err)
+	switch p.initramfsGenerator {
+	case "dracut":
+		dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-5.4.6-11.img 5.4.6")
+		dracut.Stderr = os.Stderr
+		dracut.Stdout = os.Stdout
+		if err := dracut.Run(); err != nil {
+			return xerrors.Errorf("%v: %v", dracut.Args, err)
+		}
+
+	case "minitrd":
+		minitrd := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "distri initrd -release 5.4.6 -output /boot/initramfs-5.4.6-11.img")
+		minitrd.Stderr = os.Stderr
+		minitrd.Stdout = os.Stdout
+		if err := minitrd.Run(); err != nil {
+			return xerrors.Errorf("%v: %v", minitrd.Args, err)
+		}
+
+	default:
+		return xerrors.Errorf("unknown initramfs generator %v", p.initramfsGenerator)
 	}
 
 	var params []string
