@@ -1,25 +1,21 @@
-diff --git i/Makefile.am w/Makefile.am
-index 7795bae..465cc07 100644
---- i/Makefile.in
-+++ w/Makefile.in
-@@ -12700,10 +12700,10 @@ garbage-gen$(BUILD_EXEEXT): util/garbage-gen.c
+--- old/Makefile.in	2019-07-04 16:06:40.000000000 +0200
++++ new/Makefile.in	2020-01-21 20:59:48.780825640 +0100
+@@ -13113,10 +13113,10 @@
  	$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS)  $^
  
  build-grub-gen-asciih$(BUILD_EXEEXT): util/grub-gen-asciih.c
--	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
-+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall 
+-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(BUILD_FREETYPE_CFLAGS) $(BUILD_FREETYPE_LIBS) -Wall -Werror
++	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(BUILD_FREETYPE_CFLAGS) $(BUILD_FREETYPE_LIBS) -Wall 
  
  build-grub-gen-widthspec$(BUILD_EXEEXT): util/grub-gen-widthspec.c
--	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
-+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall 
+-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(BUILD_FREETYPE_CFLAGS) $(BUILD_FREETYPE_LIBS) -Wall -Werror
++	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(BUILD_FREETYPE_CFLAGS) $(BUILD_FREETYPE_LIBS) -Wall 
  @COND_STARFIELD_TRUE@dejavu_10.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
  @COND_STARFIELD_TRUE@	./build-grub-mkfont$(BUILD_EXEEXT) -s 10 -o $@ $(DJVU_FONT_SOURCE)
  @COND_STARFIELD_TRUE@dejavu_12.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
-diff --git i/acinclude.m4 w/acinclude.m4
-index 78cdf6e..fa3c669 100644
---- i/grub-core/Makefile.in
-+++ w/grub-core/Makefile.in
-@@ -42635,7 +42635,7 @@ $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT) build-grub-module-v
+--- old/grub-core/Makefile.in	2019-07-04 16:06:53.000000000 +0200
++++ new/grub-core/Makefile.in	2020-01-21 20:59:48.767492292 +0100
+@@ -46728,7 +46728,7 @@
  @COND_ENABLE_EFIEMU_TRUE@efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
  @COND_ENABLE_EFIEMU_TRUE@	-rm -f $@
  @COND_ENABLE_EFIEMU_TRUE@	-rm -f $@.bin
@@ -28,7 +24,7 @@ index 78cdf6e..fa3c669 100644
  @COND_ENABLE_EFIEMU_TRUE@	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
  @COND_ENABLE_EFIEMU_TRUE@	  $(TARGET_OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
  @COND_ENABLE_EFIEMU_TRUE@	  rm -f $@.bin ; \
-@@ -42648,10 +42648,10 @@ $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT) build-grub-module-v
+@@ -46741,10 +46741,10 @@
  
  # Link format -arch,x86_64 means Apple linker
  @COND_ENABLE_EFIEMU_TRUE@efiemu64_c.o: efiemu/runtime/efiemu.c

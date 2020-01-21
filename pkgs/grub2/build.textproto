@@ -1,6 +1,6 @@
-source: "https://ftp.gnu.org/gnu/grub/grub-2.02.tar.xz"
-hash: "810b3798d316394f94096ec2797909dbf23c858e48f7b3830826b8daa06b7b0f"
-version: "2.02-3"
+source: "https://ftp.gnu.org/gnu/grub/grub-2.04.tar.xz"
+hash: "e5292496995ad42dabe843a0192cf2a2c502e7ffcc7479398232b10a472df77d"
+version: "2.04-4"
 
 cherry_pick: "werror.patch"
 
@@ -12,6 +12,7 @@ cbuilder: <
 dep: "bison"
 dep: "flex"
 dep: "m4" # TODO: remove (runtime-dep of flex)
+dep: "python3"
 
 # grub-mkconfig needs:
 runtime_dep: "sed"
