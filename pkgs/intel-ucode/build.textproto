@@ -1,0 +1,27 @@
+source: "https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/archive/microcode-20191115.tar.gz"
+hash: "14b26d27be70774948b8cb582e298f5317263b8b8bb1fe8e41260eae54f531dc"
+version: "20191115-1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "iucode-tool"
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "iucode_tool --write-earlyfw=intel-ucode.img ${DISTRI_SOURCEDIR}/intel-ucode"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin/ninja; mkdir -p $(dirname $d); cp ninja $d"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/boot; mkdir -p $d; cp intel-ucode.img $d/"
+>
+
+build_step: <
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/firmware; mkdir -p $d; cp -r ${DISTRI_SOURCEDIR}/intel-ucode $d/"
+>

@@ -334,6 +334,23 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 			}
 		}
 	}
+	if strings.HasPrefix(pkg, "intel-ucode-") ||
+		strings.HasPrefix(pkg, "amd-ucode-") {
+		pv := distri.ParseVersion(pkg)
+		if pv.Pkg == "intel-ucode" ||
+			pv.Pkg == "amd-ucode" {
+			base := "intel-ucode.img"
+			if pv.Pkg == "amd-ucode" {
+				base = "amd-ucode.img"
+			}
+			dest := filepath.Join(root, "boot", base)
+
+			log.Printf("hook/ucode: updating %s", dest)
+			if err := hookinstall(dest, "out/boot/"+base); err != nil {
+				return err
+			}
+		}
+	}
 
 	readerAt, err := mmap.Open(filepath.Join(tmpDir, pkg+".squashfs"))
 	if err != nil {
