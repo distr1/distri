@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -73,11 +74,24 @@ func (br *blockReader) Read(p []byte) (n int, err error) {
 	return n, err
 }
 
-func (r *Reader) blockReader(blockoffset, offset int64) (io.Reader, error) {
+func (br *blockReader) Close() error {
+	metadataBufPool.Put(br.buf)
+	return nil
+}
+
+var metadataBufPool = sync.Pool{
+	New: func() interface{} {
+		return bytes.NewBuffer(make([]byte, 0, metadataBlockSize))
+	},
+}
+
+func (r *Reader) blockReader(blockoffset, offset int64) (io.ReadCloser, error) {
 	//log.Printf("blockoffset %v (%x), offset %v (%x)", blockoffset, blockoffset, offset, offset)
+	b := metadataBufPool.Get().(*bytes.Buffer)
+	b.Reset()
 	br := &blockReader{
 		r:   io.NewSectionReader(r.r, blockoffset, 5500*1024*1024), // TODO: correct limit? can we use IntMax
-		buf: bytes.NewBuffer(make([]byte, 0, metadataBlockSize)),
+		buf: b,
 		off: blockoffset,
 	}
 	//log.Printf("discarding %d bytes", offset)
@@ -94,6 +108,7 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer br.Close()
 
 	// We need the inode type before we know which type to pass to binary.Read,
 	// so we need to read it twice:
@@ -102,7 +117,7 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 	if err := binary.Read(io.TeeReader(br, typeBuf), binary.LittleEndian, &inodeType); err != nil {
 		return nil, err
 	}
-	br = io.MultiReader(typeBuf, br)
+	br = ioutil.NopCloser(io.MultiReader(typeBuf, br))
 
 	// var ih inodeHeader
 	// if err := binary.Read(br, binary.LittleEndian, &ih); err != nil {
@@ -239,6 +254,7 @@ func (r *Reader) ReadLink(i Inode) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer br.Close()
 
 	// We need the inode type before we know which type to pass to binary.Read,
 	// so we need to read it twice:
@@ -247,7 +263,7 @@ func (r *Reader) ReadLink(i Inode) (string, error) {
 	if err := binary.Read(io.TeeReader(br, typeBuf), binary.LittleEndian, &inodeType); err != nil {
 		return "", err
 	}
-	br = io.MultiReader(typeBuf, br)
+	br = ioutil.NopCloser(io.MultiReader(typeBuf, br))
 
 	if inodeType != symlinkType {
 		return "", fmt.Errorf("invalid inode type: got %d instead of symlink", inodeType)
@@ -390,10 +406,11 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer br.Close()
 
 	// See also https://elixir.bootlin.com/linux/v4.18.9/source/fs/squashfs/dir.c#L63
 	limit := fileSize - int64(len(".")) - int64(len(".."))
-	br = io.LimitReader(br, limit)
+	br = ioutil.NopCloser(io.LimitReader(br, limit))
 
 	var fis []os.FileInfo
 	for {
@@ -462,6 +479,42 @@ func (fi *FileInfo) IsDir() bool        { return fi.mode.IsDir() }
 func (fi *FileInfo) ModTime() time.Time { return fi.modTime }
 func (fi *FileInfo) Sys() interface{}   { return fi }
 
+func (r *Reader) readXattr(tableHeader xattrTableHeader, id xattrId) (*Xattr, error) {
+	blockoffset, offset := r.inode(Inode(id.Xattr))
+	br, err := r.blockReader(int64(tableHeader.XattrTableStart)+blockoffset, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer br.Close()
+	var typ, nameSize uint16
+	if err := binary.Read(br, binary.LittleEndian, &typ); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(br, binary.LittleEndian, &nameSize); err != nil {
+		return nil, err
+	}
+	log.Printf("type = %v, nameSize = %v", typ, nameSize)
+	name := make([]byte, nameSize)
+	if _, err := io.ReadFull(br, name); err != nil {
+		return nil, err
+	}
+	log.Printf("name = %v", string(name))
+	var valSize uint32
+	if err := binary.Read(br, binary.LittleEndian, &valSize); err != nil {
+		return nil, err
+	}
+	val := make([]byte, valSize)
+	if _, err := io.ReadFull(br, val); err != nil {
+		return nil, err
+	}
+	log.Printf("val = %x", val)
+	return &Xattr{
+		Type:     typ,
+		FullName: xattrPrefix[int(typ)] + string(name),
+		Value:    val,
+	}, nil
+}
+
 func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
 	i, err := r.readInode(inode)
@@ -491,7 +544,7 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	offset := (xid % idEntriesPerBlock) * 16
 	log.Printf("xattr id %d, block %d, offset %d", xid, block, offset)
 	log.Printf("r.super.XattrIdTableStart = 0x%x, r.super.XattrIdTableStart = %v", r.super.XattrIdTableStart, r.super.XattrIdTableStart)
-	br := io.Reader(io.NewSectionReader(r.r, r.super.XattrIdTableStart, int64(16 /* sizeof(xattrTableHeader) */ +(block+1)*4 /* sizeof(uint32) */)))
+	br := ioutil.NopCloser(io.NewSectionReader(r.r, r.super.XattrIdTableStart, int64(16 /* sizeof(xattrTableHeader) */ +(block+1)*4 /* sizeof(uint32) */)))
 	var tableHeader xattrTableHeader
 	if err := binary.Read(br, binary.LittleEndian, &tableHeader); err != nil {
 		return nil, err
@@ -509,6 +562,7 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer br.Close()
 	var id xattrId
 	if err := binary.Read(br, binary.LittleEndian, &id); err != nil {
 		return nil, err
@@ -518,38 +572,11 @@ func (r *Reader) ReadXattrs(inode Inode) ([]Xattr, error) {
 
 	var xattrs []Xattr
 	for i := 0; i < int(id.Count); i++ {
-		blockoffset, offset := r.inode(Inode(id.Xattr))
-		br, err = r.blockReader(int64(tableHeader.XattrTableStart)+blockoffset, offset)
+		xattr, err := r.readXattr(tableHeader, id)
 		if err != nil {
 			return nil, err
 		}
-		var typ, nameSize uint16
-		if err := binary.Read(br, binary.LittleEndian, &typ); err != nil {
-			return nil, err
-		}
-		if err := binary.Read(br, binary.LittleEndian, &nameSize); err != nil {
-			return nil, err
-		}
-		log.Printf("type = %v, nameSize = %v", typ, nameSize)
-		name := make([]byte, nameSize)
-		if _, err := io.ReadFull(br, name); err != nil {
-			return nil, err
-		}
-		log.Printf("name = %v", string(name))
-		var valSize uint32
-		if err := binary.Read(br, binary.LittleEndian, &valSize); err != nil {
-			return nil, err
-		}
-		val := make([]byte, valSize)
-		if _, err := io.ReadFull(br, val); err != nil {
-			return nil, err
-		}
-		log.Printf("val = %x", val)
-		xattrs = append(xattrs, Xattr{
-			Type:     typ,
-			FullName: xattrPrefix[int(typ)] + string(name),
-			Value:    val,
-		})
+		xattrs = append(xattrs, *xattr)
 	}
 
 	return xattrs, nil
