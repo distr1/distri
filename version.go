@@ -39,22 +39,34 @@ func buildFile(filename, full string) bool {
 	return parts[len(parts)-1] == "build" && strings.HasSuffix(full, ".log")
 }
 
+func anyFullySpecified(filename string) string {
+	// zero in on the correct path component first, if we can identify it
+	var offset int
+	idx := strings.IndexByte(filename, '/')
+	var component string
+	for {
+		if idx == -1 {
+			component = filename[offset:]
+		} else {
+			component = filename[offset : offset+idx]
+		}
+		if LikelyFullySpecified(component) {
+			return component
+		}
+		if idx == -1 {
+			break
+		}
+		offset += idx + 1
+		idx = strings.IndexByte(filename[offset:], '/')
+	}
+	return filename
+}
+
 // ParseVersion constructs a PackageVersion from filename,
 // e.g. glibc-amd64-2.27-37, which parses into PackageVersion{Upstream: "2.27",
 // DistriRevision: 37}.
 func ParseVersion(filename string) PackageVersion {
-	// zero in on the correct path component first, if we can identify it
-	var component string
-	for _, c := range strings.Split(filename, "/") {
-		if LikelyFullySpecified(c) {
-			component = c
-			break
-		}
-	}
-	if component != "" {
-		filename = component
-	}
-
+	filename = anyFullySpecified(filename)
 	var pkg, arch string
 	parts := strings.Split(filename, "-")
 	// Discard everything up to the architecture identifier, including the first
