@@ -450,10 +450,11 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 			//log.Printf("de: %+v", de)
 			nameBuf.Reset()
 			nameBuf.Grow(int(de.Size))
-			if _, err := io.CopyN(nameBuf, br, int64(de.Size)); err != nil {
+			nb := nameBuf.Bytes()[:de.Size]
+			if _, err := io.ReadFull(br, nb); err != nil {
 				return nil, err
 			}
-			name := nameBuf.String()
+			name := string(nb)
 			//log.Printf("name: %q", string(name))
 
 			var fi os.FileInfo
