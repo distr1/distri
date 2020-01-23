@@ -376,6 +376,12 @@ func (r *Reader) ReaddirNoStat(dirInode Inode) ([]os.FileInfo, error) {
 	return r.readdir(dirInode, false)
 }
 
+var nameBufPool = sync.Pool{
+	New: func() interface{} {
+		return &bytes.Buffer{}
+	},
+}
+
 func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
 	i, err := r.readInode(dirInode)
@@ -417,6 +423,8 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	var de dirEntry
 	var dhBuf [12]byte
 	var deBuf [8]byte
+	nameBuf := nameBufPool.Get().(*bytes.Buffer)
+	defer nameBufPool.Put(nameBuf)
 	for {
 		if _, err := io.ReadFull(br, dhBuf[:]); err != nil {
 			if err == io.EOF {
@@ -435,22 +443,24 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 			de.Unmarshal(deBuf[:])
 			de.Size++ // SquashFS stores size-1
 			//log.Printf("de: %+v", de)
-			name := make([]byte, de.Size)
-			if _, err := io.ReadFull(br, name); err != nil {
+			nameBuf.Reset()
+			nameBuf.Grow(int(de.Size))
+			if _, err := io.CopyN(nameBuf, br, int64(de.Size)); err != nil {
 				return nil, err
 			}
+			name := nameBuf.String()
 			//log.Printf("name: %q", string(name))
 
 			var fi os.FileInfo
 			if stat {
 				var err error
-				fi, err = r.Stat(string(name), Inode(int64(dh.StartBlock)<<16|int64(de.Offset)))
+				fi, err = r.Stat(name, Inode(int64(dh.StartBlock)<<16|int64(de.Offset)))
 				if err != nil {
 					return nil, err
 				}
 			} else {
 				ffi := &FileInfo{
-					name:  string(name),
+					name:  name,
 					Inode: Inode(int64(dh.StartBlock)<<16 | int64(de.Offset)),
 				}
 				switch de.EntryType {
