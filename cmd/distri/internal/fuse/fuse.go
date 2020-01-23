@@ -380,10 +380,12 @@ func (fs *fuseFS) symlink(dir *dir, target string) {
 		if current.linkTarget == "" {
 			return // do not shadow exchange directories
 		}
-		if distri.ParseVersion(target).Pkg != distri.ParseVersion(current.linkTarget).Pkg {
+		versionTarget := distri.ParseVersion(target)
+		versionCurrent := distri.ParseVersion(current.linkTarget)
+		if versionTarget.Pkg != versionCurrent.Pkg {
 			return // different package already owns this link
 		}
-		if distri.PackageRevisionLess(target, current.linkTarget) {
+		if versionTarget.DistriRevision < versionCurrent.DistriRevision {
 			return // more recent link target already in place
 		}
 		for idx, entry := range dir.entries {
