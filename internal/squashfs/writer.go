@@ -157,6 +157,22 @@ type dirInodeHeader struct {
 	ParentInode uint32
 }
 
+func (d *dirInodeHeader) Unmarshal(b []byte) {
+	_ = b[31]
+	e := binary.LittleEndian
+	d.InodeType = e.Uint16(b)
+	d.Mode = e.Uint16(b[2:])
+	d.Uid = e.Uint16(b[4:])
+	d.Gid = e.Uint16(b[6:])
+	d.Mtime = int32(e.Uint32(b[8:]))
+	d.InodeNumber = e.Uint32(b[12:])
+	d.StartBlock = e.Uint32(b[16:])
+	d.Nlink = e.Uint32(b[20:])
+	d.FileSize = e.Uint16(b[24:])
+	d.Offset = e.Uint16(b[26:])
+	d.ParentInode = e.Uint32(b[28:])
+}
+
 // ldirType
 type ldirInodeHeader struct {
 	inodeHeader
