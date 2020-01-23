@@ -80,9 +80,9 @@ func mirror(args []string) error {
 		}
 		for _, wk := range fuse.ExchangeDirs {
 			wk = strings.TrimPrefix(wk, "/")
-			inode, err := fuse.LookupPath(rd, wk)
+			inode, err := rd.LookupPath(wk)
 			if err != nil {
-				if _, ok := err.(*fuse.FileNotFoundError); ok {
+				if _, ok := err.(*squashfs.FileNotFoundError); ok {
 					continue
 				}
 				return err
