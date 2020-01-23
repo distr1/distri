@@ -176,6 +176,14 @@ type dirHeader struct {
 	InodeOffset uint32
 }
 
+func (d *dirHeader) Unmarshal(b []byte) {
+	_ = b[11]
+	e := binary.LittleEndian
+	d.Count = e.Uint32(b)
+	d.StartBlock = e.Uint32(b[4:])
+	d.InodeOffset = e.Uint32(b[8:])
+}
+
 type dirEntry struct {
 	Offset      uint16
 	InodeNumber int16
@@ -183,6 +191,15 @@ type dirEntry struct {
 	Size        uint16
 
 	// Followed by a byte array of Size bytes.
+}
+
+func (d *dirEntry) Unmarshal(b []byte) {
+	_ = b[7]
+	e := binary.LittleEndian
+	d.Offset = e.Uint16(b)
+	d.InodeNumber = int16(e.Uint16(b[2:]))
+	d.EntryType = e.Uint16(b[4:])
+	d.Size = e.Uint16(b[6:])
 }
 
 // xattr types

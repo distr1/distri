@@ -413,22 +413,26 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	br = ioutil.NopCloser(io.LimitReader(br, limit))
 
 	var fis []os.FileInfo
+	var dh dirHeader
+	var de dirEntry
+	var dhBuf [12]byte
+	var deBuf [8]byte
 	for {
-		var dh dirHeader
-		if err := binary.Read(br, binary.LittleEndian, &dh); err != nil {
+		if _, err := io.ReadFull(br, dhBuf[:]); err != nil {
 			if err == io.EOF {
 				return fis, nil
 			}
 			return nil, err
 		}
+		dh.Unmarshal(dhBuf[:])
 		dh.Count++ // SquashFS stores count-1
 		//log.Printf("dh: %+v", dh)
 
 		for i := 0; i < int(dh.Count); i++ {
-			var de dirEntry
-			if err := binary.Read(br, binary.LittleEndian, &de); err != nil {
+			if _, err := io.ReadFull(br, deBuf[:]); err != nil {
 				return nil, err
 			}
+			de.Unmarshal(deBuf[:])
 			de.Size++ // SquashFS stores size-1
 			//log.Printf("de: %+v", de)
 			name := make([]byte, de.Size)
