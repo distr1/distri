@@ -345,6 +345,9 @@ func (fs *fuseFS) allocateInodeLocked() fuseops.InodeID {
 func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
 	mu.Lock()
 	defer mu.Unlock()
+	if _, exists := fs.dirs[path]; exists {
+		return // fast path
+	}
 	components := strings.Split(path, "/")
 	for idx, component := range components[1:] {
 		path := strings.Join(components[:idx+2], "/")
