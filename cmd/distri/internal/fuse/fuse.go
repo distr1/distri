@@ -372,21 +372,23 @@ func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
 
 func (fs *fuseFS) symlink(dir *dir, target string) {
 	base := filepath.Base(target)
-	for idx, entry := range dir.entries {
-		if entry == nil || entry.name != base {
-			continue
-		}
-		if entry.linkTarget == "" {
+	current := dir.byName[base]
+	if current != nil {
+		if current.linkTarget == "" {
 			return // do not shadow exchange directories
 		}
-		if distri.ParseVersion(target).Pkg != distri.ParseVersion(entry.linkTarget).Pkg {
+		if distri.ParseVersion(target).Pkg != distri.ParseVersion(current.linkTarget).Pkg {
 			return // different package already owns this link
 		}
-		if distri.PackageRevisionLess(target, entry.linkTarget) {
+		if distri.PackageRevisionLess(target, current.linkTarget) {
 			return // more recent link target already in place
 		}
-		dir.entries[idx] = nil // tombstone
-		break
+		for idx, entry := range dir.entries {
+			if entry == nil || entry.name != base {
+				continue
+			}
+			dir.entries[idx] = nil // tombstone
+		}
 	}
 	dirent := &dirent{
 		name:       base,
