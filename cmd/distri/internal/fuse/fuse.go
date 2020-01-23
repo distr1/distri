@@ -69,57 +69,6 @@ const (
 	ctlInode  = 2
 )
 
-type FileNotFoundError struct {
-	path string
-}
-
-func (e *FileNotFoundError) Error() string {
-	return fmt.Sprintf("%q not found", e.path)
-}
-
-func lookupComponent(rd *squashfs.Reader, parent squashfs.Inode, component string) (squashfs.Inode, error) {
-	rfis, err := rd.Readdir(parent)
-	if err != nil {
-		return 0, err
-	}
-	for _, rfi := range rfis {
-		if rfi.Name() == component {
-			return rfi.Sys().(*squashfs.FileInfo).Inode, nil
-		}
-	}
-	return 0, &FileNotFoundError{path: component}
-}
-
-func LookupPath(rd *squashfs.Reader, path string) (squashfs.Inode, error) {
-	inode := rd.RootInode()
-	parts := strings.Split(path, "/")
-	for idx, part := range parts {
-		var err error
-		inode, err = lookupComponent(rd, inode, part)
-		if err != nil {
-			if _, ok := err.(*FileNotFoundError); ok {
-				return 0, &FileNotFoundError{path: path}
-			}
-			return 0, err
-		}
-		fi, err := rd.Stat("", inode)
-		if err != nil {
-			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
-		}
-		if fi.Mode()&os.ModeSymlink > 0 {
-			target, err := rd.ReadLink(inode)
-			if err != nil {
-				return 0, err
-			}
-			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
-			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
-			//log.Printf("-> %s", target)
-			return LookupPath(rd, target)
-		}
-	}
-	return inode, nil
-}
-
 func Mount(args []string) (join func(context.Context) error, _ error) {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
@@ -479,9 +428,9 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 	}
 	inodes := make([]pathWithInode, 0, len(exchangeDirs))
 	for _, path := range exchangeDirs {
-		inode, err := LookupPath(rd, strings.TrimPrefix(path, "/"))
+		inode, err := rd.LookupPath(strings.TrimPrefix(path, "/"))
 		if err != nil {
-			if _, ok := err.(*FileNotFoundError); ok {
+			if _, ok := err.(*squashfs.FileNotFoundError); ok {
 				continue
 			}
 			return err
@@ -559,9 +508,9 @@ func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
 			continue // o.pkg not found
 		}
 
-		dstinode, err := LookupPath(rd, "out/"+o.GetDir())
+		dstinode, err := rd.LookupPath("out/" + o.GetDir())
 		if err != nil {
-			if _, ok := err.(*FileNotFoundError); ok {
+			if _, ok := err.(*squashfs.FileNotFoundError); ok {
 				continue // nothing to overlay, skip this package
 			}
 			return err
@@ -575,9 +524,9 @@ func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
 			return err
 		}
 
-		srcinode, err := LookupPath(rd.Reader, "out/"+o.GetDir())
+		srcinode, err := rd.Reader.LookupPath("out/" + o.GetDir())
 		if err != nil {
-			if _, ok := err.(*FileNotFoundError); ok {
+			if _, ok := err.(*squashfs.FileNotFoundError); ok {
 				log.Printf("%s: runtime union: %s/out/%s not found", pkg, o.GetPkg(), o.GetDir())
 				continue
 			}
