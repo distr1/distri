@@ -353,6 +353,13 @@ func (r *Reader) Readdir(dirInode Inode) ([]os.FileInfo, error) {
 	return r.readdir(dirInode, true)
 }
 
+// Like Readdir, but does not call Stat on each file. The returned FileInfo
+// structs will still have a filled in Name, partly filled in Mode, and filled
+// in Inode.
+func (r *Reader) ReaddirNoStat(dirInode Inode) ([]os.FileInfo, error) {
+	return r.readdir(dirInode, false)
+}
+
 func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 	//log.Printf("Readdir(%v (%x))", dirInode, dirInode)
 	i, err := r.readInode(dirInode)
@@ -421,10 +428,17 @@ func (r *Reader) readdir(dirInode Inode, stat bool) ([]os.FileInfo, error) {
 					return nil, err
 				}
 			} else {
-				fi = &FileInfo{
+				ffi := &FileInfo{
 					name:  string(name),
 					Inode: Inode(int64(dh.StartBlock)<<16 | int64(de.Offset)),
 				}
+				switch de.EntryType {
+				case dirType, ldirType:
+					ffi.mode |= os.ModeDir
+				case symlinkType, lsymlinkType:
+					ffi.mode |= os.ModeSymlink
+				}
+				fi = ffi
 			}
 			fis = append(fis, fi)
 		}
