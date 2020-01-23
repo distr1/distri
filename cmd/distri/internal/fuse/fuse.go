@@ -448,7 +448,7 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 		if !ok {
 			panic(fmt.Sprintf("BUG: fs.dirs[%q] not found", exchangePath))
 		}
-		sfis, err := rd.Readdir(inode)
+		sfis, err := rd.ReaddirNoStat(inode)
 		if err != nil {
 			return xerrors.Errorf("Readdir(%s, %v): %v", pkg, dir, err)
 		}
