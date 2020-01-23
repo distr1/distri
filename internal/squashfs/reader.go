@@ -321,11 +321,11 @@ func (r *Reader) lookupPath(path string, followSymlink bool) (Inode, error) {
 		if !followSymlink {
 			continue
 		}
-		fi, err := r.Stat("", inode)
+		i, err := r.readInode(inode)
 		if err != nil {
 			return 0, xerrors.Errorf("Stat(%d): %v", inode, err)
 		}
-		if fi.Mode()&os.ModeSymlink > 0 {
+		if _, ok := i.(symlinkInodeHeader); ok {
 			target, err := r.ReadLink(inode)
 			if err != nil {
 				return 0, err
