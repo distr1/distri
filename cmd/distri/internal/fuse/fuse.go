@@ -428,6 +428,18 @@ func (fs *fuseFS) findPackages() ([]string, error) {
 	return pkgs, nil
 }
 
+func countSlashes(filename string) int {
+	var offset int
+	count := 1
+	idx := strings.IndexByte(filename, '/')
+	for idx != -1 {
+		count++
+		offset += idx + 1
+		idx = strings.IndexByte(filename[offset:], '/')
+	}
+	return count
+}
+
 func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg string, exchangeDirs []string) error {
 	type pathWithInode struct {
 		path  string
@@ -442,13 +454,14 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 			}
 			return err
 		}
-		inodes = append(inodes, pathWithInode{path, inode})
+		inodes = append(inodes, pathWithInode{filepath.Clean(path), inode})
 	}
 
 	for len(inodes) > 0 {
 		path, inode := inodes[0].path, inodes[0].inode
 		inodes = inodes[1:]
 		exchangePath := strings.TrimPrefix(path, "/out")
+		prefix := strings.Repeat("../", countSlashes(exchangePath)-1)
 		mu.Lock()
 		dir, ok := fs.dirs[exchangePath]
 		mu.Unlock()
@@ -466,10 +479,8 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 				inodes = append(inodes, pathWithInode{dir, sfi.Sys().(*squashfs.FileInfo).Inode})
 				continue
 			}
-			rel, err := filepath.Rel(exchangePath, filepath.Join("/", pkg, path, sfi.Name()))
-			if err != nil {
-				return err
-			}
+			full := "/" + pkg + path + "/" + sfi.Name()
+			rel := prefix + full[1:]
 			mu.Lock()
 			fs.symlink(dir, rel)
 			mu.Unlock()
