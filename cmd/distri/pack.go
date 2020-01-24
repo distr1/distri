@@ -665,9 +665,16 @@ name=root`)
 	if err != nil {
 		return xerrors.Errorf("%v: %v", losetup.Args, err)
 	}
-
 	base := strings.TrimSpace(string(out))
 	log.Printf("base: %q", base)
+	defer func() {
+		losetup := exec.Command("sudo", "losetup", "-d", base)
+		losetup.Stdout = os.Stdout
+		losetup.Stderr = os.Stderr
+		if err := losetup.Run(); err != nil {
+			log.Printf("%v: %v", losetup.Args, err)
+		}
+	}()
 
 	esp := base + "p1"
 	// p2 is the GRUB BIOS boot partition
@@ -882,13 +889,6 @@ name=root`)
 		if err := syscall.Unmount(filepath.Join("/mnt", m), 0); err != nil {
 			return xerrors.Errorf("unmount /mnt/%s: %v", m, err)
 		}
-	}
-
-	losetup = exec.Command("sudo", "losetup", "-d", base)
-	losetup.Stdout = os.Stdout
-	losetup.Stderr = os.Stderr
-	if err := losetup.Run(); err != nil {
-		return xerrors.Errorf("%v: %v", losetup.Args, err)
 	}
 
 	return nil
