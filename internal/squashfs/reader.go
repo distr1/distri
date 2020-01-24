@@ -114,12 +114,6 @@ func (r *Reader) blockReader(blockoffset, offset int64) (io.ReadCloser, error) {
 	return br, nil
 }
 
-var inodeBufPool = sync.Pool{
-	New: func() interface{} {
-		return bytes.NewBuffer(make([]byte, 32))
-	},
-}
-
 // TODO: define an inode type to use instead of interface{}?
 func (r *Reader) readInode(i Inode) (interface{}, error) {
 	blockoffset, offset := r.inode(i)
@@ -132,24 +126,25 @@ func (r *Reader) readInode(i Inode) (interface{}, error) {
 	// We need the inode type before we know which type to pass to binary.Read,
 	// so we need to read it twice:
 	var inodeType uint16
-	diBuf := inodeBufPool.Get().(*bytes.Buffer)
-	defer inodeBufPool.Put(diBuf)
-	if _, err := br.Read(diBuf.Bytes()[:2]); err != nil {
+	typeBuf := bytes.NewBuffer(make([]byte, 0, binary.Size(inodeType)))
+	if err := binary.Read(io.TeeReader(br, typeBuf), binary.LittleEndian, &inodeType); err != nil {
 		return nil, err
 	}
-	inodeType = binary.LittleEndian.Uint16(diBuf.Bytes())
-	if inodeType != dirType {
-		// TODO: remove once the other inode types support Unmarshal()
-		br = ioutil.NopCloser(io.MultiReader(bytes.NewReader(diBuf.Bytes()[:2]), br))
-	}
+	br = ioutil.NopCloser(io.MultiReader(typeBuf, br))
+
+	// var ih inodeHeader
+	// if err := binary.Read(br, binary.LittleEndian, &ih); err != nil {
+	// 	return err
+	// }
+	// //log.Printf("ih: %+v", ih)
+
 	//log.Printf("inode type: %v", inodeType)
 	switch inodeType {
 	case dirType:
 		var di dirInodeHeader
-		if _, err := io.ReadFull(br, diBuf.Bytes()[2:]); err != nil {
+		if err := binary.Read(br, binary.LittleEndian, &di); err != nil {
 			return nil, err
 		}
-		di.Unmarshal(diBuf.Bytes())
 		return di, nil
 
 	case fileType:
