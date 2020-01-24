@@ -695,8 +695,21 @@ name=root`)
 		return xerrors.Errorf("%v: %v", mkfs.Args, err)
 	}
 
+	districrypt := "districrypt"
 	var luksUUID string
 	if p.encrypt {
+		// Find an available (on the host) name for the crypt root device:
+		for {
+			if _, err := os.Stat("/dev/mapper/" + districrypt); err != nil {
+				if os.IsNotExist(err) {
+					break
+				}
+				return err
+			}
+			// stat succeeded, i.e. name in use
+			districrypt += "1"
+		}
+
 		luksFormat := exec.Command("sudo", "cryptsetup", "luksFormat", root, "-")
 		luksFormat.Stdin = strings.NewReader(p.cryptPassword)
 		luksFormat.Stdout = os.Stdout
@@ -710,7 +723,7 @@ name=root`)
 			return xerrors.Errorf("lsblk: %v", err)
 		}
 
-		luksOpen := exec.Command("sudo", "cryptsetup", "open", "--type=luks", "--key-file=-", root, "cryptroot")
+		luksOpen := exec.Command("sudo", "cryptsetup", "open", "--type=luks", "--key-file=-", root, districrypt)
 		luksOpen.Stdin = strings.NewReader(p.cryptPassword)
 		luksOpen.Stdout = os.Stdout
 		luksOpen.Stderr = os.Stderr
@@ -718,7 +731,7 @@ name=root`)
 			return xerrors.Errorf("%v: %v", luksOpen.Args, err)
 		}
 		defer func() {
-			luksClose := exec.Command("sudo", "cryptsetup", "close", "cryptroot")
+			luksClose := exec.Command("sudo", "cryptsetup", "close", districrypt)
 			luksClose.Stdout = os.Stdout
 			luksClose.Stderr = os.Stderr
 			if err := luksClose.Run(); err != nil {
@@ -726,7 +739,7 @@ name=root`)
 			}
 		}()
 
-		root = "/dev/mapper/cryptroot"
+		root = "/dev/mapper/" + districrypt
 	}
 
 	mkfs = exec.Command("sudo", "mkfs.ext4", root)
@@ -776,14 +789,14 @@ name=root`)
 	}
 
 	if p.encrypt {
-		crypttab := fmt.Sprintf("cryptroot UUID=%s none luks,discard\n", luksUUID)
+		crypttab := fmt.Sprintf(districrypt+" UUID=%s none luks,discard\n", luksUUID)
 		if err := ioutil.WriteFile("/mnt/etc/crypttab", []byte(crypttab), 0644); err != nil {
 			return err
 		}
 	}
 
 	{
-		fstab := "/dev/mapper/cryptroot / ext4 defaults,x-systemd.device-timeout=0 1 1\n"
+		fstab := "/dev/mapper/" + districrypt + " / ext4 defaults,x-systemd.device-timeout=0 1 1\n"
 		bootUUID, err := uuid(boot, "part")
 		if err != nil {
 			return xerrors.Errorf(`uuid(boot=%v, "part"): %v`, boot, err)
@@ -839,7 +852,7 @@ name=root`)
 		params = append(params, "console=tty1")
 	}
 	if p.encrypt {
-		params = append(params, "rd.luks=1 rd.luks.uuid="+luksUUID+" rd.luks.name="+luksUUID+"=cryptroot")
+		params = append(params, "rd.luks=1 rd.luks.uuid="+luksUUID+" rd.luks.name="+luksUUID+"="+districrypt)
 	}
 	if p.bootDebug {
 		params = append(params, "systemd.log_level=debug systemd.log_target=console")
