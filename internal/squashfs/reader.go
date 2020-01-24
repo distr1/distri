@@ -47,56 +47,69 @@ func (r *Reader) inode(i Inode) (blockoffset int64, offset int64) {
 }
 
 type blockReader struct {
-	r   io.ReadSeeker
-	buf *bytes.Buffer
+	r      io.ReadSeeker
+	lenBuf [2]byte
+	buf    []byte
+	i      int64
 
 	off int64 // TODO: remove this once using mmap
 }
 
 func (br *blockReader) Read(p []byte) (n int, err error) {
-	n, err = br.buf.Read(p)
-	//log.Printf("n = %v, err = %v", n, err)
-	if err == io.EOF {
-		br.buf.Reset()
-		var l uint16
-		if err := binary.Read(br.r, binary.LittleEndian, &l); err != nil {
+	if br.i >= int64(len(br.buf)) {
+		br.i = 0
+		if _, err := io.ReadFull(br.r, br.lenBuf[:]); err != nil {
 			return 0, err
 		}
+		l := binary.LittleEndian.Uint16(br.lenBuf[:])
 		//uncompressed := l&0x8000 > 0
 		l &= 0x7FFF
 		//log.Printf("block of len %d, uncompressed: %v", l, uncompressed)
-		if _, err := io.CopyN(br.buf, br.r, int64(l)); err != nil {
+		if int(l) > cap(br.buf) {
+			br.buf = make([]byte, int(l))
+		}
+		br.buf = br.buf[:l]
+		if _, err := io.ReadFull(br.r, br.buf); err != nil {
 			return 0, err
 		}
-		n, err = br.buf.Read(p)
 		//log.Printf("(retry) n = %v, err = %v", n, err)
 	}
+	n = copy(p, br.buf[br.i:])
+	br.i += int64(n)
 	return n, err
 }
 
 func (br *blockReader) Close() error {
-	metadataBufPool.Put(br.buf)
+	blockReaderPool.Put(br)
 	return nil
 }
 
-var metadataBufPool = sync.Pool{
+var blockReaderPool = sync.Pool{
 	New: func() interface{} {
-		return bytes.NewBuffer(make([]byte, 0, metadataBlockSize))
+		return &blockReader{
+			buf: make([]byte, 0, metadataBlockSize),
+		}
 	},
 }
 
 func (r *Reader) blockReader(blockoffset, offset int64) (io.ReadCloser, error) {
 	//log.Printf("blockoffset %v (%x), offset %v (%x)", blockoffset, blockoffset, offset, offset)
-	b := metadataBufPool.Get().(*bytes.Buffer)
-	b.Reset()
-	br := &blockReader{
-		r:   io.NewSectionReader(r.r, blockoffset, 5500*1024*1024), // TODO: correct limit? can we use IntMax
-		buf: b,
-		off: blockoffset,
-	}
+	br := blockReaderPool.Get().(*blockReader)
+	br.buf = br.buf[:0]
+	br.r = io.NewSectionReader(r.r, blockoffset, 5500*1024*1024) // TODO: correct limit? can we use IntMax
+	br.off = blockoffset
+	br.i = 0
 	//log.Printf("discarding %d bytes", offset)
-	if _, err := io.CopyN(ioutil.Discard, br, offset); err != nil {
-		return nil, err
+	for n := int64(0); n < offset; {
+		remaining := offset - n
+		if remaining > metadataBlockSize {
+			remaining = metadataBlockSize
+		}
+		nn, err := br.Read(br.buf[:remaining])
+		if err != nil {
+			return nil, err
+		}
+		n += int64(nn)
 	}
 	return br, nil
 }
