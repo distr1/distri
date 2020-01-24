@@ -849,14 +849,14 @@ name=root`)
 		return xerrors.Errorf("writing /etc/update-grub: %v", err)
 	}
 
-	install := exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-amd64-2.02-3/bin/grub-install", "--target=i386-pc", base)
+	install := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "/ro/grub2-amd64-*/bin/grub-install --target=i386-pc "+base)
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", install.Args, err)
 	}
 
-	install = exec.Command("sudo", "chroot", "/mnt", "/ro/grub2-efi-amd64-2.02-3/bin/grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--removable", "--no-nvram", "--boot-directory=/boot")
+	install = exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "/ro/grub2-efi-amd64-*/bin/grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --no-nvram --boot-directory=/boot")
 	install.Stderr = os.Stderr
 	install.Stdout = os.Stdout
 	if err := install.Run(); err != nil {
