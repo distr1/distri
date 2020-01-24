@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 var (
 	debug      = flag.Bool("debug", false, "enable debug mode: format error messages with additional detail")
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
+	memprofile = flag.String("memprofile", "", "path to store a memory profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
 	httpListen = flag.String("listen", "", "host:port to listen on for HTTP")
 )
@@ -81,13 +83,13 @@ func registerAtExit(fn func() error) {
 	atExit.fns = append(atExit.fns, fn)
 }
 
-func main() {
+func funcmain() error {
 	flag.Parse()
 
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
@@ -96,7 +98,7 @@ func main() {
 	if *tracefile != "" {
 		f, err := os.Create(*tracefile)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		trace.Start(f)
 		defer trace.Stop()
@@ -108,15 +110,16 @@ func main() {
 
 	if os.Args[0] == "/entrypoint" {
 		if err := entrypoint(); err != nil {
-			log.Fatal(err)
+			return err
 		}
-		os.Exit(0)
+		return nil
 	}
 
 	if os.Getpid() == 1 {
 		if err := pid1(); err != nil {
-			log.Fatal(err)
+			return err
 		}
+		return nil
 	}
 
 	type cmd struct {
@@ -208,19 +211,36 @@ func main() {
 		os.Exit(2)
 	}
 	if err := v.fn(args); err != nil {
-		if *debug {
-			fmt.Fprintf(os.Stderr, "%s: %+v\n", verb, err)
-		} else {
-			fmt.Fprintf(os.Stderr, "%s: %v\n", verb, err)
+		if *memprofile != "" {
+			f, err := os.Create(*memprofile)
+			if err != nil {
+				log.Fatal("could not create memory profile: ", err)
+			}
+			defer f.Close()
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				log.Fatal("could not write memory profile: ", err)
+			}
 		}
-		os.Exit(1)
+		if *debug {
+			return fmt.Errorf("%s: %+v\n", verb, err)
+		} else {
+			return fmt.Errorf("%s: %v\n", verb, err)
+		}
 	}
 
 	atomic.StoreUint32(&atExit.closed, 1)
 	for _, fn := range atExit.fns {
 		if err := fn(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			return err
 		}
+	}
+	return nil
+}
+
+func main() {
+	if err := funcmain(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
