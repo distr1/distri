@@ -1,0 +1,9 @@
+source: "https://mesa.freedesktop.org/archive/demos/mesa-demos-8.4.0.tar.bz2"
+hash: "01e99c94a0184e63e796728af89bfac559795fb2a0d6f506fa900455ca5fff7d"
+version: "8.4.0-1"
+
+cbuilder: <>
+
+# build dependencies:
+dep: "mesa"
+dep: "glew"
