@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0.tgz"
 hash: "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95"
-version: "2.1.0-3"
+version: "2.1.0-4"
 
 cbuilder: <>
 
@@ -35,4 +35,11 @@ build_step: <
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
+>
+
+install: <
+  symlink: <
+    oldname: "lib64"
+    newname: "lib"
+  >
 >
