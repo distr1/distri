@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/google/go-github/v27 v27.0.4
 	github.com/google/renameio v0.0.0-20181108174601-76365acd908f
-	github.com/jacobsa/fuse v0.0.0-20180417054321-cd3959611bcb
+	github.com/jacobsa/fuse v0.0.0-20191211084903-4898d79241b8
 	github.com/klauspost/compress v1.9.7 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -26,7 +26,5 @@ require (
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
 	google.golang.org/grpc v1.20.1
 )
-
-replace github.com/jacobsa/fuse => ./fuse
 
 go 1.13

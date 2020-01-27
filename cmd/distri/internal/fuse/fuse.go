@@ -1262,6 +1262,9 @@ func (fs *fuseFS) ListXattr(ctx context.Context, op *fuseops.ListXattrOp) error 
 		op.BytesRead += len(attr.FullName) + 1 /* NUL-terminated */
 	}
 	if op.BytesRead > len(op.Dst) {
+		if len(op.Dst) == 0 {
+			return nil
+		}
 		return syscall.ERANGE
 	}
 	copied := 0
@@ -1304,6 +1307,9 @@ func (fs *fuseFS) GetXattr(ctx context.Context, op *fuseops.GetXattrOp) error {
 	}
 	op.BytesRead = len(val)
 	if op.BytesRead > len(op.Dst) {
+		if len(op.Dst) == 0 {
+			return nil
+		}
 		return syscall.ERANGE
 	}
 	copy(op.Dst, val)
