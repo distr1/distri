@@ -28,3 +28,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/jacobsa/fuse => /home/michael/gohack/github.com/jacobsa/fuse

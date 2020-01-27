@@ -220,6 +220,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	if err != nil {
 		return nil, xerrors.Errorf("fuse.Mount: %v", err)
 	}
+	fs.mfs = mfs
 	join = mfs.Join
 
 	{
@@ -283,6 +284,7 @@ func (d *dirent) mode() os.FileMode {
 type dir struct {
 	entries []*dirent          // ReadDir requires deterministic iteration order
 	byName  map[string]*dirent // LookUpInode profits from fast access by name
+	inode   fuseops.InodeID
 }
 
 type squashfsReader struct {
@@ -301,6 +303,7 @@ type fuseFS struct {
 	ctl          string
 	autoDownload bool
 	repoSection  string // e.g. “debug” (default “pkg”)
+	mfs          *fuse.MountedFileSystem
 
 	mu       sync.Mutex
 	inodeCnt fuseops.InodeID
@@ -356,6 +359,7 @@ func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
 		}
 		dir := &dir{
 			byName: make(map[string]*dirent),
+			inode:  fs.allocateInodeLocked(),
 		}
 		fs.dirs[path] = dir
 		parentPath := filepath.Clean("/" + strings.Join(components[:idx+1], "/"))
@@ -365,7 +369,7 @@ func (fs *fuseFS) mkExchangeDirAll(mu sync.Locker, path string) {
 		}
 		dirent := &dirent{
 			name:  component,
-			inode: fs.allocateInodeLocked(),
+			inode: dir.inode,
 		}
 		parent.entries = append(parent.entries, dirent)
 		parent.byName[dirent.name] = dirent // might shadow an old symlink dirent
@@ -393,6 +397,9 @@ func (fs *fuseFS) symlink(dir *dir, target string) {
 				continue
 			}
 			dir.entries[idx] = nil // tombstone
+			if fs.mfs != nil {
+				fs.mfs.Conn.NotifyInvalEntry(dir.inode, entry.name)
+			}
 		}
 	}
 	dirent := &dirent{
@@ -629,6 +636,9 @@ func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 					// does not contain the file)
 					delete(dir.byName, dirent.name)
 					dir.entries[idx] = nil // tombstone
+					if fs.mfs != nil {
+						fs.mfs.Conn.NotifyInvalEntry(dir.inode, dirent.name)
+					}
 				}
 			}
 		}
@@ -863,8 +873,8 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 		// Cache virtual files for 1s, which is the default entry_timeout FUSE
 		// option value. Enabling caching speeds up building the i3 package from
 		// 46s to 18s. Larger values (e.g. never) have no effect.
-		op.Entry.AttributesExpiration = time.Now().Add(VirtualFileExpiration)
-		op.Entry.EntryExpiration = time.Now().Add(VirtualFileExpiration)
+		op.Entry.AttributesExpiration = time.Now().Add(1 * time.Minute) //VirtualFileExpiration)
+		op.Entry.EntryExpiration = time.Now().Add(1 * time.Minute)      //VirtualFileExpiration)
 
 		if squashfsInode == 1 { // root directory (e.g. /ro)
 			fs.mu.Lock()
