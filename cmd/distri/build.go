@@ -1640,6 +1640,7 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				cmd := "musl-gcc"
 				if b.Pkg == "musl" ||
 					b.Pkg == "gcc" ||
+					b.Pkg == "gcc-i686-host" ||
 					b.Pkg == "gcc-i686" ||
 					b.Pkg == "gcc-i686-c" {
 					cmd = "gcc"
