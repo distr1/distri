@@ -50,7 +50,7 @@ build_step: <
 build_step: <
   argv: "ln"
   argv: "-s"
-  argv: "/ro/glibc-amd64-2.27/out/include"
+  argv: "/ro/${DISTRI_RESOLVE:glibc}/out/include"
   argv: "/usr/include"
 >
 # TODO: the g++ search path needs to be changed.
@@ -81,17 +81,17 @@ build_step: <
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "CPATH=/ro/glibc-i686-host-amd64-2.27/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/glibc-i686-host-amd64-2.27/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1; true"
+  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1; true"
 >
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "cp /ro/glibc-i686-host-amd64-2.27/out/i686-pc-linux-gnu/lib/* i686-pc-linux-gnu/libgcc/"
+  argv: "cp /ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib/* i686-pc-linux-gnu/libgcc/"
 >
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "CPATH=/ro/glibc-i686-host-amd64-2.27/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/glibc-i686-host-amd64-2.27/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1"
+  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1"
 >
 
 build_step: <

@@ -51,7 +51,7 @@ build_step: <
 build_step: <
   argv: "ln"
   argv: "-s"
-  argv: "/ro/glibc-amd64-2.27/out/include"
+  argv: "/ro/${DISTRI_RESOLVE:glibc}/out/include"
   argv: "/usr/include"
 >
 # TODO: the g++ search path needs to be changed.
