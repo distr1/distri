@@ -591,7 +591,7 @@ func depLess(i, j string) bool {
 	vi := distri.ParseVersion(i)
 	vj := distri.ParseVersion(j)
 	if vi.Pkg != vj.Pkg {
-		return vi.Pkg >= vj.Pkg // gcc-libs before gcc
+		return false // keep order
 	}
 	return vi.DistriRevision >= vj.DistriRevision
 }
@@ -606,7 +606,7 @@ func (b *buildctx) env(deps []string, hermetic bool) []string {
 		pythonDirs    []string
 	)
 
-	sort.Slice(deps, func(i, j int) bool {
+	sort.SliceStable(deps, func(i, j int) bool {
 		return depLess(deps[i], deps[j])
 	})
 
@@ -671,7 +671,7 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 		pythonDirs []string
 	)
 
-	sort.Slice(deps, func(i, j int) bool {
+	sort.SliceStable(deps, func(i, j int) bool {
 		return depLess(deps[i], deps[j])
 	})
 
