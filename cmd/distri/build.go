@@ -848,6 +848,8 @@ func (b *buildctx) builderdeps(p *pb.Build) []string {
 		} else {
 			nativeDeps = append(nativeDeps,
 				"gcc-"+b.Arch,
+				"gcc-libs-"+b.Arch,
+				"glibc-"+b.Arch,
 				"binutils-"+b.Arch,
 				// Also make available the native compiler for generating code
 				// at build-time, which e.g. libx11 does (via autoconf’s
