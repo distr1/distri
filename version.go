@@ -69,23 +69,19 @@ func ParseVersion(filename string) PackageVersion {
 	filename = anyFullySpecified(filename)
 	var pkg, arch string
 	parts := strings.Split(filename, "-")
-	// Discard everything up to the architecture identifier, including the first
-	// minus-separated part following it (the upstream version).
-	for i := 1; i < len(parts); i++ {
-		if Architectures[parts[i]] {
-			// Skip all remaining architecture parts (e.g. in
-			// gcc-i686-amd64-8.2.0).
-			for Architectures[parts[i]] && i < len(parts) {
-				i++
-			}
-			pkg = strings.Join(parts[:i-1], "-")
-			if idx := strings.LastIndexByte(pkg, '/'); idx > -1 {
-				pkg = pkg[idx+1:]
-			}
-			arch = parts[i-1]
-			parts = parts[i:]
-			break
+	// Locate the last architecture specifier. Any previous ones might be part
+	// of the package name (e.g. glibc-i686-host).
+	for i := len(parts) - 1; i > 0; i-- {
+		if !Architectures[parts[i]] {
+			continue
 		}
+		pkg = strings.Join(parts[:i], "-")
+		if idx := strings.LastIndexByte(pkg, '/'); idx > -1 {
+			pkg = pkg[idx+1:]
+		}
+		arch = parts[i]
+		parts = parts[i+1:]
+		break
 	}
 	if len(parts) == 0 {
 		return PackageVersion{Pkg: pkg, Arch: arch}

@@ -38,6 +38,11 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 		},
 
 		{
+			filename: "glibc-i686-host-amd64-2.27-3",
+			want:     PackageVersion{Pkg: "glibc-i686-host", Arch: "amd64", Upstream: "2.27", DistriRevision: 3},
+		},
+
+		{
 			filename: "less-amd64-530-2",
 			want:     PackageVersion{Pkg: "less", Arch: "amd64", Upstream: "530", DistriRevision: 2},
 		},
@@ -75,7 +80,7 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 		t.Run(tt.filename, func(t *testing.T) {
 			got := ParseVersion(tt.filename)
 			if got != tt.want {
-				t.Fatalf("extractVersion(%v) = %v, want %v", tt.filename, got, tt.want)
+				t.Fatalf("extractVersion(%v) = %#v, want %#v", tt.filename, got, tt.want)
 			}
 		})
 	}
