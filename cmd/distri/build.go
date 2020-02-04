@@ -560,7 +560,7 @@ func (b *buildctx) fillSubstituteCache(deps []string) {
 		v := distri.ParseVersion(dep)
 		if cur, exists := cache[v.Pkg]; !exists || distri.PackageRevisionLess(cur, dep) {
 			cache[v.Pkg] = dep
-			cache[v.Pkg+"-"+b.Arch] = dep
+			cache[v.Pkg+"-"+v.Arch] = dep
 		}
 	}
 	b.substituteCache = cache
