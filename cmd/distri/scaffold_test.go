@@ -1,8 +1,17 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/url"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
+
+	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/env"
+	"github.com/google/go-cmp/cmp"
 )
 
 func mustParse(u string) *url.URL {
@@ -53,5 +62,74 @@ func TestNameFromURL(t *testing.T) {
 				t.Errorf("unexpected version for %s: got %q, want %q", tt.URL, got, want)
 			}
 		})
+	}
+}
+
+func TestNewFile(t *testing.T) {
+	c := scaffoldctx{
+		ScaffoldType: scaffoldC,
+		SourceURL:    "sourceurl",
+		Name:         "distri-non-existant",
+		Version:      "upstreamversion",
+	}
+	got := func() string {
+		b, err := c.buildFile("hash")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}()
+	want := `source: "sourceurl"
+hash: "hash"
+version: "upstreamversion-1"
+
+cbuilder: {}
+
+# build dependencies:
+`
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatalf("scaffold: unexpected build.textproto file: diff (-want +got):\n%s", diff)
+	}
+}
+
+func TestExistingFile(t *testing.T) {
+	c := scaffoldctx{
+		ScaffoldType: scaffoldC,
+		SourceURL:    "sourceurl",
+		Name:         "gcc",
+		Version:      "upstreamversion",
+	}
+	got := func() string {
+		b, err := c.buildFile("hash")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}()
+	want := func() string {
+		b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", "gcc", "build.textproto"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := string(b)
+		want = regexp.MustCompile(`(?m)^source: "[^"]+"$`).
+			ReplaceAllString(want, `source: "sourceurl"`)
+		want = regexp.MustCompile(`(?m)^hash: "[^"]+"$`).
+			ReplaceAllString(want, `hash: "hash"`)
+		want = regexp.MustCompile(`(?m)^version: "[^"]+"$`).
+			ReplaceAllStringFunc(want, func(in string) string {
+				in = strings.TrimPrefix(in, `version: `)
+				in, err = strconv.Unquote(in)
+				if err != nil {
+					t.Fatal(err)
+				}
+				pv := distri.ParseVersion(in)
+				pv.DistriRevision++
+				return `version: "upstreamversion-` + strconv.FormatInt(pv.DistriRevision, 10) + `"`
+			})
+		return want
+	}()
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatalf("scaffold: unexpected build.textproto file: diff (-want +got):\n%s", diff)
 	}
 }

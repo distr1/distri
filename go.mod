@@ -10,9 +10,9 @@ require (
 	github.com/jacobsa/fuse v0.0.0-20191211084903-4898d79241b8
 	github.com/klauspost/compress v1.9.7 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lpar/gzipped v1.1.0
 	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec
+	github.com/protocolbuffers/txtpbfmt v0.0.0-20191018194151-ab9b9b21328a
 	github.com/s-urbaniak/uevent v1.0.0
 	golang.org/x/exp v0.0.0-20190221220918-438050ddec5e
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect

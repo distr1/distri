@@ -12,12 +12,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"github.com/protocolbuffers/txtpbfmt/ast"
+	"github.com/protocolbuffers/txtpbfmt/parser"
 	"golang.org/x/xerrors"
 )
 
@@ -34,7 +38,7 @@ var buildTmpl = template.Must(template.New("").Parse(`source: "{{.Source}}"
 hash: "{{.Hash}}"
 version: "{{.Version}}-1"
 
-{{.Builder}}: <>
+{{.Builder}}: {}
 
 # build dependencies:
 `))
@@ -76,6 +80,79 @@ type scaffoldctx struct {
 	Version      string // e.g. “8.2.0”
 }
 
+func (c *scaffoldctx) buildFile(hash string) ([]byte, error) {
+	buildFilePath := filepath.Join(env.DistriRoot, "pkgs", c.Name, "build.textproto")
+	existing, err := ioutil.ReadFile(buildFilePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+		builder := "cbuilder"
+		switch c.ScaffoldType {
+		case scaffoldPerl:
+			builder = "perlbuilder"
+		case scaffoldGomod:
+			builder = "gomodbuilder"
+		}
+		var buf bytes.Buffer
+		if err := buildTmpl.Execute(&buf, struct {
+			Source  string
+			Hash    string
+			Version string
+			Builder string
+		}{
+			Source:  c.SourceURL,
+			Hash:    hash,
+			Version: c.Version,
+			Builder: builder,
+		}); err != nil {
+			return nil, err
+		}
+		b, err := parser.Format(buf.Bytes())
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	}
+	nodes, err := parser.Parse(existing)
+	if err != nil {
+		return nil, err
+	}
+
+	replaceStringVal := func(nodes []*ast.Node, repl func(string) string) error {
+		if got, want := len(nodes), 1; got != want {
+			return fmt.Errorf("malformed build file: %s: got %d version keys, want %d", buildFilePath, got, want)
+		}
+		values := nodes[0].Values
+		if got, want := len(values), 1; got != want {
+			return fmt.Errorf("malformed build file: %s: got %d Values, want %d", buildFilePath, got, want)
+		}
+		values[0].Value = strconv.QuoteToASCII(repl(values[0].Value))
+		return nil
+	}
+	path := func(last string) []*ast.Node { return ast.GetFromPath(nodes, []string{last}) }
+	if err := replaceStringVal(path("version"), func(val string) string {
+		val, err := strconv.Unquote(val)
+		if err != nil {
+			return val
+		}
+		pv := distri.ParseVersion(val)
+		pv.DistriRevision++
+		pv.Upstream = c.Version
+		return pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10)
+	}); err != nil {
+		return nil, err
+	}
+	if err := replaceStringVal(path("source"), func(string) string { return c.SourceURL }); err != nil {
+		return nil, err
+	}
+	if err := replaceStringVal(path("hash"), func(string) string { return hash }); err != nil {
+		return nil, err
+	}
+
+	return []byte(parser.Pretty(nodes, 0)), nil
+}
+
 func (c *scaffoldctx) scaffold1() error {
 	b := &buildctx{
 		Proto: &pb.Build{
@@ -107,25 +184,8 @@ func (c *scaffoldctx) scaffold1() error {
 		return err
 	}
 
-	builder := "cbuilder"
-	switch c.ScaffoldType {
-	case scaffoldPerl:
-		builder = "perlbuilder"
-	case scaffoldGomod:
-		builder = "gomodbuilder"
-	}
-	var buf bytes.Buffer
-	if err := buildTmpl.Execute(&buf, struct {
-		Source  string
-		Hash    string
-		Version string
-		Builder string
-	}{
-		Source:  c.SourceURL,
-		Hash:    fmt.Sprintf("%x", h.Sum(nil)),
-		Version: c.Version,
-		Builder: builder,
-	}); err != nil {
+	buf, err := c.buildFile(fmt.Sprintf("%x", h.Sum(nil)))
+	if err != nil {
 		return err
 	}
 
@@ -133,7 +193,7 @@ func (c *scaffoldctx) scaffold1() error {
 	if err := os.MkdirAll(pkgdir, 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(pkgdir, "build.textproto"), buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(pkgdir, "build.textproto"), buf, 0644); err != nil {
 		return err
 	}
 	return nil
