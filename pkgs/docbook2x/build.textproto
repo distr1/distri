@@ -7,4 +7,4 @@ dep: "perl"
 dep: "perl-XML-SAX"
 dep: "libxslt"
 
-cbuilder: <>
+cbuilder: {}

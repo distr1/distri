@@ -2,8 +2,8 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXau-1.0.8.tar.b
 hash: "fdd477320aeb5cdd67272838722d6b7d544887dfe7de46e1e7cc0c27c2bea4f2"
 version: "1.0.8-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "xorgproto"
-runtime_dep: "xorgproto" # TODO: remove once pkgconfig detection works
+runtime_dep: "xorgproto"  # TODO: remove once pkgconfig detection works

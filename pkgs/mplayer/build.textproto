@@ -2,9 +2,9 @@ source: "https://t.zekjur.net/mplayer-export-2019-02-19%2Bffmpeg.tar.bz2"
 hash: "ac054bad4754a2ee4e185ac94598906562aa4a30eaf63ff02b899e22f9756ac5"
 version: "0.2019-02-19-9"
 
-cbuilder: <
-#  extra_configure_flag: "--without-bash-malloc"
->
+cbuilder: {
+  #  extra_configure_flag: "--without-bash-malloc"
+}
 
 dep: "yasm"
 dep: "pulseaudio"
@@ -13,29 +13,29 @@ dep: "mesa"
 dep: "freetype"
 dep: "fontconfig"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "./configure"
   argv: "--prefix=${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
 # TODO: destdir
-build_step: <
+build_step: {
   argv: "make"
   argv: "install-mplayer"
   argv: "V=1"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}

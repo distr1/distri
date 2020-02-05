@@ -2,7 +2,7 @@ source: "https://github.com/dunst-project/dunst/archive/v1.4.1.tar.gz"
 hash: "1563fe8c9eaf3307a3d7dbed240521f79e8415f136497030512c69713118bdfe"
 version: "1.4.1-2"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "dbus"
@@ -13,14 +13,14 @@ dep: "libxrandr"
 dep: "libxscrnsaver"
 dep: "pango"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "make install DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX}"
->
+}

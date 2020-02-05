@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/driver/xf86-video-vesa
 hash: "bf443c94d7bf6cd4e248f8a3147f4647be04dc4c80250d9405006263bbdee38c"
 version: "2.4.0-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "xorg-server"

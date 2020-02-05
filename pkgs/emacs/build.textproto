@@ -2,21 +2,21 @@ source: "https://mirror.kumi.systems/gnu/emacs/emacs-26.1.tar.xz"
 hash: "1cf4fc240cd77c25309d15e18593789c8dbfba5c2b44d8f77c886542300fd32c"
 version: "26.1-10"
 
-cbuilder: <
-  extra_configure_flag: "--with-gnutls=no" # TODO: why doesn’t configure locate gnutls?
+cbuilder: {
+  extra_configure_flag: "--with-gnutls=no"  # TODO: why doesn’t configure locate gnutls?
   extra_configure_flag: "--with-x-toolkit=gtk3"
->
+}
 
 # build dependencies:
 dep: "gnutls"
 dep: "ncurses"
 dep: "tar"
-dep: "gnupg" # only so that it ends up in PATH
-dep: "git" # only so that it ends up in PATH
+dep: "gnupg"  # only so that it ends up in PATH
+dep: "git"  # only so that it ends up in PATH
 dep: "gzip"
 dep: "libx11"
 dep: "gtk+"
-dep: "mesa" # TODO: should be pulled in via epoxy via gtk+
+dep: "mesa"  # TODO: should be pulled in via epoxy via gtk+
 dep: "shared-mime-info"
 dep: "systemd"
 dep: "libxpm"
@@ -26,9 +26,9 @@ dep: "cairo"
 dep: "libxft"
 dep: "freetype"
 
-runtime_dep: "bash" # for M-x shell
-runtime_dep: "coreutils" # for M-x dired
+runtime_dep: "bash"  # for M-x shell
+runtime_dep: "coreutils"  # for M-x dired
 runtime_dep: "ncurses"
-runtime_dep: "gnutls" # for gnutls-cli
-runtime_dep: "gnupg" # used by package.el
-runtime_dep: "git" # used by package.el
+runtime_dep: "gnutls"  # for gnutls-cli
+runtime_dep: "gnupg"  # used by package.el
+runtime_dep: "git"  # used by package.el

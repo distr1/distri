@@ -2,6 +2,6 @@ source: "https://ftp.gnu.org/gnu/which/which-2.21.tar.gz"
 hash: "f4a245b94124b377d8b49646bf421f9155d36aa7614b6ebf83705d3ffc76eaad"
 version: "2.21-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:

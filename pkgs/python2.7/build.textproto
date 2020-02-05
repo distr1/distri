@@ -2,7 +2,7 @@ source: "https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tar.xz"
 hash: "22d9b1ac5b26135ad2b8c2901a9413537e08749a753356ee913c84dbd2df5574"
 version: "2.7.15-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # TODO: file upstream bug: pkg-config invocation does not ignore CPATH
 cherry_pick: "http://t.zekjur.net/py.patch"
@@ -13,35 +13,35 @@ dep: "zlib"
 dep: "openssl"
 dep: "libffi"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--with-openssl=/ro/${DISTRI_RESOLVE:openssl}/out"
-  argv: "--enable-shared" # for building e.g. libxml2’s Python bindings
-  argv: "ac_cv_posix_semaphores_enabled=yes" # for multiprocessing
->
+  argv: "--enable-shared"  # for building e.g. libxml2’s Python bindings
+  argv: "ac_cv_posix_semaphores_enabled=yes"  # for multiprocessing
+}
 
 # https://bugs.python.org/issue34823
-build_step: <
+build_step: {
   argv: "ln"
   argv: "-s"
   argv: "/ro/${DISTRI_RESOLVE:libffi}/out/lib64"
   argv: "/usr/"
->
+}
 
-build_step: <
+build_step: {
   argv: "sed"
   argv: "-i"
   argv: "s,^#zlib,zlib,g"
   argv: "Modules/Setup"
->
+}
 
-build_step: <
+build_step: {
   argv: "sed"
   argv: "-i"
   argv: "s,^#_sha,_sha,g"
   argv: "Modules/Setup"
->
+}
 
 # # doesn’t help for sha224 :/
 # build_step: <
@@ -51,21 +51,21 @@ build_step: <
 #   argv: "Modules/Setup"
 # >
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "make -j8"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} make install DESTDIR=${DISTRI_DESTDIR}"
->
+}
 
 # python3 is the default python on distri
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "rm ${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin/python"
->
+}

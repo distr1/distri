@@ -2,7 +2,7 @@ source: "http://dist.schmorp.de/rxvt-unicode/rxvt-unicode-9.22.tar.bz2"
 hash: "e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd"
 version: "9.22-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "perl"
@@ -10,24 +10,24 @@ dep: "libx11"
 dep: "libxrender"
 dep: "fontconfig"
 dep: "libxft"
-dep: "ncurses" # --with-terminfo option needs tic
+dep: "ncurses"  # --with-terminfo option needs tic
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--enable-xft"
   argv: "--with-terminfo=${DISTRI_DESTDIR}${DISTRI_PREFIX}/share/terminfo"
   argv: "--enable-256-color"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "TERMINFO=${DISTRI_DESTDIR}${DISTRI_PREFIX}/share/terminfo make install DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX}"
->
+}

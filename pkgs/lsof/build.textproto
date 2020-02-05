@@ -2,33 +2,33 @@ source: "https://github.com/lsof-org/lsof/archive/4.93.2.tar.gz"
 hash: "3df912bd966fc24dc73ddea3e36a61d79270b21b085936a4caabca56e5b486a2"
 version: "4.93.2-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "perl"
 dep: "which"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "./Configure -n linux"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
->
+}
 
-build_step: <
+build_step: {
   # TODO: get rid of /bin/sh once build_step supports environment variables
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR}; BIN=${DESTDIR}${DISTRI_PREFIX}/bin; DOC=${DESTDIR}${DISTRI_PREFIX}/share/man/man8; mkdir -p ${BIN} ${DOC} && install -m 755 lsof ${BIN} && install -m 644 Lsof.8 ${DOC}/lsof.8"
->
+}
 

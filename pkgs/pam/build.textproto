@@ -7,15 +7,15 @@ version: "1.3.1-10"
 # TODO: should this be a per-package exchange dir instead, i.e. are modules API-specific?
 cherry_pick: "default_module_path.patch"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--includedir=${DISTRI_PREFIX}/include/security"
   extra_configure_flag: "--enable-static"
   extra_configure_flag: "--enable-shared"
->
+}
 
-install: <
-  chmod: <
+install: {
+  chmod: {
     setuid: true
     name: "sbin/unix_chkpwd"
-  >
->
+  }
+}

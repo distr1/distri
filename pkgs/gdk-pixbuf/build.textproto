@@ -2,7 +2,7 @@ source: "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38
 hash: "dd50973c7757bcde15de6bcd3a6d462a445efd552604ae6435a0532fbbadae47"
 version: "2.38.0-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "meson"
@@ -20,33 +20,33 @@ dep: "glib"
 # e.g. gdk-pixbuf-csource requires MIME data to load PNG files
 runtime_dep: "shared-mime-info"
 
-build_step: <
+build_step: {
   argv: "mkdir"
   argv: "-p"
   argv: "/usr/share"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
->
+}
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "ln -s /ro/${DISTRI_FULLNAME}/ro/${DISTRI_FULLNAME}/out/* /ro/${DISTRI_FULLNAME}/out/ && ${DISTRI_PREFIX}/bin/gdk-pixbuf-query-loaders > ${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
->
+}

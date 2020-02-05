@@ -2,12 +2,12 @@ source: "distriroot://distri1-1.tar.gz"
 hash: ""
 version: "native-20"
 
-gobuilder: <
+gobuilder: {
   install: "./cmd/distri ./cmd/minitrd"
   import_path: "distri1"
   # Used as /init before the dynamic linker is available:
   go_env: "CGO_ENABLED=0"
->
+}
 
 # build dependencies:
 dep: "go-cloud.google.com-go"

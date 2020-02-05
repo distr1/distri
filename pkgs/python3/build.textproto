@@ -2,7 +2,7 @@ source: "https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz"
 hash: "0382996d1ee6aafe59763426cf0139ffebe36984474d0ec4126dd1c40a8b3549"
 version: "3.7.0-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # TODO: file upstream bug: pkg-config invocation does not ignore CPATH
 cherry_pick: "http://t.zekjur.net/py.patch"
@@ -12,41 +12,41 @@ dep: "zlib"
 dep: "openssl"
 dep: "libffi"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--with-openssl=/ro/${DISTRI_RESOLVE:openssl}/out"
-  argv: "--enable-shared" # for building e.g. libxml2’s Python bindings
->
+  argv: "--enable-shared"  # for building e.g. libxml2’s Python bindings
+}
 
 # https://bugs.python.org/issue34823
-build_step: <
+build_step: {
   argv: "ln"
   argv: "-s"
   argv: "/ro/${DISTRI_RESOLVE:libffi}/out/lib64"
   argv: "/usr/"
->
+}
 
-build_step: <
+build_step: {
   argv: "sed"
   argv: "-i"
   argv: "s,^#zlib,zlib,g"
   argv: "Modules/Setup"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "make -j8"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} make install DESTDIR=${DISTRI_DESTDIR}"
->
+}
 
-install: <
-  symlink: < oldname: "python3" newname: "bin/python" >
-  symlink: < oldname: "python3-config" newname: "bin/python-config" >
->
+install: {
+  symlink: { oldname: "python3" newname: "bin/python" }
+  symlink: { oldname: "python3-config" newname: "bin/python-config" }
+}

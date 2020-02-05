@@ -8,9 +8,9 @@ cherry_pick: "dm-uuid.patch"
 cherry_pick: "gcc_s.patch"
 cherry_pick: "elf-interp.patch"
 
-cbuilder: <
+cbuilder: {
   copy_to_builddir: true
->
+}
 
 # build dependencies:
 dep: "kmod"
@@ -25,4 +25,4 @@ runtime_dep: "pigz"
 runtime_dep: "sed"
 runtime_dep: "grep"
 runtime_dep: "binutils"  # for strip(1) at generate-time
-runtime_dep: "coreutils" # for sleep(1) at init-time
+runtime_dep: "coreutils"  # for sleep(1) at init-time

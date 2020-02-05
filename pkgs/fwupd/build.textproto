@@ -2,7 +2,7 @@ source: "https://github.com/hughsie/fwupd/archive/1.2.1.tar.gz"
 hash: "7ff2bb6979a7f7dbecf03e5e817d3835a698d5114a0c780a3c8de64a2fe4ae63"
 version: "1.2.1-6"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "meson"
@@ -33,33 +33,33 @@ dep: "polkit"
 runtime_dep: "shared-mime-info"
 
 # po/make-images requires a working fontconfig:
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -r /ro/${DISTRI_RESOLVE:fontconfig}/etc/fonts /etc/"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "sed -i 's,/usr/share/fonts,/ro/${DISTRI_RESOLVE:dejavu-fonts-ttf}/out/share/fonts/,g' /etc/fonts/fonts.conf"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "meson --prefix=${DISTRI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${DISTRI_SOURCEDIR} -Dgpg=false -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/${DISTRI_RESOLVE:gnu-efi}/out/lib -Dsystemdunitdir=${DISTRI_PREFIX}/lib/systemd/system"
->
+}
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "ninja -v"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}

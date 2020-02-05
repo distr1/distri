@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/google/go-querystring@v1.0.0"
 hash: "d3c30ee1cb7ec7760ee40992815d9cf0259320b359a70b233575246798b6636e"
 version: "v1.0.0-2"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

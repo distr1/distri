@@ -2,22 +2,22 @@ source: "https://data.iana.org/time-zones/releases/tzdb-2018i.tar.lz"
 hash: "1b7f91de728295d6363791cc728e4ea18af8493e07d947a6c2f217751294016a"
 version: "2018i-5"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "USRDIR="
   argv: "TOPDIR=${DISTRI_PREFIX}"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}

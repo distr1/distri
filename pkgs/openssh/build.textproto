@@ -11,13 +11,13 @@ dep: "openssl"
 dep: "pam"
 dep: "xauth"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "OPENSSL_SEEDS_ITSELF=yes"
   extra_configure_flag: "--sysconfdir=/etc/ssh"
   extra_configure_flag: "--with-privsep-path=${DISTRI_PREFIX}/var/empty"
   extra_configure_flag: "--with-pam"
->
+}
 
-install: <
+install: {
   systemd_unit: "${DISTRI_SOURCEDIR}/ssh.service"
->
+}

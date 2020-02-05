@@ -2,7 +2,7 @@ source: "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.5.
 hash: "fa4e57452b8843f4a70f70fd435c746ae2ace813250f8c65f977db5d7914baae"
 version: "1.5.1-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "freetype"

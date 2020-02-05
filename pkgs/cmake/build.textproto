@@ -2,12 +2,12 @@ source: "https://cmake.org/files/v3.12/cmake-3.12.2.tar.gz"
 hash: "0f97485799e51a7070cc11494f3e02349b0fc3a24cc12b082e737bf67a0581a4"
 version: "3.12.2-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "ncurses"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--parallel=8"
@@ -15,17 +15,17 @@ build_step: <
   argv: "-DBUILD_CursesDialog=ON"
   argv: "-DCURSES_LIBRARY=/ro/lib/libncurses.so"
   argv: "-DCMAKE_VERBOSE_MAKEFILE=ON"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
->
+}

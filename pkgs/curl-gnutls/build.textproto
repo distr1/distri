@@ -2,17 +2,17 @@ source: "https://curl.haxx.se/download/curl-7.61.1.tar.bz2"
 hash: "a308377dbc9a16b2e994abd55455e5f9edca4e31666f8f8fcfe7a1a4aea419b9"
 version: "7.61.1-4"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--with-ca-path=/etc/ssl/certs"
   extra_configure_flag: "--with-gnutls"
->
+}
 
 # build dependencies:
 dep: "gnutls"
 
 runtime_dep: "ca-certificates"
 
-install: <
+install: {
   # This package is provided for compatibility with closed-source
   # software that links against libcurl-gnutls.so, so there will
   # not be any static linking.
@@ -23,18 +23,18 @@ install: <
   delete: "lib/libcurl.so"
   delete: "lib/libcurl.so.4"
 
-  symlink: <
+  symlink: {
     oldname: "libcurl-gnutls.so.4.5.0"
     newname: "lib/libcurl-gnutls.so"
-  >
+  }
 
-  symlink: <
+  symlink: {
     oldname: "libcurl-gnutls.so.4.5.0"
     newname: "lib/libcurl-gnutls.so.4"
-  >
+  }
 
-  rename: <
+  rename: {
     oldname: "lib/libcurl.so.4.5.0"
     newname: "lib/libcurl-gnutls.so.4.5.0"
-  >
->
+  }
+}

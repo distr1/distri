@@ -3,29 +3,29 @@ version: "3-15"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: ""
->
+}
 
 # The following packages will be installed on ALL distri machines:
-runtime_dep: "bash"      # shell, to install more packages, and run wrapper scripts
-runtime_dep: "coreutils" # for minimal introspection (pulled in by distri1 anyway)
+runtime_dep: "bash"  # shell, to install more packages, and run wrapper scripts
+runtime_dep: "coreutils"  # for minimal introspection (pulled in by distri1 anyway)
 runtime_dep: "distri1"
 
 # TODO: split out into base-boot once pack supports images that don’t need
 # booting (e.g. docker)
-runtime_dep: "systemd"   # for booting
-runtime_dep: "dbus"      # for e.g. systemd’s timedatectl
-runtime_dep: "grub2"     # for BIOS boot
-runtime_dep: "grub2-efi" # for UEFI boot
+runtime_dep: "systemd"  # for booting
+runtime_dep: "dbus"  # for e.g. systemd’s timedatectl
+runtime_dep: "grub2"  # for BIOS boot
+runtime_dep: "grub2-efi"  # for UEFI boot
 
 # For creating an initramfs:
 runtime_dep: "dracut"
 runtime_dep: "linux"
 runtime_dep: "linux-firmware"
-runtime_dep: "cryptsetup" # for pack -encrypt
+runtime_dep: "cryptsetup"  # for pack -encrypt
 
 # TODO: remove once pack no longer unconditionally enables units:
 runtime_dep: "containerd"

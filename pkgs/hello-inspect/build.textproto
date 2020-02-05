@@ -29,8 +29,8 @@ dep: "libcap"
 dep: "patchelf"
 dep: "systemd"
 
-build_step: <
+build_step: {
   argv: "/ro/bin/sh"
   argv: "-i"
->
+}
 

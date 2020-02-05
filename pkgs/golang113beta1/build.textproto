@@ -2,25 +2,25 @@ source: "https://dl.google.com/go/go1.13beta1.src.tar.gz"
 hash: "e8a7c504cd6775b8a6af101158b8871455918c9a61162f0180f7a9f118dc4102"
 version: "1.13-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "golang14"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cd src && TMPDIR=/tmp GOROOT_FINAL=${DISTRI_PREFIX} ./make.bash"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}; mkdir -p $d/bin; cp -r bin src pkg $d/"  
->
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}; mkdir -p $d/bin; cp -r bin src pkg $d/"
+}

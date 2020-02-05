@@ -2,6 +2,6 @@ source: "https://www.cabextract.org.uk/cabextract-1.9.1.tar.gz"
 hash: "afc253673c8ef316b4d5c29cc4aa8445844bee14afffbe092ee9469405851ca7"
 version: "1.9.1-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:

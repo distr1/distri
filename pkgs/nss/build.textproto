@@ -4,7 +4,7 @@ version: "3.39-3"
 
 cherry_pick: "nss-3.39-standalone-1.patch"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "perl"
@@ -13,58 +13,58 @@ dep: "sqlite3"
 
 dep: "strace"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
 # TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
-build_step: <
+build_step: {
   argv: "rm"
   argv: "/usr/include"
->
-build_step: <
+}
+build_step: {
   argv: "ln"
   argv: "-s"
   argv: "/ro/${DISTRI_RESOLVE:glibc}/out/include"
   argv: "/usr/include"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "nss"
   argv: "USE_64=1"
   argv: "NSPR_INCLUDE_DIR=/ro/${DISTRI_RESOLVE:nspr}/out/include/nspr/"
-  argv: "CROSS_COMPILE=1" # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
-  argv: "NSS_USE_SYSTEM_SQLITE=1" # prevent linking errors in e.g. networkmanager
+  argv: "CROSS_COMPILE=1"  # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
+  argv: "NSS_USE_SYSTEM_SQLITE=1"  # prevent linking errors in e.g. networkmanager
   # TODO: USE_SYSTEM_ZLIB=1
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib; mkdir -p $d; install -m755 dist/Linux*/lib/*.{so,a} $d"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/include; mkdir -p $d; cp -RL dist/{public,private}/nss/* $d"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   # TODO: why not install all binaries? LFS only choses these 3
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; install -m755 dist/Linux*/bin/{certutil,nss-config,pk12util} $d"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/pkgconfig; mkdir -p $d; install -m644 dist/Linux*/lib/pkgconfig/nss.pc $d"
->
+}

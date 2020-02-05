@@ -2,7 +2,7 @@ source: "https://download.qemu.org/qemu-4.2.0.tar.xz"
 hash: "d3481d4108ce211a053ef15be69af1bdd9dde1510fda80d92be0f6c3e98768f0"
 version: "4.2.0-5"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "python3"

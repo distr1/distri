@@ -2,7 +2,7 @@ source: "https://github.com/PaulStoffregen/teensy_loader_cli/archive/eb61aa1a482
 hash: "3f30431ac0bb24bbc7646e03abb287b51bd78b3d9f1121550fe87648aa829a10"
 version: "2.1+g20180927-4"
 
-cbuilder: <>
+cbuilder: {}
 
 cherry_pick: "udev-rules.patch"
 
@@ -10,28 +10,28 @@ cherry_pick: "udev-rules.patch"
 dep: "libusb"
 dep: "libusb-compat"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d && cp teensy_loader_cli $d/"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/etc/udev/rules.d; mkdir -p $d && cp 49-teensy.rules $d/"
->
+}

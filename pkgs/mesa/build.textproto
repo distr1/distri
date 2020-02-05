@@ -2,10 +2,10 @@ source: "https://mesa.freedesktop.org/archive/mesa-18.2.0.tar.xz"
 hash: "22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce"
 version: "18.2.0-3"
 
-cbuilder: <
-  extra_configure_flag: "--disable-llvm" # TODO
-  extra_configure_flag: "--with-gallium-drivers=" # TODO
->
+cbuilder: {
+  extra_configure_flag: "--disable-llvm"  # TODO
+  extra_configure_flag: "--with-gallium-drivers="  # TODO
+}
 
 # build dependencies:
 dep: "zlib"
@@ -19,22 +19,22 @@ dep: "libxrandr"
 dep: "expat"
 dep: "python3"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
-  argv: "--disable-llvm" # TODO
-  argv: "--with-gallium-drivers=" # TODO
->
+  argv: "--disable-llvm"  # TODO
+  argv: "--with-gallium-drivers="  # TODO
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
->
+}

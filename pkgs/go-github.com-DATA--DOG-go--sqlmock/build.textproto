@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/DATA-DOG/go-sqlmock@v1.3.3"
 hash: "b4f1c63689aa134d950cce62a31d82cb46fd2dae71a9101190b70b665f6d22a5"
 version: "v1.3.3-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

@@ -2,28 +2,28 @@ source: "https://www.cpan.org/src/5.0/perl-5.28.0.tar.gz"
 hash: "7e929f64d4cb0e9d1159d4a59fc89394e27fa1f7004d0836ca0d514685406ea8"
 version: "5.28.0-3"
 
-cbuilder: <>
+cbuilder: {}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "./Configure -ds -e -Dprefix=${DISTRI_PREFIX} -Dcc=gcc"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
->
+}
 
-build_step: <
+build_step: {
   # TODO: get rid of /bin/sh once build_step supports environment variables
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} make install"
->
+}

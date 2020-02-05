@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/kylelemons/godebug@v1.1.0"
 hash: "d76ecf770ae2f971165be47b4ee543ede44b7c7e0fc28d3ee0f8ea75ef88ec8c"
 version: "v1.1.0-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

@@ -6,4 +6,4 @@ version: "2.0.5-3"
 dep: "iconv"
 dep: "libunistring"
 
-cbuilder: <>
+cbuilder: {}

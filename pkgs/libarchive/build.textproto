@@ -2,6 +2,6 @@ source: "https://www.libarchive.org/downloads/libarchive-3.3.3.tar.gz"
 hash: "ba7eb1781c9fbbae178c4c6bad1c6eb08edab9a1496c64833d1715d022b30e2e"
 version: "3.3.3-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:

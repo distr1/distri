@@ -2,7 +2,7 @@ source: "https://cpan.metacpan.org/authors/id/O/OA/OALDERS/HTTP-Cookies-6.04.tar
 hash: "0cc7f079079dcad8293fea36875ef58dd1bfd75ce1a6c244cd73ed9523eb13d4"
 version: "6.04-3"
 
-perlbuilder: <>
+perlbuilder: {}
 
 # build dependencies:
 dep: "perl-HTTP-Date"

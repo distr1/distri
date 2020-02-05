@@ -2,33 +2,33 @@ source: "https://download.gnome.org/sources/at-spi2-atk/2.30/at-spi2-atk-2.30.0.
 hash: "e2e1571004ea7b105c969473ce455a95be4038fb2541471714aeb33a26da8a9a"
 version: "2.30.0-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "meson"
 dep: "dbus"
 dep: "atk"
 dep: "at-spi2-core"
-dep: "libxml2" # TODO: meson does not check for this
+dep: "libxml2"  # TODO: meson does not check for this
 #dep: "gobject-introspection-1.58.0"
 #dep: "gettext-0.19.8.1"
 dep: "glib"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR}"
->
+}
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}

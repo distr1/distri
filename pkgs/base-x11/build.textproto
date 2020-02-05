@@ -3,11 +3,11 @@ version: "2-15"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: ""
->
+}
 
 # The following packages will be installed on ALL distri machines:
 runtime_dep: "base-full"

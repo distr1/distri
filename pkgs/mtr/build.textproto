@@ -2,18 +2,18 @@ source: "https://github.com/traviscross/mtr/archive/v0.92.tar.gz"
 hash: "568a52911a8933496e60c88ac6fea12379469d7943feb9223f4337903e4bc164"
 version: "0.92-7"
 
-cbuilder: <
-  copy_to_builddir: true # for autoreconf
+cbuilder: {
+  copy_to_builddir: true  # for autoreconf
   autoreconf: true
->
+}
 
 # build dependencies:
 dep: "ncurses"
 dep: "gtk+-2"
 
-install: <
-  capability: <
+install: {
+  capability: {
     filename: "sbin/mtr-packet"
     capability: "cap_net_raw+ep"
-  >
->
+  }
+}

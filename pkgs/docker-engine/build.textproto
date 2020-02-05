@@ -2,7 +2,7 @@ source: "https://github.com/docker/engine/archive/v18.06.1-ce.tar.gz"
 hash: "df4a3d2100d9b55c36288e721277dc61e4ceded5738423b09fe0d5ed42369f54"
 version: "18.06.1-ce-3"
 
-cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+cbuilder: {}  # TODO: remove once the Go builder takes care of pulling in the C deps
 
 # Go build environment:
 dep: "golang"
@@ -11,13 +11,13 @@ dep: "golang"
 
 # TODO: map GOCACHE into the build environment
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "export GOPATH=$PWD/go HOME=$PWD && d=go/src/github.com/docker/docker && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= DOCKER_GITCOMMIT=unsupported DOCKER_BUILDTAGS='exclude_graphdriver_btrfs' hack/make.sh binary && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp -H bundles/binary-daemon/dockerd $d/"
->
+}
 
-install: <
+install: {
   systemd_unit: "${DISTRI_SOURCEDIR}/contrib/init/systemd/docker.service"
   systemd_unit: "${DISTRI_SOURCEDIR}/contrib/init/systemd/docker.socket"
->
+}

@@ -9,7 +9,7 @@ dep: "libmnl"
 dep: "libnftnl"
 dep: "gmp"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-man-doc"
-  extra_configure_flag: "--without-cli" # TODO: figure out why readline isn’t picked up
->
+  extra_configure_flag: "--without-cli"  # TODO: figure out why readline isn’t picked up
+}

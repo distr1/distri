@@ -2,7 +2,7 @@ source: "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.18.7.tar.xz"
 hash: "f03b425e262a71e5079736706233a4e9afaf77c8462b552b4d6db2d33f5af731"
 version: "4.18.7-3"
 
-cbuilder: <>
+cbuilder: {}
 
 cherry_pick: "config.patch"
 cherry_pick: "http://t.zekjur.net/linux-werror.patch"
@@ -10,7 +10,7 @@ cherry_pick: "http://t.zekjur.net/linux-werror.patch"
 # build dependencies:
 dep: "bison"
 dep: "flex"
-dep: "m4" # TODO: make m4 a runtime dep of flex
+dep: "m4"  # TODO: make m4 a runtime dep of flex
 dep: "elfutils"
 dep: "bc"
 dep: "openssl"
@@ -18,19 +18,19 @@ dep: "perl"
 dep: "gzip"
 dep: "kmod"
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "olddefconfig"
   argv: "ARCH=i386"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
   argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "ARCH=i386"
->
+}

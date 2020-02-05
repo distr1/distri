@@ -2,7 +2,7 @@ source: "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.0/cryptsetup-2.0.4
 hash: "9d3a3c7033293e0c97f0ad0501fd5b4d4913ae497cbf70cca06633ccc54b5734"
 version: "2.0.4-6"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "lvm2"
@@ -11,4 +11,4 @@ dep: "json-c"
 dep: "libgcrypt"
 dep: "lvm2"
 dep: "libudev"
-dep: "systemd" # to pick up new version
+dep: "systemd"  # to pick up new version

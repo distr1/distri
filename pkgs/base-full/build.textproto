@@ -3,14 +3,14 @@ version: "3-13"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: ""
->
+}
 
 # The following packages will be installed on ALL distri machines:
-runtime_dep: "binutils" # for debugging (e.g. readelf)
+runtime_dep: "binutils"  # for debugging (e.g. readelf)
 runtime_dep: "ca-certificates"
 runtime_dep: "containerd"
 runtime_dep: "curl"
@@ -19,17 +19,17 @@ runtime_dep: "docker-engine"
 runtime_dep: "emacs"
 runtime_dep: "fuse"
 runtime_dep: "grep"
-runtime_dep: "haveged" # for gathering entropy on e.g. Google Cloud
+runtime_dep: "haveged"  # for gathering entropy on e.g. Google Cloud
 runtime_dep: "iproute2"
 runtime_dep: "iputils"
 runtime_dep: "linux"
-runtime_dep: "ncurses" # TODO: why does psmisc not link against it?
+runtime_dep: "ncurses"  # TODO: why does psmisc not link against it?
 runtime_dep: "openssh"
 runtime_dep: "psmisc"
 runtime_dep: "runc"
 runtime_dep: "shadow"
 runtime_dep: "squashfs"
-runtime_dep: "strace" # for debugging
+runtime_dep: "strace"  # for debugging
 runtime_dep: "sudo"
 runtime_dep: "zsh"
 runtime_dep: "man-db"

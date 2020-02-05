@@ -4,7 +4,7 @@ version: "4.0.4-5"
 
 cherry_pick: "pythonpath.patch"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "gtk+"
@@ -22,13 +22,13 @@ dep: "webkitgtk"
 dep: "python2.7"
 dep: "python-setuptools2.7"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "python2.7"
   argv: "build.py"
   argv: "build"
@@ -36,12 +36,12 @@ build_step: <
   argv: "--use_syswx"
   argv: "--release"
   argv: "--prefix=${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "python2.7"
   argv: "build.py"
   argv: "install"
   argv: "--destdir=${DISTRI_DESTDIR}"
   argv: "--extra_setup=--prefix=${DISTRI_PREFIX}"
->
+}

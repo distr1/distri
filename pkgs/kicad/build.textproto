@@ -5,7 +5,7 @@ version: "5.1.0-6"
 cherry_pick: "cmake.patch"
 cherry_pick: "cmakewxwidgets.patch"
 
-cmakebuilder: <
+cmakebuilder: {
   extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/${DISTRI_RESOLVE:mesa}/out/lib"
   extra_cmake_flag: "-DOPENGL_glu_LIBRARY=/ro/${DISTRI_RESOLVE:glu}/out/lib"
   extra_cmake_flag: "-DGLEW_LIBRARY=/ro/${DISTRI_RESOLVE:glew}/out/lib64"
@@ -16,7 +16,7 @@ cmakebuilder: <
   extra_cmake_flag: "-DKICAD_SCRIPTING_WXPYTHON_PHOENIX:BOOL=true"
   extra_cmake_flag: "-DBOOST_ROOT=/ro/${DISTRI_RESOLVE:boost}/out"
   extra_cmake_flag: "-DBOOST_LIBRARYDIR=/ro/${DISTRI_RESOLVE:boost}/out/lib"
->
+}
 
 # build dependencies:
 dep: "libglvnd"
@@ -31,12 +31,11 @@ dep: "swig"
 dep: "python2.7"
 dep: "wxwidgets"
 dep: "wxpython"
-dep: "dbus" # TODO: runtime_dep of wxpython (ldd gtk3u_core.so)
+dep: "dbus"  # TODO: runtime_dep of wxpython (ldd gtk3u_core.so)
 
 # does not correctly link against glu: -lGLU is missing (pkg-config contains it,
 # but cmake does not consult pkg-config)
 # TODO: change the patch to set more of the linker flags
-
 
 # no rpath set on gtk3u_core.so :-/
 # no rpath set on /ro/wxpython-amd64-4.0.4/out/lib/python2.7/site-packages/wx/_core.so

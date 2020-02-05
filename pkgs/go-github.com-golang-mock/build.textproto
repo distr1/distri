@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/golang/mock@v1.1.1"
 hash: "adde79043c7fc9f8a2f3c02830f1191700940016721c28dd12157986f0599b0f"
 version: "v1.1.1-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

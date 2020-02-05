@@ -2,12 +2,12 @@ source: "https://ftp.gnu.org/pub/gnu/autoconf/autoconf-2.13.tar.gz"
 hash: "f0611136bee505811e9ca11ca7ac188ef5323a8e2ef19cffd3edb3cf08fd791e"
 version: "2.13-3"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--program-suffix=2.13"
   extra_make_flag: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   extra_make_flag: "datadir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share"
   extra_make_flag: "infodir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/info"
->
+}
 
 # build dependencies:
 dep: "m4"
@@ -15,26 +15,26 @@ dep: "perl"
 
 runtime_dep: "m4"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
   argv: "--program-suffix=2.13"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
 # TODO: introduce extra_make_install_flag
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "V=1"
   argv: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "datadir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share"
   argv: "infodir=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/info"
->
+}

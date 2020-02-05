@@ -8,4 +8,4 @@ cherry_pick: "ncurses2.patch"
 # build dependencies:
 dep: "ncurses"
 
-cbuilder: <>
+cbuilder: {}

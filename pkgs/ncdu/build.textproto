@@ -2,7 +2,7 @@ source: "https://dev.yorhel.nl/download/ncdu-1.14.tar.gz"
 hash: "c694783aab21e27e64baad314b7c1ff34541bfa219fe9645ef6780f1c5558c44"
 version: "1.14-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "ncurses"

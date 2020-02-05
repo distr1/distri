@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXpm-3.5.12.tar.
 hash: "fd6a6de3da48de8d1bb738ab6be4ad67f7cb0986c39bd3f7d51dd24f7854bdec"
 version: "3.5.12-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libx11"

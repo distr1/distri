@@ -38,11 +38,11 @@ dep: "findutils"
 #   argv: "gcc -o foo ${DISTRI_SOURCEDIR}/foo.c -lmnl $LDFLAGS"
 # >
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: ""
->
+}
 
 # build_step: <
 #   argv: "/bin/sh"

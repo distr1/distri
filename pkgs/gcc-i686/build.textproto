@@ -21,14 +21,14 @@ dep: "file"
 
 # C build environment:
 dep: "gcc"
-dep: "binutils-i686-amd64" # for the target, listed first so that the wrapper script prefers it
-dep: "binutils" # for the host
+dep: "binutils-i686-amd64"  # for the target, listed first so that the wrapper script prefers it
+dep: "binutils"  # for the host
 dep: "make"
 dep: "glibc"
 dep: "glibc-i686-amd64"
 dep: "linux-i686-amd64"
 dep: "linux"
-dep: "findutils" # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+dep: "findutils"  # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 dep: "patchelf"
 
 # build dependencies:
@@ -38,7 +38,7 @@ dep: "mpc"
 dep: "tar"
 
 # TODO: remove once splitting files out of a package leaves a runtime dep behind
-dep: "gcc-libs-i686-amd64" # to pick up the latest version
+dep: "gcc-libs-i686-amd64"  # to pick up the latest version
 
 dep: "strace"
 
@@ -48,68 +48,68 @@ runtime_dep: "binutils-i686-amd64"
 # that /ro/glibc-amd64-2.27/out/include comes _after_ the g++ includes. This
 # requires /ro/glibc-amd64-2.27/out/include to be a system include, which we
 # achieve by symlinking /usr/include to it.
-build_step: <
+build_step: {
   argv: "rm"
   argv: "/usr/include"
->
-build_step: <
+}
+build_step: {
   argv: "ln"
   argv: "-s"
   argv: "/ro/${DISTRI_RESOLVE:glibc}/out/include"
   argv: "/usr/include"
->
+}
 # TODO: the g++ search path needs to be changed.
 # print the search path using “echo | cpp -xc++ -Wp,-v”
 # the search path is persisted in gcc/cppdefault.c
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
-  argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
-  argv: "--disable-libitm" # TODO: fails build: g++ missing from libtool invocation
-  argv: "--disable-libmpx" # fails build: PATH_MAX not defined, apparently removed from upstream gcc for next release
+  argv: "--disable-multilib"  # TODO: fix multilib (requires 32-bit libc+headers)
+  argv: "--disable-libitm"  # TODO: fails build: g++ missing from libtool invocation
+  argv: "--disable-libmpx"  # fails build: PATH_MAX not defined, apparently removed from upstream gcc for next release
   argv: "--target=i686-pc-linux-gnu"
-  argv: "--with-sysroot=/" # TODO: undocumented flag
+  argv: "--with-sysroot=/"  # TODO: undocumented flag
   # argv: "--with-stage1-ldflags=-static"
   # argv: "--with-boot-ldflags=-static"
   argv: "--enable-languages=c,c++"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "all-host"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "make -j8 all-target V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "install-host"
   argv: "install-target"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}
 
 # TODO: gcc does not find prefixed binutils, i.e. it looks for “as”, not “i686-pc-linux-gnu-as”
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/bin; mkdir -p $d; for f in $(ls /ro/${DISTRI_RESOLVE:binutils-i686}/bin/); do ln -s /ro/${DISTRI_RESOLVE:binutils-i686}/bin/$f ${d}/${f#i686-pc-linux-gnu-}; done"
->
+}
 
-split_package: <
+split_package: {
   name: "gcc-libs-i686"
-  claim: < glob: "out/i686-pc-linux-gnu/libgcc_s.so*" >
-  claim: < glob: "out/i686-pc-linux-gnu/libstdc++.so*" >
-  claim: < glob: "out/i686-pc-linux-gnu/libgomp.so*" >
-  claim: <
+  claim: { glob: "out/i686-pc-linux-gnu/libgcc_s.so*" }
+  claim: { glob: "out/i686-pc-linux-gnu/libstdc++.so*" }
+  claim: { glob: "out/i686-pc-linux-gnu/libgomp.so*" }
+  claim: {
     glob: "out/lib/gcc/i686-pc-linux-gnu/8.2.0/crt*.o"
     dir: "out/lib"
-  >
->
+  }
+}

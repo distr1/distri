@@ -5,7 +5,7 @@ version: "2.13-6"
 # sed -i 's,@PATH_XMLTO@,XML_CATALOG_FILES=/ro/docbook-xsl-amd64-1.79.2-1/out/docbook-xsl.xmlcatalog @PATH_XMLTO@ --skip-validation,g' Makefile.in
 cherry_pick: "xmlto.patch"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "confuse"
@@ -18,9 +18,9 @@ dep: "asciidoc"
 dep: "xmlto"
 dep: "docbook-xsl"
 
-install: <
-  capability: <
+install: {
+  capability: {
     filename: "bin/i3status"
     capability: "cap_net_admin=ep"
-  >
->
+  }
+}

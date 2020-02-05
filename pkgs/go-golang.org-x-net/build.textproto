@@ -2,6 +2,6 @@ source: "distri+gomod://golang.org/x/net@v0.0.0-20190724013045-ca1201d0de80"
 hash: "3a0df72968ade8ad40ce53efbf36fda31fed3b9c8308d8fd1fb331462c9456d9"
 version: "v0.0.0-20190724013045-ca1201d0de80-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

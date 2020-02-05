@@ -2,16 +2,16 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libX11-1.6.6.tar.b
 hash: "65fe181d40ec77f45417710c6a67431814ab252d21c2e85c75dd1ed568af414f"
 version: "1.6.6-3"
 
-cbuilder: <
+cbuilder: {
   # malloc(0) returns a non-NULL pointer. Specify explicitly so that configure
   # does not need to run a test program, which is not possible when
   # cross-compiling.
   extra_configure_flag: "--disable-malloc0returnsnull"
->
+}
 
 # build dependencies:
 dep: "xorgproto-amd64"
 dep: "xtrans-amd64"
 dep: "libxcb"
 
-runtime_dep: "xorgproto-amd64" # TODO: remove once pkgconfig detection works
+runtime_dep: "xorgproto-amd64"  # TODO: remove once pkgconfig detection works

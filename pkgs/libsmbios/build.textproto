@@ -2,10 +2,10 @@ source: "https://github.com/dell/libsmbios/archive/v2.4.2.tar.gz"
 hash: "ebfe18415e24bbec06d0a9ea1066c8dcd82982555373712713d7e194138650de"
 version: "2.4.2-3"
 
-cbuilder: <
+cbuilder: {
   copy_to_builddir: true
   autoreconf: true
->
+}
 
 # build dependencies:
 dep: "libxml2"

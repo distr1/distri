@@ -2,11 +2,11 @@ source: "https://ftp.gnome.org/pub/gnome/sources/gtk+/2.24/gtk+-2.24.32.tar.xz"
 hash: "b6c8a93ddda5eabe3bfee1eb39636c9a03d2a56c7b62828b359bf197943c582e"
 version: "2.24.32-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "gdk-pixbuf"
-dep: "shared-mime-info" # TODO: bring in via gdk-pixbuf
+dep: "shared-mime-info"  # TODO: bring in via gdk-pixbuf
 dep: "pango"
 dep: "cairo"
 dep: "atk"

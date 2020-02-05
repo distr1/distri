@@ -2,6 +2,6 @@ source: "distri+gomod://gonum.org/v1/netlib@v0.0.0-20181018051557-57e1e4db57a7"
 hash: "86e83fe25a1c30a2c9c933a329a8d722a1413b2aa10e90fe8d36a698f5c83238"
 version: "v0.0.0-20181018051557-57e1e4db57a7-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

@@ -2,52 +2,52 @@ source: "https://w1.fi/releases/wpa_supplicant-2.6.tar.gz"
 hash: "b4936d34c4e6cdd44954beba74296d964bc2c9668ecaa5255e499636fe2b1450"
 version: "2.6-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "openssl"
 dep: "libnl"
 dep: "dbus"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "wpa_supplicant/defconfig"
   argv: "wpa_supplicant/.config"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "echo CFLAGS+=$(pkg-config --cflags libnl-3.0) >> wpa_supplicant/.config"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "echo LIBS+=$(pkg-config --libs libnl-3.0) >> wpa_supplicant/.config"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "sed -i 's,#CONFIG_LIBNL32=y,CONFIG_LIBNL32=y,g' wpa_supplicant/.config"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "sed -i 's,#CONFIG_CTRL_IFACE_DBUS_NEW=y,CONFIG_CTRL_IFACE_DBUS_NEW=y,g' wpa_supplicant/.config"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "-C"
@@ -58,9 +58,9 @@ build_step: <
   argv: "LIBDIR=${DISTRI_PREFIX}/lib"
   argv: "INCDIR=${DISTRI_PREFIX}/include"
   argv: "BINDIR=${DISTRI_PREFIX}/sbin"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "wpa_supplicant"
@@ -70,32 +70,32 @@ build_step: <
   argv: "LIBDIR=${DISTRI_PREFIX}/lib"
   argv: "INCDIR=${DISTRI_PREFIX}/include"
   argv: "BINDIR=${DISTRI_PREFIX}/sbin"
->
+}
 
-build_step: <
+build_step: {
   argv: "mkdir"
   argv: "-p"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/dbus-1/system-services"
->
+}
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "wpa_supplicant/dbus/fi.w1.wpa_supplicant1.service"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service"
->
+}
 
-build_step: <
+build_step: {
   argv: "mkdir"
   argv: "-p"
   argv: "${DISTRI_DESTDIR}/etc/dbus-1/system.d"
->
+}
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "wpa_supplicant/dbus/dbus-wpa_supplicant.conf"
   argv: "${DISTRI_DESTDIR}/etc/dbus-1/system.d/wpa_supplicant.conf"
->
+}
 
-install: <
+install: {
   systemd_unit: "wpa_supplicant/systemd/wpa_supplicant.service"
->
+}

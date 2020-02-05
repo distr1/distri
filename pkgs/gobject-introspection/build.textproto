@@ -2,7 +2,7 @@ source: "https://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.58/gobj
 hash: "27c1590a32749de0a5481ce897772547043e94bccba4bc0a7edb3d8513e401ec"
 version: "1.58.0-3"
 
-cbuilder: <>
+cbuilder: {}
 
 cherry_pick: "0001-use-ro-lib-girepository-1.0.patch"
 

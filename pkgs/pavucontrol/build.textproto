@@ -2,10 +2,10 @@ source: "http://freedesktop.org/software/pulseaudio/pavucontrol/pavucontrol-3.0.
 hash: "b3d2ea5a25fc88dcee80c396014f72df1b4742f8cfbbc5349c39d64a0d338890"
 version: "3.0-5"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
-dep: "mesa" # TODO: should be pulled in via epoxy via gtk+
+dep: "mesa"  # TODO: should be pulled in via epoxy via gtk+
 dep: "gtkmm"
 dep: "libsigc++"
 dep: "libcanberra"

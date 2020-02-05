@@ -2,13 +2,13 @@ source: "https://t.zekjur.net/kbd-neo-e05614cf8c.tar.gz"
 hash: "555eb7caf84a80dbff23c3b22a8adf9eb3a17c0a656b41a22b99abf2d531591c"
 version: "e05614cf8c-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "gzip"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/keymaps/i386/qwertz/neo.map.gz; mkdir -p $(dirname $d); gzip -c ${DISTRI_SOURCEDIR}/neo.map > $d"
->
+}

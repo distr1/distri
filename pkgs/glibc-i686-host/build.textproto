@@ -17,58 +17,58 @@ version: "2.27-3"
 
 #cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "bison"
-dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
+dep: "m4"  # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
 dep: "gcc-i686-host"
 dep: "binutils-i686-amd64"
 dep: "linux-i686-amd64"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}/i686-pc-linux-gnu"
   argv: "--host=i686-pc-linux-gnu"
   argv: "--with-headers=/ro/linux-i686-amd64-4.18.7/out/include"
   argv: "--disable-werror"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install-bootstrap-headers=yes"
   argv: "install-headers"
   argv: "-j8"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}
 
-build_step: <
+build_step: {
   argv: "touch"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/include/gnu/stubs.h"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "csu/subdir_lib"
   argv: "-j8"
->
+}
 
-build_step: <
+build_step: {
   argv: "mkdir"
   argv: "-p"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/lib"
->
+}
 
-build_step: <
+build_step: {
   argv: "install"
   argv: "csu/crt1.o"
   argv: "csu/crti.o"
   argv: "csu/crtn.o"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/lib"
->
+}
 
-build_step: <
+build_step: {
   argv: "i686-pc-linux-gnu-gcc"
   argv: "-nostdlib"
   argv: "-nostartfiles"
@@ -78,4 +78,4 @@ build_step: <
   argv: "/dev/null"
   argv: "-o"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/i686-pc-linux-gnu/lib/libc.so"
->
+}

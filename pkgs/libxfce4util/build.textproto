@@ -2,7 +2,7 @@ source: "https://archive.xfce.org/src/xfce/libxfce4util/4.13/libxfce4util-4.13.3
 hash: "724b523a4a9ec8cada727950ab2173be30f256fa332a891ccd28b46f4b91b67e"
 version: "4.13.3-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "intltool"

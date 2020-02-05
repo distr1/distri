@@ -2,14 +2,14 @@ source: "https://github.com/robustirc/irssi-robustirc/archive/v0.7.tar.gz"
 hash: "b5f8dc27b484c0fb4132db7c59cee5849d910610e7ae52c249c0a5d687e5dd51"
 version: "0.7-4"
 
-cmakebuilder: <>
+cmakebuilder: {}
 
 # build dependencies:
 dep: "yajl2"
 dep: "curl"
 dep: "irssi"
 
-runtime_union: <
+runtime_union: {
   dir: "lib/irssi/modules"
   pkg: "irssi"
->
+}

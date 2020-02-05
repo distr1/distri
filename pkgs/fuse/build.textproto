@@ -2,7 +2,7 @@ source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.2.6/fuse-3.
 hash: "cea4dad559b3fbdbb8e4ad5f9df6083fdb7f2b904104bd507ef790d311d271cf"
 version: "3.2.6-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "meson"
@@ -14,38 +14,38 @@ dep: "systemd"
 #   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 # >
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:systemd}/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} --sysconfdir=/etc"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:systemd}/out/lib/systemd\" ninja -v"
->
+}
 
 # ensure the install script doesn’t try to create /dev/fuse, for which we don’t have permission
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/dev/; mkdir -p $d; touch $d/fuse"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "rm ${DISTRI_DESTDIR}/dev/fuse"
->
+}
 
-install: <
+install: {
   # Programs expect “fusermount” to be in $PATH
-  symlink: < oldname: "fusermount3" newname: "bin/fusermount" >
->
+  symlink: { oldname: "fusermount3" newname: "bin/fusermount" }
+}

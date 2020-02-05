@@ -2,7 +2,7 @@ source: "https://github.com/opencontainers/runc/archive/v1.0.0-rc5.tar.gz"
 hash: "770e180d1cca1f3c1a67512ebf9720caafe97af4fc2fe12fa43a3cf7bfa77522"
 version: "1.0.0-rc5-3"
 
-cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+cbuilder: {}  # TODO: remove once the Go builder takes care of pulling in the C deps
 
 # Go build environment:
 dep: "golang"
@@ -11,12 +11,12 @@ dep: "golang"
 
 # TODO: map GOCACHE into the build environment
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "export GOPATH=$PWD/go HOME=$PWD && d=go/src/github.com/opencontainers/runc && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && make BUILDTAGS=no_btrfs && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp runc $d/"
->
+}
 
-install: <
-  symlink: < oldname: "runc" newname: "bin/docker-runc" >
->
+install: {
+  symlink: { oldname: "runc" newname: "bin/docker-runc" }
+}

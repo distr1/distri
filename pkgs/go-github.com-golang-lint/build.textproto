@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/golang/lint@v0.0.0-20180702182130-06c8688daad
 hash: "a25300aba0fda0af4a4102ad5c0211868763d3303600fccb790244b8adb5f314"
 version: "v0.0.0-20180702182130-06c8688daad7-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

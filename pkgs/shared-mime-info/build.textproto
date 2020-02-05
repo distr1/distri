@@ -2,34 +2,34 @@ source: "http://freedesktop.org/~hadess/shared-mime-info-1.10.tar.xz"
 hash: "c625a83b4838befc8cafcd54e3619946515d9e44d63d61c4adf7f5513ddfbebf"
 version: "1.10-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "intltool"
-dep: "perl" # TODO: bring in via intltool
-dep: "perl-XML-Parser" # TODO: bring in via intltool
+dep: "perl"  # TODO: bring in via intltool
+dep: "perl-XML-Parser"  # TODO: bring in via intltool
 dep: "gettext"
 dep: "libxml2"
 dep: "glib"
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
-  argv: "-j1" # TODO: build fails with -j8
+  argv: "-j1"  # TODO: build fails with -j8
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
->
+}
 
-install: <
-  symlink: < oldname: "../share/pkgconfig" newname: "lib/pkgconfig" >
->
+install: {
+  symlink: { oldname: "../share/pkgconfig" newname: "lib/pkgconfig" }
+}

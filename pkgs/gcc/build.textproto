@@ -21,7 +21,7 @@ dep: "binutils"
 dep: "make"
 dep: "glibc"
 dep: "linux"
-dep: "findutils" # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
+dep: "findutils"  # find(1) is used by libtool, build of e.g. libidn2 will fail if not present
 dep: "patchelf"
 
 # build dependencies:
@@ -31,62 +31,62 @@ dep: "mpc"
 dep: "tar"
 
 # TODO: remove once splitting files out of a package leaves a runtime dep behind
-dep: "gcc-libs" # to pick up the latest version
+dep: "gcc-libs"  # to pick up the latest version
 
 # kludge: the C++ header cstdlib uses the #include_next pragma, which requires
 # that /ro/glibc-amd64-2.27/out/include comes _after_ the g++ includes. This
 # requires /ro/glibc-amd64-2.27/out/include to be a system include, which we
 # achieve by symlinking /usr/include to it.
-build_step: <
+build_step: {
   argv: "rm"
   argv: "/usr/include"
->
-build_step: <
+}
+build_step: {
   argv: "ln"
   argv: "-s"
   argv: "/ro/${DISTRI_RESOLVE:glibc}/out/include"
   argv: "/usr/include"
->
+}
 # TODO: the g++ search path needs to be changed.
 # print the search path using “echo | cpp -xc++ -Wp,-v”
 # the search path is persisted in gcc/cppdefault.c
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
-  argv: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
+  argv: "--disable-multilib"  # TODO: fix multilib (requires 32-bit libc+headers)
   # argv: "--with-stage1-ldflags=-static"
   # argv: "--with-boot-ldflags=-static"
   # TODO: enable gccgo. enabling it as-is will result in it always being chosen
   # when running “go”, because everything is built against gcc and hence puts it
   # very early in $PATH.
   argv: "--enable-languages=c,c++"
-  argv: "--enable-linker-build-id" # compiler will always pass --build-id to linker
->
+  argv: "--enable-linker-build-id"  # compiler will always pass --build-id to linker
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}
 
-install: <
-  symlink: < oldname: "gcc" newname: "bin/cc" >
->
+install: {
+  symlink: { oldname: "gcc" newname: "bin/cc" }
+}
 
-split_package: <
+split_package: {
   name: "gcc-libs"
-  claim: < glob: "out/lib64/libgcc_s.so*" >
-  claim: < glob: "out/lib64/libstdc++.so*" >
-  claim: < glob: "out/lib64/libgomp.so*" >
-  claim: <
+  claim: { glob: "out/lib64/libgcc_s.so*" }
+  claim: { glob: "out/lib64/libstdc++.so*" }
+  claim: { glob: "out/lib64/libgomp.so*" }
+  claim: {
     glob: "out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt*.o"
     dir: "out/lib64"
-  >
->
+  }
+}

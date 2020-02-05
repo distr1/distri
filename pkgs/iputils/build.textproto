@@ -2,33 +2,32 @@ source: "https://github.com/iputils/iputils/archive/s20180629.tar.gz"
 hash: "da14105291dd491f28ea91ade854ed10aee8ba019641c80eed233de3908be7c5"
 version: "20180629-3"
 
-
-cbuilder: <
-# TODO: switch to cbuilder once…
-#   copy_to_builddir: true
->
+cbuilder: {
+  # TODO: switch to cbuilder once…
+  #   copy_to_builddir: true
+}
 
 # build dependencies:
 dep: "libcap"
 dep: "libidn2"
-dep: "iconv" # TODO: remove this libidn2 dep
-dep: "libunistring" # TODO: remove this libidn2 dep
+dep: "iconv"  # TODO: remove this libidn2 dep
+dep: "libunistring"  # TODO: remove this libidn2 dep
 dep: "nettle"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "CC=gcc make"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp {ping,tracepath,traceroute6,clockdiff,rdisc,arping,tftpd,rarpd} $d/"
->
+}

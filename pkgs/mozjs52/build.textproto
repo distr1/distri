@@ -1,28 +1,28 @@
 # TODO: use a better upstream URL once Mozilla publishes archives. Currently,
 # they want you to download snapshots out of their CI system (WAT?!) and I can’t
 # find the link.
-source: "http://t.zekjur.net/mozjs-52.6.0gnome1.tar.bz2" # https://download.gnome.org/teams/releng/tarballs-needing-help/mozjs/mozjs-52.6.0gnome1.tar.xz
+source: "http://t.zekjur.net/mozjs-52.6.0gnome1.tar.bz2"  # https://download.gnome.org/teams/releng/tarballs-needing-help/mozjs/mozjs-52.6.0gnome1.tar.xz
 hash: "da88d1206389d21f313dc68f37ca975583b87e9128050207b29752c1efbedf4a"
 version: "52.6.0gnome1-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "which"
-dep: "python2.7"    # https://bugzilla.mozilla.org/show_bug.cgi?id=1093212
-dep: "autoconf2.13" # https://bugzilla.mozilla.org/show_bug.cgi?id=104642
+dep: "python2.7"  # https://bugzilla.mozilla.org/show_bug.cgi?id=1093212
+dep: "autoconf2.13"  # https://bugzilla.mozilla.org/show_bug.cgi?id=104642
 dep: "perl"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "export SHELL=/bin/sh; cd js/src && autoconf2.13 && mkdir build_OPT.OBJ && cd build_OPT.OBJ && cp ${DISTRI_SOURCEDIR}/LICENSE /dev/urandom && ../configure --prefix=${DISTRI_PREFIX} && make -j8 && make install DESTDIR=${DISTRI_DESTDIR}"
->
+}

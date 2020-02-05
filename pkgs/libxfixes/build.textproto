@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXfixes-5.0.3.ta
 hash: "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"
 version: "5.0.3-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libx11"

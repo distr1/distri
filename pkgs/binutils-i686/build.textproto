@@ -2,33 +2,33 @@ source: "https://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.xz"
 hash: "231036df7ef02049cdbff0681f4575e571f26ea8086cf70c2dcd3b6c0f4216bf"
 version: "2.31-3"
 
-cbuilder: <>
+cbuilder: {}
 
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--target=i686-pc-linux-gnu"
-# https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1508564
+  # https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1508564
   argv: "--with-sysroot=/"
-#  argv: "LDFLAGS=-static"
->
+  #  argv: "LDFLAGS=-static"
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "configure-host"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
-#  argv: "LDFLAGS=-all-static"
->
+  #  argv: "LDFLAGS=-all-static"
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} make install"
->
+}
 
 # install: <
 #   symlink: < oldname: "as" newname: "bin/i686-elf-as" >

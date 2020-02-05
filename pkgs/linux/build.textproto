@@ -2,9 +2,9 @@ source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.6.tar.xz"
 hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
 version: "5.4.6-11"
 
-cbuilder: <
+cbuilder: {
   copy_to_builddir: true
->
+}
 
 cherry_pick: "config.patch"
 cherry_pick: "suspend-amistry.patch"
@@ -12,7 +12,7 @@ cherry_pick: "suspend-amistry.patch"
 # build dependencies:
 dep: "bison"
 dep: "flex"
-dep: "m4" # TODO: make m4 a runtime dep of flex
+dep: "m4"  # TODO: make m4 a runtime dep of flex
 dep: "elfutils"
 dep: "bc"
 dep: "openssl"
@@ -21,14 +21,14 @@ dep: "gzip"
 dep: "kmod"
 dep: "rsync"
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "olddefconfig"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
@@ -36,35 +36,35 @@ build_step: <
   argv: "V=1"
   argv: "WERROR=0"
   argv: "KBUILD_BUILD_HOST=distri0"
->
+}
 
 # The linux makefile does not seem to create the install destination directory:
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "mkdir -p ${DISTRI_DESTDIR}${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "install"
   argv: "INSTALL_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "modules_install"
   argv: "INSTALL_MOD_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
   argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
->
+}

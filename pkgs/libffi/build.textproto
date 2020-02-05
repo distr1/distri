@@ -5,4 +5,4 @@ version: "3.2.1-3"
 cherry_pick: "http://t.zekjur.net/libffi-includedir.patch"
 #cherry_pick: "https://sources.debian.org/data/main/libf/libffi/3.2.1-8/debian/patches/includedir.diff"
 
-cbuilder: <>
+cbuilder: {}

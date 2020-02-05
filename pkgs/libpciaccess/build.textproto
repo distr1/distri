@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-0.14.
 hash: "3df543e12afd41fea8eac817e48cbfde5aed8817b81670a4e9e493bb2f5bf2a4"
 version: "0.14-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 

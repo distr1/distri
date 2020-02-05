@@ -2,11 +2,11 @@ source: "https://download.gnome.org/sources/NetworkManager/1.12/NetworkManager-1
 hash: "6be06ff93a05f3ee4da9e58e4a0d974eef245c08b6f02b00a9e44154c9801a26"
 version: "1.12.2-5"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-ppp"
   extra_configure_flag: "--disable-ovs"
-  extra_configure_flag: "--localstatedir=/var" # TODO: make default
->
+  extra_configure_flag: "--localstatedir=/var"  # TODO: make default
+}
 
 # https://salsa.debian.org/utopia-team/network-manager/commit/c0f037a4c260bd455d13f755d068b4d9e3f9a551
 cherry_pick: "available.patch"
@@ -14,7 +14,7 @@ cherry_pick: "available.patch"
 # TODO: patch ProtectSystem=false, as otherwise sub-directories under /run cannot be created
 
 # build dependencies:
-dep: "systemd" # for udev
+dep: "systemd"  # for udev
 dep: "intltool"
 dep: "nss"
 dep: "iptables"

@@ -2,11 +2,11 @@ source: "http://ftp.gnome.org/pub/gnome/sources/libgudev/231/libgudev-231.tar.xz
 hash: "3b1ef99d4a8984c35044103d8ddfc3cc52c80035c36abab2bcc5e3532e063f96"
 version: "231-4"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-umockdev"
->
+}
 
 # build dependencies:
-dep: "systemd" # for udev
+dep: "systemd"  # for udev
 dep: "python3"
 dep: "glib"

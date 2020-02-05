@@ -2,14 +2,14 @@ source: "https://dbus.freedesktop.org/releases/dbus/dbus-1.13.6.tar.gz"
 hash: "b533693232d36d608a09f70c15440c1816319bac3055433300d88019166c1ae4"
 version: "1.13.6-6"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--localstatedir=/var"
   extra_configure_flag: "--enable-user-session"
   extra_configure_flag: "--enable-x11-autolaunch"
   extra_configure_flag: "--enable-systemd"
   extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
   extra_configure_flag: "--with-systemduserunitdir=${prefix}/lib/systemd/user"
->
+}
 
 # build dependencies:
 dep: "expat"

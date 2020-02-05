@@ -2,7 +2,7 @@ source: "https://www.freedesktop.org/software/libevdev/libevdev-1.5.6.tar.xz"
 hash: "ecec7e9d66b1d3692f10b3b20aa97fb25e874a784c5552a7b1698091fef5a688"
 version: "1.5.6-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # gcc -DHAVE_CONFIG_H -I. -I/usr/src/libevdev-1.5.6/test -I..  -I/usr/src/libevdev-1.5.6 -I/usr/src/libevdev-1.5.6/include -I../libevdev   -I/usr/src/libevdev-1.5.6 -g -O2 -c -o test_static_link-test-link.o `test -f 'test-link.c' || echo '/usr/src/libevdev-1.5.6/test/'`test-link.c
 # In file included from /ro/linux-4.18.7/out/include/asm/posix_types_64.h:18,

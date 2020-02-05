@@ -2,30 +2,30 @@ source: "http://busybox.net/downloads/busybox-1.29.2.tar.bz2"
 hash: "67d2fa6e147a45875fe972de62d907ef866fe784c495c363bf34756c444a5d61"
 version: "1.29.2-3"
 
-cbuilder: <>
+cbuilder: {}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cd ${DISTRI_SOURCEDIR} && make O=${DISTRI_BUILDDIR} V=1 defconfig HOSTCFLAGS=-static HOSTLDFLAGS=-static"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "echo CONFIG_STATIC=y >> .config"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
   argv: "HOSTCFLAGS=-static"
   argv: "HOSTLDFLAGS=-static"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d && cp busybox $d"
->
+}

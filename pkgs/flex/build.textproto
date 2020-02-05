@@ -6,4 +6,4 @@ version: "2.6.4-3"
 dep: "bison"
 dep: "m4"
 
-cbuilder: <>
+cbuilder: {}

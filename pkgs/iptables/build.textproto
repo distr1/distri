@@ -7,9 +7,9 @@ version: "1.6.2-3"
 # hash: "c4cbfa187c4296e4bc2e347ebbc21e309def7274773f20f0df0b8feaf7e8de50"
 # version: "1.8.0"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-silent-rules"
->
+}
 
 # build dependencies:
 dep: "libmnl"

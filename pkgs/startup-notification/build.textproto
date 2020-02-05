@@ -2,7 +2,7 @@ source: "http://www.freedesktop.org/software/startup-notification/releases/start
 hash: "3c391f7e930c583095045cd2d10eb73a64f085c7fde9d260f2652c7cb3cfbe4a"
 version: "0.12-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libx11"

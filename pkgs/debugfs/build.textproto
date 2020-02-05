@@ -5,14 +5,14 @@ cherry_pick: "service.patch"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: ""
->
+}
 
 runtime_dep: "distri1"
 
-install: <
+install: {
   systemd_unit: "${DISTRI_SOURCEDIR}/debugfs.service"
->
+}

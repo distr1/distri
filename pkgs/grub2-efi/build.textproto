@@ -4,17 +4,17 @@ version: "2.04-4"
 
 cherry_pick: "werror.patch"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-werror"
   extra_configure_flag: "--with-platform=efi"
   extra_configure_flag: "--target=amd64-pe"
->
+}
 
 # build dependencies:
 dep: "bison"
 dep: "flex"
-dep: "m4" # TODO: remove (runtime-dep of flex)
-dep: "freetype" # for grub-mkfont
+dep: "m4"  # TODO: remove (runtime-dep of flex)
+dep: "freetype"  # for grub-mkfont
 dep: "python3"
 
 # grub-mkconfig needs:

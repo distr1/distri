@@ -6,4 +6,4 @@ version: "3.4-3"
 dep: "m4"
 dep: "gmp"
 
-cbuilder: <>
+cbuilder: {}

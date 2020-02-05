@@ -2,11 +2,11 @@ source: "https://launchpad.net/lightdm-gtk-greeter/2.0/2.0.6/+download/lightdm-g
 hash: "255cf4039ab2536020ca8714bdc98300c8f71719183bbb5b18ef96f43c2e3ade"
 version: "2.0.6-5"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "gtk+"
-dep: "mesa" # TODO: should be pulled in via epoxy via gtk+
+dep: "mesa"  # TODO: should be pulled in via epoxy via gtk+
 dep: "shared-mime-info"
 dep: "lightdm"
 dep: "exo"

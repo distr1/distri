@@ -2,7 +2,7 @@ source: "https://archive.xfce.org/src/xfce/exo/0.12/exo-0.12.6.tar.bz2"
 hash: "1417fffc593225d61ba57b050ae2ce66ef37615c9ec66944db32019761441003"
 version: "0.12.6-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "intltool"

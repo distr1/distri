@@ -5,7 +5,7 @@ version: "0.173-3"
 # TODO: drop this patch after eliminating warnings
 cherry_pick: "http://t.zekjur.net/elfutils.patch"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "zlib"

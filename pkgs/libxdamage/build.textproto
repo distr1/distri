@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXdamage-1.1.4.t
 hash: "7c3fe7c657e83547f4822bfde30a90d84524efb56365448768409b77f05355ad"
 version: "1.1.4-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 #dep: "damageproto-1.2.1"

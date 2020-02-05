@@ -4,28 +4,28 @@ version: "0.47.1-3"
 
 cherry_pick: "genmarshal.patch"
 
-pythonbuilder: <>
+pythonbuilder: {}
 
 runtime_dep: "ninja"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
 # https://github.com/NixOS/nixpkgs/pull/28444#issuecomment-324033323
-build_step: <
+build_step: {
   argv: "sed"
   argv: "-i"
   argv: "s/if os.path.isfile(outname):/if False:/g"
   argv: "mesonbuild/minstall.py"
->
+}
 
-build_step: <
+build_step: {
   argv: "python3"
   argv: "setup.py"
   argv: "install"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--root=${DISTRI_DESTDIR}"
->
+}

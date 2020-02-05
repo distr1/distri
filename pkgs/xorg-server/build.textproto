@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.
 hash: "1b3ce466c12cacbe2252b3ad5b0ed561972eef9d09e75900d65fb1e21f9201de"
 version: "1.20.3-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # https://gitlab.freedesktop.org/xorg/xserver/issues/17
 cherry_pick: "xwayland-config.patch"
@@ -20,9 +20,9 @@ dep: "libxkbfile"
 dep: "libxfont2"
 dep: "libpciaccess"
 dep: "libepoxy"
-dep: "zlib" # TODO: configure doesn’t check for it
+dep: "zlib"  # TODO: configure doesn’t check for it
 dep: "xkbcomp"
-dep: "systemd" # for udev
+dep: "systemd"  # for udev
 dep: "nettle"
 dep: "font-util"
 
@@ -30,20 +30,20 @@ dep: "meson"
 
 runtime_dep: "xkbcomp"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dlocalstatedir=/var -Dxdmcp=false -Dsecure-rpc=false"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" ninja -v"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}

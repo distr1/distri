@@ -2,21 +2,21 @@ source: "https://downloads.sourceforge.net/project/squashfs/squashfs/squashfs4.3
 hash: "0d605512437b1eb800b4736791559295ee5f60177e102e4d4ccd0ee241a5f3f6"
 version: "4.3-3"
 
-cbuilder: <>
+cbuilder: {}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "CC=gcc make -C squashfs-tools -j8"
->
-build_step: <
+}
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "make -C squashfs-tools install INSTALL_DIR=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin"
->
+}

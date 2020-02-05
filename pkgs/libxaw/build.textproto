@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXaw-1.0.13.tar.
 hash: "8ef8067312571292ccc2bbe94c41109dcf022ea5a4ec71656a83d8cce9edb0cd"
 version: "1.0.13-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libx11"

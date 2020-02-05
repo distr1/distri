@@ -8,9 +8,9 @@ version: "2.27-3"
 # hash: "da9e45260c0cd3dbf6a585082a602521092ae7b3ecb17092cd7347603ef1e2cb"
 # version: "2.28"
 
-cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
+cherry_pick: "ldd.patch"  # TODO: figure out why RTLDLIST gets the wrong value
 
-cbuilder: <
+cbuilder: {
   # Contrary to what is stated in ld.so(8), glibc does not seem to search /lib
   # and /usr/lib (or /lib64 and /usr/lib64, respectively), resulting in the
   # nsswitch mechanism not finding e.g. libnss_myhostname.so. Hence, we tell
@@ -20,47 +20,47 @@ cbuilder: <
   # TODO: specifying localedata/install-locales here results in an error message:
   # aa_DJ.UTF-8aa_DJ.ISO-8859-1aa_ET.UTF-8aa_ER.UTF-8aa_ER.UTF-8agr_PE.UTF-8af_ZA.UTF-8...af_ZA.ISO-8859-1......@saaho............/bin/sh: line 13: /tmp/distri-build171828973/elf/ld-linux-x86-64.so.2: No such file or directory
   # Install all supported locales:
-#  extra_make_flag: "localedata/install-locales"
->
+  #  extra_make_flag: "localedata/install-locales"
+}
 
 # build dependencies:
 dep: "bison"
-dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
+dep: "m4"  # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
 
 # TODO: specify cross-compile target like in buildc.go?
-build_step: <
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "V=1"
   argv: "user-defined-trusted-dirs=/ro/lib"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "user-defined-trusted-dirs=/ro/lib"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j8"
   argv: "localedata/install-locales"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
   argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "user-defined-trusted-dirs=/ro/lib"
->
+}
 
-build_step: <
+build_step: {
   argv: "rm"
   argv: "${DISTRI_DESTDIR}/etc/ld.so.cache"
->
+}

@@ -2,31 +2,31 @@ source: "https://download.gnome.org/sources/glib/2.58/glib-2.58.0.tar.xz"
 hash: "c0f4ce0730b4f95c47b711613b5406a887c2ee13ea6d25930d72a4fa7fdb77f6"
 version: "2.58.0-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "meson"
 dep: "libffi"
 dep: "zlib"
 dep: "util-linux"
-dep: "m4" # so that glib’s m4macros are installed
-dep: "glib" # to pick up new versions
+dep: "m4"  # so that glib’s m4macros are installed
+dep: "glib"  # to pick up new versions
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dselinux=false -Dgio_module_dir=/ro/lib/gio"
->
+}
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "LD_LIBRARY_PATH=$PWD/gio:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
->
+}

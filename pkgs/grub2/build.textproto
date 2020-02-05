@@ -4,14 +4,14 @@ version: "2.04-4"
 
 cherry_pick: "werror.patch"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--disable-werror"
->
+}
 
 # build dependencies:
 dep: "bison"
 dep: "flex"
-dep: "m4" # TODO: remove (runtime-dep of flex)
+dep: "m4"  # TODO: remove (runtime-dep of flex)
 dep: "python3"
 
 # grub-mkconfig needs:

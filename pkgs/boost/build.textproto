@@ -2,27 +2,27 @@ source: "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.
 hash: "8f32d4617390d1c2d16f26a27ab60d97807b35440d45891fa340fc2648b04406"
 version: "1.69.0-2"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "which"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "./bootstrap.sh"
   argv: "--prefix=${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "./b2"
   argv: "--prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "-j8"
   argv: "install"
->
+}

@@ -9,10 +9,10 @@ extra_file: "lightdm.tmpfiles"
 # sed -i 's,^#greeter-session=.*,greeter-session=lightdm-gtk-greeter,g' data/lightdm.conf
 cherry_pick: "defaultconfig.patch"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--localstatedir=/var"
   extra_configure_flag: "--enable-vala"
->
+}
 
 # build dependencies:
 dep: "libgcrypt"
@@ -27,15 +27,15 @@ dep: "vala"
 
 runtime_dep: "accountsservice"
 
-install: <
+install: {
   systemd_unit: "${DISTRI_SOURCEDIR}/lightdm.service"
 
-  file: <
+  file: {
     srcpath: "lightdm.sysusers"
     destpath: "lib/sysusers.d/lightdm.conf"
-  >
-  file: <
+  }
+  file: {
     srcpath: "lightdm.tmpfiles"
     destpath: "lib/tmpfiles.d/lightdm.conf"
-  >
->
+  }
+}

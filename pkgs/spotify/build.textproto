@@ -2,10 +2,10 @@ source: "http://repository.spotify.com/pool/non-free/s/spotify-client/spotify-cl
 hash: "da49fd4d222ff7d719345fba6298f38a6422ef293bb43ada13cf857a694a12e6"
 version: "1.1.10.546.ge08ef575_19-12"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
-dep: "tar" # for unpacking the data.tar.gz part of the .deb
+dep: "tar"  # for unpacking the data.tar.gz part of the .deb
 dep: "gzip"
 
 # TODO: the following block possibly is an over-approximation (copied from google-chrome):
@@ -32,19 +32,19 @@ dep: "curl-gnutls"
 dep: "gnutls"
 dep: "gtk+-2"
 
-build_step: <
+build_step: {
   argv: "tar"
   argv: "xf"
   argv: "${DISTRI_SOURCEDIR}/data.tar.gz"
->
+}
 
-build_step: <
+build_step: {
   argv: "ldd"
   argv: "usr/share/spotify/spotify"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/; mkdir -p $d/share $d/bin; cp -ar usr/share/spotify $d/share; ln -s ../share/spotify/spotify $d/bin/spotify"
->
+}

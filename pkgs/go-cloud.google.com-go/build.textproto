@@ -2,7 +2,7 @@ source: "distri+gomod://cloud.google.com/go@v0.26.0"
 hash: "5a37b993588a5eb7f224dc8d25f21d64aa5e773fbd91fc47e909017d80bc187b"
 version: "v0.26.0-3"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:
-dep: "binutils" # for objcopy, this package contains ELF files
+dep: "binutils"  # for objcopy, this package contains ELF files

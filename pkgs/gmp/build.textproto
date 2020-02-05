@@ -5,5 +5,5 @@ version: "6.1.2-3"
 # build dependencies:
 dep: "m4"
 
-cbuilder: <>
+cbuilder: {}
 

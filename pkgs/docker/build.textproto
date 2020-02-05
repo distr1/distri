@@ -2,7 +2,7 @@ source: "https://github.com/docker/cli/archive/v18.06.1-ce.tar.gz"
 hash: "47eda354afc199693aa338f5b2bb87e4511354c02561ddc6520a06d169921bdf"
 version: "18.06.1-ce-5"
 
-cbuilder: <> # TODO: remove once the Go builder takes care of pulling in the C deps
+cbuilder: {}  # TODO: remove once the Go builder takes care of pulling in the C deps
 
 # Go build environment:
 dep: "golang"
@@ -17,9 +17,9 @@ runtime_dep: "kmod"
 
 # TODO: map GOCACHE into the build environment
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "export GOPATH=$PWD/go HOME=$PWD && d=go/src/github.com/docker/cli && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && DISABLE_WARN_OUTSIDE_CONTAINER=1 LDFLAGS= make && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp -H build/docker $d/"
->
+}
 

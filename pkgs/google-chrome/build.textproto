@@ -4,9 +4,9 @@ source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/
 hash: "9f2ec10cfc313de21ca7c7100b50e088df741cd20812e76890e3d840ac7584cc"
 version: "79.0.3945.88-1-9"
 
-cbuilder: <>
+cbuilder: {}
 
-dep: "tar" # for unpacking the data.tar.xz part of the .deb
+dep: "tar"  # for unpacking the data.tar.xz part of the .deb
 dep: "xzutils"
 
 dep: "expat"
@@ -28,22 +28,22 @@ dep: "libxscrnsaver"
 dep: "alsa-lib"
 dep: "patchelf"
 
-build_step: <
+build_step: {
   argv: "tar"
   argv: "xf"
   argv: "${DISTRI_SOURCEDIR}/data.tar.xz"
->
+}
 
-build_step: <
+build_step: {
   argv: "ldd"
   argv: "opt/google/chrome/chrome"
->
+}
 
 # We need to use patchelf --set-rpath with chrome-sandbox, because its setuid
 # bit triggers secure-execution mode in ld.so(8), resulting in the
 # LD_LIBRARY_PATH environment variable being ignored.
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp -ar opt/google/chrome/* $d; patchelf --set-rpath $LD_LIBRARY_PATH $d/chrome-sandbox; chmod u+s $d/chrome-sandbox"
->
+}

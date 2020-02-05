@@ -2,7 +2,7 @@ source: "https://www.nano-editor.org/dist/v4/nano-4.3.tar.gz"
 hash: "63b6dd621e3e21bb130ca931d761f84b48d974a7b5b4d489189c2df354ca2b4a"
 version: "4.3-1"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "ncurses"

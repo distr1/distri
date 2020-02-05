@@ -2,14 +2,14 @@ source: "http://download.savannah.nongnu.org/releases/man-db/man-db-2.8.4.tar.xz
 hash: "103c185f9d8269b9ee3b8a4cb27912b3aa393e952731ef96fedc880723472bc3"
 version: "2.8.4-3"
 
-cbuilder: <
-  extra_configure_flag: "--disable-cache-owner" # don’t try to chown to man
->
+cbuilder: {
+  extra_configure_flag: "--disable-cache-owner"  # don’t try to chown to man
+}
 
 # build dependencies:
 dep: "libpipeline"
 dep: "gdbm"
-dep: "groff" # NOTE: man-db doesn’t compile without groff
-dep: "gzip" # NOTE: man-db doesn’t compile if no compressors are found
+dep: "groff"  # NOTE: man-db doesn’t compile without groff
+dep: "gzip"  # NOTE: man-db doesn’t compile if no compressors are found
 
 runtime_dep: "groff"

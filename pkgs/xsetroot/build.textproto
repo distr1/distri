@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/app/xsetroot-1.1.2.tar
 hash: "10c442ba23591fb5470cea477a0aa5f679371f4f879c8387a1d9d05637ae417c"
 version: "1.1.2-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libx11"

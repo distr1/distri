@@ -2,6 +2,6 @@ source: "distri+gomod://github.com/klauspost/pgzip@v1.2.1"
 hash: "17c864d089a094d0520ce7c892c0f97381aacbf8d23aa53f678b206e65721241"
 version: "v1.2.1-1"
 
-gomodbuilder: <>
+gomodbuilder: {}
 
 # build dependencies:

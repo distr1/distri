@@ -4,4 +4,4 @@ version: "1.47.6-3"
 
 dep: "perl"
 
-cbuilder: <>
+cbuilder: {}

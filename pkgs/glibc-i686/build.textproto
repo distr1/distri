@@ -10,7 +10,7 @@ version: "2.27-3"
 
 #cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--build=x86_64-unknown-linux-gnu"
   extra_configure_flag: "--host=i686-pc-linux-gnu"
   extra_configure_flag: "--with-headers=/ro/linux-i686-amd64-4.18.7/out/include"
@@ -19,11 +19,11 @@ cbuilder: <
   # nsswitch mechanism not finding e.g. libnss_myhostname.so. Hence, we tell
   # glibc explicitly to search /ro/lib:
   extra_make_flag: "user-defined-trusted-dirs=/ro/lib"
->
+}
 
 # build dependencies:
 dep: "bison"
-dep: "m4" # TODO: remove once m4 is declared a runtime-dep of bison
+dep: "m4"  # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
 dep: "gcc-i686-c"
 dep: "binutils-i686-amd64"

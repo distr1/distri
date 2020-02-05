@@ -2,35 +2,35 @@ source: "http://deb.debian.org/debian/pool/main/g/giblib/giblib_1.2.4.orig.tar.g
 hash: "e437756ce3ded019946fb3d979991cda7604bc345dbb1338b17655caff65a3d3"
 version: "1.2.4-4"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "imlib2"
 
-build_step: <
+build_step: {
   argv: "cp"
   argv: "-T"
   argv: "-ar"
   argv: "${DISTRI_SOURCEDIR}/"
   argv: "."
->
+}
 
-build_step: <
+build_step: {
   argv: "./configure"
   argv: "--prefix=${DISTRI_PREFIX}"
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-j1"
   argv: "V=1"
->
+}
 
 # TODO: destdir
-build_step: <
+build_step: {
   argv: "make"
   argv: "install"
   argv: "V=1"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
->
+}
 

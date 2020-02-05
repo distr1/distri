@@ -2,22 +2,22 @@ source: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware
 hash: "53c941a63e453be59961d9529fc39553357b294b3c1166c67383eaea049cc5f5"
 version: "20181104-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
   argv: "install"
   argv: "V=1"
   argv: "DESTDIR=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
->
+}
 
 # TODO: split this out into a separate package once distri can do that
-build_step: <
+build_step: {
   argv: "rm"
   argv: "-rf"
   argv: "${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/firmware/netronome"
->
+}

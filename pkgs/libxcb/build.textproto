@@ -2,7 +2,7 @@ source: "https://xcb.freedesktop.org/dist/libxcb-1.13.tar.bz2"
 hash: "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa"
 version: "1.13-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "python3-amd64"
@@ -11,4 +11,4 @@ dep: "libpthread-stubs"
 dep: "libxau"
 dep: "xorgproto-amd64"
 
-runtime_dep: "libpthread-stubs" # TODO: remove once pkgconfig detection works
+runtime_dep: "libpthread-stubs"  # TODO: remove once pkgconfig detection works

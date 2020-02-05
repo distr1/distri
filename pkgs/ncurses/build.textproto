@@ -2,7 +2,7 @@ source: "https://invisible-mirror.net/archives/ncurses/ncurses-6.1.tar.gz"
 hash: "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17"
 version: "6.1-5"
 
-cbuilder: <
+cbuilder: {
   # TODO: enable C++ support?
   extra_configure_flag: "--without-cxx-binding"
   extra_configure_flag: "--disable-stripping"
@@ -16,4 +16,4 @@ cbuilder: <
   extra_configure_flag: "--with-shared"
 
   extra_configure_flag: "--with-terminfo-dirs=/ro/share/terminfo"
->
+}

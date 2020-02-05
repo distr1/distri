@@ -13,10 +13,10 @@ cherry_pick: "api.patch"
 
 cherry_pick: "use_ino.patch"
 
-cmakebuilder: <
+cmakebuilder: {
   extra_cmake_flag: "-DFUSE_LIBRARIES=/ro/${DISTRI_RESOLVE:fuse}/out/lib"
   extra_cmake_flag: "-DFUSE_INCLUDE_DIR=/ro/${DISTRI_RESOLVE:fuse}/out/include/fuse3"
->
+}
 
 # build dependencies:
 dep: "fuse"

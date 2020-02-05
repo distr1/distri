@@ -4,29 +4,29 @@ version: "6.0-3"
 
 # TODO: pull all patches from debian.
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 #dep: "bzip2"
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
->
+}
 
-build_step: <
+build_step: {
   argv: "make"
   argv: "-f"
   argv: "unix/Makefile"
-#  argv: "D_USE_BZ2=-DUSE_BZIP2"
-# TODO: -DIZ_HAVE_UXUIDGID with 05-fix-uid-gid-handling.patch
+  #  argv: "D_USE_BZ2=-DUSE_BZIP2"
+  # TODO: -DIZ_HAVE_UXUIDGID with 05-fix-uid-gid-handling.patch
   argv: "CF=-DACORN_FTYPE_NFS -DWILD_STOP_AT_DIR -DLARGE_FILE_SUPPORT -DUNICODE_SUPPORT -DUNICODE_WCHAR -DUTF8_MAYBE_NATIVE -DNO_LCHMOD -DDATE_FORMAT=DF_YMD  -DNOMEMCPY -DNO_WORKING_ISPRINT -I."
   argv: "unzips"
->
+}
 
-build_step: <
+build_step: {
   argv: "/bin/sh"
   argv: "-c"
   argv: "DESTDIR=${DISTRI_DESTDIR} make -f unix/Makefile install prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
->
+}

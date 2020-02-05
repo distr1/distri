@@ -2,4 +2,4 @@ source: "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs
 hash: "ee03b2f2180614c5ae5f6dd2666f8808de61c3d8b37d22ba86cc6daea25be55a"
 version: "1.44.4-3"
 
-cbuilder: <>
+cbuilder: {}

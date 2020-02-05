@@ -2,9 +2,9 @@ source: "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.9.0.ta
 hash: "11eca62bf0ac549b8d6be55f4e130946399939cdfe7a562fdaee711190248b00"
 version: "1.9.0-3"
 
-cbuilder: <
+cbuilder: {
   extra_configure_flag: "--with-icu"
->
+}
 
 # build dependencies:
 dep: "freetype"

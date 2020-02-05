@@ -2,7 +2,7 @@ source: "https://ftp.gnu.org/gnu/guile/guile-2.0.14.tar.xz"
 hash: "e8442566256e1be14e51fc18839cd799b966bc5b16c6a1d7a7c35155a8619d82"
 version: "2.0.14-3"
 
-cbuilder: <>
+cbuilder: {}
 
 # build dependencies:
 dep: "libtool"
