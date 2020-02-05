@@ -132,4 +132,12 @@ func TestExistingFile(t *testing.T) {
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Fatalf("scaffold: unexpected build.textproto file: diff (-want +got):\n%s", diff)
 	}
+
+	again, err := c.buildFileExisting("<test>", "hash", []byte(got))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diff := cmp.Diff(got, string(again)); diff != "" {
+		t.Fatalf("scaffold: unexpected build.textproto file: diff (-want +got):\n%s", diff)
+	}
 }
