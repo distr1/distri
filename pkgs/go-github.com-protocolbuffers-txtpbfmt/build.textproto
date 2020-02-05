@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/protocolbuffers/txtpbfmt@v0.0.0-20191018194151-ab9b9b21328a"
+hash: "1d12ec0ac6f6c1271147a2f9b78942fd20ca4b395a694fb2d64c94c1e6c85301"
+version: "v0.0.0-20191018194151-ab9b9b21328a-1"
+
+gomodbuilder: {}
+
+# build dependencies:
