@@ -227,25 +227,20 @@ func (a *autobuilder) runCommit(commit string) error {
 		return err
 	}
 
-	// TODO(later): call “make install” instead
-	gotool := exec.Command("go", "install", "github.com/distr1/distri/cmd/distri")
-	gotool.Dir = filepath.Join(workdir, "distri")
-	gotool.Env = []string{
+	// TODO(go1.14): set -modcacherw flag so that workdir is easy to delete manually
+
+	install := exec.Command("make", "install")
+	install.Dir = filepath.Join(workdir, "distri")
+	install.Env = []string{
 		"HOME=" + os.Getenv("HOME"), // TODO(later): make hermetic
 		"GOPATH=" + filepath.Join(workdir, "go"),
 		"GOPROXY=https://proxy.golang.org",
 		"PATH=" + os.Getenv("PATH"),
 	}
-	gotool.Stdout = os.Stdout
-	gotool.Stderr = os.Stderr
-	if err := gotool.Run(); err != nil {
-		return xerrors.Errorf("%v: %w", gotool.Args, err)
-	}
-	sudo := exec.Command("sudo", "setcap", "CAP_SYS_ADMIN,CAP_DAC_OVERRIDE=ep CAP_SETFCAP=eip", filepath.Join(workdir, "go", "bin", "distri"))
-	sudo.Stdout = os.Stdout
-	sudo.Stderr = os.Stderr
-	if err := sudo.Run(); err != nil {
-		return xerrors.Errorf("%v: %w", sudo.Args, err)
+	install.Stdout = os.Stdout
+	install.Stderr = os.Stderr
+	if err := install.Run(); err != nil {
+		return xerrors.Errorf("%v: %w", install.Args, err)
 	}
 
 	cmd := exec.Command(os.Args[0], "-job="+serialized)
