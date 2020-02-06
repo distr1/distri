@@ -166,9 +166,8 @@ func (a *autobuilder) runCommit(commit string) error {
 			return err
 		}
 
-		// TODO: clone from *repo
 		// TODO(later): use a cache
-		clone := exec.Command("sh", "-c", fmt.Sprintf("git clone --depth=%d file:///home/michael/distri && cd distri && git reset --hard %s", 10+10 /* TODO: pending */, commit))
+		clone := exec.Command("sh", "-c", fmt.Sprintf("git clone --depth=%d %s && cd distri && git reset --hard %s", 10+10 /* TODO: pending */, a.repo, commit))
 		clone.Dir = workdir
 		clone.Stdout = os.Stdout
 		clone.Stderr = os.Stderr
