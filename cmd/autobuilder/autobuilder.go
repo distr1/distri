@@ -311,7 +311,11 @@ func (a *autobuilder) run() error {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	repoCommits, _, err := client.Repositories.ListCommits(ctx, "stapelberg", "distri", &github.CommitsListOptions{
+	owner, repo := func() (string, string) {
+		parts := strings.Split(strings.TrimPrefix(a.repo, "https://github.com/"), "/")
+		return parts[0], parts[1]
+	}()
+	repoCommits, _, err := client.Repositories.ListCommits(ctx, owner, repo, &github.CommitsListOptions{
 		ListOptions: github.ListOptions{
 			PerPage: 10, // TODO(later): flag
 		},
@@ -489,7 +493,7 @@ func (a *autobuilder) serveStatusPage(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var (
-		repo     = flag.String("repo", "https://github.com/stapelberg/distri", "distri git repository to build")
+		repo     = flag.String("repo", "https://github.com/distr1/distri", "distri git repository to build")
 		branch   = flag.String("branch", "master", "which branch of -repo to build")
 		srvDir   = flag.String("srv_dir", "/srv/repo.distr1.org", "TODO")
 		dryRun   = flag.Bool("dry_run", false, "print build commands instead of running them")
