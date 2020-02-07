@@ -149,6 +149,16 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	if fs.autoDownload {
 		if err := fs.updatePackages(); err != nil {
 			log.Printf("updatePackages: %v", err)
+			// Retry in the background every 10 seconds until we succeed
+			go func() {
+				for range time.Tick(10 * time.Second) {
+					if err := fs.updatePackages(); err != nil {
+						log.Printf("updatePackages: %v", err)
+						continue
+					}
+					break
+				}
+			}()
 		}
 	}
 
