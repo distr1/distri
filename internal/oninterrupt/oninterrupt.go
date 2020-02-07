@@ -8,8 +8,8 @@ import (
 )
 
 // onInterrupt allows subcommands to register cleanup handlers which shall be
-// run on receiving SIGINT, e.g. reverting temporary CPU frequency scaling
-// governor changes.
+// run on receiving SIGINT (from C-c) or SIGTERM (from systemd), e.g. reverting
+// temporary CPU frequency scaling governor changes.
 var (
 	onInterruptMu sync.Mutex
 	onInterrupt   []func()
@@ -17,7 +17,7 @@ var (
 
 func init() {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		signal := <-c
 		onInterruptMu.Lock()
