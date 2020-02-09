@@ -17,7 +17,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"text/template"
@@ -573,6 +575,7 @@ func (b *buildctx) substitute(s string) string {
 	s = strings.ReplaceAll(s, "${DISTRI_BUILDDIR}", b.BuildDir)
 	s = strings.ReplaceAll(s, "${DISTRI_SOURCEDIR}", b.SourceDir)
 	s = strings.ReplaceAll(s, "${DISTRI_FULLNAME}", b.fullName())
+	s = strings.ReplaceAll(s, "${DISTRI_JOBS}", strconv.Itoa(runtime.NumCPU()))
 	for k, v := range b.substituteCache {
 		s = strings.ReplaceAll(s, "${DISTRI_RESOLVE:"+k+"}", v)
 	}

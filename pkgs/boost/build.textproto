@@ -23,6 +23,6 @@ build_step: {
 build_step: {
   argv: "./b2"
   argv: "--prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "install"
 }

@@ -39,7 +39,7 @@ build_step: {
   argv: "make"
   argv: "install-bootstrap-headers=yes"
   argv: "install-headers"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
 }
 
@@ -51,7 +51,7 @@ build_step: {
 build_step: {
   argv: "make"
   argv: "csu/subdir_lib"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
 }
 
 build_step: {

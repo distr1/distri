@@ -1,6 +1,9 @@
 package main
 
 import (
+	"runtime"
+	"strconv"
+
 	"github.com/distr1/distri/pb"
 	"golang.org/x/xerrors"
 )
@@ -55,7 +58,7 @@ func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.Build
 	}
 	steps = append(steps, [][]string{
 		// TODO: the problem with V=1 is that it typically doesn’t apply to recursive make invocations (e.g. mesa)
-		append([]string{"make", "-j8", "V=1"}, opts.GetExtraMakeFlag()...),
+		append([]string{"make", "-j" + strconv.Itoa(runtime.NumCPU()), "V=1"}, opts.GetExtraMakeFlag()...),
 		// e.g. help2man doesn’t pick up the environment variable
 		append([]string{"make", "install",
 			"DESTDIR=${DISTRI_DESTDIR}",

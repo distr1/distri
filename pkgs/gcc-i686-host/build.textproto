@@ -70,7 +70,7 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "all-host"
   argv: "V=1"
 }

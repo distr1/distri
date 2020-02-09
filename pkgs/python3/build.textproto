@@ -37,7 +37,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make -j8"
+  argv: "make -j${DISTRI_JOBS}"
 }
 
 build_step: {

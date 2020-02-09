@@ -20,7 +20,7 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "COPTS=\"-DHAVE_DBUS -DHAVE_LIBIDN2\""
   argv: "PREFIX=${DISTRI_PREFIX}"
   argv: "BINDIR=${DISTRI_PREFIX}/bin"

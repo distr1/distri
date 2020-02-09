@@ -32,7 +32,7 @@ build_step: {
   argv: "python2.7"
   argv: "build.py"
   argv: "build"
-  argv: "--jobs=8"
+  argv: "--jobs=${DISTRI_JOBS}"
   argv: "--use_syswx"
   argv: "--release"
   argv: "--prefix=${DISTRI_PREFIX}"

@@ -26,7 +26,7 @@ build_step: {
 # TODO: switch to cmake --build instead?
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "V=1"
 }
 

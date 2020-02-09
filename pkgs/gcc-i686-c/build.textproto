@@ -69,7 +69,7 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "all-host"
   argv: "V=1"
 }
@@ -81,7 +81,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1; true"
+  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j${DISTRI_JOBS} all-target-libgcc V=1; true"
 }
 build_step: {
   argv: "/bin/sh"
@@ -91,12 +91,12 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j8 all-target-libgcc V=1"
+  argv: "CPATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/include:$CPATH LIBRARY_PATH=/ro/${DISTRI_RESOLVE:glibc-i686-host}/out/i686-pc-linux-gnu/lib:$LIBRARY_PATH make -j${DISTRI_JOBS} all-target-libgcc V=1"
 }
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "install-host"
   argv: "install-target-libgcc"
   argv: "DESTDIR=${DISTRI_DESTDIR}"

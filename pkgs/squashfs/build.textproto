@@ -13,7 +13,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "CC=gcc make -C squashfs-tools -j8"
+  argv: "CC=gcc make -C squashfs-tools -j${DISTRI_JOBS}"
 }
 build_step: {
   argv: "/bin/sh"

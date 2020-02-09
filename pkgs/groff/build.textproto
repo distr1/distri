@@ -14,7 +14,7 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-j1"  # TODO: build fails with -j8
+  argv: "-j1"  # TODO: build fails with -j${DISTRI_JOBS}
   argv: "V=1"
 }
 

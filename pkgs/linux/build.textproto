@@ -32,7 +32,7 @@ build_step: {
   argv: "make"
   argv: "-C"
   argv: "${DISTRI_SOURCEDIR}"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "V=1"
   argv: "WERROR=0"
   argv: "KBUILD_BUILD_HOST=distri0"

@@ -77,7 +77,7 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "all-host"
   argv: "V=1"
 }
@@ -85,12 +85,12 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make -j8 all-target V=1"
+  argv: "make -j${DISTRI_JOBS} all-target V=1"
 }
 
 build_step: {
   argv: "make"
-  argv: "-j8"
+  argv: "-j${DISTRI_JOBS}"
   argv: "install-host"
   argv: "install-target"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
