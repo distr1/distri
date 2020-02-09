@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -12,10 +13,15 @@ import (
 
 var start = time.Now()
 
-var sink io.Writer = ioutil.Discard
+var (
+	sinkMu sync.Mutex
+	sink   io.Writer = ioutil.Discard
+)
 
-// Sink must be called before Event, if ever.
+// Sink writes all following Event()s as a Chrome trace event file into w.
 func Sink(w io.Writer) {
+	sinkMu.Lock()
+	defer sinkMu.Unlock()
 	sink = w
 	// Start the JSON Array Format
 	w.Write([]byte{'['})
@@ -40,6 +46,8 @@ func (pe *PendingEvent) Done() {
 	if err != nil {
 		panic(err)
 	}
+	sinkMu.Lock()
+	defer sinkMu.Unlock()
 	if _, err := sink.Write(append(b, ',')); err != nil {
 		log.Printf("[trace] %v", err)
 	}
