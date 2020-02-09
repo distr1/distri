@@ -280,6 +280,27 @@ type scheduler struct {
 	lastStatus time.Time
 }
 
+func (s *scheduler) refreshStatus() {
+	s.statusMu.Lock()
+	defer s.statusMu.Unlock()
+	s.lastStatus = time.Now()
+	var maxLen int
+	for _, line := range s.status {
+		if len(line) > maxLen {
+			maxLen = len(line)
+		}
+	}
+	for _, line := range s.status {
+		if len(line) < maxLen {
+			// overwrite stale characters with whitespace,
+			// in every line to clear artifacts
+			line += strings.Repeat(" ", maxLen-len(line))
+		}
+		fmt.Println(line)
+	}
+	fmt.Printf("\033[%dA", len(s.status)) // restore cursor position
+}
+
 func (s *scheduler) updateStatus(idx int, newStatus string) {
 	s.statusMu.Lock()
 	defer s.statusMu.Unlock()
@@ -399,6 +420,7 @@ func (s *scheduler) run() error {
 					}
 				} else {
 					log.Printf("build of %s failed (%v), see %s", result.node.pkg, result.err, filepath.Join(s.logDir, result.node.pkg+".log"))
+					s.refreshStatus()
 					failed += 1 + s.markFailed(n)
 				}
 
