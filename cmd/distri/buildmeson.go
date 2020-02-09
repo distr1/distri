@@ -1,6 +1,11 @@
 package main
 
-import "github.com/distr1/distri/pb"
+import (
+	"runtime"
+	"strconv"
+
+	"github.com/distr1/distri/pb"
+)
 
 func (b *buildctx) buildmeson(opts *pb.MesonBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	var steps [][]string
@@ -15,11 +20,14 @@ func (b *buildctx) buildmeson(opts *pb.MesonBuilder, env []string) (newSteps []*
 	}...)
 
 	steps = append(steps, [][]string{
-		[]string{"ninja", "-v"},
+		// It makes sense to pass an explicit -j argument to ninja, as within
+		// the build environment there is no /proc, and ninja falls back to only
+		// 3 jobs.
+		[]string{"ninja", "-v", "-j", strconv.Itoa(runtime.NumCPU())},
 		[]string{
 			"/bin/sh",
 			"-c",
-			"DESTDIR=${DISTRI_DESTDIR} ninja -v install",
+			"DESTDIR=${DISTRI_DESTDIR} ninja -v -j " + strconv.Itoa(runtime.NumCPU()) + " install",
 		},
 	}...)
 	return stepsToProto(steps), env, nil
