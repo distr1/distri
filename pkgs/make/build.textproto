@@ -1,11 +1,5 @@
-source: "https://ftp.gnu.org/gnu/make/make-4.2.1.tar.bz2"
-hash: "d6e262bf3601b42d2b1e4ef8310029e1dcf20083c5446b4b7aa67081fdffc589"
-version: "4.2.1-3"
-
-# see also PDF page 90 of LFS-BOOK-8.2.pdf
-# TODO: enable this once we can autoreconf :)
-# cherry_pick: "https://git.savannah.gnu.org/cgit/make.git/patch/?id=48c8a116a914a325a0497721f5d8b58d5bba34d4"
-cherry_pick: "http://t.zekjur.net/make-configure.patch"
-cherry_pick: "http://t.zekjur.net/make-dir.patch"  # TODO: upstream this. for some reason, glibc-2.27/posix/glob-lstat-compat.c is not used, maybe only when statically linking
+source: "https://ftp.gnu.org/gnu/make/make-4.3.tar.gz"
+hash: "e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19"
+version: "4.3-4"
 
 cbuilder: {}

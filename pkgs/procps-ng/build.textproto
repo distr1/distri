@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/procps-ng/Production/procps-ng-3.3.15.tar.xz"
 hash: "10bd744ffcb3de2d591d2f6acf1a54a7ba070fdcc432a855931a5057149f0465"
-version: "3.3.15-5"
+version: "3.3.15-6"
 
 cherry_pick: "http://t.zekjur.net/procps.patch"
 

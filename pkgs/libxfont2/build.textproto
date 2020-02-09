@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXfont2-2.0.3.tar.bz2"
 hash: "0e8ab7fd737ccdfe87e1f02b55f221f0bd4503a1c5f28be4ed6a54586bac9c4e"
-version: "2.0.3-3"
+version: "2.0.3-4"
 
 cbuilder: {}
 

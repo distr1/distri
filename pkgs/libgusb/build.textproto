@@ -1,6 +1,6 @@
 source: "https://github.com/hughsie/libgusb/archive/0.3.0.tar.gz"
 hash: "b36310f8405d5fd68f6caf4a829f7ab4c627b38fd3d02a139d411fce0f3a49f1"
-version: "0.3.0-4"
+version: "0.3.0-5"
 
 mesonbuilder: {
   extra_meson_flag: "-Dgtkdoc=false"

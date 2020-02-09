@@ -2,7 +2,7 @@
 # http://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages:
 source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.87-1_amd64.deb"
 hash: "85e07dee624d3c7eec6a6194efcb070b353ee52c0e5980517760230128a3ba61"
-version: "80.0.3987.87-1-10"
+version: "80.0.3987.87-1-11"
 
 cbuilder: {}
 

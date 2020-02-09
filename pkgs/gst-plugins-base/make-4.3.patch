@@ -1,0 +1,260 @@
+--- old/common/glib-gen.mak	2018-09-09 21:38:17.000000000 +0200
++++ new/common/glib-gen.mak	2020-02-10 09:15:35.202146381 +0100
+@@ -5,7 +5,9 @@
+ #glib_enum_define=GST_COLOR_BALANCE
+ #glib_enum_prefix=gst_color_balance
+ 
+-enum_headers=$(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++H := \#
++
++enum_headers=$(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ 
+ # these are all the rules generating the relevant files
+ %-marshal.h: %-marshal.list
+Binary files /dev/null and new/common/glib-gen.mak~ differ
+--- old/common/gst-glib-gen.mak	2018-09-24 09:45:19.000000000 +0200
++++ new/common/gst-glib-gen.mak	2020-02-10 09:15:46.615591906 +0100
+@@ -8,7 +8,9 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
+-enum_headers=$(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++H := \#
++
++enum_headers=$(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ 
+ # these are all the rules generating the relevant files
+ $(glib_gen_basename)-marshal.h: $(glib_gen_basename)-marshal.list
+Binary files /dev/null and new/common/gst-glib-gen.mak~ differ
+--- old/gst/encoding/Makefile.in	2019-02-26 12:39:23.000000000 +0100
++++ new/gst/encoding/Makefile.in	2020-02-10 09:15:55.102340722 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ VPATH = @srcdir@
+ am__is_gnu_make = { \
+@@ -628,7 +629,7 @@
+ 	gstsmartencoder.h	\
+ 	gststreamcombinerpad.h
+ 
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ all: all-am
+ 
+ .SUFFIXES:
+Binary files /dev/null and new/gst/encoding/Makefile.in~ differ
+--- old/gst-libs/gst/app/Makefile.in	2019-02-26 12:39:21.000000000 +0100
++++ new/gst-libs/gst/app/Makefile.in	2020-02-10 09:16:08.749137197 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -608,12 +609,12 @@
+ glib_gen_prefix = __gst_app
+ glib_gen_basename = app
+ glib_gen_decl_banner = GST_APP_API
+-glib_gen_decl_include = \#include <gst/app/app-prelude.h>
++glib_gen_decl_include = $(H)include <gst/app/app-prelude.h>
+ glib_enum_headers = gstappsrc.h
+ built_sources = app-enumtypes.c
+ built_headers = app-enumtypes.h
+ BUILT_SOURCES = $(built_sources) $(built_headers)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ libgstapp_@GST_API_VERSION@_la_SOURCES = gstappsrc.c gstappsink.c
+ nodist_libgstapp_@GST_API_VERSION@_la_SOURCES = $(BUILT_SOURCES)
+ libgstapp_@GST_API_VERSION@_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \
+Binary files /dev/null and new/gst-libs/gst/app/Makefile.in~ differ
+--- old/gst-libs/gst/audio/Makefile.in	2019-02-26 12:39:21.000000000 +0100
++++ new/gst-libs/gst/audio/Makefile.in	2020-02-10 09:16:21.639257314 +0100
+@@ -46,6 +46,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -776,7 +777,7 @@
+ glib_gen_prefix = gst_audio
+ glib_gen_basename = audio
+ glib_gen_decl_banner = GST_AUDIO_API
+-glib_gen_decl_include = \#include <gst/audio/audio-prelude.h>
++glib_gen_decl_include = $(H)include <gst/audio/audio-prelude.h>
+ built_sources = audio-enumtypes.c
+ built_headers = audio-enumtypes.h
+ lib_LTLIBRARIES = \
+@@ -889,7 +890,7 @@
+ @HAVE_X86_TRUE@	$(GST_LIB_LDFLAGS) \
+ @HAVE_X86_TRUE@	$(GST_ALL_LDFLAGS)
+ 
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ 
+ # Introspection
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstAudio-@GST_API_VERSION@.gir
+Binary files /dev/null and new/gst-libs/gst/audio/Makefile.in~ differ
+--- old/gst-libs/gst/gl/Makefile.in	2019-02-26 12:39:21.000000000 +0100
++++ new/gst-libs/gst/gl/Makefile.in	2020-02-10 09:16:32.716025327 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -863,14 +864,14 @@
+ glib_gen_prefix = gst_gl
+ glib_gen_basename = gl
+ glib_gen_decl_banner = GST_GL_API
+-glib_gen_decl_include = \#include <gst/gl/gl-prelude.h>
++glib_gen_decl_include = $(H)include <gst/gl/gl-prelude.h>
+ built_sources = gl-enumtypes.c
+ built_headers = gl-enumtypes.h
+ BUILT_SOURCES = $(built_sources) $(built_headers)
+ CLEANFILES = $(BUILT_SOURCES) $(am__append_27)
+ nodist_libgstgl_@GST_API_VERSION@include_HEADERS = $(built_headers)
+ nodist_libgstgl_@GST_API_VERSION@_la_SOURCES = $(BUILT_SOURCES)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstGL-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(gstgl_gir_headers)) $(patsubst \
+Binary files /dev/null and new/gst-libs/gst/gl/Makefile.in~ differ
+--- old/gst-libs/gst/pbutils/Makefile.in	2019-02-26 12:39:22.000000000 +0100
++++ new/gst-libs/gst/pbutils/Makefile.in	2020-02-10 09:16:42.136110161 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -661,7 +662,7 @@
+ glib_gen_prefix = pbutils
+ glib_gen_basename = pbutils
+ glib_gen_decl_banner = GST_PBUTILS_API
+-glib_gen_decl_include = \#include <gst/pbutils/pbutils-prelude.h>
++glib_gen_decl_include = $(H)include <gst/pbutils/pbutils-prelude.h>
+ built_headers_configure = \
+ 	gstpluginsbaseversion.h
+ 
+@@ -709,7 +710,7 @@
+ 
+ # DISTCLEANFILES is for files generated by configure
+ DISTCLEANFILES = $(built_headers_configure)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstPbutils-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(libgstpbutils_@GST_API_VERSION@include_HEADERS)) \
+Binary files /dev/null and new/gst-libs/gst/pbutils/Makefile.in~ differ
+--- old/gst-libs/gst/rtp/Makefile.in	2019-02-26 12:39:22.000000000 +0100
++++ new/gst-libs/gst/rtp/Makefile.in	2020-02-10 09:16:54.189550278 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -669,8 +670,8 @@
+ glib_enum_headers = $(libgstrtpinclude_HEADERS)
+ glib_gen_basename = gstrtp
+ glib_gen_decl_banner = GST_RTP_API
+-glib_gen_decl_include = \#include <gst/rtp/rtp-prelude.h>
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++glib_gen_decl_include = $(H)include <gst/rtp/rtp-prelude.h>
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstRtp-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(libgstrtpinclude_HEADERS)) \
+Binary files /dev/null and new/gst-libs/gst/rtp/Makefile.in~ differ
+--- old/gst-libs/gst/rtsp/Makefile.in	2019-02-26 12:39:22.000000000 +0100
++++ new/gst-libs/gst/rtsp/Makefile.in	2020-02-10 09:17:04.459639718 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -670,8 +671,8 @@
+ glib_enum_headers = $(libgstrtspinclude_HEADERS)
+ glib_gen_basename = gstrtsp
+ glib_gen_decl_banner = GST_RTSP_API
+-glib_gen_decl_include = \#include <gst/rtsp/rtsp-prelude.h>
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++glib_gen_decl_include = $(H)include <gst/rtsp/rtsp-prelude.h>
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstRtsp-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(libgstrtspinclude_HEADERS)) \
+Binary files /dev/null and new/gst-libs/gst/rtsp/Makefile.in~ differ
+--- old/gst-libs/gst/tag/Makefile.in	2019-02-26 12:39:22.000000000 +0100
++++ new/gst-libs/gst/tag/Makefile.in	2020-02-10 09:15:17.851971936 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -670,12 +671,12 @@
+ glib_gen_prefix = gst_tag
+ glib_gen_basename = tag
+ glib_gen_decl_banner = GST_TAG_API
+-glib_gen_decl_include = \#include <gst/tag/tag-prelude.h>
++glib_gen_decl_include = $(H)include <gst/tag/tag-prelude.h>
+ glib_enum_headers = tag.h gsttagdemux.h
+ built_sources = tag-enumtypes.c
+ built_headers = tag-enumtypes.h
+ BUILT_SOURCES = $(built_sources) $(built_headers)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ libgsttaginclude_HEADERS = \
+ 	tag.h tag-prelude.h gsttagdemux.h gsttagmux.h xmpwriter.h
+ 
+Binary files /dev/null and new/gst-libs/gst/tag/Makefile.in~ differ
+--- old/gst-libs/gst/video/Makefile.in	2019-02-26 12:39:22.000000000 +0100
++++ new/gst-libs/gst/video/Makefile.in	2020-02-10 09:14:59.968453719 +0100
+@@ -46,7 +46,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
+-
++H := \#
+ 
+ VPATH = @srcdir@
+ am__is_gnu_make = { \
+@@ -735,7 +735,7 @@
+ glib_gen_prefix = gst_video
+ glib_gen_basename = video
+ glib_gen_decl_banner = GST_VIDEO_API
+-glib_gen_decl_include = \#include <gst/video/video-prelude.h>
++glib_gen_decl_include = $(H)include <gst/video/video-prelude.h>
+ built_sources = video-enumtypes.c
+ built_headers = video-enumtypes.h
+ lib_LTLIBRARIES = libgstvideo-@GST_API_VERSION@.la
+@@ -820,7 +820,7 @@
+ 
+ libgstvideo_@GST_API_VERSION@_la_LIBADD = $(GST_BASE_LIBS) $(GST_LIBS) $(ORC_LIBS) $(LIBM)
+ libgstvideo_@GST_API_VERSION@_la_LDFLAGS = $(GST_LIB_LDFLAGS) $(GST_ALL_LDFLAGS) $(GST_LT_LDFLAGS)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstVideo-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(libgstvideo_@GST_API_VERSION@include_HEADERS)) \
+Binary files /dev/null and new/gst-libs/gst/video/Makefile.in~ differ

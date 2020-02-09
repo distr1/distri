@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXext-1.3.3.tar.bz2"
 hash: "b518d4d332231f313371fdefac59e3776f4f0823bcb23cf7c7305bfb57b16e35"
-version: "1.3.3-3"
+version: "1.3.3-4"
 
 cbuilder: {}
 

@@ -1,6 +1,6 @@
 source: "http://download.savannah.nongnu.org/releases/tinycc/tcc-0.9.27.tar.bz2"
 hash: "de23af78fca90ce32dff2dd45b3432b2334740bb9bb7b05bf60fdbfc396ceb9c"
-version: "0.9.27-3"
+version: "0.9.27-4"
 
 cbuilder: {
   extra_configure_flag: "--enable-static"

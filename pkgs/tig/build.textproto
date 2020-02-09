@@ -1,6 +1,6 @@
 source: "https://github.com/jonas/tig/releases/download/tig-2.4.1/tig-2.4.1.tar.gz"
 hash: "b6b6aa183e571224d0e1fab3ec482542c1a97fa7a85b26352dc31dbafe8558b8"
-version: "2.4.1-3"
+version: "2.4.1-4"
 
 cbuilder: {
   copy_to_builddir: true

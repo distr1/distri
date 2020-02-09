@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/libunistring/libunistring-0.9.10.tar.xz"
 hash: "eb8fb2c3e4b6e2d336608377050892b54c3c983b646c561836550863003c05d7"
-version: "0.9.10-3"
+version: "0.9.10-4"
 
 # build dependencies:
 #dep: "iconv-1.15"

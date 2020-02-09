@@ -1,6 +1,6 @@
 source: "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.4/wxWidgets-3.0.4.tar.bz2"
 hash: "96157f988d261b7368e5340afa1a0cad943768f35929c22841f62c25b17bf7f0"
-version: "3.0.4-5"
+version: "3.0.4-6"
 
 cbuilder: {
   # TODO: build without this

@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.0.tar.xz"
 hash: "cf5fc92805e581c8303e08d54519457ba07f15b766e9b1edde4862993ac1aa43"
-version: "3.24.0-5"
+version: "3.24.0-6"
 
 cbuilder: {}
 

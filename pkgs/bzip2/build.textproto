@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/bzip2/bzip2-1.0.6.tar.gz"
 hash: "a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd"
-version: "1.0.6-2"
+version: "1.0.6-3"
 
 cbuilder: {}
 

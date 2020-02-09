@@ -1,6 +1,6 @@
 source: "https://cpan.metacpan.org/authors/id/O/OA/OALDERS/HTTP-Message-6.18.tar.gz"
 hash: "d060d170d388b694c58c14f4d13ed908a2807f0e581146cef45726641d809112"
-version: "6.18-3"
+version: "6.18-4"
 
 perlbuilder: {}
 

@@ -1,6 +1,6 @@
 source: "https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/archive/microcode-20191115.tar.gz"
 hash: "14b26d27be70774948b8cb582e298f5317263b8b8bb1fe8e41260eae54f531dc"
-version: "20191115-1"
+version: "20191115-2"
 
 cbuilder: {}
 

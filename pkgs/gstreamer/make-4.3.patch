@@ -1,0 +1,68 @@
+--- old/common/glib-gen.mak	2013-12-19 01:23:48.000000000 +0100
++++ new/common/glib-gen.mak	2020-02-10 08:23:06.979680774 +0100
+@@ -1,11 +1,13 @@
+ # these are the variables your Makefile.am should set
+ # the example is based on the colorbalance interface
+ 
++H := \#
++
+ #glib_enum_headers=$(colorbalance_headers)
+ #glib_enum_define=GST_COLOR_BALANCE
+ #glib_enum_prefix=gst_color_balance
+ 
+-enum_headers=$(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers=$(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ 
+ # these are all the rules generating the relevant files
+ %-marshal.h: %-marshal.list
+Binary files /dev/null and new/common/glib-gen.mak~ differ
+--- old/common/gst-glib-gen.mak	2018-09-24 00:21:20.000000000 +0200
++++ new/common/gst-glib-gen.mak	2020-02-10 08:22:38.509674180 +0100
+@@ -1,14 +1,16 @@
+ # these are the variables your Makefile.am should set
+ # the example is based on the colorbalance interface
+ 
++H := \#
++
+ #glib_enum_headers=$(colorbalance_headers)
+ #glib_enum_define=GST_COLOR_BALANCE
+ #glib_gen_prefix=gst_color_balance
+ #glib_gen_basename=colorbalance
+ #glib_gen_decl_banner=GST_EXPORT
+-#glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
++#glib_gen_decl_include=$(H)include <gst/foo/foo-prelude.h>
+ 
+-enum_headers=$(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers=$(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ 
+ # these are all the rules generating the relevant files
+ $(glib_gen_basename)-marshal.h: $(glib_gen_basename)-marshal.list
+Binary files /dev/null and new/common/gst-glib-gen.mak~ differ
+--- old/libs/gst/controller/Makefile.in	2019-02-26 14:24:41.000000000 +0100
++++ new/libs/gst/controller/Makefile.in	2020-02-10 08:23:39.006355038 +0100
+@@ -24,6 +24,7 @@
+ #glib_gen_decl_banner=GST_EXPORT
+ #glib_gen_decl_include=\#include <gst/foo/foo-prelude.h>
+ 
++H := \#
+ 
+ 
+ VPATH = @srcdir@
+@@ -558,7 +559,7 @@
+ glib_gen_prefix = gst
+ glib_gen_basename = controller
+ glib_gen_decl_banner = GST_CONTROLLER_API
+-glib_gen_decl_include = \#include <gst/controller/controller-prelude.h>
++glib_gen_decl_include = $(H)include <gst/controller/controller-prelude.h>
+ built_sources = controller-enumtypes.c
+ built_headers = controller-enumtypes.h
+ BUILT_SOURCES = $(built_sources) $(built_headers)
+@@ -592,7 +592,7 @@
+ libgstcontroller_@GST_API_VERSION@_la_LIBADD = $(GST_OBJ_LIBS) $(LIBM)
+ libgstcontroller_@GST_API_VERSION@_la_LDFLAGS = $(GST_LIB_LDFLAGS) $(GST_ALL_LDFLAGS) $(GST_LT_LDFLAGS)
+ CLEANFILES = *.gcno *.gcda *.gcov $(BUILT_SOURCES) $(am__append_1)
+-enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
++enum_headers = $(foreach h,$(glib_enum_headers),\n$(H)include \"$(h)\")
+ @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstController-@GST_API_VERSION@.gir
+ @HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+ @HAVE_INTROSPECTION_TRUE@	$(libgstcontroller_@GST_API_VERSION@_include_HEADERS)) \
