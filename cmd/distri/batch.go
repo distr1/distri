@@ -452,8 +452,12 @@ func (s *scheduler) run() error {
 			defer ticker.Stop()
 			for n := range work {
 				// Kick off the build
-				ev := trace.Event("build " + n.pkg)
-				ev.Tid = uint64(i)
+				{
+					ev := trace.Event("build " + n.pkg)
+					ev.Tid = uint64(i)
+					ev.Type = "B" // begin
+					ev.Done()
+				}
 				s.updateStatus(i+1, "building "+n.pkg)
 				start := time.Now()
 				result := make(chan error)
@@ -485,7 +489,12 @@ func (s *scheduler) run() error {
 				}
 
 				done <- buildResult{node: n, err: err}
-				ev.Done()
+				{
+					ev := trace.Event("build " + n.pkg)
+					ev.Tid = uint64(i)
+					ev.Type = "E" // end
+					ev.Done()
+				}
 				s.updateStatus(i+1, "idle")
 			}
 			return nil
