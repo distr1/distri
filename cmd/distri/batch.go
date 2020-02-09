@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -343,11 +344,79 @@ func (s *scheduler) build(pkg string) error {
 	return nil
 }
 
+func parseIntOr0(s string) uint64 {
+	n, _ := strconv.ParseUint(s, 0, 64)
+	return n
+}
+
+func cpuEvents(last map[string]map[string]uint64) error {
+	b, err := ioutil.ReadFile("/proc/stat")
+	if err != nil {
+		return err
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+		if !strings.HasPrefix(line, "cpu") ||
+			strings.HasPrefix(line, "cpu ") {
+			continue
+		}
+		// cpu   user   nice sys idle    …
+		// cpu10 126780 18 25115 1757702 300 1255 357 0 0 0
+		parts := strings.Split(line, " ")
+		if len(parts) < 5 {
+			continue
+		}
+		lm, ok := last[parts[0]]
+		if !ok {
+			lm = make(map[string]uint64)
+			last[parts[0]] = lm
+		}
+		ev := trace.Event(parts[0])
+		ev.Pid = 1
+		ev.Type = "C" // counter
+		_, present := lm["user"]
+		user := parseIntOr0(parts[1])
+		userDiff := user - lm["user"]
+		lm["user"] = user
+
+		sys := parseIntOr0(parts[3])
+		sysDiff := sys - lm["sys"]
+		lm["sys"] = sys
+
+		if !present {
+			continue
+		}
+		ev.Args = map[string]uint64{
+			"user": userDiff,
+			"sys":  sysDiff,
+		}
+		ev.Done()
+	}
+	return nil
+}
+
 func (s *scheduler) run() error {
 	numNodes := s.g.Nodes().Len()
 	work := make(chan *node, numNodes)
 	done := make(chan buildResult)
 	eg, ctx := errgroup.WithContext(context.Background())
+	go func() {
+		tick := time.NewTicker(1 * time.Second)
+		defer tick.Stop()
+		last := make(map[string]map[string]uint64)
+		cpuEvents(last) // initialize
+		cpuEvents(last) // print 0 values immediately
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				if err := cpuEvents(last); err != nil {
+					log.Printf("cpuEvents: %v", err)
+					s.refreshStatus()
+				}
+			}
+		}
+	}()
 	for i := 0; i < s.workers; i++ {
 		i := i // copy
 		eg.Go(func() error {

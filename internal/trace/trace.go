@@ -29,13 +29,14 @@ func Sink(w io.Writer) {
 }
 
 type PendingEvent struct {
-	Name           string `json:"name"` // name of the event, as displayed in Trace Viewer
-	Categories     string `json:"cat"`  // event categories (comma-separated)
-	Type           string `json:"ph"`   // event type (single character)
-	ClockTimestamp uint64 `json:"ts"`   // tracing clock timestamp (microsecond granularity)
-	Duration       uint64 `json:"dur"`
-	Pid            uint64 `json:"pid"` // process ID for the process that output this event
-	Tid            uint64 `json:"tid"` // thread ID for the thread that output this event
+	Name           string      `json:"name"` // name of the event, as displayed in Trace Viewer
+	Categories     string      `json:"cat"`  // event categories (comma-separated)
+	Type           string      `json:"ph"`   // event type (single character)
+	ClockTimestamp uint64      `json:"ts"`   // tracing clock timestamp (microsecond granularity)
+	Duration       uint64      `json:"dur"`
+	Pid            uint64      `json:"pid"` // process ID for the process that output this event
+	Tid            uint64      `json:"tid"` // thread ID for the thread that output this event
+	Args           interface{} `json:"args"`
 
 	start time.Time
 }
