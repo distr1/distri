@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 
 	"github.com/distr1/distri/cmd/distri/internal/fuse"
+	internaltrace "github.com/distr1/distri/internal/trace"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 
@@ -30,6 +31,7 @@ var (
 	cpuprofile = flag.String("cpuprofile", "", "path to store a CPU profile at")
 	memprofile = flag.String("memprofile", "", "path to store a memory profile at")
 	tracefile  = flag.String("tracefile", "", "path to store a trace at")
+	ctracefile = flag.String("ctracefile", "", "path to store a chrome trace event file at (load in chrome://tracing)")
 	httpListen = flag.String("listen", "", "host:port to listen on for HTTP")
 )
 
@@ -102,6 +104,14 @@ func funcmain() error {
 		}
 		trace.Start(f)
 		defer trace.Stop()
+	}
+
+	if *ctracefile != "" {
+		f, err := os.Create(*ctracefile)
+		if err != nil {
+			return err
+		}
+		internaltrace.Sink(f)
 	}
 
 	if *httpListen != "" {

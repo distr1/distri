@@ -17,6 +17,7 @@ import (
 
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/oninterrupt"
+	"github.com/distr1/distri/internal/trace"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
@@ -354,6 +355,8 @@ func (s *scheduler) run() error {
 			defer ticker.Stop()
 			for n := range work {
 				// Kick off the build
+				ev := trace.Event("build " + n.pkg)
+				ev.Tid = uint64(i)
 				s.updateStatus(i+1, "building "+n.pkg)
 				start := time.Now()
 				result := make(chan error)
@@ -385,6 +388,7 @@ func (s *scheduler) run() error {
 				}
 
 				done <- buildResult{node: n, err: err}
+				ev.Done()
 				s.updateStatus(i+1, "idle")
 			}
 			return nil
