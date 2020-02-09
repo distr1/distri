@@ -371,7 +371,7 @@ func cpuEvents(last map[string]map[string]uint64) error {
 			last[parts[0]] = lm
 		}
 		ev := trace.Event(parts[0])
-		ev.Pid = 1
+		ev.Pid = 2
 		ev.Type = "C" // counter
 		_, present := lm["user"]
 		user := parseIntOr0(parts[1])
@@ -394,6 +394,30 @@ func cpuEvents(last map[string]map[string]uint64) error {
 	return nil
 }
 
+func memEvents() error {
+	b, err := ioutil.ReadFile("/proc/meminfo")
+	if err != nil {
+		return err
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+		if !strings.HasPrefix(line, "MemAvailable:") {
+			continue
+		}
+		val := strings.TrimSpace(strings.TrimPrefix(line, "MemAvailable:"))
+		kb, err := strconv.ParseUint(strings.TrimSuffix(val, " kB"), 0, 64)
+		if err != nil {
+			return err
+		}
+		ev := trace.Event("MemAvailable")
+		ev.Pid = 1
+		ev.Type = "C" // counter
+		ev.Args = map[string]uint64{"available": kb}
+		ev.Done()
+		break
+	}
+	return nil
+}
+
 func (s *scheduler) run() error {
 	numNodes := s.g.Nodes().Len()
 	work := make(chan *node, numNodes)
@@ -410,6 +434,10 @@ func (s *scheduler) run() error {
 			case <-ctx.Done():
 				return
 			case <-tick.C:
+				if err := memEvents(); err != nil {
+					log.Printf("memEvents: %v", err)
+					s.refreshStatus()
+				}
 				if err := cpuEvents(last); err != nil {
 					log.Printf("cpuEvents: %v", err)
 					s.refreshStatus()
