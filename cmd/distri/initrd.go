@@ -291,14 +291,7 @@ func (i *initrdWriter) mkdir(dir string) error {
 
 func (i *initrdWriter) mirror(fn string) error {
 	log.Printf("mirror(%v)", fn)
-	ffn := fn
-	if fn == "/ro/strace-amd64-5.1-5/lib/librt.so.1" {
-		ffn = "/ro/strace-amd64-5.1-5/lib/librt-2.27.so"
-	}
-	if fn == "/ro/strace-amd64-5.1-5/lib/libc.so.6" {
-		ffn = "/ro/strace-amd64-5.1-5/lib/libc-2.27.so"
-	}
-	st, err := os.Lstat(ffn)
+	st, err := os.Lstat(fn)
 	if err != nil {
 		return err
 	}
@@ -331,7 +324,7 @@ func (i *initrdWriter) mirror(fn string) error {
 	}
 
 	// symbolic link, resolve dynamic libraries
-	target, err := os.Readlink(ffn)
+	target, err := os.Readlink(fn)
 	if err != nil {
 		return err
 	}
@@ -352,7 +345,7 @@ func (i *initrdWriter) mirror(fn string) error {
 		return err
 	}
 
-	ef, err := elf.Open(ffn)
+	ef, err := elf.Open(fn)
 	if err != nil {
 		return err
 	}
