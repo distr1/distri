@@ -74,9 +74,6 @@ install: {
   symlink: { oldname: "../../share/pkgconfig/udev.pc" newname: "lib/pkgconfig/udev.pc" }
 }
 
-# TODO: this runtime_dep should be added automatically
-runtime_dep: "libudev"
-
 split_package: {
   name: "libudev"
   claim: { glob: "out/lib/libudev.so*" }

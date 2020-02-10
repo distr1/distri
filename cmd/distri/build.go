@@ -536,6 +536,7 @@ func (b *buildctx) pkg() error {
 				if err := os.Symlink(rel, m); err != nil {
 					return err
 				}
+				b.Proto.RuntimeDep = append(b.Proto.RuntimeDep, fullName)
 			}
 		}
 		if err := cp(w.Root, tmp); err != nil {

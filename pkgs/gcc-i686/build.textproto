@@ -37,9 +37,6 @@ dep: "mpfr"
 dep: "mpc"
 dep: "tar"
 
-# TODO: remove once splitting files out of a package leaves a runtime dep behind
-dep: "gcc-libs-i686-amd64"  # to pick up the latest version
-
 dep: "strace"
 
 runtime_dep: "binutils-i686-amd64"
