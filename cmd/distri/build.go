@@ -302,6 +302,27 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		}
 	}
 
+	// b.DestDir is /tmp/distri-dest123/tmp
+	// package installs into b.DestDir/ro/hello-1
+
+	rel := b.fullName()
+
+	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/distri-dest123/hello-1
+
+	// rename destDir/tmp/ro/hello-1 to destDir/hello-1:
+	if err := os.Rename(filepath.Join(b.DestDir, "ro", rel), destDir); err != nil {
+		return err
+	}
+
+	// rename destDir/tmp/etc to destDir/etc
+	if err := os.Rename(filepath.Join(b.DestDir, "etc"), filepath.Join(destDir, "etc")); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	if err := b.pkg(); err != nil {
+		return err
+	}
+
 	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
 		Name:  proto.String(b.Pkg),
 		Claim: []*pb.Claim{{Glob: proto.String("*")}},
@@ -354,27 +375,6 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
 			return err
 		}
-	}
-
-	// b.DestDir is /tmp/distri-dest123/tmp
-	// package installs into b.DestDir/ro/hello-1
-
-	rel := b.fullName()
-
-	destDir := filepath.Join(filepath.Dir(b.DestDir), rel) // e.g. /tmp/distri-dest123/hello-1
-
-	// rename destDir/tmp/ro/hello-1 to destDir/hello-1:
-	if err := os.Rename(filepath.Join(b.DestDir, "ro", rel), destDir); err != nil {
-		return err
-	}
-
-	// rename destDir/tmp/etc to destDir/etc
-	if err := os.Rename(filepath.Join(b.DestDir, "etc"), filepath.Join(destDir, "etc")); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-
-	if err := b.pkg(); err != nil {
-		return err
 	}
 
 	return nil
