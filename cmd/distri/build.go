@@ -277,82 +277,82 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		}
 
 		return nil
-	} else {
-		meta, err := b.build()
-		if err != nil {
-			return xerrors.Errorf("build: %v", err)
-		}
+	}
 
-		if err := setCaps(); err != nil {
+	meta, err := b.build()
+	if err != nil {
+		return xerrors.Errorf("build: %v", err)
+	}
+
+	if err := setCaps(); err != nil {
+		return err
+	}
+
+	for _, cap := range b.Proto.GetInstall().GetCapability() {
+		setcap := exec.Command("setcap", cap.GetCapability(), cap.GetFilename())
+		setcap.Dir = filepath.Join(b.DestDir, b.Prefix, "out")
+		log.Printf("%v in %v", setcap.Args, setcap.Dir)
+		setcap.Stdout = os.Stdout
+		setcap.Stderr = os.Stderr
+		setcap.SysProcAttr = &syscall.SysProcAttr{
+			AmbientCaps: []uintptr{CAP_SETFCAP},
+		}
+		if err := setcap.Run(); err != nil {
+			return err
+		}
+	}
+
+	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
+		Name:  proto.String(b.Pkg),
+		Claim: []*pb.Claim{{Glob: proto.String("*")}},
+	})
+	for _, pkg := range pkgs {
+		fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
+
+		deps := append(meta.GetRuntimeDep(),
+			append(b.Proto.GetRuntimeDep(),
+				pkg.GetRuntimeDep()...)...)
+
+		deps, err = b.glob(env.DefaultRepo, deps)
+		if err != nil {
 			return err
 		}
 
-		for _, cap := range b.Proto.GetInstall().GetCapability() {
-			setcap := exec.Command("setcap", cap.GetCapability(), cap.GetFilename())
-			setcap.Dir = filepath.Join(b.DestDir, b.Prefix, "out")
-			log.Printf("%v in %v", setcap.Args, setcap.Dir)
-			setcap.Stdout = os.Stdout
-			setcap.Stderr = os.Stderr
-			setcap.SysProcAttr = &syscall.SysProcAttr{
-				AmbientCaps: []uintptr{CAP_SETFCAP},
-			}
-			if err := setcap.Run(); err != nil {
+		resolved, err := resolve(env.DefaultRepo, deps, pkg.GetName())
+		if err != nil {
+			return err
+		}
+
+		// TODO: add the transitive closure of runtime dependencies
+
+		log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
+
+		unions := make([]*pb.Union, len(b.Proto.RuntimeUnion))
+		for idx, o := range b.Proto.RuntimeUnion {
+			globbed, err := b.glob1(env.DefaultRepo, o.GetPkg())
+			if err != nil {
 				return err
+			}
+
+			unions[idx] = &pb.Union{
+				Dir: o.Dir,
+				Pkg: proto.String(globbed),
 			}
 		}
 
-		pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
-			Name:  proto.String(b.Pkg),
-			Claim: []*pb.Claim{{Glob: proto.String("*")}},
+		c := proto.MarshalTextString(&pb.Meta{
+			RuntimeDep:   resolved,
+			SourcePkg:    proto.String(b.Pkg),
+			Version:      proto.String(b.Version),
+			RuntimeUnion: unions,
 		})
-		for _, pkg := range pkgs {
-			fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
-
-			deps := append(meta.GetRuntimeDep(),
-				append(b.Proto.GetRuntimeDep(),
-					pkg.GetRuntimeDep()...)...)
-
-			deps, err = b.glob(env.DefaultRepo, deps)
-			if err != nil {
-				return err
-			}
-
-			resolved, err := resolve(env.DefaultRepo, deps, pkg.GetName())
-			if err != nil {
-				return err
-			}
-
-			// TODO: add the transitive closure of runtime dependencies
-
-			log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
-
-			unions := make([]*pb.Union, len(b.Proto.RuntimeUnion))
-			for idx, o := range b.Proto.RuntimeUnion {
-				globbed, err := b.glob1(env.DefaultRepo, o.GetPkg())
-				if err != nil {
-					return err
-				}
-
-				unions[idx] = &pb.Union{
-					Dir: o.Dir,
-					Pkg: proto.String(globbed),
-				}
-			}
-
-			c := proto.MarshalTextString(&pb.Meta{
-				RuntimeDep:   resolved,
-				SourcePkg:    proto.String(b.Pkg),
-				Version:      proto.String(b.Version),
-				RuntimeUnion: unions,
-			})
-			fn := filepath.Join("../distri/pkg/" + fullName + ".meta.textproto")
-			b.artifactWriter.Write([]byte("build/" + strings.TrimPrefix(fn, "../") + "\n"))
-			if err := renameio.WriteFile(fn, []byte(c), 0644); err != nil {
-				return err
-			}
-			if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
-				return err
-			}
+		fn := filepath.Join("../distri/pkg/" + fullName + ".meta.textproto")
+		b.artifactWriter.Write([]byte("build/" + strings.TrimPrefix(fn, "../") + "\n"))
+		if err := renameio.WriteFile(fn, []byte(c), 0644); err != nil {
+			return err
+		}
+		if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
+			return err
 		}
 	}
 
