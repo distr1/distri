@@ -2,7 +2,23 @@ source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
 hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
 version: "2.22.7-6"
 
-cbuilder: {}
+cmakebuilder: {
+  extra_cmake_flag: "-DPORT=GTK"
+  extra_cmake_flag: "-DJPEG_LIBRARY=/ro/${DISTRI_RESOLVE:libjpeg-turbo}/out/lib64/libjpeg.so"
+  extra_cmake_flag: "-DZLIB_LIBRARY=/ro/${DISTRI_RESOLVE:zlib}/out/lib/libz.so"
+  extra_cmake_flag: "-DPNG_LIBRARY=/ro/${DISTRI_RESOLVE:libpng}/out/lib/libpng.so"
+  extra_cmake_flag: "-DENABLE_GEOLOCATION:BOOL=OFF"
+  extra_cmake_flag: "-DENABLE_SPELLCHECK:BOOL=OFF"
+  extra_cmake_flag: "-DENABLE_INTROSPECTION:BOOL=OFF"  # see backtrace below
+  extra_cmake_flag: "-DUSE_LIBHYPHEN:BOOL=OFF"
+  extra_cmake_flag: "-DUSE_WOFF2:BOOL=OFF"
+  extra_cmake_flag: "-DUSE_GSTREAMER_GL:BOOL=OFF"
+  extra_cmake_flag: "-DX11_X11_LIB=/ro/${DISTRI_RESOLVE:libx11}/out/lib/libX11.so"
+  extra_cmake_flag: "-DX11_Xcomposite_LIB=/ro/${DISTRI_RESOLVE:libxcomposite}/out/lib/libXcomposite.so"
+  extra_cmake_flag: "-DX11_Xdamage_LIB=/ro/${DISTRI_RESOLVE:libxdamage}/out/lib/libXdamage.so"
+  extra_cmake_flag: "-DX11_Xrender_LIB=/ro/${DISTRI_RESOLVE:libxrender}/out/lib/libXrender.so"
+  extra_cmake_flag: "-DX11_Xt_LIB=/ro/${DISTRI_RESOLVE:libxt}/out/lib/libXt.so"
+}
 
 # build dependencies:
 dep: "cmake"
@@ -51,40 +67,6 @@ dep: "gettext"  # TODO: not checked in cmake, build fails!
 # 19  0x7f76c31cb00b /ro/glibc-amd64-2.27/out/lib/libc.so.6(__libc_start_main+0xeb) [0x7f76c31cb00b]
 # 20  0x404f0a /tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0(_start+0x2a) [0x404f0a]
 # Command '['/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/WebKit2-4.0', '--introspect-dump=/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/functions.txt,/tmp/distri-build281472861/Source/WebKit/tmp-introspect4uksbv00/dump.xml']' died with <Signals.SIGSEGV: 11>.
-
-build_step: {
-  argv: "/bin/cmake"
-  argv: "${DISTRI_SOURCEDIR}"
-  argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
-  argv: "-DPORT=GTK"
-  argv: "-DJPEG_LIBRARY=/ro/${DISTRI_RESOLVE:libjpeg-turbo}/out/lib64/libjpeg.so"
-  argv: "-DZLIB_LIBRARY=/ro/${DISTRI_RESOLVE:zlib}/out/lib/libz.so"
-  argv: "-DPNG_LIBRARY=/ro/${DISTRI_RESOLVE:libpng}/out/lib/libpng.so"
-  argv: "-DENABLE_GEOLOCATION:BOOL=OFF"
-  argv: "-DENABLE_SPELLCHECK:BOOL=OFF"
-  argv: "-DENABLE_INTROSPECTION:BOOL=OFF"  # see backtrace above
-  argv: "-DUSE_LIBHYPHEN:BOOL=OFF"
-  argv: "-DUSE_WOFF2:BOOL=OFF"
-  argv: "-DUSE_GSTREAMER_GL:BOOL=OFF"
-  argv: "-DX11_X11_LIB=/ro/${DISTRI_RESOLVE:libx11}/out/lib/libX11.so"
-  argv: "-DX11_Xcomposite_LIB=/ro/${DISTRI_RESOLVE:libxcomposite}/out/lib/libXcomposite.so"
-  argv: "-DX11_Xdamage_LIB=/ro/${DISTRI_RESOLVE:libxdamage}/out/lib/libXdamage.so"
-  argv: "-DX11_Xrender_LIB=/ro/${DISTRI_RESOLVE:libxrender}/out/lib/libXrender.so"
-  argv: "-DX11_Xt_LIB=/ro/${DISTRI_RESOLVE:libxt}/out/lib/libXt.so"
-}
-
-build_step: {
-  argv: "make"
-  argv: "-j${DISTRI_JOBS}"
-  argv: "V=1"
-}
-
-build_step: {
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${DISTRI_DESTDIR}"
-  argv: "PREFIX=${DISTRI_PREFIX}"
-}
 
 # TODO: should make the package install to lib, not lib64
 install: {
