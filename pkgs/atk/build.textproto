@@ -19,11 +19,11 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -v"
+  argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -j ${DISTRI_JOBS} -v"
 }
 
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -j ${DISTRI_JOBS} -v install"
 }

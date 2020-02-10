@@ -23,7 +23,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:systemd}/out/lib/systemd\" ninja -v"
+  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:systemd}/out/lib/systemd\" ninja -j ${DISTRI_JOBS} -v"
 }
 
 # ensure the install script doesn’t try to create /dev/fuse, for which we don’t have permission
@@ -36,7 +36,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -v install"
+  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -j ${DISTRI_JOBS} -v install"
 }
 
 build_step: {
