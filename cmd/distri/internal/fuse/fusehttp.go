@@ -56,7 +56,8 @@ func (hr *httpReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func autodownload(imgDir, fileurl string) (*os.File, error) {
+func autodownload(imgDir, remote, rel string) (*os.File, error) {
+	fileurl := remote + "/" + rel
 	dest := filepath.Join(imgDir, filepath.Base(fileurl))
 
 	// If the file can be opened, it was successfully downloaded already. As
@@ -70,8 +71,11 @@ func autodownload(imgDir, fileurl string) (*os.File, error) {
 		base     = strings.TrimSuffix(dest, ".squashfs")
 		baseurl  = strings.TrimSuffix(fileurl, ".squashfs")
 		files    = make(map[string]*renameio.PendingFile)
-		suffixes = []string{".squashfs", ".meta.textproto"}
+		suffixes = []string{".squashfs"}
 	)
+	if !strings.HasPrefix(rel, "debug/") {
+		suffixes = append(suffixes, ".meta.textproto")
+	}
 	for _, suffix := range suffixes {
 		suffix := suffix // copy
 		f, err := renameio.TempFile("", base+suffix)

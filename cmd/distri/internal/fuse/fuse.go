@@ -781,7 +781,7 @@ func (fs *fuseFS) mountImage(image int) error {
 		if !fs.autoDownload {
 			return err
 		}
-		f, err = autodownload(fs.repo, fs.remoteRepos[0].Path+"/"+pkg+".squashfs")
+		f, err = autodownload(fs.repo, fs.remoteRepos[0].Path, fs.repoSection+"/"+pkg+".squashfs")
 		if err != nil {
 			return err
 		}
