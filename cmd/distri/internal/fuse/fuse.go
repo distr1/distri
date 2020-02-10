@@ -92,6 +92,14 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	mountpoint := fset.Arg(0)
 	//log.Printf("mounting FUSE file system at %q", mountpoint)
 
+	remotes, err := env.Repos()
+	if err != nil {
+		return nil, err
+	}
+	if len(remotes) == 0 {
+		remotes = []distri.Repo{{Path: *repo}}
+	}
+
 	// TODO: do what fusermount -u does, i.e. umount2("/ro-dbg", UMOUNT_NOFOLLOW)
 
 	if *overlays != "" {
@@ -116,6 +124,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 
 	fs := &fuseFS{
 		repo:         *repo,
+		remoteRepos:  remotes,
 		autoDownload: *autoDownload,
 		repoSection:  *section,
 		fileReaders:  make(map[fuseops.InodeID]*io.SectionReader),
@@ -308,6 +317,7 @@ type fuseFS struct {
 	fuseutil.NotImplementedFileSystem
 
 	repo         string
+	remoteRepos  []distri.Repo
 	ctl          string
 	autoDownload bool
 	repoSection  string // e.g. “debug” (default “pkg”)
@@ -699,20 +709,9 @@ type nopLocker struct{}
 func (*nopLocker) Lock()   {}
 func (*nopLocker) Unlock() {}
 
-// TODO: read this from a config file, remove trailing slash if any (always added by caller)
-const remote = "https://repo.distr1.org/distri/master/debug"
-
 func (fs *fuseFS) updatePackages() error {
-	repos, err := env.Repos()
-	if err != nil {
-		return xerrors.Errorf("env.Repos: %v", err)
-	}
-
-	if len(repos) == 0 {
-		return xerrors.Errorf("no repositories configured")
-	}
 	// TODO: make this code work with multiple repos
-	resp, err := http.Get(repos[0].Path + "/" + fs.repoSection + "/meta.binaryproto")
+	resp, err := http.Get(fs.remoteRepos[0].Path + "/" + fs.repoSection + "/meta.binaryproto")
 	if err != nil {
 		return err
 	}
@@ -782,7 +781,7 @@ func (fs *fuseFS) mountImage(image int) error {
 		if !fs.autoDownload {
 			return err
 		}
-		f, err = autodownload(fs.repo, remote+"/"+pkg+".squashfs")
+		f, err = autodownload(fs.repo, fs.remoteRepos[0].Path+"/"+pkg+".squashfs")
 		if err != nil {
 			return err
 		}
