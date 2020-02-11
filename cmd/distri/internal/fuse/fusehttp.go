@@ -73,7 +73,8 @@ func autodownload(imgDir, remote, rel string) (*os.File, error) {
 		files    = make(map[string]*renameio.PendingFile)
 		suffixes = []string{".squashfs"}
 	)
-	if !strings.HasPrefix(rel, "debug/") {
+	if !strings.HasPrefix(rel, "debug/") &&
+		!strings.HasPrefix(rel, "src/") {
 		suffixes = append(suffixes, ".meta.textproto")
 	}
 	for _, suffix := range suffixes {
