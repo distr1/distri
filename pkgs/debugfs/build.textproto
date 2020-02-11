@@ -1,7 +1,7 @@
 source: "empty://"
 version: "1-12"
 
-cherry_pick: "service.patch"
+extra_file: "debugfs.service"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"

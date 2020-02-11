@@ -1,0 +1,8 @@
+[Unit]
+Description=debugfs
+
+[Service]
+ExecStart=/bin/distri fuse -section=debug -repo=/rodebug -overlays=/debug -autodownload /ro-dbg
+
+[Install]
+WantedBy=multi-user.target
