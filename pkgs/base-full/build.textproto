@@ -1,5 +1,5 @@
 source: "empty://"
-version: "3-14"
+version: "3-15"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"
@@ -34,3 +34,4 @@ runtime_dep: "sudo"
 runtime_dep: "zsh"
 runtime_dep: "man-db"
 runtime_dep: "debugfs"
+runtime_dep: "srcfs"

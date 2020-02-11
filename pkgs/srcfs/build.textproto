@@ -1,0 +1,18 @@
+source: "empty://"
+version: "1-12"
+
+extra_file: "srcfs.service"
+
+# This is the shortest and fastest way to build an empty package:
+dep: "bash"
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: ""
+}
+
+runtime_dep: "distri1"
+
+install: {
+  systemd_unit: "${DISTRI_SOURCEDIR}/srcfs.service"
+}

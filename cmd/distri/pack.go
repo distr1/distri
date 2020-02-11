@@ -271,8 +271,10 @@ func (p *packctx) pack(root string) error {
 		"dev",     // udev
 		"ro",      // read-only package directory (mountpoint)
 		"ro-dbg",  // read-only package directory (mountpoint)
+		"src",     // read-only package directory (mountpoint)
 		"roimg",   // read-only package store
 		"rodebug", // read-only package store
+		"rosrc",   // read-only package store
 		"ro-tmp",  // temporary directory which is not hidden by systemd’s tmp.mount
 		"proc",    // procfs
 		"sys",     // sysfs
@@ -422,7 +424,7 @@ func (p *packctx) pack(root string) error {
 		"haveged",
 	}
 	if p.extraBase == "base-x11" {
-		units = append(units, "debugfs")
+		units = append(units, "debugfs", "srcfs")
 	}
 	cmd = exec.Command("unshare",
 		append([]string{

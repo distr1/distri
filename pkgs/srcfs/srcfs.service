@@ -1,0 +1,8 @@
+[Unit]
+Description=srcfs
+
+[Service]
+ExecStart=/bin/distri fuse -section=src -repo=/rosrc -overlays=distri-nonexistant -autodownload /usr/src
+
+[Install]
+WantedBy=multi-user.target
