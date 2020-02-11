@@ -34,6 +34,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
@@ -279,6 +280,10 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		return nil
 	}
 
+	// concurrently create source squashfs image
+	var srcEg errgroup.Group
+	srcEg.Go(b.pkgSource)
+
 	meta, err := b.build()
 	if err != nil {
 		return xerrors.Errorf("build: %v", err)
@@ -377,6 +382,10 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		}
 	}
 
+	if err := srcEg.Wait(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -444,6 +453,69 @@ func (b *buildctx) serialize() (string, error) {
 	}
 
 	return tmp.Name(), tmp.Close()
+}
+
+func (b *buildctx) pkgSource() error {
+	const subdir = "src"
+	dest, err := filepath.Abs("../distri/" + subdir + "/" + b.fullName() + ".squashfs")
+	if err != nil {
+		return err
+	}
+
+	stat, err := os.Stat(dest)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err == nil {
+		// Check if the src squashfs image is up to date:
+		var (
+			latest     time.Time
+			latestPath string
+		)
+		err := filepath.Walk(b.SourceDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.ModTime().After(latest) {
+				latest = info.ModTime()
+				latestPath = path
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if stat.ModTime().After(latest) {
+			return nil // src squashfs up to date
+		}
+		log.Printf("file %v changed (maybe others), rebuilding src squashfs image", latestPath)
+	}
+
+	f, err := renameio.TempFile("", dest)
+	if err != nil {
+		return err
+	}
+	defer f.Cleanup()
+	w, err := squashfs.NewWriter(f, time.Now())
+	if err != nil {
+		return err
+	}
+
+	if err := cp(w.Root, b.SourceDir); err != nil {
+		return err
+	}
+
+	if err := w.Flush(); err != nil {
+		return err
+	}
+
+	if err := f.CloseAtomicallyReplace(); err != nil {
+		return err
+	}
+	b.artifactWriter.Write([]byte("build/distri/" + subdir + "/" + b.fullName() + ".squashfs" + "\n"))
+	log.Printf("source package successfully created in %s", dest)
+
+	return nil
 }
 
 func (b *buildctx) pkg() error {
@@ -2433,6 +2505,16 @@ func build(args []string) error {
 			return xerrors.Errorf("syntax: distri build, in the pkgs/<pkg>/ directory")
 		}
 		return err
+	}
+
+	for _, subdir := range []string{
+		"debug",
+		"pkg",
+		"src",
+	} {
+		if err := os.MkdirAll(filepath.Join("../../build/distri/", subdir), 0755); err != nil {
+			return err
+		}
 	}
 
 	if err := buildpkg(*hermetic, *debug, *fuse, *cross, *remote, *artifactFd); err != nil {
