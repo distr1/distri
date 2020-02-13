@@ -75,18 +75,19 @@ type buildctx struct {
 	artifactWriter io.Writer
 }
 
-func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) error {
+const (
+	tidBuildpkg = iota
+	tidSquashfsSrc
+)
+
+func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd int) error {
+	defer trace.Event("buildpkg", tidBuildpkg).Done()
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
 		return err
 	}
 	var buildProto pb.Build
 	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
-		return err
-	}
-
-	pwd, err := os.Getwd()
-	if err != nil {
 		return err
 	}
 
@@ -141,6 +142,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		return xerrors.Errorf("url.Parse: %v", err)
 	}
 
+	extractEv := trace.Event("extract", tidBuildpkg)
 	if u.Scheme == "distriroot" {
 		if err := updateFromDistriroot(b.SourceDir); err != nil {
 			return xerrors.Errorf("updateFromDistriroot: %v", err)
@@ -155,6 +157,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 			return xerrors.Errorf("extract: %v", err)
 		}
 	}
+	extractEv.Done()
 
 	b.SourceDir, err = filepath.Abs(b.SourceDir)
 	if err != nil {
@@ -176,6 +179,8 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 	}
 
 	if remote != "" {
+		defer trace.Event("remote", tidBuildpkg).Done()
+
 		log.Printf("building on %s", remote)
 
 		ctx := context.Background()
@@ -216,13 +221,17 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 			"pkgs/" + b.Pkg + "/build.textproto",
 		}, prefixed...)
 		for _, input := range inputs {
+			storeEv := trace.Event("store "+input, tidBuildpkg)
 			log.Printf("store(%s)", input)
-			if err := store(ctx, cl, input); err != nil {
+			err := store(ctx, cl, input)
+			storeEv.Done()
+			if err != nil {
 				return err
 			}
 		}
 
 		var artifacts []string
+		buildEv := trace.Event("build "+b.Pkg, tidBuildpkg)
 		bcl, err := cl.Build(ctx, &bpb.BuildRequest{
 			WorkingDirectory: "pkgs/" + b.Pkg,
 			InputPath:        inputs,
@@ -241,8 +250,10 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 			artifacts = append(artifacts, progress.GetOutputPath()...)
 			log.Printf("progress: %+v", progress)
 		}
+		buildEv.Done()
 
 		for _, fn := range artifacts {
+			retrieveEv := trace.Event("retrieve "+fn, tidBuildpkg)
 			log.Printf("retrieve(%s)", fn)
 			downcl, err := cl.Retrieve(ctx, &bpb.RetrieveRequest{
 				Path: fn,
@@ -276,6 +287,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 			if err := f.CloseAtomicallyReplace(); err != nil {
 				return err
 			}
+			retrieveEv.Done()
 		}
 
 		return nil
@@ -283,13 +295,19 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 
 	// concurrently create source squashfs image
 	var srcEg errgroup.Group
-	srcEg.Go(b.pkgSource)
+	srcEg.Go(func() error {
+		defer trace.Event("squashfs src", tidSquashfsSrc).Done()
+		return b.pkgSource()
+	})
 
+	buildEv := trace.Event("build "+b.Pkg, tidBuildpkg)
 	meta, err := b.build()
 	if err != nil {
 		return xerrors.Errorf("build: %v", err)
 	}
+	buildEv.Done()
 
+	capsEv := trace.Event("setcaps", tidBuildpkg)
 	if err := setCaps(); err != nil {
 		return err
 	}
@@ -307,6 +325,8 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 			return err
 		}
 	}
+
+	capsEv.Done()
 
 	// b.DestDir is /tmp/distri-dest123/tmp
 	// package installs into b.DestDir/ro/hello-1
@@ -335,6 +355,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 	})
 	for _, pkg := range pkgs {
 		fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
+		writeEv := trace.Event("write "+fullName, tidBuildpkg)
 
 		deps := append(meta.GetRuntimeDep(),
 			append(b.Proto.GetRuntimeDep(),
@@ -381,6 +402,7 @@ func buildpkg(hermetic, debug, fuse bool, cross, remote string, artifactFd int) 
 		if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
 			return err
 		}
+		writeEv.Done()
 	}
 
 	if err := srcEg.Wait(); err != nil {
@@ -550,7 +572,9 @@ func (b *buildctx) pkg() error {
 	for _, pkg := range pkgs {
 		log.Printf("packaging %+v", pkg)
 		fullName := pkg.Proto.GetName() + "-" + b.Arch + "-" + b.Version
-		dest, err := filepath.Abs("../distri/" + pkg.subdir + "/" + fullName + ".squashfs")
+		squashfsName := pkg.subdir + "/" + fullName + ".squashfs"
+		pkgEv := trace.Event("pkg "+squashfsName, tidBuildpkg)
+		dest, err := filepath.Abs("../distri/" + squashfsName)
 		if err != nil {
 			return err
 		}
@@ -625,6 +649,7 @@ func (b *buildctx) pkg() error {
 		}
 		b.artifactWriter.Write([]byte("build/distri/" + pkg.subdir + "/" + fullName + ".squashfs" + "\n"))
 		log.Printf("package successfully created in %s", dest)
+		pkgEv.Done()
 	}
 
 	return nil
@@ -2489,8 +2514,16 @@ func build(args []string) error {
 		return runBuildJob(*job)
 	}
 
+	var pwd string
 	if *pkg != "" {
-		if err := os.Chdir(filepath.Join(env.DistriRoot, "pkgs", *pkg)); err != nil {
+		pwd = filepath.Join(env.DistriRoot, "pkgs", *pkg)
+		if err := os.Chdir(pwd); err != nil {
+			return err
+		}
+	} else {
+		var err error
+		pwd, err = os.Getwd()
+		if err != nil {
 			return err
 		}
 	}
@@ -2498,7 +2531,12 @@ func build(args []string) error {
 	if *ctracefile == "" {
 		// Enable writing ctrace output files by default for distri build. Not
 		// specifying the flag is a time- and power-costly mistake :)
-		trace.Enable("build." + *pkg)
+		trace.Enable("build." + filepath.Base(pwd))
+		ctx, canc := context.WithCancel(context.Background())
+		defer canc()
+		const freq = 1 * time.Second
+		go trace.CPUEvents(ctx, freq)
+		go trace.MemEvents(ctx, freq)
 	}
 
 	if !*ignoreGov {
@@ -2528,7 +2566,7 @@ func build(args []string) error {
 		}
 	}
 
-	if err := buildpkg(*hermetic, *debug, *fuse, *cross, *remote, *artifactFd); err != nil {
+	if err := buildpkg(*hermetic, *debug, *fuse, pwd, *cross, *remote, *artifactFd); err != nil {
 		return err
 	}
 
