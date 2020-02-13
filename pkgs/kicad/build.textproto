@@ -6,6 +6,7 @@ cherry_pick: "cmake.patch"
 cherry_pick: "cmakewxwidgets.patch"
 
 cmakebuilder: {
+  copy_to_builddir: true  # modifies source
   extra_cmake_flag: "-DOPENGL_gl_LIBRARY=/ro/${DISTRI_RESOLVE:mesa}/out/lib"
   extra_cmake_flag: "-DOPENGL_glu_LIBRARY=/ro/${DISTRI_RESOLVE:glu}/out/lib"
   extra_cmake_flag: "-DGLEW_LIBRARY=/ro/${DISTRI_RESOLVE:glew}/out/lib64"

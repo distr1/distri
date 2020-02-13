@@ -29,20 +29,32 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dinstalled_tests=false -Dman=false"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "mkdir build"
+}
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "meson --prefix=${DISTRI_PREFIX} build . -Dinstalled_tests=false -Dman=false"
 }
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -j ${DISTRI_JOBS} -v"
+  argv: "(cd build && LD_LIBRARY_PATH=$PWD/gdk-pixbuf:$PWD/gobject:$PWD/glib:$LD_LIBRARY_PATH ninja -j ${DISTRI_JOBS} -v)"
 }
 
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -j ${DISTRI_JOBS} -v install"
+  argv: "(cd build && DESTDIR=${DISTRI_DESTDIR} ninja -j ${DISTRI_JOBS} -v install)"
 }
 
 build_step: {

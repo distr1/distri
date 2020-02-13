@@ -1249,6 +1249,9 @@ func (b *buildctx) build() (*pb.Meta, error) {
 			if err := syscall.Mount(b.SourceDir, src, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
 				return nil, xerrors.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
 			}
+			if err := syscall.Mount("", src, "", syscall.MS_REMOUNT|syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
+				return nil, xerrors.Errorf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
+			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
 
 			wrappersSrc := filepath.Join(b.PkgDir, "wrappers")

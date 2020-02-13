@@ -22,16 +22,18 @@ dep: "kmod"
 dep: "rsync"
 
 build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "olddefconfig"
 }
 
 build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "-j${DISTRI_JOBS}"
   argv: "V=1"
   argv: "WERROR=0"
@@ -47,24 +49,18 @@ build_step: {
 
 build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "install"
   argv: "INSTALL_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 }
 
 build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "modules_install"
   argv: "INSTALL_MOD_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 }
 
 build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
   argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}${DISTRI_PREFIX}"
 }

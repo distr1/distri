@@ -8,10 +8,18 @@ import (
 )
 
 func (b *buildctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
-	steps := [][]string{
+	dir := "${DISTRI_SOURCEDIR}"
+	var steps [][]string
+	if opts.GetCopyToBuilddir() {
+		dir = "."
+		steps = [][]string{
+			[]string{"cp", "-T", "-ar", "${DISTRI_SOURCEDIR}/", "."},
+		}
+	}
+	steps = append(steps, [][]string{
 		append([]string{
 			"/bin/cmake",
-			"${DISTRI_SOURCEDIR}",
+			dir,
 			"-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}",
 			"-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
 			"-G", "Ninja",
@@ -25,6 +33,6 @@ func (b *buildctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*
 			"-c",
 			"DESTDIR=${DISTRI_DESTDIR} ninja -v -j " + strconv.Itoa(runtime.NumCPU()) + " install",
 		},
-	}
+	}...)
 	return stepsToProto(steps), env, nil
 }

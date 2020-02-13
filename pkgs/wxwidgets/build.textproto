@@ -12,6 +12,7 @@ dep: "gtk+"
 dep: "mesa"
 dep: "glu"
 dep: "webkitgtk"
+dep: "tiff"
 
 install: {
   # XXX: kicad’s cmake locates libraries by looking for lib%s.so:

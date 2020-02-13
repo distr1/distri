@@ -13,8 +13,14 @@ dep: "libglvnd"
 # Debian/Ubuntu/Mint:    `$ sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libosmesa-dev`
 
 build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
   argv: "/bin/cmake"
-  argv: "${DISTRI_SOURCEDIR}/build/cmake"
+  argv: "build/cmake"
   argv: "-DCMAKE_INSTALL_PREFIX:PATH=${DISTRI_PREFIX}"
   argv: "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
   argv: "-DOPENGL_opengl_LIBRARY=/ro/${DISTRI_RESOLVE:libglvnd}/out/lib/libOpenGL.so"

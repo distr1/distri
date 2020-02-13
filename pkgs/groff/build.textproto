@@ -8,7 +8,13 @@ cbuilder: {}
 dep: "perl"
 
 build_step: {
-  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
+  argv: "./configure"
   argv: "--prefix=${DISTRI_PREFIX}"
 }
 

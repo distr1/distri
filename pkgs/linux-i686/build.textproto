@@ -19,17 +19,19 @@ dep: "gzip"
 dep: "kmod"
 
 build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "olddefconfig"
   argv: "ARCH=i386"
 }
 
 build_step: {
   argv: "make"
-  argv: "-C"
-  argv: "${DISTRI_SOURCEDIR}"
   argv: "headers_install"
   argv: "INSTALL_HDR_PATH=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
   argv: "ARCH=i386"
