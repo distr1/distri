@@ -67,6 +67,7 @@ type buildctx struct {
 	Debug     bool
 	FUSE      bool
 	ChrootDir string // only set if Hermetic is enabled
+	Jobs      int
 
 	// substituteCache maps from a variable name like ${DISTRI_RESOLVE:expat} to
 	// the resolved package name like expat-amd64-2.2.6-1.
@@ -80,7 +81,7 @@ const (
 	tidSquashfsSrc
 )
 
-func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd int) error {
+func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
 	defer trace.Event("buildpkg", tidBuildpkg).Done()
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
@@ -105,6 +106,7 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd 
 		FUSE:           fuse,
 		Debug:          debug,
 		artifactWriter: ioutil.Discard,
+		Jobs:           jobs,
 	}
 
 	if artifactFd > -1 {
@@ -674,7 +676,7 @@ func (b *buildctx) substitute(s string) string {
 	s = strings.ReplaceAll(s, "${DISTRI_BUILDDIR}", b.BuildDir)
 	s = strings.ReplaceAll(s, "${DISTRI_SOURCEDIR}", b.SourceDir)
 	s = strings.ReplaceAll(s, "${DISTRI_FULLNAME}", b.fullName())
-	s = strings.ReplaceAll(s, "${DISTRI_JOBS}", strconv.Itoa(runtime.NumCPU()))
+	s = strings.ReplaceAll(s, "${DISTRI_JOBS}", strconv.Itoa(b.Jobs))
 	for k, v := range b.substituteCache {
 		s = strings.ReplaceAll(s, "${DISTRI_RESOLVE:"+k+"}", v)
 	}
@@ -2509,6 +2511,10 @@ func build(args []string) error {
 		pkg = fset.String("pkg",
 			"",
 			"If non-empty, a package to build. Otherwise inferred from $PWD")
+
+		jobs = fset.Int("jobs",
+			runtime.NumCPU(),
+			"Number of parallel jobs, passed to make -j, ninja --jobs, etc.")
 	)
 	fset.Usage = usage(fset, buildHelp)
 	fset.Parse(args)
@@ -2569,7 +2575,7 @@ func build(args []string) error {
 		}
 	}
 
-	if err := buildpkg(*hermetic, *debug, *fuse, pwd, *cross, *remote, *artifactFd); err != nil {
+	if err := buildpkg(*hermetic, *debug, *fuse, pwd, *cross, *remote, *artifactFd, *jobs); err != nil {
 		return err
 	}
 

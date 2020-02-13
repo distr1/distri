@@ -1,7 +1,6 @@
 package main
 
 import (
-	"runtime"
 	"strconv"
 
 	"github.com/distr1/distri/pb"
@@ -27,11 +26,11 @@ func (b *buildctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*
 		// It makes sense to pass an explicit -j argument to ninja, as within
 		// the build environment there is no /proc, and ninja falls back to only
 		// 3 jobs.
-		[]string{"ninja", "-v", "-j", strconv.Itoa(runtime.NumCPU())},
+		[]string{"ninja", "-v", "-j", strconv.Itoa(b.Jobs)},
 		[]string{
 			"/bin/sh",
 			"-c",
-			"DESTDIR=${DISTRI_DESTDIR} ninja -v -j " + strconv.Itoa(runtime.NumCPU()) + " install",
+			"DESTDIR=${DISTRI_DESTDIR} ninja -v -j " + strconv.Itoa(b.Jobs) + " install",
 		},
 	}...)
 	return stepsToProto(steps), env, nil
