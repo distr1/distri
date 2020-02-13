@@ -1086,9 +1086,13 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			if _, err = cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+			join, err := cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir})
+			if err != nil {
 				return nil, xerrors.Errorf("cmdfuse.Mount: %v", err)
 			}
+			ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
+			defer canc()
+			defer join(ctx)
 			defer fuse.Unmount(depsdir)
 		} else {
 			for _, dep := range deps {
