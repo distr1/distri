@@ -19,6 +19,17 @@ func printenv(args []string) error {
 	fset := flag.NewFlagSet("env", flag.ExitOnError)
 	fset.Usage = usage(fset, envHelp)
 	fset.Parse(args)
+	if fset.NArg() > 0 {
+		switch fset.Arg(0) {
+		case "DISTRIROOT":
+			fmt.Println(env.DistriRoot)
+		case "DISTRICFG":
+			fmt.Println(env.DistriConfig)
+		case "DEFAULTREPO":
+			fmt.Println(env.DefaultRepo)
+		}
+		return nil
+	}
 	fmt.Printf("DISTRIROOT=%q\n", env.DistriRoot)
 	fmt.Printf("DISTRICFG=%q\n", env.DistriConfig)
 	fmt.Printf("DEFAULTREPO=%q\n", env.DefaultRepo)
