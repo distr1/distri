@@ -22,16 +22,19 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Meta struct {
 	// Transitive closure of runtime dependency package names. E.g.:
-	// ["glibc-2.27", "pam-1.3.1"]
+	// ["glibc-amd64-2.27-3", "pam-amd64-1.3.1-3"]
 	RuntimeDep []string `protobuf:"bytes,1,rep,name=runtime_dep,json=runtimeDep" json:"runtime_dep,omitempty"`
 	// The source package from which this package was built. Useful to tie
-	// multiple binaries back to their source, and for globbing versions.
+	// split packages back to their source, and for globbing versions.
 	SourcePkg *string `protobuf:"bytes,2,opt,name=source_pkg,json=sourcePkg" json:"source_pkg,omitempty"`
 	// The version of the package. In some contexts, the version is already
 	// included in the filename, but not when e.g. “distri install” is obtaining
 	// meta.textproto files by accessing a symbolic link.
 	Version *string `protobuf:"bytes,3,opt,name=version" json:"version,omitempty"`
-	// TODO: document overlays
+	// Runtime union directories are used to implement per-package exchange
+	// directories (as opposed to global exchange directories). This is to be used
+	// for tight coupling situations, e.g. when a plugin mechanism does not
+	// guarantee ABI compatibility across versions.
 	RuntimeUnion         []*Union `protobuf:"bytes,4,rep,name=runtime_union,json=runtimeUnion" json:"runtime_union,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
