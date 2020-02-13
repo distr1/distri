@@ -96,6 +96,12 @@ func batch(args []string) error {
 	fset.Usage = usage(fset, batchHelp)
 	fset.Parse(args)
 
+	if *ctracefile == "" {
+		// Enable writing ctrace output files by default for distri batch. Not
+		// specifying the flag is a time- and power-costly mistake :)
+		trace.Enable("batch")
+	}
+
 	if !*ignoreGov {
 		cleanup, err := setGovernor("performance")
 		if err != nil {

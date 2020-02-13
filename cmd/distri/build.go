@@ -30,6 +30,7 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/squashfs"
+	"github.com/distr1/distri/internal/trace"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
@@ -2488,6 +2489,18 @@ func build(args []string) error {
 		return runBuildJob(*job)
 	}
 
+	if *pkg != "" {
+		if err := os.Chdir(filepath.Join(env.DistriRoot, "pkgs", *pkg)); err != nil {
+			return err
+		}
+	}
+
+	if *ctracefile == "" {
+		// Enable writing ctrace output files by default for distri build. Not
+		// specifying the flag is a time- and power-costly mistake :)
+		trace.Enable("build." + *pkg)
+	}
+
 	if !*ignoreGov {
 		cleanup, err := setGovernor("performance")
 		if err != nil {
@@ -2495,12 +2508,6 @@ func build(args []string) error {
 		} else {
 			oninterrupt.Register(cleanup)
 			defer cleanup()
-		}
-	}
-
-	if *pkg != "" {
-		if err := os.Chdir(filepath.Join(env.DistriRoot, "pkgs", *pkg)); err != nil {
-			return err
 		}
 	}
 

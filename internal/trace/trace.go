@@ -2,9 +2,12 @@ package trace
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -26,6 +29,23 @@ func Sink(w io.Writer) {
 	// Start the JSON Array Format
 	w.Write([]byte{'['})
 	// The ] at the end is optional, so we skip it
+}
+
+// Enable is a convenience function for creating a file in
+// $TMPDIR/distri.traces/prefix.$PID.
+//
+// The filename assumes the OS does not frequently re-use the same pid.
+func Enable(prefix string) error {
+	fn := filepath.Join(os.TempDir(), "distri.traces", fmt.Sprintf("%s.%d", prefix, os.Getpid()))
+	if err := os.MkdirAll(filepath.Dir(fn), 0755); err != nil {
+		return err
+	}
+	f, err := os.Create(fn)
+	if err != nil {
+		return err
+	}
+	Sink(f)
+	return nil
 }
 
 type PendingEvent struct {
