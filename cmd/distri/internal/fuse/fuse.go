@@ -299,6 +299,13 @@ func (d *dirent) mode() os.FileMode {
 	return os.ModeDir | 0555
 }
 
+func (d *dirent) size() uint64 {
+	if d.linkTarget != "" {
+		return uint64(len(d.linkTarget))
+	}
+	return 0
+}
+
 type dir struct {
 	entries []*dirent          // ReadDir requires deterministic iteration order
 	byName  map[string]*dirent // LookUpInode profits from fast access by name
@@ -884,6 +891,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 				}
 				op.Entry.Child = dirent.inode
 				op.Entry.Attributes = fuseops.InodeAttributes{
+					Size:  dirent.size(),
 					Nlink: 1, // TODO: number of incoming hard links to this inode
 					Mode:  dirent.mode(),
 					Atime: time.Now(), // TODO
@@ -909,6 +917,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 			if op.Name == "ctl" {
 				op.Entry.Child = ctlInode
 				op.Entry.Attributes = fuseops.InodeAttributes{
+					Size:  uint64(len(fs.ctl)),
 					Nlink: 1, // TODO: number of incoming hard links to this inode
 					Mode:  os.ModeSymlink | 0444,
 					Atime: time.Now(), // TODO
@@ -932,6 +941,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 			}
 			op.Entry.Child = dirent.inode
 			op.Entry.Attributes = fuseops.InodeAttributes{
+				Size:  dirent.size(),
 				Nlink: 1, // TODO: number of incoming hard links to this inode
 				Mode:  dirent.mode(),
 				Atime: time.Now(), // TODO
@@ -1006,6 +1016,7 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 	if image == -1 {
 		if op.Inode == ctlInode {
 			op.Attributes = fuseops.InodeAttributes{
+				Size:  uint64(len(fs.ctl)),
 				Nlink: 1, // TODO: number of incoming hard links to this inode
 				Mode:  os.ModeSymlink | 0444,
 				Atime: time.Now(), // TODO
@@ -1032,6 +1043,7 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 			}
 		case *dirent:
 			op.Attributes = fuseops.InodeAttributes{
+				Size:  x.size(),
 				Nlink: 1, // TODO: number of incoming hard links to this inode
 				Mode:  x.mode(),
 				Atime: time.Now(), // TODO
