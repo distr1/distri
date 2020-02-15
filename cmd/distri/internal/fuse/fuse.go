@@ -236,6 +236,9 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 		},
 		// Opt into caching resolved symlinks in the kernel page cache:
 		EnableSymlinkCaching: true,
+		// Opt into returning -ENOSYS on OpenFile and OpenDir:
+		EnableNoOpenSupport:    true,
+		EnableNoOpendirSupport: true,
 		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
@@ -1066,15 +1069,9 @@ func (fs *fuseFS) GetInodeAttributes(ctx context.Context, op *fuseops.GetInodeAt
 }
 
 func (fs *fuseFS) OpenDir(ctx context.Context, op *fuseops.OpenDirOp) error {
-	_, _, err := fs.squashfsInode(op.Inode)
-	if err != nil {
-		log.Println(err)
-		return fuse.EIO
-	}
-
-	//log.Printf("OpenDir(op=%+v, image %d, inode %d)", op, image, squashfsInode)
-	// TODO: open reader
-	return nil // allow opening any directory
+	// Instruct the kernel to not send OpenDir requests for performance:
+	// https://github.com/torvalds/linux/commit/7678ac50615d9c7a491d9861e020e4f5f71b594c
+	return fuse.ENOSYS
 }
 
 /*
@@ -1201,11 +1198,9 @@ func (fs *fuseFS) ReadDir(ctx context.Context, op *fuseops.ReadDirOp) error {
 }
 
 func (fs *fuseFS) OpenFile(ctx context.Context, op *fuseops.OpenFileOp) error {
-	//log.Printf("OpenFile(op=%+v)", op)
-
-	op.KeepPageCache = true // no modifications are happening in immutable images
-
-	return nil // allow opening any file
+	// Instruct the kernel to not send OpenFile requests for performance:
+	// https://github.com/torvalds/linux/commit/7678ac50615d9c7a491d9861e020e4f5f71b594c
+	return fuse.ENOSYS
 }
 
 func (fs *fuseFS) ReadFile(ctx context.Context, op *fuseops.ReadFileOp) error {
