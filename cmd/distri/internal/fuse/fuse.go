@@ -917,6 +917,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 				}
 				return nil
 			}
+			// TODO: switch to returning nil once we invalidate the cache
 			return fuse.ENOENT
 		} else { // overlay directory
 			fs.mu.Lock()
@@ -927,7 +928,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 			}
 			dirent, ok := dir.byName[op.Name]
 			if !ok {
-				return fuse.ENOENT
+				return nil // same as ENOENT when op.Entry.Child is 0
 			}
 			op.Entry.Child = dirent.inode
 			op.Entry.Attributes = fuseops.InodeAttributes{
@@ -975,7 +976,7 @@ func (fs *fuseFS) LookUpInode(ctx context.Context, op *fuseops.LookUpInodeOp) er
 
 	cie, ok := fis[op.Name]
 	if !ok {
-		return fuse.ENOENT
+		return nil // same as ENOENT when op.Entry.Child is 0
 	}
 	op.Entry.Child = cie.Child
 	op.Entry.Attributes = cie.Attributes
