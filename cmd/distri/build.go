@@ -1252,7 +1252,12 @@ func (b *buildctx) build() (*pb.Meta, error) {
 				return nil, xerrors.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
 			}
 			if err := syscall.Mount("", src, "", syscall.MS_REMOUNT|syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				return nil, xerrors.Errorf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
+				if err == syscall.EPERM {
+					// Happens in integration tests
+					log.Printf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
+				} else {
+					return nil, xerrors.Errorf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
+				}
 			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
 
