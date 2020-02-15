@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/google/go-github/v27 v27.0.4
 	github.com/google/renameio v0.0.0-20181108174601-76365acd908f
-	github.com/jacobsa/fuse v0.0.0-20191211084903-4898d79241b8
+	github.com/jacobsa/fuse v0.0.0-20200215070453-7c2b5692506e
 	github.com/klauspost/compress v1.9.7 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/lpar/gzipped v1.1.0

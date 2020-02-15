@@ -234,6 +234,8 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 			"allow_other": "", // allow all users to read files
 			"suid":        "",
 		},
+		// Opt into caching resolved symlinks in the kernel page cache:
+		EnableSymlinkCaching: true,
 		//DebugLogger: log.New(os.Stderr, "[debug] ", log.LstdFlags),
 	})
 	if err != nil {
