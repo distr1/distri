@@ -362,15 +362,24 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 		deps := append(meta.GetRuntimeDep(),
 			append(b.Proto.GetRuntimeDep(),
 				pkg.GetRuntimeDep()...)...)
-
+		{
+			pruned := make([]string, 0, len(deps))
+			for _, d := range deps {
+				if distri.ParseVersion(d).Pkg == pkg.GetName() {
+					continue
+				}
+				pruned = append(pruned, d)
+			}
+			deps = pruned
+		}
 		deps, err = b.glob(env.DefaultRepo, deps)
 		if err != nil {
-			return err
+			return fmt.Errorf("glob: %w", err)
 		}
 
 		resolved, err := resolve(env.DefaultRepo, deps, pkg.GetName())
 		if err != nil {
-			return err
+			return fmt.Errorf("resolve: %w", err)
 		}
 
 		// TODO: add the transitive closure of runtime dependencies
