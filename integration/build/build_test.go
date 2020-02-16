@@ -463,7 +463,12 @@ func TestMultiPackageBuild(t *testing.T) {
 	}{
 		{
 			meta: "multi-amd64-1.meta.textproto",
-			want: nil,
+			want: []string{
+				"multi-libs-amd64-1", // from splitting
+				// from multi-libs:
+				"bash-amd64-4.4.18-3",
+				"glibc-amd64-2.27-3", // from bash
+			},
 		},
 
 		{
