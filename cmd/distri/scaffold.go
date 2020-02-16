@@ -316,7 +316,6 @@ func scaffoldPullDebian(debianPackagesURL, source string) (remoteSource, remoteH
 		}
 
 		if !strings.HasSuffix(sourceUrl.Path, path.Dir(filename)) {
-			log.Printf("sourceUrl.Path=%q, path.Dir(filename)=%q", sourceUrl.Path, path.Dir(filename))
 			continue
 		}
 		remoteBase := path.Base(filename)
@@ -350,7 +349,6 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("current source: %s", source)
 	version, err := stringVal("version")
 	if err != nil {
 		return err
