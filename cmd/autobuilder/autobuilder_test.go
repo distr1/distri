@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -57,8 +59,17 @@ func TestAutobuilderCommands(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	repo := func() string {
+		cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+		cmd.Stderr = os.Stderr
+		b, err := cmd.Output()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(b))
+	}()
 	a := &autobuilder{
-		repo:   "TODO",
+		repo:   repo,
 		branch: "master",
 		srvDir: tempdir,
 		dryRun: true,
