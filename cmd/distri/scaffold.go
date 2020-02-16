@@ -2,24 +2,30 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/renameio"
 	"github.com/protocolbuffers/txtpbfmt/ast"
 	"github.com/protocolbuffers/txtpbfmt/parser"
 	"golang.org/x/xerrors"
@@ -94,7 +100,11 @@ func (c *scaffoldctx) buildFileExisting(buildFilePath string, hash string, exist
 		if got, want := len(values), 1; got != want {
 			return false, fmt.Errorf("malformed build file: %s: got %d Values, want %d", buildFilePath, got, want)
 		}
-		val := strconv.QuoteToASCII(repl(values[0].Value))
+		unq, err := strconv.Unquote(values[0].Value)
+		if err != nil {
+			return false, err
+		}
+		val := strconv.QuoteToASCII(repl(unq))
 		if val != values[0].Value {
 			values[0].Value = val
 			return true, nil
@@ -104,10 +114,6 @@ func (c *scaffoldctx) buildFileExisting(buildFilePath string, hash string, exist
 	path := func(last string) []*ast.Node { return ast.GetFromPath(nodes, []string{last}) }
 	var mod bool
 	modVersion, err := replaceStringVal(path("version"), func(val string) string {
-		val, err := strconv.Unquote(val)
-		if err != nil {
-			return val
-		}
 		pv := distri.ParseVersion(val)
 		pv.Upstream = c.Version
 		return pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10)
@@ -130,10 +136,6 @@ func (c *scaffoldctx) buildFileExisting(buildFilePath string, hash string, exist
 	mod = mod || modHash
 	if mod {
 		if _, err := replaceStringVal(path("version"), func(val string) string {
-			val, err := strconv.Unquote(val)
-			if err != nil {
-				return val
-			}
 			pv := distri.ParseVersion(val)
 			pv.DistriRevision++
 			return pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10)
@@ -220,7 +222,7 @@ func (c *scaffoldctx) scaffold1() error {
 	if err := os.MkdirAll(pkgdir, 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(pkgdir, "build.textproto"), buf, 0644); err != nil {
+	if err := renameio.WriteFile(filepath.Join(pkgdir, "build.textproto"), buf, 0644); err != nil {
 		return err
 	}
 	return nil
@@ -266,17 +268,161 @@ func scaffoldGo(gomod string) error {
 	return nil
 }
 
+func scaffoldPullDebian(debianPackagesURL, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+	ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer canc()
+	req, err := http.NewRequestWithContext(ctx, "GET", debianPackagesURL, nil)
+	if err != nil {
+		return "", "", "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", "", "", err
+	}
+	defer resp.Body.Close()
+	if got, want := resp.StatusCode, http.StatusOK; got != want {
+		return "", "", "", fmt.Errorf("%v: HTTP %v", debianPackagesURL, resp.Status)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", "", err
+	}
+	lines := strings.Split(string(b), "\n")
+	sourceUrl, err := url.Parse(source)
+	if err != nil {
+		return "", "", "", err
+	}
+	sourceUrl.Path = path.Dir(sourceUrl.Path)
+	var filename string
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "Filename: "):
+			filename = strings.TrimPrefix(line, "Filename: ")
+			continue
+
+		case strings.HasPrefix(line, "Version: "):
+			remoteVersion = strings.TrimPrefix(line, "Version: ")
+			continue
+
+		case strings.HasPrefix(line, "SHA256: "):
+			remoteHash = strings.TrimPrefix(line, "SHA256: ")
+			continue
+
+		case strings.TrimSpace(line) == "":
+			// package stanza done
+
+		default:
+			continue
+		}
+
+		if !strings.HasSuffix(sourceUrl.Path, path.Dir(filename)) {
+			log.Printf("sourceUrl.Path=%q, path.Dir(filename)=%q", sourceUrl.Path, path.Dir(filename))
+			continue
+		}
+		remoteBase := path.Base(filename)
+		sourceUrl.Path = path.Join(sourceUrl.Path, remoteBase)
+		return sourceUrl.String(), remoteHash, remoteVersion, nil
+	}
+	return "", "", "", fmt.Errorf("package not found in Debian Packages file")
+}
+
+func scaffoldPull(buildFilePath string, dryRun bool) error {
+	b, err := ioutil.ReadFile(buildFilePath)
+	if err != nil {
+		return err
+	}
+	nodes, err := parser.Parse(b)
+	if err != nil {
+		return err
+	}
+	stringVal := func(path ...string) (string, error) {
+		nodes := ast.GetFromPath(nodes, path)
+		if got, want := len(nodes), 1; got != want {
+			return "", fmt.Errorf("malformed build file: %s: got %d version keys, want %d", buildFilePath, got, want)
+		}
+		values := nodes[0].Values
+		if got, want := len(values), 1; got != want {
+			return "", fmt.Errorf("malformed build file: %s: got %d Values, want %d", buildFilePath, got, want)
+		}
+		return strconv.Unquote(values[0].Value)
+	}
+	source, err := stringVal("source")
+	if err != nil {
+		return err
+	}
+	log.Printf("current source: %s", source)
+	version, err := stringVal("version")
+	if err != nil {
+		return err
+	}
+
+	outdated := false
+	if strings.HasSuffix(source, ".deb") {
+		u, err := stringVal("pull", "debian_packages")
+		if err != nil {
+			return err
+		}
+		remoteSource, remoteHash, remoteVersion, err := scaffoldPullDebian(u, source)
+		if err != nil {
+			return err
+		}
+
+		if remoteSource == source {
+			return nil // up to date
+		}
+		log.Printf("not up to date: updating to %s", remoteVersion)
+
+		val := strconv.QuoteToASCII(remoteSource)
+		ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
+
+		val = strconv.QuoteToASCII(remoteHash)
+		ast.GetFromPath(nodes, []string{"hash"})[0].Values[0].Value = val
+
+		pv := distri.ParseVersion(version)
+		if pv.Upstream != remoteVersion {
+			pv.Upstream = remoteVersion
+			pv.DistriRevision++
+			val := strconv.QuoteToASCII(pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10))
+			ast.GetFromPath(nodes, []string{"version"})[0].Values[0].Value = val
+		}
+		outdated = true
+	}
+
+	if dryRun {
+		if outdated {
+			os.Exit(2) // outdated
+		}
+		os.Exit(0) // up-to-date
+	}
+
+	buf := []byte(parser.Pretty(nodes, 0))
+	if bytes.Equal(buf, b) {
+		return nil
+	}
+	if err := renameio.WriteFile(buildFilePath, buf, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func scaffold(args []string) error {
 	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
 	var (
 		name    = fset.String("name", "", "If non-empty and specified with -version, overrides the detected package name")
 		version = fset.String("version", "", "If non-empty and specified with -name, overrides the detected package version")
 		gomod   = fset.String("gomod", "", "if non-empty, a path to a go.mod file from which to take targets to scaffold")
+		pull    = fset.String("pull", "", "if non-empty, package name to update to its latest version")
+		dryRun  = fset.Bool("dry_run", false, "dry run")
 	)
 	fset.Usage = usage(fset, scaffoldHelp)
 	fset.Parse(args)
 	if *gomod != "" {
 		return scaffoldGo(*gomod)
+	}
+	if *pull != "" {
+		buildFilePath := filepath.Join(env.DistriRoot, "pkgs", *pull, "build.textproto")
+		return scaffoldPull(buildFilePath, *dryRun)
 	}
 	if fset.NArg() != 1 {
 		return xerrors.Errorf("syntax: scaffold <url>")

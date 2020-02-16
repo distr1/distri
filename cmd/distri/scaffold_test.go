@@ -1,13 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
@@ -139,5 +145,120 @@ func TestExistingFile(t *testing.T) {
 	}
 	if diff := cmp.Diff(got, string(again)); diff != "" {
 		t.Fatalf("scaffold: unexpected build.textproto file: diff (-want +got):\n%s", diff)
+	}
+}
+
+func TestScaffoldPullDebian(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `Package: google-chrome-stable
+Version: 80.0.3987.106-1
+Section: web
+Filename: pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb
+SHA256: 33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d
+Description: The web browser from Google
+ Google Chrome is a browser that combines a minimal design with sophisticated technology to make the web faster, safer, and easier.
+
+`)
+	}))
+	defer ts.Close()
+	source := ts.URL + "/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.87-1_amd64.deb"
+	packagesURL := ts.URL + "/linux/chrome/deb/dists/stable/main/binary-amd64/Packages"
+	remoteSource, remoteHash, remoteVersion, err := scaffoldPullDebian(packagesURL, source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantSource := ts.URL + "/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb"
+	wantHash := "33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d"
+	wantVersion := "80.0.3987.106-1"
+	if got, want := remoteSource, wantSource; got != want {
+		t.Errorf("scaffoldPullDebian: got source %q, want %q", got, want)
+	}
+	if got, want := remoteHash, wantHash; got != want {
+		t.Errorf("scaffoldPullDebian: got hash %q, want %q", got, want)
+	}
+	if got, want := remoteVersion, wantVersion; got != want {
+		t.Errorf("scaffoldPullDebian: got version %q, want %q", got, want)
+	}
+}
+
+var buildFileTmpl = template.Must(template.New("").Parse(`# leading comment
+source: "{{ .Source }}"
+hash: "{{ .Hash }}"
+version: "{{ .Version }}"
+pull: {
+  debian_packages: "{{ .DebianPackages }}"
+}
+
+cbuilder: {}
+`))
+
+func TestScaffoldPull(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `Package: google-chrome-stable
+Version: 80.0.3987.106-1
+Section: web
+Filename: pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb
+SHA256: 33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d
+Description: The web browser from Google
+ Google Chrome is a browser that combines a minimal design with sophisticated technology to make the web faster, safer, and easier.
+
+`)
+	}))
+	defer ts.Close()
+	packagesURL := ts.URL + "/linux/chrome/deb/dists/stable/main/binary-amd64/Packages"
+
+	f, err := ioutil.TempFile("", "distri-scaffold-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type tmplData struct {
+		Source         string
+		Hash           string
+		Version        string
+		DebianPackages string
+	}
+	old := func() string {
+		var buf bytes.Buffer
+		if err := buildFileTmpl.Execute(&buf, tmplData{
+			Source:         "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.87-1_amd64.deb",
+			Hash:           "85e07dee624d3c7eec6a6194efcb070b353ee52c0e5980517760230128a3ba61",
+			Version:        "80.0.3987.87-1-11",
+			DebianPackages: packagesURL,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return buf.String()
+	}()
+	f.Write([]byte(old))
+	f.Close()
+	defer os.Remove(f.Name())
+	buildFilePath := f.Name()
+	if err := scaffoldPull(buildFilePath, false); err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile(buildFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(b) == old {
+		t.Fatalf("scaffoldPull: build.textproto unexpectedly unchanged")
+	}
+	want := func() string {
+		var buf bytes.Buffer
+		if err := buildFileTmpl.Execute(&buf, tmplData{
+			Source:         "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb",
+			Hash:           "33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d",
+			Version:        "80.0.3987.106-1-12",
+			DebianPackages: packagesURL,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return buf.String()
+	}()
+	if diff := cmp.Diff(want, string(b)); diff != "" {
+		t.Errorf("scaffoldPull: unexpected contents: diff (-want +got):\n%s", diff)
 	}
 }
