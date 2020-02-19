@@ -84,8 +84,26 @@ qemu-serial:
 qemu-graphic:
 	${QEMU}
 
-.PHONY: docs
+.PHONY: docs screen
 
 docs: docs/building.asciidoc docs/package-format.asciidoc docs/index.asciidoc docs/rosetta-stone.asciidoc
 	mkdir -p ${DOCSDIR}
 	asciidoctor --destination-dir ${DOCSDIR} $^
+
+# Example screen session for working with distri:
+screen:
+	# Start screen in detached mode
+	screen -S distri -d -m
+	# Window 1: make command to pack a new distri disk image
+	screen -S distri -X title "image"
+	screen -S distri -X stuff "make image serial=1 authorized_keys=~/.ssh/authorized_keys"
+	# Window 2: make command to start the disk image in a qemu session
+	screen -S distri -X screen
+	screen -S distri -X title "qemu"
+	screen -S distri -X stuff "make qemu-serial"
+	# Window 3: SSH into the distri instance (better than serial)
+	screen -S distri -X screen
+	screen -S distri -X title "ssh"
+	screen -S distri -X stuff "ssh distri0"
+	# Setup done, now resume screen
+	screen -r distri
