@@ -1,0 +1,8 @@
+[Unit]
+Description=distri autobuilder
+
+[Service]
+ExecStart=@AUTOBUILDER@
+
+[Install]
+WantedBy=default.target

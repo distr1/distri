@@ -84,6 +84,11 @@ all: install
 install:
 # TODO: inherit CAP_SETFCAP
 	CGO_ENABLED=0 go install ./cmd/... && sudo setcap 'CAP_SYS_ADMIN,CAP_DAC_OVERRIDE=ep CAP_SETFCAP=eip' $(shell go env GOPATH)/bin/distri
+	# Enable using systemctl --user enable --now distri-autobuilder.service
+	mkdir -p ~/.config/systemd/user && sed "s,@AUTOBUILDER@,$(shell which autobuilder),g" autobuilder.service.in > ~/.config/systemd/user/distri-autobuilder.service
+	# This is a no-op if the unit is not running
+	systemctl --user daemon-reload || true
+	systemctl --user try-restart distri-autobuilder.service || true
 
 test: install
 	DISTRIROOT=$$PWD go test -v ./cmd/... ./integration/...
