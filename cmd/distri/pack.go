@@ -861,7 +861,11 @@ name=root`)
 	if p.bootDebug {
 		params = append(params, "systemd.log_level=debug systemd.log_target=console")
 	}
-	mkconfigCmd := "GRUB_CMDLINE_LINUX=\"console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init systemd.setenv=PATH=/bin rw\" GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg"
+	cmdline := "console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init systemd.setenv=PATH=/bin rw"
+	if err := ioutil.WriteFile(p.diskImg+".cmdline", []byte(cmdline+"\n"), 0644); err != nil {
+		return err
+	}
+	mkconfigCmd := fmt.Sprintf(`GRUB_CMDLINE_LINUX=%q GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg`, cmdline)
 	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", mkconfigCmd)
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout

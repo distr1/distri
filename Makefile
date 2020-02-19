@@ -30,6 +30,28 @@ QEMU=qemu-system-x86_64 \
 	-device virtio-scsi-pci,id=scsi \
 	-device scsi-hd,drive=hd
 
+# To use gdb to debug the Linux kernel, use e.g.:
+#
+# make qemu-serial \
+#   kgdb=1 \
+#   kernel=/home/michael/fuse-debug/linux/arch/x86/boot/bzImage \
+#   cmdline="panic_on_oops=1"
+#
+# gdb vmlinux
+# (gdb) target remote localhost:1234
+# (gdb) continue
+ifdef kgdb
+cmdline+= nokaslr
+cmdline+= kgdbwait
+cmdline+= kgdboc=ttyS0,115200
+QEMU+= -serial tcp::1234,server,nowait
+endif
+
+ifdef kernel
+QEMU+= -kernel "${kernel}"
+QEMU+= -append "root=/dev/sda4 ro ${cmdline} $(shell tr -d '\n' < ${DISKIMG}.cmdline)"
+endif
+
 PACKFLAGS=
 
 # for when you want to see non-kernel console output (e.g. systemd), useful with qemu
