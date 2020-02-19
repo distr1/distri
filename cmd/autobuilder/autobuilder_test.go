@@ -50,7 +50,7 @@ func TestAutobuilderCommands(t *testing.T) {
 	}
 	defer os.RemoveAll(tempdir)
 
-	for _, subdir := range []string{"pkg", "debug"} {
+	for _, subdir := range []string{"pkg", "debug", "src"} {
 		if err := os.MkdirAll(filepath.Join(tempdir, "distri", "sha", subdir), 0755); err != nil {
 			t.Fatal(err)
 		}
@@ -68,13 +68,14 @@ func TestAutobuilderCommands(t *testing.T) {
 		}
 		return strings.TrimSpace(string(b))
 	}()
+	const commit = "HEAD"
 	a := &autobuilder{
-		repo:   repo,
+		repo:   "file://" + repo,
 		branch: "master",
 		srvDir: tempdir,
 		dryRun: true,
+		//rebuild: commit,
 	}
-	const commit = "HEAD"
 	if err := a.runCommit(commit); err != nil {
 		t.Fatal(err)
 	}
@@ -83,8 +84,11 @@ func TestAutobuilderCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const want = `[debug] sh -c cd pkgs/i3status && distri
+	const want = `[debug] sh -c cd distri/pkgs/i3status && distri
 [batch] distri batch -dry_run
+[mirror-pkg] sh -c cd distri/build/distri/pkg && distri mirror
+[mirror-debug] sh -c cd distri/build/distri/debug && distri mirror
+[mirror-src] sh -c cd distri/build/distri/src && distri mirror
 [image] sh -c mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img
 [image-serial] sh -c mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img
 [image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz
@@ -127,6 +131,9 @@ func TestAutobuilderCommands(t *testing.T) {
 		}
 		const want = `[debug] already built, skipping
 [batch] distri batch -dry_run
+[mirror-pkg] sh -c cd distri/build/distri/pkg && distri mirror
+[mirror-debug] sh -c cd distri/build/distri/debug && distri mirror
+[mirror-src] sh -c cd distri/build/distri/src && distri mirror
 [image] already built, skipping
 [image-serial] already built, skipping
 [image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz

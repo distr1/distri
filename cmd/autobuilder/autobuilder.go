@@ -32,9 +32,6 @@ var (
 	accessToken = flag.String("github_access_token",
 		"",
 		"oauth2 GitHub access token")
-	rebuild = flag.String("rebuild",
-		"",
-		"If non-empty, a commit id to rebuild, i.e. ignore stamp files for")
 )
 
 type buildctx struct {
@@ -68,9 +65,12 @@ type step struct {
 }
 
 var steps = []step{
-	{"debug", []string{"sh", "-c", "cd pkgs/i3status && distri"}},
+	{"debug", []string{"sh", "-c", "cd distri/pkgs/i3status && distri"}},
 	// TODO(later):	{"bootstrap", []string{"distri", "build", "-bootstrap"}},
 	{"batch", []string{"distri", "batch", "-dry_run"}}, // TODO: enable actual build
+	{"mirror-pkg", []string{"sh", "-c", "cd distri/build/distri/pkg && distri mirror"}},
+	{"mirror-debug", []string{"sh", "-c", "cd distri/build/distri/debug && distri mirror"}},
+	{"mirror-src", []string{"sh", "-c", "cd distri/build/distri/src && distri mirror"}},
 	{"image", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img"}},
 	{"image-serial", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img"}},
 	{"image-gce", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz"}},
@@ -124,10 +124,11 @@ func runJob(job string) error {
 }
 
 type autobuilder struct {
-	repo   string
-	branch string
-	srvDir string
-	dryRun bool
+	repo    string
+	branch  string
+	srvDir  string
+	dryRun  bool
+	rebuild string
 
 	status struct {
 		sync.Mutex
@@ -144,7 +145,7 @@ func stamp(dir, stampName string) bool {
 }
 
 func (a *autobuilder) runCommit(commit string) error {
-	if *rebuild == commit {
+	if a.rebuild == commit {
 		// keep going
 	} else {
 		if _, err := os.Stat(filepath.Join(a.srvDir, "distri", commit)); err == nil {
@@ -160,7 +161,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		return err
 	}
 
-	if *rebuild == commit || !stamp(workdir, "clone") {
+	if a.rebuild == commit || !stamp(workdir, "clone") {
 		distri := filepath.Join(workdir, "distri")
 		if err := os.RemoveAll(distri); err != nil {
 			return err
@@ -195,7 +196,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		// need to actually go through all pkgs/, parse, inspect sources to get the basenames
 
 		// TODO(later): maybe implement this in Go to avoid process overhead
-		for _, subdir := range []string{"pkg", "debug"} {
+		for _, subdir := range []string{"pkg", "debug", "src"} {
 			cp := exec.Command("cp",
 				"--link",
 				"-r",
@@ -214,7 +215,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		Commit:  commit,
 		Workdir: workdir,
 		DryRun:  a.dryRun,
-		Rebuild: *rebuild,
+		Rebuild: a.rebuild,
 	}
 	serialized, err := b.serialize()
 	if err != nil {
@@ -493,6 +494,7 @@ func main() {
 		dryRun   = flag.Bool("dry_run", false, "print build commands instead of running them")
 		job      = flag.String("job", "", "TODO")
 		interval = flag.Duration("interval", 15*time.Minute, "how frequently to check for new tags (independent of any webhook notifications)")
+		rebuild  = flag.String("rebuild", "", "If non-empty, a commit id to rebuild, i.e. ignore stamp files for")
 	)
 	flag.Parse()
 	if *job != "" {
@@ -502,10 +504,11 @@ func main() {
 		return
 	}
 	a := &autobuilder{
-		repo:   *repo,
-		branch: *branch,
-		srvDir: *srvDir,
-		dryRun: *dryRun,
+		repo:    *repo,
+		branch:  *branch,
+		srvDir:  *srvDir,
+		dryRun:  *dryRun,
+		rebuild: *rebuild,
 	}
 	http.Handle("/logs/",
 		http.StripPrefix("/logs/",
