@@ -67,6 +67,7 @@ type packctx struct {
 	repo               string
 	extraBase          string
 	diskImg            string
+	diskImgSize        int64
 	gcsDiskImg         string
 	encrypt            bool
 	serialOnly         bool
@@ -88,6 +89,7 @@ func pack(args []string) error {
 	fset.StringVar(&p.repo, "repo", env.DefaultRepoRoot, "TODO")
 	fset.StringVar(&p.extraBase, "base", "", "if non-empty, an additional base image to install")
 	fset.StringVar(&p.diskImg, "diskimg", "", "Write an ext4 file system image to the specified path")
+	fset.Int64Var(&p.diskImgSize, "diskimg_size", 7*1024*1024*1024 /* 7 GiB */, "Disk image size in bytes (default: 7 GiB)")
 	fset.StringVar(&p.gcsDiskImg, "gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 	fset.BoolVar(&p.encrypt, "encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
 	fset.BoolVar(&p.serialOnly, "serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
@@ -124,7 +126,7 @@ func pack(args []string) error {
 	}
 
 	if p.diskImg != "" {
-		if err := p.writeDiskImg(); err != nil {
+		if err := p.writeDiskImg(p.diskImgSize); err != nil {
 			return xerrors.Errorf("writeDiskImg: %v", err)
 		}
 	}
@@ -579,7 +581,7 @@ veth
 	return nil
 }
 
-func (p *packctx) writeDiskImg() error {
+func (p *packctx) writeDiskImg(sz int64) error {
 	f, err := os.OpenFile(p.diskImg, os.O_CREATE|os.O_TRUNC|os.O_RDWR|unix.O_CLOEXEC, 0644)
 	if err != nil {
 		return err
@@ -588,7 +590,7 @@ func (p *packctx) writeDiskImg() error {
 		return err
 	}
 	defer f.Close()
-	if err := f.Truncate(7 * 1024 * 1024 * 1024); err != nil { // 7 GB
+	if err := f.Truncate(sz); err != nil {
 		return err
 	}
 
