@@ -492,6 +492,7 @@ func main() {
 		branch   = flag.String("branch", "master", "which branch of -repo to build")
 		srvDir   = flag.String("srv_dir", "/srv/repo.distr1.org", "TODO")
 		dryRun   = flag.Bool("dry_run", false, "print build commands instead of running them")
+		once     = flag.Bool("once", false, "do one iteration instead of polling/listening for webhooks")
 		job      = flag.String("job", "", "TODO")
 		interval = flag.Duration("interval", 15*time.Minute, "how frequently to check for new tags (independent of any webhook notifications)")
 		rebuild  = flag.String("rebuild", "", "If non-empty, a commit id to rebuild, i.e. ignore stamp files for")
@@ -518,10 +519,11 @@ func main() {
 			http.FileServer(http.Dir(filepath.Join(*srvDir, "distri")))))
 	http.HandleFunc("/status", a.serveStatusPage)
 	go http.ListenAndServe(":3718", nil)
-	if false /* once */ {
+	if *once {
 		if err := a.run(); err != nil {
 			log.Fatalf("%+v", err)
 		}
+		return
 	}
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
