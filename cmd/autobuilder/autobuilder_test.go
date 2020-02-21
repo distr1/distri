@@ -84,17 +84,18 @@ func TestAutobuilderCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const want = `[debug] sh -c cd distri/pkgs/i3status && distri
+	const want = `[smoke-quick] distri build -pkg=srcfs
+[smoke-c] distri build -pkg=make
 [batch] distri batch -dry_run
-[mirror-pkg] sh -c cd distri/build/distri/pkg && distri mirror
-[mirror-debug] sh -c cd distri/build/distri/debug && distri mirror
-[mirror-src] sh -c cd distri/build/distri/src && distri mirror
+[mirror-pkg] sh -c cd build/distri/pkg && distri mirror
+[mirror-debug] sh -c cd build/distri/debug && distri mirror
+[mirror-src] sh -c cd build/distri/src && distri mirror
+[cp-destdir] sh -c cp --link -r -f -a build/distri/* $DESTDIR/
 [image] sh -c mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img
 [image-serial] sh -c mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img
 [image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz
 [docker] sh -c make dockertar | tar tf -
 [docs] sh -c make docs DOCSDIR=$DESTDIR/docs
-[cp-destdir] sh -c cp --link -r -f -a build/distri/* $DESTDIR/
 `
 	if diff := cmp.Diff(want, string(b)); diff != "" {
 		t.Fatalf("unexpected build log: diff (-want +got):\n%s", diff)
@@ -114,7 +115,8 @@ func TestAutobuilderCommands(t *testing.T) {
 	}
 
 	t.Run("SkipBootstrapWithStamp", func(t *testing.T) {
-		for _, stamp := range []string{"debug", "image", "image-serial", "cp-destdir"} {
+		for _, step := range steps {
+			stamp := step.stamp
 			stampFile := filepath.Join(tempdir, "work", commit, "stamp."+stamp)
 			log.Printf("writing stampFile %q", stampFile)
 			if err := ioutil.WriteFile(stampFile, nil, 0644); err != nil {
@@ -129,17 +131,18 @@ func TestAutobuilderCommands(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		const want = `[debug] already built, skipping
-[batch] distri batch -dry_run
-[mirror-pkg] sh -c cd distri/build/distri/pkg && distri mirror
-[mirror-debug] sh -c cd distri/build/distri/debug && distri mirror
-[mirror-src] sh -c cd distri/build/distri/src && distri mirror
+		const want = `[smoke-quick] already built, skipping
+[smoke-c] already built, skipping
+[batch] already built, skipping
+[mirror-pkg] already built, skipping
+[mirror-debug] already built, skipping
+[mirror-src] already built, skipping
+[cp-destdir] already built, skipping
 [image] already built, skipping
 [image-serial] already built, skipping
-[image-gce] sh -c mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz
-[docker] sh -c make dockertar | tar tf -
-[docs] sh -c make docs DOCSDIR=$DESTDIR/docs
-[cp-destdir] already built, skipping
+[image-gce] already built, skipping
+[docker] already built, skipping
+[docs] already built, skipping
 `
 		if diff := cmp.Diff(want, string(b)); diff != "" {
 			t.Fatalf("unexpected build log: diff (-want +got):\n%s", diff)

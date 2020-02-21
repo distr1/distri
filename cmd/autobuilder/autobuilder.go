@@ -65,20 +65,21 @@ type step struct {
 }
 
 var steps = []step{
-	{"debug", []string{"sh", "-c", "cd distri/pkgs/i3status && distri"}},
+	// smoke tests: verify package building works with this version of distri
+	{"smoke-quick", []string{"distri", "build", "-pkg=srcfs"}},
+	{"smoke-c", []string{"distri", "build", "-pkg=make"}},
 	// TODO(later):	{"bootstrap", []string{"distri", "build", "-bootstrap"}},
-	{"batch", []string{"distri", "batch", "-dry_run"}}, // TODO: enable actual build
-	{"mirror-pkg", []string{"sh", "-c", "cd distri/build/distri/pkg && distri mirror"}},
-	{"mirror-debug", []string{"sh", "-c", "cd distri/build/distri/debug && distri mirror"}},
-	{"mirror-src", []string{"sh", "-c", "cd distri/build/distri/src && distri mirror"}},
+	{"batch", []string{"distri", "batch", "-dry_run"}},
+	{"mirror-pkg", []string{"sh", "-c", "cd build/distri/pkg && distri mirror"}},
+	{"mirror-debug", []string{"sh", "-c", "cd build/distri/debug && distri mirror"}},
+	{"mirror-src", []string{"sh", "-c", "cd build/distri/src && distri mirror"}},
+	{"cp-destdir", []string{"sh", "-c", "cp --link -r -f -a build/distri/* $DESTDIR/"}},
 	{"image", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image DISKIMG=$DESTDIR/img/distri-disk.img"}},
 	{"image-serial", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make image serial=1 DISKIMG=$DESTDIR/img/distri-qemu-serial.img"}},
 	{"image-gce", []string{"sh", "-c", "mkdir -p $DESTDIR/img && make gceimage GCEDISKIMG=$DESTDIR/img/distri-gce.tar.gz"}},
 	// TODO(later): hook this up with credentials to push to the docker hub
 	{"docker", []string{"sh", "-c", "make dockertar | tar tf -"}},
 	{"docs", []string{"sh", "-c", "make docs DOCSDIR=$DESTDIR/docs"}},
-
-	{"cp-destdir", []string{"sh", "-c", "cp --link -r -f -a build/distri/* $DESTDIR/"}},
 }
 
 func (b *buildctx) run() error {
@@ -99,6 +100,7 @@ func (b *buildctx) run() error {
 			continue
 		}
 		build := exec.Command(step.argv[0], step.argv[1:]...)
+		build.Dir = filepath.Join(b.Workdir, "distri")
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
