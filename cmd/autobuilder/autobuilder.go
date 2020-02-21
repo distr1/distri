@@ -197,12 +197,20 @@ func (a *autobuilder) runCommit(commit string) error {
 
 		// TODO(later): maybe implement this in Go to avoid process overhead
 		for _, subdir := range []string{"pkg", "debug", "src"} {
+			src := filepath.Join(a.srvDir, "distri", target, subdir)
+			if _, err := os.Stat(src); err != nil && os.IsNotExist(err) {
+				continue // skip
+			}
+			dest := filepath.Join(workdir, "distri", "build", "distri")
+			if _, err := os.Stat(dest); err == nil {
+				continue // skip, already exists
+			}
 			cp := exec.Command("cp",
 				"--link",
 				"-r",
 				"-a",
-				filepath.Join(a.srvDir, "distri", target, subdir),
-				filepath.Join(workdir, "distri", "build", "distri"))
+				src,
+				dest)
 			cp.Stdout = os.Stdout
 			cp.Stderr = os.Stderr
 			if err := cp.Run(); err != nil {
