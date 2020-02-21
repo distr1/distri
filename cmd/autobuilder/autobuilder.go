@@ -289,14 +289,14 @@ func (a *autobuilder) runCommit(commit string) error {
 		return err
 	}
 	defer stdout.Close()
-	cmd.Stdout = stdout
+	cmd.Stdout = io.MultiWriter(os.Stdout, stdout)
 	errlog := filepath.Join(logDir, "stderr.log")
 	stderr, err := os.Create(errlog)
 	if err != nil {
 		return err
 	}
 	defer stderr.Close()
-	cmd.Stderr = stderr
+	cmd.Stderr = io.MultiWriter(os.Stderr, stderr)
 	if err := cmd.Run(); err != nil {
 		return xerrors.Errorf("%v (log %s): %w", cmd.Args, errlog, err)
 	}
