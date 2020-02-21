@@ -243,7 +243,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		"HOME=" + os.Getenv("HOME"), // TODO(later): make hermetic
 		"GOPATH=" + filepath.Join(workdir, "go"),
 		"GOPROXY=https://proxy.golang.org",
-		"PATH=" + os.Getenv("PATH"),
+		"PATH=" + filepath.Join(workdir, "go", "bin") + ":" + os.Getenv("PATH"),
 	}
 	install.Stdout = os.Stdout
 	install.Stderr = os.Stderr
