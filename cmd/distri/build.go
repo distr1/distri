@@ -135,6 +135,14 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 		return err
 	}
 
+	buildLog, err := os.Create("build-" + b.Version + ".log")
+	if err != nil {
+		return err
+	}
+	defer buildLog.Close()
+	multiLog := io.MultiWriter(os.Stderr, buildLog)
+	log.SetOutput(multiLog)
+
 	log.Printf("building %s", b.fullName())
 
 	b.SourceDir = trimArchiveSuffix(filepath.Base(b.Proto.GetSource()))
@@ -303,7 +311,7 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 	})
 
 	buildEv := trace.Event("build "+b.Pkg, tidBuildpkg)
-	meta, err := b.build()
+	meta, err := b.build(buildLog)
 	if err != nil {
 		return xerrors.Errorf("build: %v", err)
 	}
@@ -1101,7 +1109,7 @@ func store(ctx context.Context, cl bpb.BuildClient, fn string) error {
 	return nil
 }
 
-func (b *buildctx) build() (*pb.Meta, error) {
+func (b *buildctx) build(buildLog io.Writer) (*pb.Meta, error) {
 	if os.Getenv("DISTRI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
 		if err != nil {
@@ -1163,8 +1171,8 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		// TODO: clean the environment
 		cmd.Env = append(os.Environ(), "DISTRI_BUILD_PROCESS=1")
 		cmd.Stdin = os.Stdin // for interactive debugging
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = io.MultiWriter(os.Stdout, buildLog)
+		cmd.Stderr = io.MultiWriter(os.Stderr, buildLog)
 		if err := cmd.Start(); err != nil {
 			return nil, xerrors.Errorf("%v: %w", cmd.Args, err)
 		}
@@ -1186,13 +1194,6 @@ func (b *buildctx) build() (*pb.Meta, error) {
 		}
 		return &meta, nil
 	}
-
-	logDir := filepath.Dir(b.SourceDir) // TODO: introduce a struct field
-	buildLog, err := os.Create(filepath.Join(logDir, "build-"+b.Version+".log"))
-	if err != nil {
-		return nil, err
-	}
-	defer buildLog.Close()
 
 	// Resolve build dependencies before we chroot, so that we still have access
 	// to the meta files.
@@ -2465,7 +2466,7 @@ func runBuildJob(job string) error {
 	}
 	b.Proto = &buildProto
 
-	meta, err := b.build()
+	meta, err := b.build(ioutil.Discard)
 	if err != nil {
 		return err
 	}
