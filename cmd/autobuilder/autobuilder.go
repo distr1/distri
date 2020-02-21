@@ -144,17 +144,27 @@ func stamp(dir, stampName string) bool {
 	return err == nil
 }
 
+type logWriter struct{ underlying *log.Logger }
+
+func (lw logWriter) Write(p []byte) (n int, err error) {
+	lw.underlying.Output(4, string(p))
+	return len(p), nil
+}
+
 func (a *autobuilder) runCommit(commit string) error {
+	log := log.New(&logWriter{
+		log.New(log.Writer(), "", log.LstdFlags|log.Lshortfile),
+	}, fmt.Sprintf("[commit %s] ", commit), 0)
 	if a.rebuild == commit {
 		// keep going
 	} else {
 		if _, err := os.Stat(filepath.Join(a.srvDir, "distri", commit)); err == nil {
-			log.Printf("[%s] already built, skipping", commit)
+			log.Printf("already built, skipping")
 			return nil // already built
 		}
 	}
 
-	log.Printf("[%s] building", commit)
+	log.Printf("building")
 
 	workdir := filepath.Join(a.srvDir, "work", commit)
 	if err := os.MkdirAll(workdir, 0755); err != nil {
@@ -162,6 +172,7 @@ func (a *autobuilder) runCommit(commit string) error {
 	}
 
 	if a.rebuild == commit || !stamp(workdir, "clone") {
+		log.Printf("clone")
 		distri := filepath.Join(workdir, "distri")
 		if err := os.RemoveAll(distri); err != nil {
 			return err
@@ -185,6 +196,8 @@ func (a *autobuilder) runCommit(commit string) error {
 		if err := ioutil.WriteFile(filepath.Join(workdir, "stamp.clone"), nil, 0644); err != nil {
 			return err
 		}
+	} else {
+		log.Printf("already cloned")
 	}
 
 	if true /* TODO(later): #no-cache build tag not set */ {
@@ -213,6 +226,7 @@ func (a *autobuilder) runCommit(commit string) error {
 				dest)
 			cp.Stdout = os.Stdout
 			cp.Stderr = os.Stderr
+			log.Println(strings.Join(cp.Args, " "))
 			if err := cp.Run(); err != nil {
 				return xerrors.Errorf("%v: %w", cp.Args, err)
 			}
