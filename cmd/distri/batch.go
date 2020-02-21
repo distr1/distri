@@ -21,6 +21,7 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -287,7 +288,15 @@ type scheduler struct {
 	lastStatus time.Time
 }
 
+var isTerminal = func() bool {
+	_, err := unix.IoctlGetTermios(int(os.Stdout.Fd()), unix.TCGETS)
+	return err == nil
+}()
+
 func (s *scheduler) refreshStatus() {
+	if !isTerminal {
+		return
+	}
 	s.statusMu.Lock()
 	defer s.statusMu.Unlock()
 	s.lastStatus = time.Now()
@@ -309,6 +318,9 @@ func (s *scheduler) refreshStatus() {
 }
 
 func (s *scheduler) updateStatus(idx int, newStatus string) {
+	if !isTerminal {
+		return
+	}
 	s.statusMu.Lock()
 	defer s.statusMu.Unlock()
 	if diff := len(s.status[idx]) - len(newStatus); diff > 0 {
