@@ -209,15 +209,20 @@ func (a *autobuilder) runCommit(commit string) error {
 		// need to actually go through all pkgs/, parse, inspect sources to get the basenames
 
 		// TODO(later): maybe implement this in Go to avoid process overhead
+		dest := filepath.Join(workdir, "distri", "build", "distri")
+		if err := os.MkdirAll(dest, 0755); err != nil {
+			return err
+		}
 		for _, subdir := range []string{"pkg", "debug", "src"} {
 			src := filepath.Join(a.srvDir, "distri", target, subdir)
 			if _, err := os.Stat(src); err != nil && os.IsNotExist(err) {
 				continue // skip
 			}
-			dest := filepath.Join(workdir, "distri", "build", "distri")
-			if _, err := os.Stat(dest); err == nil {
+
+			if _, err := os.Stat(filepath.Join(dest, subdir)); err == nil {
 				continue // skip, already exists
 			}
+
 			cp := exec.Command("cp",
 				"--link",
 				"-r",
