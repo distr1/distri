@@ -176,7 +176,7 @@ func (a *autobuilder) runCommit(commit string) error {
 			return xerrors.Errorf("%v: %w", clone.Args, err)
 		}
 
-		for _, subdir := range []string{"pkg", "debug"} {
+		for _, subdir := range []string{"pkg", "debug", "src"} {
 			if err := os.MkdirAll(filepath.Join(workdir, "distri", "build", "distri", subdir), 0755); err != nil {
 				return err
 			}
