@@ -23,4 +23,8 @@ message Meta {
   // for tight coupling situations, e.g. when a plugin mechanism does not
   // guarantee ABI compatibility across versions.
   repeated Union runtime_union = 4;
+
+  // Opaque (printable) digest of all inputs to this build. Used by e.g. distri
+  // batch to figure out what to rebuild.
+  optional string input_digest = 5;
 }

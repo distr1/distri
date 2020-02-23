@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"io/ioutil"
 	"log"
@@ -54,26 +55,74 @@ Example:
 `
 
 type buildctx struct {
-	Proto     *pb.Build `json:"-"`
-	PkgDir    string    // e.g. /home/michael/distri/pkgs/busybox
-	Pkg       string    // e.g. busybox
-	Arch      string    // e.g. amd64
-	Version   string    // e.g. 1.29.2
-	SourceDir string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
-	BuildDir  string    // e.g. /tmp/distri-build-8123911
-	DestDir   string    // e.g. /tmp/distri-dest-3129384/tmp
-	Prefix    string    // e.g. /ro/busybox-1.29.2
-	Hermetic  bool
-	Debug     bool
-	FUSE      bool
-	ChrootDir string // only set if Hermetic is enabled
-	Jobs      int
+	Proto       *pb.Build `json:"-"`
+	PkgDir      string    // e.g. /home/michael/distri/pkgs/busybox
+	Pkg         string    // e.g. busybox
+	Arch        string    // e.g. amd64
+	Version     string    // e.g. 1.29.2
+	SourceDir   string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
+	BuildDir    string    // e.g. /tmp/distri-build-8123911
+	DestDir     string    // e.g. /tmp/distri-dest-3129384/tmp
+	Prefix      string    // e.g. /ro/busybox-1.29.2
+	Hermetic    bool
+	Debug       bool
+	FUSE        bool
+	ChrootDir   string // only set if Hermetic is enabled
+	Jobs        int
+	InputDigest string // opaque result of digest()
 
 	// substituteCache maps from a variable name like ${DISTRI_RESOLVE:expat} to
 	// the resolved package name like expat-amd64-2.2.6-1.
 	substituteCache map[string]string
 
 	artifactWriter io.Writer
+}
+
+func (b *buildctx) digest() (string, error) {
+	if b.InputDigest != "" {
+		return b.InputDigest, nil
+	}
+
+	h := fnv.New128a()
+	h.Write([]byte(proto.MarshalTextString(b.Proto)))
+
+	// Resolve build dependencies:
+	deps, err := b.builddeps(b.Proto)
+	if err != nil {
+		return "", xerrors.Errorf("builddeps: %v", err)
+	}
+	h.Write([]byte(strings.Join(deps, ",")))
+
+	// Resolve runtime-deps that go into the build (as opposed to those being
+	// discovered during the build, which can only ever reference build-time
+	// deps):
+	for _, pkg := range b.Proto.GetSplitPackage() {
+		deps := append([]string{},
+			append(b.Proto.GetRuntimeDep(),
+				pkg.GetRuntimeDep()...)...)
+		{
+			pruned := make([]string, 0, len(deps))
+			for _, d := range deps {
+				if distri.ParseVersion(d).Pkg == pkg.GetName() {
+					continue
+				}
+				pruned = append(pruned, d)
+			}
+			deps = pruned
+		}
+		deps, err := b.glob(env.DefaultRepo, deps)
+		if err != nil {
+			return "", fmt.Errorf("glob: %w", err)
+		}
+
+		resolved, err := resolve(env.DefaultRepo, deps, pkg.GetName())
+		if err != nil {
+			return "", fmt.Errorf("resolve: %w", err)
+		}
+		h.Write([]byte(strings.Join(resolved, ",")))
+	}
+	b.InputDigest = fmt.Sprintf("%032x", h.Sum(nil))
+	return b.InputDigest, nil
 }
 
 const (
@@ -187,6 +236,10 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 	if err := os.MkdirAll(filepath.Join(b.DestDir, "out"), 0755); err != nil {
 		return err
 	}
+
+	// Call digest() for the side-effect of populating the b.Digest field, which
+	// will then be available in the child process, too.
+	b.digest()
 
 	if remote != "" {
 		defer trace.Event("remote", tidBuildpkg).Done()
@@ -412,6 +465,7 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 			SourcePkg:    proto.String(b.Pkg),
 			Version:      proto.String(b.Version),
 			RuntimeUnion: unions,
+			InputDigest:  proto.String(b.InputDigest),
 		})
 		fn := filepath.Join("../distri/pkg/" + fullName + ".meta.textproto")
 		b.artifactWriter.Write([]byte("build/" + strings.TrimPrefix(fn, "../") + "\n"))
@@ -820,7 +874,13 @@ func (b *buildctx) runtimeEnv(deps []string) []string {
 	return env
 }
 
+var globCache = make(map[string]string)
+
 func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
+	key := imgDir + "/" + pkg
+	if globbed, ok := globCache[key]; ok {
+		return globbed, nil
+	}
 	if st, err := os.Lstat(filepath.Join(imgDir, pkg+".meta.textproto")); err == nil && st.Mode().IsRegular() {
 		return pkg, nil // pkg already contains the version
 	}
@@ -849,7 +909,9 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		sort.Slice(candidates, func(i, j int) bool {
 			return distri.PackageRevisionLess(candidates[i], candidates[j])
 		})
-		return candidates[len(candidates)-1], nil
+		globbed := candidates[len(candidates)-1]
+		globCache[key] = globbed
+		return globbed, nil
 	}
 	if len(candidates) == 0 {
 		if !b.Hermetic {
@@ -858,7 +920,9 @@ func (b *buildctx) glob1(imgDir, pkg string) (string, error) {
 		}
 		return "", xerrors.Errorf("package %q not found (pattern %s)", pkg, pattern)
 	}
-	return candidates[0], nil
+	globbed := candidates[0]
+	globCache[key] = globbed
+	return globbed, nil
 }
 
 func (b *buildctx) glob(imgDir string, pkgs []string) ([]string, error) {

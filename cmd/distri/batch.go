@@ -144,18 +144,27 @@ func batch(args []string) error {
 			return err
 		}
 
+		b := &buildctx{
+			Arch:  "amd64", // TODO
+			Proto: &buildProto,
+		}
+		inputDigest, err := b.digest()
+		if err != nil {
+			return err
+		}
+
 		fullname := pkg + "-" + arch + "-" + buildProto.GetVersion()
 		if !*simulate {
-			if squashStat, err := os.Stat(filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".squashfs")); err == nil {
-				buildStat, err := os.Stat(buildTextprotoPath)
-				if err != nil {
+			meta, err := pb.ReadMetaFile(filepath.Join(env.DistriRoot, "build", "distri", "pkg", pkg+"-"+arch+".meta.textproto"))
+			if err != nil {
+				if !os.IsNotExist(err) {
 					return err
 				}
-				if !*rebuild && buildStat.ModTime().Before(squashStat.ModTime()) {
-					continue // package already built
-				}
-				// fall-through: stale package
 			}
+			if !*rebuild && meta.GetInputDigest() == inputDigest {
+				continue // package already built
+			}
+			// fall-through: stale package
 		}
 
 		// TODO: to conserve work, only add nodes which need to be rebuilt
