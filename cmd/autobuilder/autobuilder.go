@@ -189,12 +189,6 @@ func (a *autobuilder) runCommit(commit string) error {
 			return xerrors.Errorf("%v: %w", clone.Args, err)
 		}
 
-		for _, subdir := range []string{"pkg", "debug", "src"} {
-			if err := os.MkdirAll(filepath.Join(workdir, "distri", "build", "distri", subdir), 0755); err != nil {
-				return err
-			}
-		}
-
 		if err := ioutil.WriteFile(filepath.Join(workdir, "stamp.clone"), nil, 0644); err != nil {
 			return err
 		}
@@ -202,7 +196,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		log.Printf("already cloned")
 	}
 
-	if true /* TODO(later): #no-cache build tag not set */ {
+	if !a.dryRun /* TODO(later): #no-cache build tag not set */ {
 		target, err := os.Readlink(filepath.Join(a.srvDir, "distri", a.branch))
 		if err != nil {
 			return err
@@ -218,10 +212,12 @@ func (a *autobuilder) runCommit(commit string) error {
 		for _, subdir := range []string{"pkg", "debug", "src"} {
 			src := filepath.Join(a.srvDir, "distri", target, subdir)
 			if _, err := os.Stat(src); err != nil && os.IsNotExist(err) {
+				log.Printf("not copying subdir %s, does not exist in src %s", subdir, src)
 				continue // skip
 			}
 
 			if _, err := os.Stat(filepath.Join(dest, subdir)); err == nil {
+				log.Printf("not copying subdir %s, already exists in dest %s", subdir, dest)
 				continue // skip, already exists
 			}
 
