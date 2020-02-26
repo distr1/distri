@@ -10,6 +10,7 @@ require (
 	github.com/jacobsa/fuse v0.0.0-20200215073154-2f65426467b1
 	github.com/klauspost/compress v1.9.7 // indirect
 	github.com/klauspost/pgzip v1.2.1
+	github.com/lib/pq v1.3.0
 	github.com/lpar/gzipped v1.1.0
 	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20191018194151-ab9b9b21328a

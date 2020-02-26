@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"flag"
@@ -10,18 +9,16 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/checkupstream"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -268,63 +265,6 @@ func scaffoldGo(gomod string) error {
 	return nil
 }
 
-func scaffoldPullDebian(debianPackagesURL, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
-	ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer canc()
-	req, err := http.NewRequestWithContext(ctx, "GET", debianPackagesURL, nil)
-	if err != nil {
-		return "", "", "", err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", "", "", err
-	}
-	defer resp.Body.Close()
-	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return "", "", "", fmt.Errorf("%v: HTTP %v", debianPackagesURL, resp.Status)
-	}
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", "", "", err
-	}
-	lines := strings.Split(string(b), "\n")
-	sourceUrl, err := url.Parse(source)
-	if err != nil {
-		return "", "", "", err
-	}
-	sourceUrl.Path = path.Dir(sourceUrl.Path)
-	var filename string
-	for _, line := range lines {
-		switch {
-		case strings.HasPrefix(line, "Filename: "):
-			filename = strings.TrimPrefix(line, "Filename: ")
-			continue
-
-		case strings.HasPrefix(line, "Version: "):
-			remoteVersion = strings.TrimPrefix(line, "Version: ")
-			continue
-
-		case strings.HasPrefix(line, "SHA256: "):
-			remoteHash = strings.TrimPrefix(line, "SHA256: ")
-			continue
-
-		case strings.TrimSpace(line) == "":
-			// package stanza done
-
-		default:
-			continue
-		}
-
-		if !strings.HasSuffix(sourceUrl.Path, path.Dir(filename)) {
-			continue
-		}
-		remoteBase := path.Base(filename)
-		sourceUrl.Path = path.Join(sourceUrl.Path, remoteBase)
-		return sourceUrl.String(), remoteHash, remoteVersion, nil
-	}
-	return "", "", "", fmt.Errorf("package not found in Debian Packages file")
-}
-
 func scaffoldPull(buildFilePath string, dryRun bool) error {
 	b, err := ioutil.ReadFile(buildFilePath)
 	if err != nil {
@@ -354,43 +294,32 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 		return err
 	}
 
-	outdated := false
-	if strings.HasSuffix(source, ".deb") {
-		u, err := stringVal("pull", "debian_packages")
-		if err != nil {
-			return err
-		}
-		remoteSource, remoteHash, remoteVersion, err := scaffoldPullDebian(u, source)
-		if err != nil {
-			return err
-		}
+	remoteSource, remoteHash, remoteVersion, err := checkupstream.Check(nodes)
+	if err != nil {
+		return err
+	}
 
-		if remoteSource == source {
-			return nil // up to date
-		}
-		log.Printf("not up to date: updating to %s", remoteVersion)
+	if remoteSource == source {
+		return nil // up to date
+	}
+	log.Printf("not up to date: updating to %s", remoteVersion)
 
-		val := strconv.QuoteToASCII(remoteSource)
-		ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
+	val := strconv.QuoteToASCII(remoteSource)
+	ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
 
-		val = strconv.QuoteToASCII(remoteHash)
-		ast.GetFromPath(nodes, []string{"hash"})[0].Values[0].Value = val
+	val = strconv.QuoteToASCII(remoteHash)
+	ast.GetFromPath(nodes, []string{"hash"})[0].Values[0].Value = val
 
-		pv := distri.ParseVersion(version)
-		if pv.Upstream != remoteVersion {
-			pv.Upstream = remoteVersion
-			pv.DistriRevision++
-			val := strconv.QuoteToASCII(pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10))
-			ast.GetFromPath(nodes, []string{"version"})[0].Values[0].Value = val
-		}
-		outdated = true
+	pv := distri.ParseVersion(version)
+	if pv.Upstream != remoteVersion {
+		pv.Upstream = remoteVersion
+		pv.DistriRevision++
+		val := strconv.QuoteToASCII(pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10))
+		ast.GetFromPath(nodes, []string{"version"})[0].Values[0].Value = val
 	}
 
 	if dryRun {
-		if outdated {
-			os.Exit(2) // outdated
-		}
-		os.Exit(0) // up-to-date
+		os.Exit(2) // outdated
 	}
 
 	buf := []byte(parser.Pretty(nodes, 0))

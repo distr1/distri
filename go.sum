@@ -29,6 +29,8 @@ github.com/klauspost/pgzip v1.2.1 h1:oIPZROsWuPHpOdMVWLuJZXwgjhrW8r1yEX8UqMyeNHM
 github.com/klauspost/pgzip v1.2.1/go.mod h1:Ch1tH69qFZu15pkjo5kYi6mth2Zzwzt50oCQKQE9RUs=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
+github.com/lib/pq v1.3.0 h1:/qkRGz8zljWiDcFvgpwUpwIAPu3r07TDvs3Rws+o/pU=
+github.com/lib/pq v1.3.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lpar/gzipped v1.1.0 h1:FEQnBzF06KTMh8Wnse6wNJvGwe7+vILQIFzuTq6ipGs=
 github.com/lpar/gzipped v1.1.0/go.mod h1:JBo67wiCld7AmFYfSNA75NmFG65roJiGwrVohF8uYGE=
 github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec h1:0bqN8Rf2FuWPPjV5mKQZadZrGlhA3j5IHQHQGnDOhZM=

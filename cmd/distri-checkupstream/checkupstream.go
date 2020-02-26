@@ -1,0 +1,76 @@
+package main
+
+import (
+	"database/sql"
+	"flag"
+	"io/ioutil"
+	"log"
+	"path/filepath"
+
+	"github.com/distr1/distri/internal/checkupstream"
+	"github.com/distr1/distri/internal/env"
+	"github.com/protocolbuffers/txtpbfmt/parser"
+
+	// PostgreSQL driver for database/sql:
+	_ "github.com/lib/pq"
+)
+
+type checker struct {
+	db            *sql.DB
+	updateVersion *sql.Stmt
+}
+
+func (c *checker) check1(pkg string) error {
+	b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", pkg, "build.textproto"))
+	if err != nil {
+		return err
+	}
+	nodes, err := parser.Parse(b)
+	if err != nil {
+		return err
+	}
+
+	_, _, version, err := checkupstream.Check(nodes)
+	if err != nil {
+		return err
+	}
+	if _, err := c.updateVersion.Exec(pkg, version); err != nil {
+		return err
+	}
+	return nil
+}
+
+func logic() error {
+	db, err := sql.Open("postgres", "dbname=distri sslmode=disable")
+	if err != nil {
+		return err
+	}
+	updateVersion, err := db.Prepare(`
+INSERT INTO upstream_status (package, upstream_version, last_reachable) VALUES ($1, $2, NOW())
+ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW()
+`)
+	c := &checker{
+		db:            db,
+		updateVersion: updateVersion,
+	}
+	fis, err := ioutil.ReadDir(filepath.Join(env.DistriRoot, "pkgs"))
+	if err != nil {
+		return err
+	}
+	for _, fi := range fis {
+		pkg := fi.Name()
+		log.Printf("package %s", pkg)
+		if err := c.check1(pkg); err != nil {
+			log.Printf("check(%v): %v", pkg, err)
+			continue
+		}
+	}
+	return nil
+}
+
+func main() {
+	flag.Parse()
+	if err := logic(); err != nil {
+		log.Fatal(err)
+	}
+}
