@@ -1,0 +1,34 @@
+source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.6.tar.xz"
+hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
+version: "5.4.6-12"
+
+cbuilder: {
+  copy_to_builddir: true
+}
+
+# build dependencies:
+#dep: "perl"
+#dep: "gzip"
+#dep: "rsync"
+
+dep: "linux"
+dep: "pciutils" # for libpci3
+dep: "gettext"
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
+}
+
+build_step: {
+  argv: "make"
+  argv: "-C"
+  argv: "tools/power/cpupower"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "bindir=${DISTRI_PREFIX}/bin"
+  argv: "libdir=${DISTRI_PREFIX}/lib"
+  argv: "all"
+  argv: "install-lib"
+  argv: "install-tools"
+}
