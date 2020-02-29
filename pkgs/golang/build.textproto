@@ -1,6 +1,6 @@
-source: "https://dl.google.com/go/go1.12.src.tar.gz"
-hash: "09c43d3336743866f2985f566db0520b36f4992aea2b4b2fd9f52f17049e88f2"
-version: "1.12-4"
+source: "https://dl.google.com/go/go1.14.src.tar.gz"
+hash: "6d643e46ad565058c7a39dac01144172ef9bd476521f42148be59249e4b74389"
+version: "1.14-5"
 
 cbuilder: {}
 
