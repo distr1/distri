@@ -48,5 +48,6 @@ dep: "go-github.com-cavaliercoder-go--cpio"
 dep: "go-github.com-klauspost-compress"
 dep: "go-github.com-klauspost-pgzip"
 dep: "go-github.com-s--urbaniak-uevent"
+dep: "go-github.com-lib-pq"
 
 runtime_dep: "kbd"
