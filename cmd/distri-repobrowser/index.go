@@ -41,6 +41,13 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
   <tr>
     <td>
 {{ $pv.Pkg }}
+
+{{ with $status := index $.UpstreamStatus $pv.Pkg }}
+{{ if (or (eq $status.Package "") $status.Unreachable) }}
+<span class="badge badge-danger">unreachable</span>
+{{ end }}
+{{ end }}
+
 <!-- TODO: flag unreachable packages -->
     </td>
 
@@ -50,8 +57,11 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 {{ $pv.Upstream }}
 
 {{ with $status := index $.UpstreamStatus $pv.Pkg }}
-{{ if (and (ne $status.Package "") (ne $status.UpstreamVersion $pv.Upstream)) }}
+{{ if (and (ne $status.Package "") (not $status.Unreachable) (ne $status.UpstreamVersion $pv.Upstream)) }}
 <span class="badge badge-warning">upstream: {{ $status.UpstreamVersion }}</span>
+{{ end }}
+{{ if (and (ne $status.Package "") (not $status.Unreachable) (eq $status.UpstreamVersion $pv.Upstream)) }}
+<span class="badge badge-success">up-to-date</span>
 {{ end }}
 {{ end }}
     </td>

@@ -33,7 +33,7 @@ func logic(listen string) error {
 		return err
 	}
 	// TODO: refresh this data periodically
-	getVersions, err := db.Prepare(`SELECT package, upstream_version, last_reachable FROM upstream_status`)
+	getVersions, err := db.Prepare(`SELECT package, upstream_version, last_reachable, unreachable FROM upstream_status`)
 	if err != nil {
 		return err
 	}
@@ -45,11 +45,12 @@ func logic(listen string) error {
 		Package         string
 		UpstreamVersion string
 		LastReachable   time.Time
+		Unreachable     bool
 	}
 	upstream := make(map[string]upstreamStatus)
 	for rows.Next() {
 		var s upstreamStatus
-		if err := rows.Scan(&s.Package, &s.UpstreamVersion, &s.LastReachable); err != nil {
+		if err := rows.Scan(&s.Package, &s.UpstreamVersion, &s.LastReachable, &s.Unreachable); err != nil {
 			return err
 		}
 		upstream[s.Package] = s
