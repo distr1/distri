@@ -154,6 +154,8 @@ func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, 
 	return u.String(), "TODO", versions[0], nil
 }
 
+var projectRe = regexp.MustCompile(`^/project/([^/]+)/`)
+
 func Check(build []*ast.Node) (source, hash, version string, _ error) {
 	stringVal := func(path ...string) (string, error) {
 		nodes := ast.GetFromPath(build, path)
@@ -196,6 +198,14 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 			u.Path = u.Path[:strings.Index(u.Path, "/releases/")+len("/releases/")]
 		} else if u.Host == "github.com" && strings.Contains(u.Path, "/archive/") {
 			u.Path = u.Path[:strings.Index(u.Path, "/archive/")] + "/releases/"
+		} else if u.Host == "downloads.sourceforge.net" && strings.HasPrefix(u.Path, "/project/") {
+			project := projectRe.FindStringSubmatch(u.Path)
+			if got, want := len(project), 2; got != want {
+				return "", "", "", fmt.Errorf("downloads.sourceforge.net: got %d matches, want %d", got, want)
+			}
+			u.Path = "/projects/" + project[1] + "/files/"
+			u.Host = "sourceforge.net"
+			// u e.g. https://sourceforge.net/projects/bzip2/files/
 		} else {
 			u.Path = path.Dir(u.Path)
 		}
