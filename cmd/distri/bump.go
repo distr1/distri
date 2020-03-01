@@ -75,7 +75,7 @@ func bumpAll(write bool) ([]versionIncrement, error) {
 		}
 		var build pb.Build
 		if err := proto.UnmarshalText(string(b), &build); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%v: %v", name, err)
 		}
 
 		inc = append(inc, versionIncrement{
@@ -133,7 +133,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 	}
 	var buildProto pb.Build
 	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
-		return err
+		return fmt.Errorf("%v: %v", pkg, err)
 	}
 	fullname := pkg + "-" + b.arch + "-" + buildProto.GetVersion()
 	if _, ok := b.byFullname[fullname]; ok {
@@ -301,12 +301,12 @@ func bump(args []string) error {
 
 		b, err := newBumpctx()
 		if err != nil {
-			return err
+			return fmt.Errorf("bumpctx: %v", err)
 		}
 		for _, arg := range fset.Args() {
 			tmp, err := b.bumpPkg(arg)
 			if err != nil {
-				return err
+				return fmt.Errorf("bump(%v): %v", arg, err)
 			}
 			inc = append(inc, tmp...)
 		}
