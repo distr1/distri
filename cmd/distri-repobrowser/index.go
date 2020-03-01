@@ -18,7 +18,19 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 
   <title>distri repo browser: {{ .Repo }}</title>
 
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+  <style type="text/css">
+td.upstreamversion {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td.upstreamversion badge {
+  display: inline;
+}
+</style>
 </head>
 <body>
 <div class="container">
@@ -53,7 +65,7 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 
     <td>{{ $pv.Arch }}</td>
 
-    <td>
+    <td class="upstreamversion">
 {{ $pv.Upstream }}
 
 {{ with $status := index $.UpstreamStatus $pv.Pkg }}
