@@ -67,6 +67,10 @@ ifdef branch
 PACKFLAGS+= -branch=${branch}
 endif
 
+ifdef extra_kernel_params
+PACKFLAGS+= -extra_kernel_params="${extra_kernel_params}"
+endif
+
 IMAGE=distri pack \
 	-diskimg=${DISKIMG} \
 	-base=base-x11 ${PACKFLAGS}

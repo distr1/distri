@@ -78,6 +78,7 @@ type packctx struct {
 	docker             bool
 	authorizedKeys     string
 	initramfsGenerator string
+	extraKernelParams  string
 }
 
 func pack(args []string) error {
@@ -100,6 +101,7 @@ func pack(args []string) error {
 	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
 	fset.StringVar(&p.authorizedKeys, "authorized_keys", "", "if non-empty, path to an SSH authorized_keys file to include for the root user")
 	fset.StringVar(&p.initramfsGenerator, "initramfs_generator", "minitrd", "Which initramfs generator to use: minitrd or dracut. Chose minitrd for fastest initramfs generation and boot, chose dracut for customizeability or features that minitrd does not implement.")
+	fset.StringVar(&p.extraKernelParams, "extra_kernel_params", "", "extra Linux kernel parameters to append to the kernel command line")
 	fset.Usage = usage(fset, packHelp)
 	fset.Parse(args)
 
@@ -861,7 +863,7 @@ name=root`)
 	if p.bootDebug {
 		params = append(params, "systemd.log_level=debug systemd.log_target=console")
 	}
-	cmdline := "console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init systemd.setenv=PATH=/bin rw"
+	cmdline := "console=ttyS0,115200 " + strings.Join(params, " ") + " init=/init systemd.setenv=PATH=/bin rw " + p.extraKernelParams
 	if err := ioutil.WriteFile(p.diskImg+".cmdline", []byte(cmdline+"\n"), 0644); err != nil {
 		return err
 	}
