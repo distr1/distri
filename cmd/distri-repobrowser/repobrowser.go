@@ -42,7 +42,7 @@ func logic(listen string) error {
 		return err
 	}
 	type upstreamStatus struct {
-		Package         string
+		SourcePackage   string
 		UpstreamVersion string
 		LastReachable   time.Time
 		Unreachable     bool
@@ -50,17 +50,18 @@ func logic(listen string) error {
 	upstream := make(map[string]upstreamStatus)
 	for rows.Next() {
 		var s upstreamStatus
-		if err := rows.Scan(&s.Package, &s.UpstreamVersion, &s.LastReachable, &s.Unreachable); err != nil {
+		if err := rows.Scan(&s.SourcePackage, &s.UpstreamVersion, &s.LastReachable, &s.Unreachable); err != nil {
 			return err
 		}
-		upstream[s.Package] = s
+		upstream[s.SourcePackage] = s
 	}
 	if err := rows.Err(); err != nil {
 		return err
 	}
 
 	whitelisted := map[string]bool{
-		"repo.distr1.org": true,
+		"repo.distr1.org":       true,
+		"midna.zekjur.net:7080": true,
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/", errHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
@@ -69,7 +70,7 @@ func logic(listen string) error {
 			// TODO: update whenever there is a new release. flag?
 			path = "/repo.distr1.org/distri/jackherer/"
 		}
-		repoURL, err := url.Parse("https:/" + path)
+		repoURL, err := url.Parse("http:/" + path)
 		if err != nil {
 			return err
 		}
@@ -97,7 +98,8 @@ func logic(listen string) error {
 		}
 
 		// TODO: cache fetched meta
-		// TODO: render package list
+
+		// TODO: plumb SourcePackage into distri mirror for gcc-libs split package
 
 		indexData := struct {
 			Repo           string
