@@ -12,10 +12,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"unsafe"
 
+	"github.com/distr1/distri"
 	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
 	"github.com/jacobsa/fuse"
@@ -832,25 +834,35 @@ name=root`)
 	if err := ioutil.WriteFile("/mnt/etc/dracut.conf.d/kbddir.conf", []byte("kbddir=/ro/share\n"), 0644); err != nil {
 		return err
 	}
-	switch p.initramfsGenerator {
-	case "dracut":
-		dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-5.4.6-11.img 5.4.6")
-		dracut.Stderr = os.Stderr
-		dracut.Stdout = os.Stdout
-		if err := dracut.Run(); err != nil {
-			return xerrors.Errorf("%v: %v", dracut.Args, err)
-		}
 
-	case "minitrd":
-		minitrd := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "distri initrd -release 5.4.6 -output /boot/initramfs-5.4.6-11.img")
-		minitrd.Stderr = os.Stderr
-		minitrd.Stdout = os.Stdout
-		if err := minitrd.Run(); err != nil {
-			return xerrors.Errorf("%v: %v", minitrd.Args, err)
-		}
+	kernels, err := filepath.Glob("/mnt/ro/linux-amd64-*")
+	if err != nil {
+		return err
+	}
+	for _, kernel := range kernels {
+		pv := distri.ParseVersion(kernel)
+		upstream := pv.Upstream
+		full := pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10)
+		switch p.initramfsGenerator {
+		case "dracut":
+			dracut := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "dracut /boot/initramfs-"+full+".img "+upstream)
+			dracut.Stderr = os.Stderr
+			dracut.Stdout = os.Stdout
+			if err := dracut.Run(); err != nil {
+				return xerrors.Errorf("%v: %v", dracut.Args, err)
+			}
 
-	default:
-		return xerrors.Errorf("unknown initramfs generator %v", p.initramfsGenerator)
+		case "minitrd":
+			minitrd := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", "distri initrd -release "+upstream+" -output /boot/initramfs-"+full+".img")
+			minitrd.Stderr = os.Stderr
+			minitrd.Stdout = os.Stdout
+			if err := minitrd.Run(); err != nil {
+				return xerrors.Errorf("%v: %v", minitrd.Args, err)
+			}
+
+		default:
+			return xerrors.Errorf("unknown initramfs generator %v", p.initramfsGenerator)
+		}
 	}
 
 	var params []string
