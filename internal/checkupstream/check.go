@@ -83,9 +83,8 @@ func maybeV(v string) string {
 	return "v" + v
 }
 
-func checkHeuristic(upstreamVersion, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
-	u, err := url.Parse(source)
-	u.Path = path.Dir(u.Path)
+func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+	u, _ := url.Parse(releasesURL)
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return "", "", "", err
@@ -98,8 +97,13 @@ func checkHeuristic(upstreamVersion, source string) (remoteSource, remoteHash, r
 		return "", "", "", err
 	}
 	// TODO: add special casing for parsing apache directory index?
-	log.Printf("base: %v", path.Base(source))
-	pattern := strings.Replace(path.Base(source), upstreamVersion, `([^"]*)`, 1)
+	base := path.Base(source)
+	log.Printf("base: %v", base)
+	idx := strings.Index(base, upstreamVersion)
+	if idx == -1 {
+		return "", "", "", fmt.Errorf("upstreamVersion %q not found in base %q", upstreamVersion, base)
+	}
+	pattern := regexp.QuoteMeta(base[:idx]) + `([0-9v.]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
 	if pattern == path.Base(source) {
 		return "", "", "", fmt.Errorf("could not derive regexp pattern, specify manually")
 	}
@@ -182,5 +186,15 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 
 	pv := distri.ParseVersion(version)
 	// fall back: see if we can obtain an index page
-	return checkHeuristic(pv.Upstream, source)
+	releases, err := stringVal("pull", "releases_url")
+	if err != nil {
+		u, err := url.Parse(source)
+		if err != nil {
+			return "", "", "", err
+		}
+		u.Path = path.Dir(u.Path)
+		releases = u.String()
+	}
+
+	return checkHeuristic(pv.Upstream, source, releases)
 }

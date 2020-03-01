@@ -1,6 +1,9 @@
 source: "https://dl.google.com/go/go1.14.src.tar.gz"
 hash: "6d643e46ad565058c7a39dac01144172ef9bd476521f42148be59249e4b74389"
 version: "1.14-6"
+pull: {
+  releases_url: "https://golang.org/dl/"
+}
 
 cbuilder: {}
 
