@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"runtime"
+	"sync"
 
 	"github.com/distr1/distri/internal/checkupstream"
 	"github.com/distr1/distri/internal/env"
@@ -57,14 +59,22 @@ ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(
 	if err != nil {
 		return err
 	}
+	workers := make(chan struct{}, runtime.NumCPU())
+	var wg sync.WaitGroup
 	for _, fi := range fis {
 		pkg := fi.Name()
-		log.Printf("package %s", pkg)
-		if err := c.check1(pkg); err != nil {
-			log.Printf("check(%v): %v", pkg, err)
-			continue
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			workers <- struct{}{}
+			defer func() { <-workers }()
+			log.Printf("package %s", pkg)
+			if err := c.check1(pkg); err != nil {
+				log.Printf("check(%v): %v", pkg, err)
+			}
+		}()
 	}
+	wg.Wait()
 	return nil
 }
 
