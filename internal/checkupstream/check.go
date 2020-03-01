@@ -192,9 +192,16 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 		if err != nil {
 			return "", "", "", err
 		}
-		u.Path = path.Dir(u.Path)
+		if u.Host == "github.com" && strings.Contains(u.Path, "/releases/") {
+			u.Path = u.Path[:strings.Index(u.Path, "/releases/")+len("/releases/")]
+		} else if u.Host == "github.com" && strings.Contains(u.Path, "/archive/") {
+			u.Path = u.Path[:strings.Index(u.Path, "/archive/")] + "/releases/"
+		} else {
+			u.Path = path.Dir(u.Path)
+		}
 		releases = u.String()
 	}
 
+	log.Printf("releases: %s", releases)
 	return checkHeuristic(pv.Upstream, source, releases)
 }
