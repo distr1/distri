@@ -1,5 +1,5 @@
 source: "empty://"
-version: "3-17"
+version: "3-18"
 
 # This is the shortest and fastest way to build an empty package:
 dep: "bash"

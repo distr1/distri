@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-32"
+version: "native-33"
 
 gobuilder: {
   install: "./cmd/distri ./cmd/minitrd"
@@ -49,5 +49,6 @@ dep: "go-github.com-klauspost-compress"
 dep: "go-github.com-klauspost-pgzip"
 dep: "go-github.com-s--urbaniak-uevent"
 dep: "go-github.com-lib-pq"
+dep: "go-golang.org-x-mod"
 
 runtime_dep: "kbd"
