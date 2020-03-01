@@ -43,7 +43,7 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 {{ $pv.Pkg }}
 
 {{ with $status := index $.UpstreamStatus $pv.Pkg }}
-{{ if (or (eq $status.SourcePackage "") $status.Unreachable) }}
+{{ if (and (ne $pv.Upstream "native") (or (eq $status.SourcePackage "") $status.Unreachable)) }}
 <span class="badge badge-danger">unreachable</span>
 {{ end }}
 {{ end }}
