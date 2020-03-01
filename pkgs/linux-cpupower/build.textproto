@@ -12,7 +12,7 @@ cbuilder: {
 #dep: "rsync"
 
 dep: "linux"
-dep: "pciutils" # for libpci3
+dep: "pciutils"  # for libpci3
 dep: "gettext"
 
 build_step: {
