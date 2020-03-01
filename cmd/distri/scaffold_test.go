@@ -16,8 +16,10 @@ import (
 	"text/template"
 
 	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/checkupstream"
 	"github.com/distr1/distri/internal/env"
 	"github.com/google/go-cmp/cmp"
+	"github.com/protocolbuffers/txtpbfmt/parser"
 )
 
 func mustParse(u string) *url.URL {
@@ -161,12 +163,21 @@ Description: The web browser from Google
 `)
 	}))
 	defer ts.Close()
-	source := ts.URL + "/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.87-1_amd64.deb"
-	packagesURL := ts.URL + "/linux/chrome/deb/dists/stable/main/binary-amd64/Packages"
-	remoteSource, remoteHash, remoteVersion, err := scaffoldPullDebian(packagesURL, source)
+	nodes, err := parser.Parse([]byte(fmt.Sprintf(`source: "%s/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.87-1_amd64.deb"
+pull: {
+  debian_packages: "%s/linux/chrome/deb/dists/stable/main/binary-amd64/Packages"
+}
+version: "80.0.3987.106-1-13"
+`, ts.URL, ts.URL)))
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	remoteSource, remoteHash, remoteVersion, err := checkupstream.Check(nodes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	wantSource := ts.URL + "/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb"
 	wantHash := "33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d"
 	wantVersion := "80.0.3987.106-1"
