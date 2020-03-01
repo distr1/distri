@@ -47,9 +47,13 @@ func logic() error {
 	if err != nil {
 		return err
 	}
+	markUnreachable, err := db.Prepare(`UPDATE upstream_status SET unreachable = true`)
+	if err != nil {
+		return err
+	}
 	updateVersion, err := db.Prepare(`
-INSERT INTO upstream_status (package, upstream_version, last_reachable) VALUES ($1, $2, NOW())
-ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW()
+INSERT INTO upstream_status (package, upstream_version, last_reachable, unreachable) VALUES ($1, $2, NOW(), false)
+ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(), unreachable = false
 `)
 	c := &checker{
 		db:            db,
@@ -57,6 +61,11 @@ ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(
 	}
 	fis, err := ioutil.ReadDir(filepath.Join(env.DistriRoot, "pkgs"))
 	if err != nil {
+		return err
+	}
+	// TODO: refactor to collect check1() results, run all db modifications in a
+	// transaction
+	if _, err := markUnreachable.Exec(); err != nil {
 		return err
 	}
 	workers := make(chan struct{}, runtime.NumCPU())
