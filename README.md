@@ -50,7 +50,7 @@ Obtain a stable path to your USB memory stick by watching /dev/disk/by-id while 
 
 Then, copy the `distri-disk.img` image onto the memory stick:
 ```
-dd if=distri-disk.img of=/dev/disk/by-id/usb-SanDisk_Extreme_Pro_D99B-0:0 bs=5M
+dd if=distri-disk.img of=/dev/disk/by-id/usb-SanDisk_Extreme_Pro_D99B-0:0 bs=1M status=progress oflag=direct
 ```
 
 Insert the memory stick into a computer and select the memory stick as boot device.
