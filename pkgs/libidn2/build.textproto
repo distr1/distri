@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/libidn/libidn2-2.0.5.tar.lz"
 hash: "0ff7a59eeedff3865fa17151d656991f56d8835f593982d7327af5e0bf9a9668"
-version: "2.0.5-4"
+version: "2.0.5-5"
 
 # build dependencies:
 dep: "iconv"

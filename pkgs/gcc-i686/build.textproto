@@ -1,6 +1,6 @@
 source: "http://mirror.koddos.net/gcc/releases/gcc-8.2.0/gcc-8.2.0.tar.xz"
 hash: "196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080"
-version: "8.2.0-4"
+version: "8.2.0-5"
 
 # cbuilder: <
 #   extra_configure_flag: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)

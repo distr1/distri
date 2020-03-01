@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/nettle/nettle-3.4.tar.gz"
 hash: "ae7a42df026550b85daca8389b6a60ba6313b0567f374392e54918588a411e94"
-version: "3.4-4"
+version: "3.4-5"
 
 # build dependencies:
 dep: "m4"

@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXt-1.1.5.tar.bz2"
 hash: "46eeb6be780211fdd98c5109286618f6707712235fdd19df4ce1e6954f349f1a"
-version: "1.1.5-4"
+version: "1.1.5-5"
 
 cbuilder: {}
 

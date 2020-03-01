@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/at-spi2-atk/2.30/at-spi2-atk-2.30.0.tar.xz"
 hash: "e2e1571004ea7b105c969473ce455a95be4038fb2541471714aeb33a26da8a9a"
-version: "2.30.0-4"
+version: "2.30.0-5"
 
 cbuilder: {}
 

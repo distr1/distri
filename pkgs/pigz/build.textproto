@@ -1,6 +1,6 @@
 source: "https://zlib.net/pigz/pigz-2.4.tar.gz"
 hash: "a4f816222a7b4269bd232680590b579ccc72591f1bb5adafcd7208ca77e14f73"
-version: "2.4-2"
+version: "2.4-3"
 
 cbuilder: {}
 

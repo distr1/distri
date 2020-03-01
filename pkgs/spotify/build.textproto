@@ -1,6 +1,6 @@
 source: "http://repository.spotify.com/pool/non-free/s/spotify-client/spotify-client_1.1.10.546.ge08ef575-19_amd64.deb"
 hash: "da49fd4d222ff7d719345fba6298f38a6422ef293bb43ada13cf857a694a12e6"
-version: "1.1.10.546.ge08ef575_19-13"
+version: "1.1.10.546.ge08ef575_19-14"
 
 cbuilder: {}
 

@@ -1,6 +1,6 @@
 source: "https://repo.distr1.org/distri/jackherer/orig/whois/whois_5.4.2.tar.xz"
 hash: "eee33a3b3a56912fbf115a7dd24ed60314e2707a3ad6aa604ca2752c1ed01f57"
-version: "5.4.2-6"
+version: "5.4.2-7"
 
 cbuilder: {}
 

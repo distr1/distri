@@ -1,6 +1,6 @@
 source: "https://salsa.debian.org/iso-codes-team/iso-codes/uploads/049ce6aac94d842be809f4063950646c/iso-codes-4.1.tar.xz"
 hash: "67117fb76f32c8fb5e37d2d60bce238f1f8e865cc7b569a57cbc3017ca15488a"
-version: "4.1-4"
+version: "4.1-5"
 
 cbuilder: {}
 

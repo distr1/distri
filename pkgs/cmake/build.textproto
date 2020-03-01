@@ -1,6 +1,6 @@
 source: "https://cmake.org/files/v3.12/cmake-3.12.2.tar.gz"
 hash: "0f97485799e51a7070cc11494f3e02349b0fc3a24cc12b082e737bf67a0581a4"
-version: "3.12.2-5"
+version: "3.12.2-6"
 
 cbuilder: {}
 

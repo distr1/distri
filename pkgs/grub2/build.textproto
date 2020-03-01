@@ -1,6 +1,6 @@
 source: "https://ftp.gnu.org/gnu/grub/grub-2.04.tar.xz"
 hash: "e5292496995ad42dabe843a0192cf2a2c502e7ffcc7479398232b10a472df77d"
-version: "2.04-5"
+version: "2.04-6"
 
 cherry_pick: "werror.patch"
 

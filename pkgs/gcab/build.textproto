@@ -1,6 +1,6 @@
 source: "https://github.com/GNOME/gcab/archive/v1.2.tar.gz"
 hash: "087b3ce558c00d4054b20a7fde3b392b9a960c808308078fd8750c30c0c71c64"
-version: "1.2-4"
+version: "1.2-5"
 
 mesonbuilder: {
   extra_meson_flag: "-Ddocs=false"

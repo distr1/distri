@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libxkbfile-1.0.9.tar.bz2"
 hash: "51817e0530961975d9513b773960b4edd275f7d5c72293d5a151ed4f42aeb16a"
-version: "1.0.9-4"
+version: "1.0.9-5"
 
 cbuilder: {}
 

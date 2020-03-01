@@ -1,6 +1,6 @@
 source: "https://mirror.kumi.systems/gnu/emacs/emacs-26.1.tar.xz"
 hash: "1cf4fc240cd77c25309d15e18593789c8dbfba5c2b44d8f77c886542300fd32c"
-version: "26.1-11"
+version: "26.1-12"
 
 cbuilder: {
   copy_to_builddir: true  # modifies source

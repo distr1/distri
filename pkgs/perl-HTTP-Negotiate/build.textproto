@@ -1,6 +1,6 @@
 source: "https://cpan.metacpan.org/authors/id/G/GA/GAAS/HTTP-Negotiate-6.01.tar.gz"
 hash: "1c729c1ea63100e878405cda7d66f9adfd3ed4f1d6cacaca0ee9152df728e016"
-version: "6.01-4"
+version: "6.01-5"
 
 perlbuilder: {}
 

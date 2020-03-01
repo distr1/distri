@@ -1,6 +1,6 @@
 source: "https://dbus.freedesktop.org/releases/dbus/dbus-1.13.6.tar.gz"
 hash: "b533693232d36d608a09f70c15440c1816319bac3055433300d88019166c1ae4"
-version: "1.13.6-7"
+version: "1.13.6-8"
 
 cbuilder: {
   extra_configure_flag: "--localstatedir=/var"

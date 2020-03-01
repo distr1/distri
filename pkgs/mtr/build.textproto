@@ -1,6 +1,6 @@
 source: "https://github.com/traviscross/mtr/archive/v0.92.tar.gz"
 hash: "568a52911a8933496e60c88ac6fea12379469d7943feb9223f4337903e4bc164"
-version: "0.92-8"
+version: "0.92-9"
 
 cbuilder: {
   copy_to_builddir: true  # for autoreconf

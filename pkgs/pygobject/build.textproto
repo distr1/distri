@@ -1,6 +1,6 @@
 source: "https://ftp.acc.umu.se/pub/GNOME/sources/pygobject/3.31/pygobject-3.31.2.tar.xz"
 hash: "e75c9bc1f220863cea8386c121a6313fbc80bfe17e825538063252ffb28861c6"
-version: "3.31.2-4"
+version: "3.31.2-5"
 
 mesonbuilder: {}
 

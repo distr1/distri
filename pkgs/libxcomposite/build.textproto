@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXcomposite-0.4.4.tar.bz2"
 hash: "ede250cd207d8bee4a338265c3007d7a68d5aca791b6ac41af18e9a2aeb34178"
-version: "0.4.4-3"
+version: "0.4.4-4"
 
 cbuilder: {}
 

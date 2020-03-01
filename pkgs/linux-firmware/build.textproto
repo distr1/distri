@@ -1,6 +1,6 @@
 source: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-1baa34868b2c0a004dc595b20678145e3fff83e7.tar.gz"
 hash: "53c941a63e453be59961d9529fc39553357b294b3c1166c67383eaea049cc5f5"
-version: "20181104-4"
+version: "20181104-5"
 
 cbuilder: {}
 

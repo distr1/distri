@@ -1,6 +1,6 @@
 source: "https://github.com/opencontainers/runc/archive/v1.0.0-rc5.tar.gz"
 hash: "770e180d1cca1f3c1a67512ebf9720caafe97af4fc2fe12fa43a3cf7bfa77522"
-version: "1.0.0-rc5-5"
+version: "1.0.0-rc5-6"
 
 cbuilder: {}  # TODO: remove once the Go builder takes care of pulling in the C deps
 

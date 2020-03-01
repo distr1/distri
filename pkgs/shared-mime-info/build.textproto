@@ -1,6 +1,6 @@
 source: "http://freedesktop.org/~hadess/shared-mime-info-1.10.tar.xz"
 hash: "c625a83b4838befc8cafcd54e3619946515d9e44d63d61c4adf7f5513ddfbebf"
-version: "1.10-4"
+version: "1.10-5"
 
 cbuilder: {}
 

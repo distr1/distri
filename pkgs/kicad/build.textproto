@@ -1,6 +1,6 @@
 source: "https://launchpadlibrarian.net/414300296/kicad-5.1.0.tar.xz"
 hash: "7a9e018ee7372f144d9eb2b78bc1e7b5dfa92f6e293f4c1cff75781e8e9a0cbd"
-version: "5.1.0-7"
+version: "5.1.0-8"
 
 cherry_pick: "cmake.patch"
 cherry_pick: "cmakewxwidgets.patch"

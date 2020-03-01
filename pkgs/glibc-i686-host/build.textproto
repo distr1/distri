@@ -9,7 +9,7 @@
 # https://bugzilla.redhat.com/show_bug.cgi?id=1573342
 source: "https://ftp.gnu.org/gnu/glibc/glibc-2.27.tar.gz"
 hash: "881ca905e6b5eec724de7948f14d66a07d97bdee8013e1b2a7d021ff5d540522"
-version: "2.27-4"
+version: "2.27-5"
 
 # source: "https://ftp.gnu.org/gnu/glibc/glibc-2.28.tar.bz2"
 # hash: "da9e45260c0cd3dbf6a585082a602521092ae7b3ecb17092cd7347603ef1e2cb"

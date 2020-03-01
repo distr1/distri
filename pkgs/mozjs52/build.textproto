@@ -3,7 +3,7 @@
 # find the link.
 source: "http://t.zekjur.net/mozjs-52.6.0gnome1.tar.bz2"  # https://download.gnome.org/teams/releng/tarballs-needing-help/mozjs/mozjs-52.6.0gnome1.tar.xz
 hash: "da88d1206389d21f313dc68f37ca975583b87e9128050207b29752c1efbedf4a"
-version: "52.6.0gnome1-4"
+version: "52.6.0gnome1-5"
 
 cbuilder: {}
 
