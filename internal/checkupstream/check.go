@@ -85,7 +85,12 @@ func maybeV(v string) string {
 
 func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, remoteHash, remoteVersion string, _ error) {
 	u, _ := url.Parse(releasesURL)
-	resp, err := http.Get(u.String())
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return "", "", "", err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", "", "", err
 	}
