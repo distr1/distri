@@ -6,6 +6,7 @@ import (
 	"debug/elf"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +22,7 @@ import (
 	"github.com/google/renameio"
 	"github.com/klauspost/pgzip"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sys/unix"
 )
 
 const initrdHelp = `distri initrd [-flags]
@@ -478,11 +480,19 @@ func copyDistriBinaryToCPIO(iw *initrdWriter, destname, fn string) error {
 	return nil
 }
 
+func release() string {
+	var uts unix.Utsname
+	if err := unix.Uname(&uts); err != nil {
+		fmt.Fprintf(os.Stderr, "initrd: %v\n", err)
+		os.Exit(1)
+	}
+	return string(uts.Release[:bytes.IndexByte(uts.Release[:], 0)])
+}
+
 func initrd(args []string) error {
 	fset := flag.NewFlagSet("initrd", flag.ExitOnError)
 	var (
-		// TODO: kernel version parameter
-		linuxRelease = fset.String("release", "5.4.6" /* TODO: running release */, "Linux kernel version to generate initrd for")
+		linuxRelease = fset.String("release", release(), "Linux kernel version to generate initrd for")
 		outputPath   = fset.String("output", "/tmp/initrd", "path to write the initrd to")
 	//dryRun    = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
 	)
