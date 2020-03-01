@@ -8,7 +8,7 @@ cherry_pick: "python.patch"
 cbuilder: {
   copy_to_builddir: true
   # TODO: remove once https://github.com/distr1/distri/issues/31 is fixed
-  extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-2/etc"
+  extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-3/etc"
 }
 
 # build dependencies:
