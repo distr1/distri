@@ -108,7 +108,7 @@ func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, 
 	if idx == -1 {
 		return "", "", "", fmt.Errorf("upstreamVersion %q not found in base %q", upstreamVersion, base)
 	}
-	pattern := regexp.QuoteMeta(base[:idx]) + `([0-9v.]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
+	pattern := regexp.QuoteMeta(base[:idx]) + `([0-9v.-]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
 	if pattern == path.Base(source) {
 		return "", "", "", fmt.Errorf("could not derive regexp pattern, specify manually")
 	}
