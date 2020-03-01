@@ -865,7 +865,11 @@ name=root`)
 	if err := ioutil.WriteFile(p.diskImg+".cmdline", []byte(cmdline+"\n"), 0644); err != nil {
 		return err
 	}
-	mkconfigCmd := fmt.Sprintf(`GRUB_CMDLINE_LINUX=%q GRUB_TERMINAL=serial grub-mkconfig -o /boot/grub/grub.cfg`, cmdline)
+	mkconfigSerial := ""
+	if p.serialOnly {
+		mkconfigSerial = "GRUB_TERMINAL=serial"
+	}
+	mkconfigCmd := fmt.Sprintf(`GRUB_CMDLINE_LINUX=%q `+mkconfigSerial+` grub-mkconfig -o /boot/grub/grub.cfg`, cmdline)
 	mkconfig := exec.Command("sudo", "chroot", "/mnt", "sh", "-c", mkconfigCmd)
 	mkconfig.Stderr = os.Stderr
 	mkconfig.Stdout = os.Stdout
