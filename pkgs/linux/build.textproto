@@ -1,6 +1,6 @@
-source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.6.tar.xz"
-hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
-version: "5.4.6-11"
+source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.5.2.tar.xz"
+hash: "24f5f383b0337374f160723bcf3bf679c75cb5bd3fd0824a56998e47c04ef99e"
+version: "5.5.2-12"
 
 cbuilder: {
   copy_to_builddir: true
