@@ -285,25 +285,22 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 		}
 		return strconv.Unquote(values[0].Value)
 	}
-	source, err := stringVal("source")
-	if err != nil {
-		return err
-	}
 	version, err := stringVal("version")
 	if err != nil {
 		return err
 	}
+	upstream := distri.ParseVersion(version).Upstream
 
 	remoteSource, remoteHash, remoteVersion, err := checkupstream.Check(nodes)
 	if err != nil {
 		return err
 	}
 
-	if remoteSource == source {
+	if remoteVersion == upstream {
 		log.Printf("up to date: %s", remoteVersion)
 		return nil // up to date
 	}
-	log.Printf("not up to date: updating to %s", remoteVersion)
+	log.Printf("not up to date: updating from %s to %s", upstream, remoteVersion)
 
 	val := strconv.QuoteToASCII(remoteSource)
 	ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
