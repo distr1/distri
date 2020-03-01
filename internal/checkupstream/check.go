@@ -211,6 +211,13 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 			u.Path = "/projects/" + project[1] + "/files/"
 			u.Host = "sourceforge.net"
 			// u e.g. https://sourceforge.net/projects/bzip2/files/
+		} else if u.Host == "launchpad.net" {
+			// e.g. https://launchpad.net/lightdm-gtk-greeter/2.0/2.0.6/+download
+			u.Path = strings.TrimPrefix(u.Path, "/")
+			if idx := strings.Index(u.Path, "/"); idx > -1 {
+				u.Path = u.Path[:idx]
+			}
+			// e.g. https://launchpad.net/lightdm-gtk-greeter/
 		} else {
 			u.Path = path.Dir(u.Path)
 		}
