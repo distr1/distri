@@ -93,6 +93,15 @@ func (b *buildctx) digest() (string, error) {
 	}
 	h.Write([]byte(strings.Join(deps, ",")))
 
+	for _, cp := range b.Proto.GetCherryPick() {
+		fn := filepath.Join(b.PkgDir, cp)
+		b, err := ioutil.ReadFile(fn)
+		if err != nil {
+			return "", err
+		}
+		h.Write(b)
+	}
+
 	// Resolve runtime-deps that go into the build (as opposed to those being
 	// discovered during the build, which can only ever reference build-time
 	// deps):

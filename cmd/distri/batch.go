@@ -145,8 +145,9 @@ func batch(args []string) error {
 		}
 
 		b := &buildctx{
-			Arch:  "amd64", // TODO
-			Proto: &buildProto,
+			Arch:   "amd64", // TODO
+			PkgDir: filepath.Join(pkgsDir, fi.Name()),
+			Proto:  &buildProto,
 		}
 		inputDigest, err := b.digest()
 		if err != nil {
