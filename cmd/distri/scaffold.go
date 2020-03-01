@@ -300,6 +300,7 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 	}
 
 	if remoteSource == source {
+		log.Printf("up to date: %s", remoteVersion)
 		return nil // up to date
 	}
 	log.Printf("not up to date: updating to %s", remoteVersion)
