@@ -4,14 +4,19 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/distr1/distri"
 	"github.com/protocolbuffers/txtpbfmt/ast"
+	"golang.org/x/mod/semver"
 )
 
 func checkDebian(debianPackagesURL, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
@@ -71,6 +76,80 @@ func checkDebian(debianPackagesURL, source string) (remoteSource, remoteHash, re
 	return "", "", "", fmt.Errorf("package not found in Debian Packages file")
 }
 
+func maybeV(v string) string {
+	if strings.HasPrefix(v, "v") {
+		return v
+	}
+	return "v" + v
+}
+
+func checkHeuristic(upstreamVersion, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+	u, err := url.Parse(source)
+	u.Path = path.Dir(u.Path)
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return "", "", "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", "", "", fmt.Errorf("unexpected HTTP response: got %v, want 200 OK", resp.Status)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", "", err
+	}
+	// TODO: add special casing for parsing apache directory index?
+	log.Printf("base: %v", path.Base(source))
+	pattern := strings.Replace(path.Base(source), upstreamVersion, `([^"]*)`, 1)
+	if pattern == path.Base(source) {
+		return "", "", "", fmt.Errorf("could not derive regexp pattern, specify manually")
+	}
+	log.Printf("pattern: %v", pattern)
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return "", "", "", err
+	}
+	log.Printf("re: %v", re)
+	matches := re.FindAllStringSubmatch(string(b), -1)
+	log.Printf("matches: %v", matches)
+	versions := func() []string {
+		v := make(map[string]bool)
+		for _, m := range matches {
+			if m[1] == "latest" {
+				continue // skip common latest symlink
+			}
+			v[m[1]] = true
+		}
+		result := make([]string, 0, len(v))
+		for version := range v {
+			result = append(result, version)
+		}
+		valid := true
+		for _, r := range result {
+			if !semver.IsValid(maybeV(r)) {
+				valid = false
+				break
+			}
+		}
+		if !valid {
+			// Prefer a string sort when the versions aren’t semver, it’s better
+			// than semver.Compare.
+			sort.Sort(sort.Reverse(sort.StringSlice(result)))
+		} else {
+			sort.Slice(result, func(i, j int) bool {
+				v, w := result[i], result[j]
+				v, w = maybeV(v), maybeV(w)
+				return semver.Compare(v, w) >= 0 // reverse
+			})
+		}
+		return result
+	}()
+	if len(versions) == 0 {
+		return "", "", "", fmt.Errorf("not yet implemented")
+	}
+	u.Path = path.Join(u.Path, strings.Replace(path.Base(source), upstreamVersion, versions[0], 1))
+	return u.String(), "TODO", versions[0], nil
+}
+
 func Check(build []*ast.Node) (source, hash, version string, _ error) {
 	stringVal := func(path ...string) (string, error) {
 		nodes := ast.GetFromPath(build, path)
@@ -95,5 +174,13 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 		}
 		return checkDebian(u, source)
 	}
-	return "", "", "", fmt.Errorf("not yet implemented")
+
+	version, err = stringVal("version")
+	if err != nil {
+		return "", "", "", err
+	}
+
+	pv := distri.ParseVersion(version)
+	// fall back: see if we can obtain an index page
+	return checkHeuristic(pv.Upstream, source)
 }
