@@ -2,6 +2,7 @@ package checkupstream
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/distr1/distri"
 	"github.com/protocolbuffers/txtpbfmt/ast"
+	"golang.org/x/mod/module"
 	"golang.org/x/mod/semver"
 )
 
@@ -159,6 +161,40 @@ func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, 
 	return u.String(), "TODO", versions[0], nil
 }
 
+// e.g. checkGoMod(github.com/lpar/gzipped@v1.1.0)
+func checkGoMod(v string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+	mod := v
+	if idx := strings.Index(mod, "@"); idx > -1 {
+		mod = mod[:idx]
+	}
+	// https://github.com/golang/go/blob/master/src/cmd/go/internal/modfetch/proxy.go
+	modEsc, err := module.EscapePath(mod)
+	if err != nil {
+		return "", "", "", err
+	}
+	u := "https://proxy.golang.org/" + modEsc + "/@latest"
+	resp, err := http.Get(u)
+	if err != nil {
+		return "", "", "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", "", "", fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", "", err
+	}
+	var version struct{ Version string }
+	if err := json.Unmarshal(b, &version); err != nil {
+		return "", "", "", err
+	}
+
+	remoteVersion = version.Version
+	remoteSource = mod + "@" + remoteVersion
+	return remoteSource, remoteHash, remoteVersion, nil
+}
+
 var projectRe = regexp.MustCompile(`^/project/([^/]+)/`)
 
 func Check(build []*ast.Node) (source, hash, version string, _ error) {
@@ -184,6 +220,10 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 			return "", "", "", err
 		}
 		return checkDebian(u, source)
+	}
+
+	if strings.HasPrefix(source, "distri+gomod://") {
+		return checkGoMod(strings.TrimPrefix(source, "distri+gomod://"))
 	}
 
 	version, err = stringVal("version")
