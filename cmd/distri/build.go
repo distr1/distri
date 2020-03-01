@@ -2066,33 +2066,17 @@ func (b *buildctx) build(buildLog io.Writer) (*pb.Meta, error) {
 // URL.
 func (b *buildctx) cherryPick(src, tmp string) error {
 	fn := filepath.Join(b.PkgDir, src)
-	if _, err := os.Stat(fn); err == nil {
-		f, err := os.Open(fn)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		cmd := exec.Command("patch", "-p1", "--batch", "--set-time", "--set-utc")
-		cmd.Dir = tmp
-		cmd.Stdin = f
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return xerrors.Errorf("%v: %v", cmd.Args, err)
-		}
-		return nil
+	if _, err := os.Stat(fn); err != nil {
+		return err
 	}
-	// TODO: remove the URL support. we want patches to be committed alongside the packaging
-	resp, err := http.Get(src)
+	f, err := os.Open(fn)
 	if err != nil {
 		return err
 	}
-	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return xerrors.Errorf("HTTP status %v", resp.Status)
-	}
-	// TODO: once we extract in golang tar, we can just re-extract the timestamps
+	defer f.Close()
 	cmd := exec.Command("patch", "-p1", "--batch", "--set-time", "--set-utc")
 	cmd.Dir = tmp
-	cmd.Stdin = resp.Body
+	cmd.Stdin = f
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", cmd.Args, err)

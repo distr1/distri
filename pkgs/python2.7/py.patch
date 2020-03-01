@@ -1,0 +1,11 @@
+--- a/configure.O	2018-09-10 14:51:35.071299059 +0200
++++ b/configure	2018-09-10 14:51:44.739157840 +0200
+@@ -10238,7 +10238,7 @@
+ fi
+ 
+ if test "$with_system_ffi" = "yes" && test -n "$PKG_CONFIG"; then
+-    LIBFFI_INCLUDEDIR="`"$PKG_CONFIG" libffi --cflags-only-I 2>/dev/null | sed -e 's/^-I//;s/ *$//'`"
++    LIBFFI_INCLUDEDIR="`CPATH= "$PKG_CONFIG" libffi --cflags-only-I 2>/dev/null | sed -e 's/^-I//;s/ *$//'`"
+ else
+     LIBFFI_INCLUDEDIR=""
+ fi

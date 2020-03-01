@@ -5,7 +5,7 @@ version: "4.18.7-5"
 cbuilder: {}
 
 cherry_pick: "config.patch"
-cherry_pick: "http://t.zekjur.net/linux-werror.patch"
+cherry_pick: "linux-werror.patch"
 
 # build dependencies:
 dep: "bison"

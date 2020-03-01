@@ -1,0 +1,11 @@
+--- a/tools/objtool/O.Makefile	2018-09-10 15:01:05.410973634 +0200
++++ b/tools/objtool/Makefile	2018-09-10 15:01:11.582883581 +0200
+@@ -31,7 +31,7 @@
+ 	    -I$(srctree)/tools/arch/$(HOSTARCH)/include/uapi \
+ 	    -I$(srctree)/tools/objtool/arch/$(ARCH)/include
+ WARNINGS := $(EXTRA_WARNINGS) -Wno-switch-default -Wno-switch-enum -Wno-packed
+-CFLAGS   += -Werror $(WARNINGS) $(HOSTCFLAGS) -g $(INCLUDES)
++CFLAGS   += $(WARNINGS) $(HOSTCFLAGS) -g $(INCLUDES)
+ LDFLAGS  += -lelf $(LIBSUBCMD) $(HOSTLDFLAGS)
+ 
+ # Allow old libelf to be used:

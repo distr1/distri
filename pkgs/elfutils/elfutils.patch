@@ -1,0 +1,143 @@
+diff --git i/backends/Makefile.in w/backends/Makefile.in
+index 1954957..a6316f6 100644
+--- i/backends/Makefile.in
++++ w/backends/Makefile.in
+@@ -442,7 +442,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/lib/Makefile.in w/lib/Makefile.in
+index 3e7d403..2a255e5 100644
+--- i/lib/Makefile.in
++++ w/lib/Makefile.in
+@@ -331,7 +331,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	-Wold-style-definition -Wstrict-prototypes \
+ 	$(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	$(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	$(if $($(*F)_no_Werror),,-Werror) $(if \
++	$(if $($(*F)_no_Werror),,) $(if \
+ 	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
+ 	$($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) $(if \
+ 	$($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libasm/Makefile.in w/libasm/Makefile.in
+index 844b0c4..e8b2f7a 100644
+--- i/libasm/Makefile.in
++++ w/libasm/Makefile.in
+@@ -384,7 +384,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libcpu/Makefile.in w/libcpu/Makefile.in
+index e9e723b..dbe8f4a 100644
+--- i/libcpu/Makefile.in
++++ w/libcpu/Makefile.in
+@@ -366,7 +366,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	-Wold-style-definition -Wstrict-prototypes \
+ 	$(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	$(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	$(if $($(*F)_no_Werror),,-Werror) $(if \
++	$(if $($(*F)_no_Werror),,) $(if \
+ 	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
+ 	$($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) $(if \
+ 	$($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libdw/Makefile.in w/libdw/Makefile.in
+index 2f193f8..74d5f28 100644
+--- i/libdw/Makefile.in
++++ w/libdw/Makefile.in
+@@ -436,7 +436,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	-Wold-style-definition -Wstrict-prototypes \
+ 	$(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	$(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	$(if $($(*F)_no_Werror),,-Werror) $(if \
++	$(if $($(*F)_no_Werror),,) $(if \
+ 	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
+ 	$($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) $(if \
+ 	$($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libdwelf/Makefile.in w/libdwelf/Makefile.in
+index 0e32ab1..a6de361 100644
+--- i/libdwelf/Makefile.in
++++ w/libdwelf/Makefile.in
+@@ -364,7 +364,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libdwfl/Makefile.in w/libdwfl/Makefile.in
+index b8e28d5..4f51bbf 100644
+--- i/libdwfl/Makefile.in
++++ w/libdwfl/Makefile.in
+@@ -420,7 +420,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libebl/Makefile.in w/libebl/Makefile.in
+index 13a6f81..562faa1 100644
+--- i/libebl/Makefile.in
++++ w/libebl/Makefile.in
+@@ -384,7 +384,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	-Wold-style-definition -Wstrict-prototypes \
+ 	$(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	$(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	$(if $($(*F)_no_Werror),,-Werror) $(if \
++	$(if $($(*F)_no_Werror),,) $(if \
+ 	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
+ 	$($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) $(if \
+ 	$($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/libelf/Makefile.in w/libelf/Makefile.in
+index 602e66d..360927e 100644
+--- i/libelf/Makefile.in
++++ w/libelf/Makefile.in
+@@ -427,7 +427,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	-Wold-style-definition -Wstrict-prototypes \
+ 	$(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	$(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	$(if $($(*F)_no_Werror),,-Werror) $(if \
++	$(if $($(*F)_no_Werror),,) $(if \
+ 	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
+ 	$($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) $(if \
+ 	$($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/src/Makefile.in w/src/Makefile.in
+index 82d6835..b8bd7f4 100644
+--- i/src/Makefile.in
++++ w/src/Makefile.in
+@@ -441,7 +441,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
+diff --git i/tests/Makefile.in w/tests/Makefile.in
+index d6b9081..851b176 100644
+--- i/tests/Makefile.in
++++ w/tests/Makefile.in
+@@ -1072,7 +1072,7 @@ AM_CFLAGS = -std=gnu99 -Wall -Wshadow -Wformat=2 \
+ 	    -Wold-style-definition -Wstrict-prototypes \
+ 	    $(LOGICAL_OP_WARNING) $(DUPLICATED_COND_WARNING) \
+ 	    $(NULL_DEREFERENCE_WARNING) $(IMPLICIT_FALLTHROUGH_WARNING) \
+-	    $(if $($(*F)_no_Werror),,-Werror) \
++	    $(if $($(*F)_no_Werror),,) \
+ 	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
+ 	    $(if $($(*F)_no_Wstack_usage),,$(STACK_USAGE_WARNING)) \
+ 	    $(if $($(*F)_no_Wpacked_not_aligned),-Wno-packed-not-aligned,) \
