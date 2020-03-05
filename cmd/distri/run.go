@@ -11,8 +11,8 @@ import (
 	"strings"
 	"syscall"
 
-	cmdfuse "github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/env"
+	cmdfuse "github.com/distr1/distri/internal/fuse"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
