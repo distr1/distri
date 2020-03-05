@@ -95,7 +95,7 @@ install:
 	systemctl --user try-restart distri-autobuilder.service || true
 
 test: install
-	DISTRIROOT=$$PWD go test -v ./cmd/... ./integration/...
+	DISTRIROOT=$$PWD go test -failfast -v ./cmd/... ./integration/...
 
 image:
 	DISTRIROOT=$$PWD ${IMAGE}
