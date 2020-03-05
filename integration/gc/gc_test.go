@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/distr1/distri/internal/distritest"
 )
 
 func stracePresent(store, pkg string) bool {
@@ -35,7 +37,7 @@ func TestGC(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(store)
+	defer distritest.RemoveAll(t, store)
 
 	const (
 		oldPkg = "strace-amd64-5.1-4"

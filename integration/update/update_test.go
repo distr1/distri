@@ -49,7 +49,7 @@ func TestUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer distritest.RemoveAll(t, tmpdir)
 
 	pkgset := filepath.Join(tmpdir, "etc", "distri", "pkgset.d", "extrabase.pkgset")
 	if err := os.MkdirAll(filepath.Dir(pkgset), 0755); err != nil {

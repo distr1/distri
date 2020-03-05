@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/distr1/distri/internal/build"
+	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
@@ -118,7 +119,7 @@ func TestBuild(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
 	repo := filepath.Join(distriroot, "build", "distri", "pkg")
@@ -205,7 +206,7 @@ func TestUnversionedBuild(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
 	repo := filepath.Join(distriroot, "build", "distri", "pkg")
@@ -322,7 +323,7 @@ func TestMultiPackageBuild(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
 	repo := filepath.Join(distriroot, "build", "distri", "pkg")
@@ -477,7 +478,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
 	repo := filepath.Join(distriroot, "build", "distri", "pkg")
@@ -572,7 +573,7 @@ func TestShebangRuntimeDep(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
 	repo := filepath.Join(distriroot, "build", "distri", "pkg")

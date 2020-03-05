@@ -44,11 +44,15 @@ func mustGlob1(t *testing.T, pattern string) string {
 }
 
 func TestAutobuilderCommands(t *testing.T) {
-	tempdir, err := ioutil.TempDir("", "test")
+	tempdir, err := ioutil.TempDir("", "distri-autobuilder-test-")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tempdir)
+	defer func() {
+		if err := os.RemoveAll(tempdir); err != nil {
+			t.Fatalf("cleanup: %v", err)
+		}
+	}()
 
 	for _, subdir := range []string{"pkg", "debug", "src"} {
 		if err := os.MkdirAll(filepath.Join(tempdir, "distri", "sha", subdir), 0755); err != nil {

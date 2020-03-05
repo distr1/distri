@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 )
@@ -53,7 +54,7 @@ func TestBump(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Write package build instructions:
 	for path, content := range files {
@@ -98,7 +99,7 @@ func TestBumpRdeps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(distriroot)
+	defer distritest.RemoveAll(t, distriroot)
 
 	// Write package build instructions:
 	for path, content := range files {

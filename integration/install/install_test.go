@@ -270,7 +270,7 @@ func TestInstall(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(tmpdir)
+			defer distritest.RemoveAll(t, tmpdir)
 
 			if err := tt.installFunc(ctx, tmpdir, tt.pkgs...); err != nil {
 				t.Fatal(err)
@@ -332,7 +332,7 @@ func TestInstallHooks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer distritest.RemoveAll(t, tmpdir)
 
 	// TODO: refactor user namespace setup code (like in build.go) so that we
 	// can test install with -root=/ (within the namespace) and test the linux
@@ -401,7 +401,7 @@ func TestInstallContentHooks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer distritest.RemoveAll(t, tmpdir)
 
 	called := filepath.Join(tmpdir, "called")
 
@@ -442,7 +442,7 @@ func BenchmarkInstallChrome(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		defer os.RemoveAll(tmpdir)
+		defer distritest.RemoveAll(b, tmpdir)
 
 		install := exec.Command("distri",
 			append([]string{

@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -17,6 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/distr1/distri/internal/build"
+	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 
@@ -28,7 +28,7 @@ func TestBuilder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmp)
+	defer distritest.RemoveAll(t, tmp)
 	go func() {
 		// TODO: -listen=localhost:0 and -addrfd = fd of a pipe or sth
 		if err := builder([]string{"-upload_base_dir=" + tmp}); err != nil {

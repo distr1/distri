@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"testing"
 )
 
 func Export(ctx context.Context, repo string) (addr string, cleanup func(), _ error) {
@@ -42,4 +43,11 @@ func Export(ctx context.Context, repo string) (addr string, cleanup func(), _ er
 		return "", nil, err
 	}
 	return string(b), cleanup, nil
+}
+
+// RemoveAll wraps os.RemoveAll and fails the test on failure.
+func RemoveAll(t testing.TB, path string) {
+	if err := os.RemoveAll(path); err != nil {
+		t.Fatalf("cleanup: %v", err)
+	}
 }

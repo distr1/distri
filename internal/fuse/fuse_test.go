@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/distr1/distri/internal/cp"
+	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/fuse"
 	"github.com/distr1/distri/internal/squashfs"
@@ -30,7 +31,7 @@ func TestFUSE(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(repo)
+	defer distritest.RemoveAll(t, repo)
 
 	meta := func(srcpkg, version string) string {
 		return fmt.Sprintf("source_pkg: %q\nversion: %q", srcpkg, version)
@@ -60,7 +61,7 @@ func TestFUSE(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer distritest.RemoveAll(t, tmpdir)
 
 	join, err := fuse.Mount([]string{
 		"-repo=" + repo,
@@ -180,7 +181,7 @@ func TestXattr(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(repo)
+	defer distritest.RemoveAll(t, repo)
 
 	meta := func(srcpkg, version string) string {
 		return fmt.Sprintf("source_pkg: %q\nversion: %q", srcpkg, version)
@@ -209,7 +210,7 @@ func TestXattr(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpdir)
+	defer distritest.RemoveAll(t, tmpdir)
 
 	join, err := fuse.Mount([]string{
 		"-repo=" + repo,
