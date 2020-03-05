@@ -13,10 +13,9 @@ import (
 	"runtime/trace"
 	"strconv"
 	"strings"
-	"sync"
-	"sync/atomic"
 
-	"github.com/distr1/distri/cmd/distri/internal/fuse"
+	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/fuse"
 	internaltrace "github.com/distr1/distri/internal/trace"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
@@ -70,21 +69,6 @@ func bumpRlimitNOFILE() error {
 	return unix.Setrlimit(unix.RLIMIT_NOFILE, &set)
 }
 
-var atExit struct {
-	sync.Mutex
-	fns    []func() error
-	closed uint32
-}
-
-func registerAtExit(fn func() error) {
-	if atomic.LoadUint32(&atExit.closed) != 0 {
-		panic("BUG: registerAtExit must not be called from an atExit func")
-	}
-	atExit.Lock()
-	defer atExit.Unlock()
-	atExit.fns = append(atExit.fns, fn)
-}
-
 func funcmain() error {
 	flag.Parse()
 
@@ -136,17 +120,12 @@ func funcmain() error {
 		fn func(args []string) error
 	}
 	verbs := map[string]cmd{
-		"build": {build},
-		"mount": {func(args []string) error {
-			_, err := mount(args)
-			return err
-		}},
-		"umount": {umount},
+		"build": {cmdbuild},
 		// TODO: remove this once we build to SquashFS by default
 		"convert":  {convert},
 		"pack":     {pack},
 		"scaffold": {scaffold},
-		"install":  {install},
+		"install":  {cmdinstall},
 		"fuse": {func(args []string) error {
 			if err := bumpRlimitNOFILE(); err != nil {
 				log.Printf("Warning: bumping RLIMIT_NOFILE failed: %v", err)
@@ -239,13 +218,7 @@ func funcmain() error {
 		}
 	}
 
-	atomic.StoreUint32(&atExit.closed, 1)
-	for _, fn := range atExit.fns {
-		if err := fn(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return distri.RunAtExit()
 }
 
 func main() {

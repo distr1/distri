@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	cmdfuse "github.com/distr1/distri/internal/fuse"
 	"github.com/jacobsa/fuse"
@@ -43,7 +44,7 @@ func run(args []string) error {
 	}
 	cmd := fset.Args()
 
-	p := &buildctx{
+	p := &build.Ctx{
 		Arch: "amd64", // TODO: -cross flag
 	}
 
@@ -129,12 +130,12 @@ func run(args []string) error {
 		*pkgs = cmd[0]
 	}
 	deps = append(deps, strings.Split(*pkgs, ",")...)
-	deps, err = p.glob(env.DefaultRepo, deps)
+	deps, err = p.Glob(env.DefaultRepo, deps)
 	if err != nil {
 		return err
 	}
 
-	deps, err = resolve(env.DefaultRepo, deps, "")
+	deps, err = build.Resolve(env.DefaultRepo, deps, "")
 	if err != nil {
 		return err
 	}

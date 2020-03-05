@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	cmdfuse "github.com/distr1/distri/internal/fuse"
 	"github.com/distr1/distri/pb"
@@ -34,7 +35,7 @@ Example:
 `
 
 type patchctx struct {
-	buildctx
+	build.Ctx
 }
 
 func (p *patchctx) fullName() string {
@@ -129,7 +130,7 @@ func patch(args []string) error {
 	}
 
 	p := &patchctx{
-		buildctx{
+		build.Ctx{
 			Pkg:     *pkg,
 			Arch:    "amd64", // TODO: -cross flag
 			Version: buildProto.GetVersion(),
@@ -156,7 +157,7 @@ func patch(args []string) error {
 			return err
 		}
 		defer os.RemoveAll(upperdir)
-		lowerdir := filepath.Join(env.DistriRoot, "build", p.Pkg, trimArchiveSuffix(filepath.Base(p.Proto.GetSource())))
+		lowerdir := filepath.Join(env.DistriRoot, "build", p.Pkg, build.TrimArchiveSuffix(filepath.Base(p.Proto.GetSource())))
 		target := filepath.Join(p.ChrootDir, "usr", "src", p.fullName())
 		if err := os.MkdirAll(target, 0755); err != nil {
 			return xerrors.Errorf("MkdirAll(%s) = %v", target, err)
@@ -182,12 +183,12 @@ func patch(args []string) error {
 			"zsh",
 			"findutils",
 		}
-		deps, err = p.glob(env.DefaultRepo, deps)
+		deps, err = p.Glob(env.DefaultRepo, deps)
 		if err != nil {
 			return err
 		}
 
-		deps, err = resolve(env.DefaultRepo, deps, "")
+		deps, err = build.Resolve(env.DefaultRepo, deps, "")
 		if err != nil {
 			return err
 		}

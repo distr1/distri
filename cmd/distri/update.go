@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/distr1/distri/internal/install"
 	"github.com/distr1/distri/pb"
 	"golang.org/x/xerrors"
 )
@@ -43,7 +44,7 @@ func update(args []string) error {
 			return err
 		}
 
-		if err := install([]string{"-root=" + *root, "-repo=" + *repo, "distri1"}); err != nil {
+		if err := install.Packages([]string{"distri1"}, *root, *repo, false); err != nil {
 			return err
 		}
 
@@ -59,7 +60,7 @@ func update(args []string) error {
 		return nil
 	}
 
-	if err := install([]string{"-root=" + *root, "-repo=" + *repo, "base"}); err != nil {
+	if err := install.Packages([]string{"base"}, *root, *repo, false); err != nil {
 		return err
 	}
 
@@ -94,7 +95,7 @@ func update(args []string) error {
 		return nil
 	}
 
-	if err := install(append([]string{"-root=" + *root, "-repo=" + *repo, "-update"}, pkgs...)); err != nil {
+	if err := install.Packages(pkgs, *root, *repo, true); err != nil {
 		// try to persist an after file listing (best effort)
 		persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg"))
 		return err

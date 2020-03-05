@@ -1,4 +1,4 @@
-package main
+package build
 
 import "github.com/distr1/distri/pb"
 

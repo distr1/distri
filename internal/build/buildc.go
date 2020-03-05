@@ -1,4 +1,4 @@
-package main
+package build
 
 import (
 	"strconv"
@@ -12,7 +12,7 @@ var configureTarget = map[string]string{
 	"i686":  "i686-pc-linux-gnu",
 }
 
-func (b *buildctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
+func (b *Ctx) buildc(opts *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
 	env = append(env, b.substitute("DESTDIR=${DISTRI_DESTDIR}"))
 

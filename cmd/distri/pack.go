@@ -18,8 +18,10 @@ import (
 	"unsafe"
 
 	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	cmdfuse "github.com/distr1/distri/internal/fuse"
+	"github.com/distr1/distri/internal/install"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
@@ -186,16 +188,12 @@ func pack(args []string) error {
 		}
 		defer os.RemoveAll(root)
 
-		skipContentHooks = true
-		if err := install(append(
-			[]string{
-				"-root=" + root,
-				"-repo=" + p.repo,
-			},
+		install.SkipContentHooks = true
+		if err := install.Packages([]string{
 			"base",
 			"rxvt-unicode",    // for its terminfo file
 			"ca-certificates", // so that we can install packages via https
-		)); err != nil {
+		}, root, p.repo, false); err != nil {
 			return err
 		}
 
@@ -236,8 +234,8 @@ func pack(args []string) error {
 		}
 
 		// Remove packages we don’t need to reduce docker container size:
-		b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
-		resolved, err := b.glob(filepath.Join(p.repo, "pkg"), []string{
+		b := &build.Ctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+		resolved, err := b.Glob(filepath.Join(p.repo, "pkg"), []string{
 			"linux-firmware",
 			"docker-engine",
 			"dracut",
@@ -353,7 +351,7 @@ func (p *packctx) pack(root string) error {
 		}
 	}
 
-	b := &buildctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+	b := &build.Ctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
 
 	basePkgNames := []string{"base"} // contains packages required for pack
 	if p.extraBase != "" {
@@ -367,16 +365,13 @@ func (p *packctx) pack(root string) error {
 		}
 	}
 
-	basePkgs, err := b.glob(filepath.Join(p.repo, "pkg"), basePkgNames)
+	basePkgs, err := b.Glob(filepath.Join(p.repo, "pkg"), basePkgNames)
 	if err != nil {
 		return err
 	}
 
-	skipContentHooks = true
-	if err := install(append([]string{
-		"-root=" + root,
-		"-repo=" + p.repo,
-	}, basePkgs...)); err != nil {
+	install.SkipContentHooks = true
+	if err := install.Packages(basePkgs, root, p.repo, false); err != nil {
 		return err
 	}
 

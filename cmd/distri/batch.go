@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/trace"
@@ -144,12 +145,12 @@ func batch(args []string) error {
 			return err
 		}
 
-		b := &buildctx{
+		b := &build.Ctx{
 			Arch:   "amd64", // TODO
 			PkgDir: filepath.Join(pkgsDir, fi.Name()),
 			Proto:  &buildProto,
 		}
-		inputDigest, err := b.digest()
+		inputDigest, err := b.Digest()
 		if err != nil {
 			return err
 		}
@@ -180,7 +181,7 @@ func batch(args []string) error {
 		g.AddNode(n)
 	}
 
-	b := &buildctx{Arch: "amd64"} // TODO
+	b := &build.Ctx{Arch: "amd64"} // TODO
 
 	// add all constraints: <pkg>-<version> depends on <pkg>-<version>
 	for _, n := range byFullname {
@@ -196,7 +197,7 @@ func batch(args []string) error {
 		version := buildProto.GetVersion()
 
 		deps := buildProto.GetDep()
-		deps = append(deps, b.builderdeps(&buildProto)...)
+		deps = append(deps, b.Builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 
 		for _, dep := range deps {

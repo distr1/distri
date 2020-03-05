@@ -16,6 +16,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 
@@ -80,7 +81,10 @@ func TestBuilder(t *testing.T) {
 		t.Skip("TestBuilder/Upload failed")
 	}
 
-	b := &buildctx{Arch: "amd64"} // TODO
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
 	c, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", "hello", "build.textproto"))
 	if err != nil {
 		t.Fatal(err)
@@ -90,15 +94,10 @@ func TestBuilder(t *testing.T) {
 		t.Fatal(err)
 	}
 	deps := buildProto.GetDep()
-	deps = append(deps, b.builderdeps(&buildProto)...)
+	deps = append(deps, b.Builderdeps(&buildProto)...)
 	deps = append(deps, buildProto.GetRuntimeDep()...)
 
-	globbed, err := b.glob(env.DefaultRepo, deps)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resolved, err := resolve(env.DefaultRepo, globbed, "")
+	resolved, err := b.GlobAndResolve(env.DefaultRepo, deps, "")
 	if err != nil {
 		t.Fatal(err)
 	}

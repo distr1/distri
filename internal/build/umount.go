@@ -1,4 +1,4 @@
-package main
+package build
 
 import (
 	"flag"
@@ -9,11 +9,6 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const umountHelp = `distri umount [-flags] <package>
-
-Unmount distri package. OBSOLETE: use distri fuse instead.
-`
-
 func umount(args []string) error {
 	fset := flag.NewFlagSet("umount", flag.ExitOnError)
 	var (
@@ -21,7 +16,6 @@ func umount(args []string) error {
 			"/ro",
 			"TODO")
 	)
-	fset.Usage = usage(fset, umountHelp)
 	fset.Parse(args)
 	if fset.NArg() != 1 {
 		return xerrors.Errorf("syntax: umount <package>")

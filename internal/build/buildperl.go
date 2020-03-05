@@ -1,10 +1,10 @@
-package main
+package build
 
 import (
 	"github.com/distr1/distri/pb"
 )
 
-func (b *buildctx) buildperl(opts *pb.PerlBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
+func (b *Ctx) buildperl(opts *pb.PerlBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	var steps [][]string
 	// TODO: Perl distributions generally don’t seem to build out-of-source? If they start doing so, stop copying
 	steps = [][]string{

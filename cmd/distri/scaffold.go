@@ -18,6 +18,7 @@ import (
 	"text/template"
 
 	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/checkupstream"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
@@ -52,10 +53,10 @@ func nameFromURL(parsed *url.URL, scaffoldType int) (name string, version string
 		_ = parts[0] // org/user
 		name = parts[1]
 		_ = parts[2] // “archive”
-		version = trimArchiveSuffix(strings.TrimPrefix(parts[3], "v"))
+		version = build.TrimArchiveSuffix(strings.TrimPrefix(parts[3], "v"))
 		return name, version, nil
 	}
-	pkg := trimArchiveSuffix(filepath.Base(parsed.String()))
+	pkg := build.TrimArchiveSuffix(filepath.Base(parsed.String()))
 	pkg = strings.ReplaceAll(pkg, "_", "-")
 	idx := strings.LastIndex(pkg, "-")
 	if idx == -1 {
@@ -180,7 +181,7 @@ func (c *scaffoldctx) buildFile(hash string) ([]byte, error) {
 }
 
 func (c *scaffoldctx) scaffold1() error {
-	b := &buildctx{
+	b := &build.Ctx{
 		Proto: &pb.Build{
 			Source: proto.String(c.SourceURL),
 		},
@@ -196,7 +197,7 @@ func (c *scaffoldctx) scaffold1() error {
 	if c.ScaffoldType == scaffoldGomod {
 		fn += ".tar.gz"
 	}
-	if err := b.download(fn); err != nil {
+	if err := b.Download(fn); err != nil {
 		return err
 	}
 

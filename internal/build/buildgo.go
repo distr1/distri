@@ -1,4 +1,4 @@
-package main
+package build
 
 import (
 	"net/url"
@@ -15,7 +15,7 @@ func goPkgToImportPath(pkg string) string {
 	return importPath
 }
 
-func (b *buildctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, source string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
+func (b *Ctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, source string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	// Add replace directives to go.mod for the transitive closure of
 	// dependencies, instructing the go tool to select the version we made
 	// available as a build dependency.

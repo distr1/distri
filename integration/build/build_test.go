@@ -5,9 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
@@ -20,9 +20,9 @@ source: "empty://"
 hash: ""
 version: "1"
 
-dep: "bash-amd64-4.4.18-3"
+dep: "bash"
 
-runtime_dep: "pkg-config-amd64-0.29.2-3"
+runtime_dep: "pkg-config"
 
 build_step: <
   argv: "/bin/sh"
@@ -111,45 +111,6 @@ build_step: <
 >
 `
 
-// TODO: refactor out of build.go
-func resolve1(imgDir, pkg string) ([]string, error) {
-	const ext = ".meta.textproto"
-	resolved := []string{pkg}
-	fn := filepath.Join(imgDir, pkg+ext)
-	if target, err := os.Readlink(fn); err == nil {
-		resolved = []string{strings.TrimSuffix(filepath.Base(target), ext)}
-	}
-	meta, err := pb.ReadMetaFile(fn)
-	if err != nil {
-		return nil, err
-	}
-	for _, dep := range meta.GetRuntimeDep() {
-		if dep == pkg {
-			continue // skip circular dependencies, e.g. gcc depends on itself
-		}
-		resolved = append(resolved, dep)
-	}
-	return resolved, nil
-}
-
-func resolve(imgDir string, pkgs []string) ([]string, error) {
-	deps := make(map[string]bool)
-	for _, pkg := range pkgs {
-		r, err := resolve1(imgDir, pkg)
-		if err != nil {
-			return nil, err
-		}
-		for _, dep := range r {
-			deps[dep] = true
-		}
-	}
-	resolved := make([]string, 0, len(deps))
-	for dep := range deps {
-		resolved = append(resolved, dep)
-	}
-	return resolved, nil
-}
-
 func TestBuild(t *testing.T) {
 	t.Parallel()
 
@@ -164,10 +125,14 @@ func TestBuild(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64",
-		"pkg-config-amd64",
-	})
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
+		"bash",
+		"pkg-config",
+	}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,12 +212,16 @@ func TestUnversionedBuild(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64",
-		"linux-amd64",
-		"linux-firmware-amd64",
-		"pkg-config-amd64",
-	})
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
+		"bash",
+		"linux",
+		"linux-firmware",
+		"pkg-config",
+	}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -360,10 +329,14 @@ func TestMultiPackageBuild(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64",
-		"coreutils-amd64",
-	})
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
+		"bash",
+		"coreutils",
+	}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -511,12 +484,16 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	deps, err := resolve(env.DefaultRepo, []string{
-		//"mesa-amd64-18.2.0",
-		"bash-amd64",
-		"coreutils-amd64",
-		"libepoxy-amd64",
-	})
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
+		//"mesa",
+		"bash",
+		"coreutils",
+		"libepoxy",
+	}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -565,7 +542,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
 				"glibc-amd64-2.27-3",     // from shlibdeps
-				"libepoxy-amd64-1.5.2-4", // from pkgconfig
+				"libepoxy-amd64-1.5.2-5", // from pkgconfig
 			},
 		},
 	} {
@@ -602,14 +579,18 @@ func TestShebangRuntimeDep(t *testing.T) {
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	deps, err := resolve(env.DefaultRepo, []string{
-		"bash-amd64",
-		"coreutils-amd64",
-		"perl-amd64",
-		"gcc-amd64",      // for wrapper programs
-		"binutils-amd64", // for wrapper programs
-		"musl-amd64",     // for wrapper programs
-	})
+	b, err := build.NewCtx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
+		"bash",
+		"coreutils",
+		"perl",
+		"gcc",      // for wrapper programs
+		"binutils", // for wrapper programs
+		"musl",     // for wrapper programs
+	}, "")
 	if err != nil {
 		t.Fatal(err)
 	}

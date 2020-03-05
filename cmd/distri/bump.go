@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -154,15 +155,15 @@ func (b *bumpctx) addPkg(pkg string) error {
 
 	{
 		deps := buildProto.GetDep()
-		bld := &buildctx{Arch: "amd64"} // TODO
-		deps = append(deps, bld.builderdeps(&buildProto)...)
+		bld := &build.Ctx{Arch: "amd64"} // TODO
+		deps = append(deps, bld.Builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 		srcs := make([]string, 0, len(deps))
 		for _, r := range deps {
 			g, ok := b.globCache[r]
 			if !ok {
 				var err error
-				g, err = bld.glob(env.DefaultRepo, []string{r})
+				g, err = bld.Glob(env.DefaultRepo, []string{r})
 				if err != nil || len(g) == 0 {
 					continue // build.textproto present, but no build artifact
 				}

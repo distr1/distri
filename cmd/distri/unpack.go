@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -49,14 +50,14 @@ func unpack(args []string) error {
 		return err
 	}
 
-	b := &buildctx{
+	b := &build.Ctx{
 		Proto:     &buildProto,
 		PkgDir:    pkgDir,
 		Pkg:       pkg,
 		Version:   buildProto.GetVersion(),
-		SourceDir: trimArchiveSuffix(filepath.Base(buildProto.GetSource())),
+		SourceDir: build.TrimArchiveSuffix(filepath.Base(buildProto.GetSource())),
 	}
-	if err := b.extract(); err != nil {
+	if err := b.Extract(); err != nil {
 		return xerrors.Errorf("extract: %v", err)
 	}
 	return nil

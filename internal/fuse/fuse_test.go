@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/distr1/distri/cmd/distri/internal/fuse"
 	"github.com/distr1/distri/internal/cp"
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/fuse"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/google/go-cmp/cmp"
