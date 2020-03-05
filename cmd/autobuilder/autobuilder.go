@@ -252,14 +252,13 @@ func (a *autobuilder) runCommit(commit string) error {
 		return err
 	}
 
-	// TODO(go1.14): set -modcacherw flag so that workdir is easy to delete manually
-
 	install := exec.Command("make", "install")
 	install.Dir = filepath.Join(workdir, "distri")
 	install.Env = []string{
 		"HOME=" + os.Getenv("HOME"), // TODO(later): make hermetic
 		"GOPATH=" + filepath.Join(workdir, "go"),
 		"GOPROXY=https://proxy.golang.org",
+		"GOFLAGS=-modcacherw",
 		"PATH=" + filepath.Join(workdir, "go", "bin") + ":" + os.Getenv("PATH"),
 	}
 	install.Stdout = os.Stdout
