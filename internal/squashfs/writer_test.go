@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/distr1/distri"
+	"github.com/distr1/distri/internal/distritest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/orcaman/writerseeker"
 	"golang.org/x/sys/unix"
@@ -135,6 +137,9 @@ func writeTestImage(iow io.WriteSeeker, xattr bool) error {
 func TestUnsquashfs(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	if _, err := exec.LookPath("unsquashfs"); err != nil {
 		t.Skip("unsquashfs not found in $PATH")
 	}
@@ -166,12 +171,12 @@ func TestUnsquashfs(t *testing.T) {
 			}
 
 			// Extract our generated file system using unsquashfs(1)
-			out, err := ioutil.TempDir("", "unsquashfs")
+			out, err := ioutil.TempDir("", fmt.Sprintf("unsquashfs-xattr-%v", xattr))
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(out)
-			cmd := exec.Command("unsquashfs", "-d", filepath.Join(out, "x"), f.Name())
+			defer distritest.RemoveAll(t, out)
+			cmd := exec.CommandContext(ctx, "unsquashfs", "-no-xattrs", "-d", filepath.Join(out, "x"), f.Name())
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
 				t.Fatal(err)
@@ -194,7 +199,6 @@ func TestUnsquashfs(t *testing.T) {
 			} {
 				entry := entry // copy
 				t.Run(entry.path, func(t *testing.T) {
-					t.Parallel()
 					in, err := os.Open(filepath.Join(out, "x", entry.path))
 					if err != nil {
 						t.Fatal(err)

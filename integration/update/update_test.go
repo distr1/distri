@@ -1,7 +1,6 @@
 package update_test
 
 import (
-	"context"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
@@ -42,7 +42,7 @@ func resolve1(imgDir, pkg string) ([]string, error) {
 }
 
 func TestUpdate(t *testing.T) {
-	ctx, canc := context.WithCancel(context.Background())
+	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
 	tmpdir, err := ioutil.TempDir("", "distriupdate")
@@ -122,7 +122,7 @@ func TestUpdate(t *testing.T) {
 	}
 	proxy := httptest.NewServer(rp)
 	defer proxy.Close()
-	update := exec.Command("distri", "update", "-repo="+proxy.URL, "-root="+tmpdir, "-pkgset=extrabase")
+	update := exec.CommandContext(ctx, "distri", "update", "-repo="+proxy.URL, "-root="+tmpdir, "-pkgset=extrabase")
 	update.Stderr = os.Stderr
 	if err := update.Run(); err != nil {
 		t.Fatalf("%v: %v", update.Args, err)

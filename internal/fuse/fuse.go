@@ -254,8 +254,16 @@ func Mount(ctx context.Context, args []string) (join func(context.Context) error
 			return nil, err
 		}
 		join = func(ctx context.Context) error {
-			defer syscall.Unmount(mountpoint, 0)
-			defer os.RemoveAll(tempdir)
+			defer func() {
+				if err := fuse.Unmount(mountpoint); err != nil {
+					fmt.Fprintf(os.Stderr, "fuse.Unmount: %v\n", err)
+				}
+			}()
+			defer func() {
+				if err := os.RemoveAll(tempdir); err != nil {
+					fmt.Fprintf(os.Stderr, "cleanup: %v\n", err)
+				}
+			}()
 			return mfs.Join(ctx)
 		}
 		fs.ctl = filepath.Join(tempdir, "distri-fuse-ctl")

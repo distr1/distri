@@ -23,7 +23,7 @@ const (
 )
 
 func installFile(ctx context.Context, tmpdir string, pkg ...string) error {
-	install := exec.Command("distri",
+	install := exec.CommandContext(ctx, "distri",
 		append([]string{
 			"install",
 			"-root=" + tmpdir,
@@ -44,7 +44,7 @@ func installHTTP(ctx context.Context, tmpdir string, pkg ...string) error {
 	}
 	defer cleanup()
 
-	install := exec.Command("distri",
+	install := exec.CommandContext(ctx, "distri",
 		append([]string{
 			"install",
 			"-root=" + tmpdir,
@@ -76,7 +76,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 			return err
 		}
 		for _, dep := range append([]string{pkg}, meta.GetRuntimeDep()...) {
-			cp := exec.Command("cp",
+			cp := exec.CommandContext(ctx, "cp",
 				filepath.Join(env.DefaultRepo, dep+".squashfs"),
 				filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 				filepath.Join(rtmpdir, "pkg"))
@@ -107,7 +107,7 @@ func installHTTPMultiple(ctx context.Context, tmpdir string, pkg ...string) erro
 			return err
 		}
 	}
-	install := exec.Command("distri",
+	install := exec.CommandContext(ctx, "distri",
 		append([]string{
 			"install",
 			"-root=" + tmpdir,
@@ -140,7 +140,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 		}
 		// Copy and rename the latest systemd to simulate two versions being present
 		for _, dep := range append([]string{systemd}, meta.GetRuntimeDep()...) {
-			cp := exec.Command("cp",
+			cp := exec.CommandContext(ctx, "cp",
 				filepath.Join(env.DefaultRepo, dep+".squashfs"),
 				filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 				filepath.Join(rtmpdir, "pkg"))
@@ -194,7 +194,7 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 			return err
 		}
 	}
-	install := exec.Command("distri",
+	install := exec.CommandContext(ctx, "distri",
 		append([]string{
 			"install",
 			"-root=" + tmpdir,
@@ -210,122 +210,129 @@ func installHTTPMultipleVersions(ctx context.Context, tmpdir string, pkg ...stri
 
 func TestInstall(t *testing.T) {
 	t.Parallel()
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
 
-	for _, tt := range []struct {
-		desc        string
-		installFunc func(ctx context.Context, tmpdir string, pkg ...string) error
-		pkgsFull    []string
-		pkgs        []string
-	}{
-		{
-			desc:        "File",
-			installFunc: installFile,
-			pkgsFull:    []string{systemd},
-			pkgs:        []string{systemd},
-		},
+	// Wrap the parallel subtests in a group so that control flow (i.e. context
+	// cancellation) blocks until all parallel subtests returned.
+	t.Run("group", func(t *testing.T) {
+		for _, tt := range []struct {
+			desc        string
+			installFunc func(ctx context.Context, tmpdir string, pkg ...string) error
+			pkgsFull    []string
+			pkgs        []string
+		}{
+			{
+				desc:        "File",
+				installFunc: installFile,
+				pkgsFull:    []string{systemd},
+				pkgs:        []string{systemd},
+			},
 
-		{
-			desc:        "HTTP",
-			installFunc: installHTTP,
-			pkgsFull:    []string{systemd},
-			pkgs:        []string{systemd},
-		},
+			{
+				desc:        "HTTP",
+				installFunc: installHTTP,
+				pkgsFull:    []string{systemd},
+				pkgs:        []string{systemd},
+			},
 
-		{
-			desc:        "HTTPResolveVersion",
-			installFunc: installHTTP,
-			pkgsFull:    []string{systemd},
-			pkgs:        []string{"systemd-amd64"},
-		},
+			{
+				desc:        "HTTPResolveVersion",
+				installFunc: installHTTP,
+				pkgsFull:    []string{systemd},
+				pkgs:        []string{"systemd-amd64"},
+			},
 
-		{
-			desc:        "HTTPResolveAll",
-			installFunc: installHTTP,
-			pkgsFull:    []string{systemd},
-			pkgs:        []string{"systemd"},
-		},
+			{
+				desc:        "HTTPResolveAll",
+				installFunc: installHTTP,
+				pkgsFull:    []string{systemd},
+				pkgs:        []string{"systemd"},
+			},
 
-		{
-			desc:        "HTTPMultiplePkgs",
-			installFunc: installHTTPMultiple,
-			pkgsFull:    []string{systemd, bash},
-			pkgs:        []string{systemd, bash},
-		},
+			{
+				desc:        "HTTPMultiplePkgs",
+				installFunc: installHTTPMultiple,
+				pkgsFull:    []string{systemd, bash},
+				pkgs:        []string{systemd, bash},
+			},
 
-		{
-			desc:        "HTTPMultipleVersions",
-			installFunc: installHTTPMultipleVersions,
-			pkgsFull:    []string{systemd},
-			pkgs:        []string{"systemd"},
-		},
-	} {
-		tt := tt // copy
-		t.Run(tt.desc, func(t *testing.T) {
-			t.Parallel()
-			ctx, canc := context.WithCancel(context.Background())
-			defer canc()
+			{
+				desc:        "HTTPMultipleVersions",
+				installFunc: installHTTPMultipleVersions,
+				pkgsFull:    []string{systemd},
+				pkgs:        []string{"systemd"},
+			},
+		} {
+			tt := tt // copy
+			t.Run(tt.desc, func(t *testing.T) {
+				t.Parallel()
+				ctx, canc := context.WithCancel(ctx)
+				defer canc()
 
-			// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
-			tmpdir, err := ioutil.TempDir("", "integrationinstall")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer distritest.RemoveAll(t, tmpdir)
-
-			if err := tt.installFunc(ctx, tmpdir, tt.pkgs...); err != nil {
-				t.Fatal(err)
-			}
-
-			for _, pkg := range tt.pkgsFull {
-				m, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
+				// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
+				tmpdir, err := ioutil.TempDir("", "integrationinstall")
 				if err != nil {
 					t.Fatal(err)
 				}
-				for _, pkg := range append([]string{pkg}, m.GetRuntimeDep()...) {
-					t.Run("VerifyPackageInstalled/"+pkg, func(t *testing.T) {
-						if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".squashfs")); err != nil {
-							t.Fatal(err)
-						}
-						if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".meta.textproto")); err != nil {
-							t.Fatal(err)
-						}
-					})
-				}
-			}
+				defer distritest.RemoveAll(t, tmpdir)
 
-			t.Run("VerifyEtcCopiedSystemd", func(t *testing.T) {
-				if _, err := os.Stat(filepath.Join(tmpdir, "etc", "systemd", "system.conf")); err != nil {
+				if err := tt.installFunc(ctx, tmpdir, tt.pkgs...); err != nil {
 					t.Fatal(err)
 				}
-				linkName := filepath.Join(tmpdir, "etc", "xdg", "systemd", "user")
-				st, err := os.Lstat(linkName)
-				if err != nil {
-					t.Fatal(err)
+
+				for _, pkg := range tt.pkgsFull {
+					m, err := pb.ReadMetaFile(filepath.Join(env.DefaultRepo, pkg+".meta.textproto"))
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, pkg := range append([]string{pkg}, m.GetRuntimeDep()...) {
+						t.Run("VerifyPackageInstalled/"+pkg, func(t *testing.T) {
+							if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".squashfs")); err != nil {
+								t.Fatal(err)
+							}
+							if _, err := os.Stat(filepath.Join(tmpdir, "roimg", pkg+".meta.textproto")); err != nil {
+								t.Fatal(err)
+							}
+						})
+					}
 				}
-				if st.Mode()&os.ModeSymlink == 0 {
-					t.Errorf("%s unexpectedly not a symbolic link", linkName)
-				}
-				target, err := os.Readlink(linkName)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if got, want := target, "../../systemd/user"; got != want {
-					t.Errorf("unexpected link target: got %q, want %q", got, want)
-				}
+
+				t.Run("VerifyEtcCopiedSystemd", func(t *testing.T) {
+					if _, err := os.Stat(filepath.Join(tmpdir, "etc", "systemd", "system.conf")); err != nil {
+						t.Fatal(err)
+					}
+					linkName := filepath.Join(tmpdir, "etc", "xdg", "systemd", "user")
+					st, err := os.Lstat(linkName)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if st.Mode()&os.ModeSymlink == 0 {
+						t.Errorf("%s unexpectedly not a symbolic link", linkName)
+					}
+					target, err := os.Readlink(linkName)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if got, want := target, "../../systemd/user"; got != want {
+						t.Errorf("unexpected link target: got %q, want %q", got, want)
+					}
+				})
+
+				t.Run("VerifyEtcCopiedGlibc", func(t *testing.T) {
+					if _, err := os.Stat(filepath.Join(tmpdir, "etc", "rpc")); err != nil {
+						t.Fatal(err)
+					}
+				})
 			})
-
-			t.Run("VerifyEtcCopiedGlibc", func(t *testing.T) {
-				if _, err := os.Stat(filepath.Join(tmpdir, "etc", "rpc")); err != nil {
-					t.Fatal(err)
-				}
-			})
-		})
-	}
+		}
+	})
 }
 
 func TestInstallHooks(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
 
 	// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
 	tmpdir, err := ioutil.TempDir("", "integrationinstall")
@@ -394,7 +401,8 @@ func TestInstallHooks(t *testing.T) {
 
 func TestInstallContentHooks(t *testing.T) {
 	// Not marked t.Parallel(): uses os.Setenv to modify PATH
-	ctx := context.Background()
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
 
 	// install a package from DISTRIROOT/build/distri/pkg to a temporary directory
 	tmpdir, err := ioutil.TempDir("", "integrationinstall")
@@ -429,7 +437,9 @@ func TestInstallContentHooks(t *testing.T) {
 }
 
 func BenchmarkInstallChrome(b *testing.B) {
-	ctx := context.Background()
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	addr, cleanup, err := distritest.Export(ctx, env.DefaultRepoRoot)
 	if err != nil {
 		b.Fatal(err)
@@ -444,7 +454,7 @@ func BenchmarkInstallChrome(b *testing.B) {
 		}
 		defer distritest.RemoveAll(b, tmpdir)
 
-		install := exec.Command("distri",
+		install := exec.CommandContext(ctx, "distri",
 			append([]string{
 				"install",
 				"-root=" + tmpdir,

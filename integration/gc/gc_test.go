@@ -1,6 +1,7 @@
 package gc_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/distritest"
 )
 
@@ -23,8 +25,8 @@ func stracePresent(store, pkg string) bool {
 	return true
 }
 
-func gc(tmpdir string) error {
-	distrigc := exec.Command("distri", "gc", "-store="+tmpdir)
+func gc(ctx context.Context, tmpdir string) error {
+	distrigc := exec.CommandContext(ctx, "distri", "gc", "-store="+tmpdir)
 	distrigc.Stderr = os.Stderr
 	if err := distrigc.Run(); err != nil {
 		return fmt.Errorf("%v: %v", distrigc.Args, err)
@@ -33,6 +35,9 @@ func gc(tmpdir string) error {
 }
 
 func TestGC(t *testing.T) {
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	store, err := ioutil.TempDir("", "distrigc")
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +69,7 @@ func TestGC(t *testing.T) {
 			t.Error("BUG: strace package not present after creation")
 		}
 
-		if err := gc(store); err != nil {
+		if err := gc(ctx, store); err != nil {
 			t.Fatal(err)
 		}
 
@@ -92,7 +97,7 @@ func TestGC(t *testing.T) {
 			t.Error("BUG: strace package not present after creation")
 		}
 
-		if err := gc(store); err != nil {
+		if err := gc(ctx, store); err != nil {
 			t.Fatal(err)
 		}
 

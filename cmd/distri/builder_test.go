@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,6 +14,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
@@ -24,7 +24,7 @@ import (
 )
 
 func TestBuilder(t *testing.T) {
-	ctx, canc := context.WithCancel(context.Background())
+	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 	tmp, err := ioutil.TempDir("", "distri-test-builder")
 	if err != nil {

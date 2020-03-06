@@ -21,6 +21,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/distr1/distri"
 	"github.com/google/go-github/v27/github"
 	"github.com/google/renameio"
 	"golang.org/x/oauth2"
@@ -82,7 +83,7 @@ var steps = []step{
 	{"docs", []string{"sh", "-c", "make docs DOCSDIR=$DESTDIR/docs"}},
 }
 
-func (b *buildctx) run() error {
+func (b *buildctx) run(ctx context.Context) error {
 	// store stamps for each step of a build
 	for _, step := range steps {
 		stampFile := filepath.Join(b.Workdir, "stamp."+step.stamp)
@@ -99,7 +100,7 @@ func (b *buildctx) run() error {
 		if b.DryRun {
 			continue
 		}
-		build := exec.Command(step.argv[0], step.argv[1:]...)
+		build := exec.CommandContext(ctx, step.argv[0], step.argv[1:]...)
 		build.Dir = filepath.Join(b.Workdir, "distri")
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
@@ -113,7 +114,7 @@ func (b *buildctx) run() error {
 	return nil
 }
 
-func runJob(job string) error {
+func runJob(ctx context.Context, job string) error {
 	var b buildctx
 	c, err := ioutil.ReadFile(job)
 	if err != nil {
@@ -122,7 +123,7 @@ func runJob(job string) error {
 	if err := json.Unmarshal(c, &b); err != nil {
 		return xerrors.Errorf("unmarshaling %q: %v", string(c), err)
 	}
-	return b.run()
+	return b.run(ctx)
 }
 
 type autobuilder struct {
@@ -153,7 +154,7 @@ func (lw logWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (a *autobuilder) runCommit(commit string) error {
+func (a *autobuilder) runCommit(ctx context.Context, commit string) error {
 	log := log.New(&logWriter{
 		log.New(log.Writer(), "", log.LstdFlags|log.Lshortfile),
 	}, fmt.Sprintf("[commit %s] ", commit), 0)
@@ -221,7 +222,7 @@ func (a *autobuilder) runCommit(commit string) error {
 				continue // skip, already exists
 			}
 
-			cp := exec.Command("cp",
+			cp := exec.CommandContext(ctx, "cp",
 				"--link",
 				"-r",
 				"-a",
@@ -252,7 +253,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		return err
 	}
 
-	install := exec.Command("make", "install")
+	install := exec.CommandContext(ctx, "make", "install")
 	install.Dir = filepath.Join(workdir, "distri")
 	install.Env = []string{
 		"HOME=" + os.Getenv("HOME"), // TODO(later): make hermetic
@@ -267,7 +268,7 @@ func (a *autobuilder) runCommit(commit string) error {
 		return xerrors.Errorf("%v: %w", install.Args, err)
 	}
 
-	cmd := exec.Command(os.Args[0], "-job="+serialized)
+	cmd := exec.CommandContext(ctx, os.Args[0], "-job="+serialized)
 	cmd.Dir = filepath.Join(workdir, "distri")
 	// TODO(later): clean the environment
 	cmd.Env = append(os.Environ(),
@@ -317,14 +318,13 @@ func (a *autobuilder) runCommit(commit string) error {
 	return nil
 }
 
-func (a *autobuilder) run() error {
+func (a *autobuilder) run(ctx context.Context) error {
 	log.Printf("waiting for lock")
 	a.runMu.Lock()
 	defer a.runMu.Unlock()
 
 	log.Printf("lock acquired, querying git commits")
 
-	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: *accessToken},
 	)
@@ -522,8 +522,11 @@ func main() {
 		rebuild  = flag.String("rebuild", "", "If non-empty, a commit id to rebuild, i.e. ignore stamp files for")
 	)
 	flag.Parse()
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	if *job != "" {
-		if err := runJob(*job); err != nil {
+		if err := runJob(ctx, *job); err != nil {
 			log.Fatalf("%+v", err)
 		}
 		return
@@ -544,7 +547,7 @@ func main() {
 	http.HandleFunc("/status", a.serveStatusPage)
 	go http.ListenAndServe(":3718", nil)
 	if *once {
-		if err := a.run(); err != nil {
+		if err := a.run(ctx); err != nil {
 			log.Fatalf("%+v", err)
 		}
 		return
@@ -552,7 +555,7 @@ func main() {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 	for {
-		if err := a.run(); err != nil {
+		if err := a.run(ctx); err != nil {
 			log.Fatalf("%+v", err)
 		}
 		select {

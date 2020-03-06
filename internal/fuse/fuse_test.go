@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/cp"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
@@ -24,7 +25,7 @@ import (
 func TestFUSE(t *testing.T) {
 	t.Parallel()
 
-	ctx, canc := context.WithCancel(context.Background())
+	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
 	repo, err := ioutil.TempDir("", "distrifuse-repo")
@@ -63,7 +64,7 @@ func TestFUSE(t *testing.T) {
 	}
 	defer distritest.RemoveAll(t, tmpdir)
 
-	join, err := fuse.Mount([]string{
+	join, err := fuse.Mount(ctx, []string{
 		"-repo=" + repo,
 		tmpdir,
 	})
@@ -174,7 +175,7 @@ func TestFUSE(t *testing.T) {
 func TestXattr(t *testing.T) {
 	t.Parallel()
 
-	ctx, canc := context.WithCancel(context.Background())
+	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
 	repo, err := ioutil.TempDir("", "distrifuse-repo")
@@ -212,7 +213,7 @@ func TestXattr(t *testing.T) {
 	}
 	defer distritest.RemoveAll(t, tmpdir)
 
-	join, err := fuse.Mount([]string{
+	join, err := fuse.Mount(ctx, []string{
 		"-repo=" + repo,
 		tmpdir,
 	})

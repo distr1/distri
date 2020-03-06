@@ -8,13 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 	"strconv"
 	"strings"
-	"syscall"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/fuse"
@@ -193,17 +191,8 @@ func funcmain() error {
 		verb = args[0]
 		args = []string{"-help"}
 	}
-	ctx, canc := context.WithCancel(context.Background())
+	ctx, canc := distri.InterruptibleContext()
 	defer canc()
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sig
-		// Subsequent signals will result in immediate termination, which is
-		// useful in case cleanup hangs:
-		signal.Stop(sig)
-		canc()
-	}()
 	v, ok := verbs[verb]
 	if !ok {
 		fmt.Fprintf(os.Stderr, "unknown command %q\n", verb)

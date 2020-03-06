@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -19,7 +21,7 @@ func TestMain(m *testing.M) {
 	// Duplicate main() machinery so that we can test parts of the code which
 	// re-exec the process.
 	if *job != "" {
-		if err := runJob(*job); err != nil {
+		if err := runJob(context.Background(), *job); err != nil {
 			log.Fatalf("%+v", err)
 		}
 		return
@@ -44,6 +46,9 @@ func mustGlob1(t *testing.T, pattern string) string {
 }
 
 func TestAutobuilderCommands(t *testing.T) {
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	tempdir, err := ioutil.TempDir("", "distri-autobuilder-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +69,7 @@ func TestAutobuilderCommands(t *testing.T) {
 	}
 
 	repo := func() string {
-		cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+		cmd := exec.CommandContext(ctx, "git", "rev-parse", "--show-toplevel")
 		cmd.Stderr = os.Stderr
 		b, err := cmd.Output()
 		if err != nil {
@@ -80,7 +85,7 @@ func TestAutobuilderCommands(t *testing.T) {
 		dryRun: true,
 		//rebuild: commit,
 	}
-	if err := a.runCommit(commit); err != nil {
+	if err := a.runCommit(ctx, commit); err != nil {
 		t.Fatal(err)
 	}
 	logFile := mustGlob1(t, filepath.Join(tempdir, "buildlogs", commit, "*", "stdout.log"))
@@ -127,7 +132,7 @@ func TestAutobuilderCommands(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := a.runCommit(commit); err != nil {
+		if err := a.runCommit(ctx, commit); err != nil {
 			t.Fatal(err)
 		}
 		logFile := mustGlob1(t, filepath.Join(tempdir, "buildlogs", commit, "*", "stdout.log"))

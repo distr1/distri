@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/internal/env"
@@ -115,6 +116,9 @@ build_step: <
 func TestBuild(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -138,7 +142,7 @@ func TestBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range deps {
-		cp := exec.Command("cp",
+		cp := exec.CommandContext(ctx, "cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 			repo)
@@ -160,7 +164,7 @@ func TestBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
 		"DISTRIROOT=" + distriroot,
@@ -202,6 +206,9 @@ func TestBuild(t *testing.T) {
 func TestUnversionedBuild(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -227,7 +234,7 @@ func TestUnversionedBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range deps {
-		cp := exec.Command("cp",
+		cp := exec.CommandContext(ctx, "cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 			repo)
@@ -249,7 +256,7 @@ func TestUnversionedBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
 		"DISTRIROOT=" + distriroot,
@@ -319,6 +326,9 @@ func readLink(rd *squashfs.Reader, name string) (string, error) {
 func TestMultiPackageBuild(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -342,7 +352,7 @@ func TestMultiPackageBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range deps {
-		cp := exec.Command("cp",
+		cp := exec.CommandContext(ctx, "cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 			repo)
@@ -364,7 +374,7 @@ func TestMultiPackageBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
 		"DISTRIROOT=" + distriroot,
@@ -474,6 +484,9 @@ func TestMultiPackageBuild(t *testing.T) {
 func TestPkgConfigRuntimeDeps(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -499,7 +512,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range deps {
-		cp := exec.Command("cp",
+		cp := exec.CommandContext(ctx, "cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 			repo)
@@ -521,7 +534,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
 		"DISTRIROOT=" + distriroot,
@@ -569,6 +582,9 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 func TestShebangRuntimeDep(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
@@ -596,7 +612,7 @@ func TestShebangRuntimeDep(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, dep := range deps {
-		cp := exec.Command("cp",
+		cp := exec.CommandContext(ctx, "cp",
 			filepath.Join(env.DefaultRepo, dep+".squashfs"),
 			filepath.Join(env.DefaultRepo, dep+".meta.textproto"),
 			repo)
@@ -618,7 +634,7 @@ func TestShebangRuntimeDep(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
 		"DISTRIROOT=" + distriroot,

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -50,6 +51,9 @@ version: "1-1"
 func TestBump(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbump")
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +74,7 @@ func TestBump(t *testing.T) {
 		}
 	}
 
-	build := exec.Command("distri", "bump", "-all", "-w")
+	build := exec.CommandContext(ctx, "distri", "bump", "-all", "-w")
 	build.Dir = filepath.Join(distriroot, "pkgs/test")
 	build.Env = []string{"DISTRIROOT=" + distriroot}
 	build.Stdout = os.Stdout
@@ -95,6 +99,9 @@ func TestBump(t *testing.T) {
 func TestBumpRdeps(t *testing.T) {
 	t.Parallel()
 
+	ctx, canc := distri.InterruptibleContext()
+	defer canc()
+
 	distriroot, err := ioutil.TempDir("", "integrationbump")
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +122,7 @@ func TestBumpRdeps(t *testing.T) {
 		}
 	}
 
-	build := exec.Command("distri", "bump", "-w", "lvm2")
+	build := exec.CommandContext(ctx, "distri", "bump", "-w", "lvm2")
 	build.Env = []string{"DISTRIROOT=" + distriroot}
 	build.Stdout = os.Stdout
 	build.Stderr = os.Stderr
