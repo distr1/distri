@@ -550,7 +550,7 @@ func (d *Directory) Flush() error {
 		if err := binary.Write(&d.w.inodeBuf, binary.LittleEndian, ldirInodeHeader{
 			inodeHeader: inodeHeader{
 				InodeType: ldirType,
-				Mode: unix.S_IRUSR | unix.S_IXUSR |
+				Mode: unix.S_IRUSR | unix.S_IWUSR | unix.S_IXUSR |
 					unix.S_IRGRP | unix.S_IXGRP |
 					unix.S_IROTH | unix.S_IXOTH,
 				Uid:         0,
@@ -574,7 +574,7 @@ func (d *Directory) Flush() error {
 		if err := binary.Write(&d.w.inodeBuf, binary.LittleEndian, dirInodeHeader{
 			inodeHeader: inodeHeader{
 				InodeType: dirType,
-				Mode: unix.S_IRUSR | unix.S_IXUSR |
+				Mode: unix.S_IRUSR | unix.S_IWUSR | unix.S_IXUSR |
 					unix.S_IRGRP | unix.S_IXGRP |
 					unix.S_IROTH | unix.S_IXOTH,
 				Uid:         0,
