@@ -23,7 +23,7 @@ Example:
   % distri gc -dry_run
 `
 
-func gc(args []string) error {
+func gc(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("gc", flag.ExitOnError)
 	var (
 		root = fset.String("root",
@@ -137,7 +137,6 @@ func gc(args []string) error {
 	}
 
 	log.Printf("connecting to %s", ctl)
-	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
 	if err != nil {
 		return err

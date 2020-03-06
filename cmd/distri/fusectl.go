@@ -20,7 +20,7 @@ Example:
   % distri fusectl -scan_packages
 `
 
-func fusectl(args []string) error {
+func fusectl(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("fusectl", flag.ExitOnError)
 	var (
 		mkdirAll     = fset.String("mkdirall", "", "if non-empty, sends a MkdirAll request")
@@ -35,7 +35,6 @@ func fusectl(args []string) error {
 	}
 
 	log.Printf("connecting to %s", ctl)
-	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "unix://"+ctl, grpc.WithBlock(), grpc.WithInsecure())
 	if err != nil {
 		return err

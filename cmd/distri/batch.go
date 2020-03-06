@@ -17,7 +17,6 @@ import (
 
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
-	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/trace"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -80,7 +79,7 @@ type node struct {
 
 func (n *node) ID() int64 { return n.id }
 
-func batch(args []string) error {
+func batch(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("batch", flag.ExitOnError)
 	var (
 		dryRun    = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
@@ -108,7 +107,6 @@ func batch(args []string) error {
 		if err != nil {
 			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
 		} else {
-			oninterrupt.Register(cleanup)
 			defer cleanup()
 		}
 	}
@@ -274,7 +272,7 @@ func batch(args []string) error {
 		built:      make(map[string]error),
 		status:     make([]string, *jobs+1),
 	}
-	if err := s.run(); err != nil {
+	if err := s.run(ctx); err != nil {
 		return err
 	}
 
@@ -349,20 +347,24 @@ func (s *scheduler) updateStatus(idx int, newStatus string) {
 	fmt.Printf("\033[%dA", len(s.status)) // restore cursor position
 }
 
-func (s *scheduler) buildDry(pkg string) bool {
+func (s *scheduler) buildDry(ctx context.Context, pkg string) bool {
 	dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(1000*time.Millisecond)))
 	//log.Printf("build of %s is taking %v", pkg, dur)
-	time.Sleep(dur)
+	select {
+	case <-ctx.Done():
+		return false
+	case <-time.After(dur):
+	}
 	return pkg != "libx11"
 }
 
-func (s *scheduler) build(pkg string) error {
+func (s *scheduler) build(ctx context.Context, pkg string) error {
 	logFile, err := os.Create(filepath.Join(s.logDir, pkg+".log"))
 	if err != nil {
 		return err
 	}
 	defer logFile.Close()
-	build := exec.Command("distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = filepath.Join(env.DistriRoot, "pkgs", pkg)
 	build.Stdout = logFile
 	build.Stderr = logFile
@@ -372,11 +374,11 @@ func (s *scheduler) build(pkg string) error {
 	return nil
 }
 
-func (s *scheduler) run() error {
+func (s *scheduler) run(ctx context.Context) error {
 	numNodes := s.g.Nodes().Len()
 	work := make(chan *node, numNodes)
 	done := make(chan buildResult)
-	eg, ctx := errgroup.WithContext(context.Background())
+	eg, ctx := errgroup.WithContext(ctx)
 	const freq = 1 * time.Second
 	go func() {
 		if err := trace.CPUEvents(ctx, freq); err != nil {
@@ -397,6 +399,9 @@ func (s *scheduler) run() error {
 			ticker := time.NewTicker(100 * time.Millisecond) // TODO: 1*time.Second
 			defer ticker.Stop()
 			for n := range work {
+				if err := ctx.Err(); err != nil {
+					return err
+				}
 				// Kick off the build
 				{
 					ev := trace.Event("build "+n.pkg, i)
@@ -408,7 +413,7 @@ func (s *scheduler) run() error {
 				result := make(chan error)
 				if s.simulate {
 					go func() {
-						if !s.buildDry(n.pkg) {
+						if !s.buildDry(ctx, n.pkg) {
 							result <- xerrors.Errorf("simulate intentionally failed")
 						} else {
 							result <- nil
@@ -416,7 +421,7 @@ func (s *scheduler) run() error {
 					}()
 				} else {
 					go func() {
-						err := s.build(n.pkg)
+						err := s.build(ctx, n.pkg)
 						result <- err
 					}()
 				}
@@ -433,7 +438,11 @@ func (s *scheduler) run() error {
 					}
 				}
 
-				done <- buildResult{node: n, err: err}
+				select {
+				case done <- buildResult{node: n, err: err}:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
 				{
 					ev := trace.Event("build "+n.pkg, i)
 					ev.Type = "E" // end
@@ -449,7 +458,11 @@ func (s *scheduler) run() error {
 	for nodes := s.g.Nodes(); nodes.Next(); {
 		n := nodes.Node()
 		if s.g.From(n.ID()).Len() == 0 {
-			work <- n.(*node)
+			select {
+			case work <- n.(*node):
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		}
 	}
 	go func() {

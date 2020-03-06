@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	// TODO: consider "github.com/klauspost/pgzip"
@@ -17,7 +18,7 @@ Example:
   % distri install i3status
 `
 
-func cmdinstall(args []string) error {
+func cmdinstall(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("install", flag.ExitOnError)
 	var (
 		root = fset.String("root",

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -50,7 +51,7 @@ func walk(rd *squashfs.Reader, dirInode squashfs.Inode, dir string) ([]string, e
 	return files, nil
 }
 
-func mirror(args []string) error {
+func mirror(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("mirror", flag.ExitOnError)
 	fset.Usage = usage(fset, mirrorHelp)
 	fset.Parse(args)

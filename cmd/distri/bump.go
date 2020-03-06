@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -278,7 +279,7 @@ func (b *bumpctx) bumpPkg(pkg string) ([]versionIncrement, error) {
 	return inc, nil
 }
 
-func bump(args []string) error {
+func bump(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("bump", flag.ExitOnError)
 	var (
 		all   = fset.Bool("all", false, "bump all packages")

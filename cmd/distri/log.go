@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -21,7 +22,7 @@ Example:
   % distri log i3status
 `
 
-func showlog(args []string) error {
+func showlog(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("log", flag.ExitOnError)
 	var (
 		version = fset.String("version", "", "package version (default: most recent)")

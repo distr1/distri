@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"debug/elf"
 	"errors"
 	"flag"
@@ -489,7 +490,7 @@ func release() string {
 	return string(uts.Release[:bytes.IndexByte(uts.Release[:], 0)])
 }
 
-func initrd(args []string) error {
+func initrd(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("initrd", flag.ExitOnError)
 	var (
 		linuxRelease = fset.String("release", release(), "Linux kernel version to generate initrd for")

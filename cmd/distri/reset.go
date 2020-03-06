@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,7 @@ Example:
   % distri reset /var/log/distri/update-1561126278/files.before.txt
 `
 
-func reset(args []string) error {
+func reset(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("reset", flag.ExitOnError)
 	var (
 		root = fset.String("root",

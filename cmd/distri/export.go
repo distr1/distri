@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net"
@@ -34,7 +35,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-func export(args []string) error {
+func export(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("export", flag.ExitOnError)
 	var (
 		listen = fset.String("listen", ":7080", "[host]:port listen address for exporting the distri store")

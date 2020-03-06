@@ -28,7 +28,6 @@ import (
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
-	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 )
@@ -69,7 +68,7 @@ const (
 	ctlInode  = 2
 )
 
-func Mount(args []string) (join func(context.Context) error, _ error) {
+func Mount(ctx context.Context, args []string) (join func(context.Context) error, _ error) {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("fuse", flag.ExitOnError)
 	var (
@@ -244,7 +243,10 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	if err != nil {
 		return nil, xerrors.Errorf("fuse.Mount: %v", err)
 	}
-	join = mfs.Join
+	join = func(ctx context.Context) error {
+		defer syscall.Unmount(mountpoint, 0)
+		return mfs.Join(ctx)
+	}
 
 	{
 		tempdir, err := ioutil.TempDir("", "distri-fuse")
@@ -252,6 +254,7 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 			return nil, err
 		}
 		join = func(ctx context.Context) error {
+			defer syscall.Unmount(mountpoint, 0)
 			defer os.RemoveAll(tempdir)
 			return mfs.Join(ctx)
 		}
@@ -272,9 +275,6 @@ func Mount(args []string) (join func(context.Context) error, _ error) {
 	if *readiness != -1 {
 		os.NewFile(uintptr(*readiness), "").Close()
 	}
-	oninterrupt.Register(func() {
-		syscall.Unmount(mountpoint, 0)
-	})
 
 	return join, nil
 }

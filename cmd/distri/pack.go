@@ -85,7 +85,7 @@ type packctx struct {
 	extraKernelParams  string
 }
 
-func pack(args []string) error {
+func pack(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("pack", flag.ExitOnError)
 	var p packctx
 	fset.StringVar(&p.root, "root",
@@ -375,7 +375,9 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
-	if _, err := cmdfuse.Mount([]string{"-repo=" + filepath.Join(root, "roimg"), filepath.Join(root, "ro")}); err != nil {
+	ctx, canc := context.WithCancel(context.Background())
+	defer canc()
+	if _, err := cmdfuse.Mount(ctx, []string{"-repo=" + filepath.Join(root, "roimg"), filepath.Join(root, "ro")}); err != nil {
 		return err
 	}
 	defer fuse.Unmount(filepath.Join(root, "ro"))
@@ -781,7 +783,9 @@ name=root`)
 	if err := chown.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", chown.Args, err)
 	}
-	join, err := cmdfuse.Mount([]string{"-repo=/mnt/roimg", "/mnt/ro"})
+	ctx, canc := context.WithCancel(context.Background())
+	defer canc()
+	join, err := cmdfuse.Mount(ctx, []string{"-repo=/mnt/roimg", "/mnt/ro"})
 	if err != nil {
 		return err
 	}

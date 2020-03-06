@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
@@ -15,7 +16,7 @@ Example:
   % distri env
 `
 
-func printenv(args []string) error {
+func printenv(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("env", flag.ExitOnError)
 	fset.Usage = usage(fset, envHelp)
 	fset.Parse(args)

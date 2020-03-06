@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"hash/fnv"
 	"io"
@@ -186,7 +187,7 @@ func (b *buildsrv) Retrieve(req *bpb.RetrieveRequest, srv bpb.Build_RetrieveServ
 	return nil
 }
 
-func builder(args []string) error {
+func builder(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("builder", flag.ExitOnError)
 	var (
 		listenAddr = fset.String("listen",

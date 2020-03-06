@@ -24,6 +24,8 @@ import (
 )
 
 func TestBuilder(t *testing.T) {
+	ctx, canc := context.WithCancel(context.Background())
+	defer canc()
 	tmp, err := ioutil.TempDir("", "distri-test-builder")
 	if err != nil {
 		t.Fatal(err)
@@ -31,12 +33,11 @@ func TestBuilder(t *testing.T) {
 	defer distritest.RemoveAll(t, tmp)
 	go func() {
 		// TODO: -listen=localhost:0 and -addrfd = fd of a pipe or sth
-		if err := builder([]string{"-upload_base_dir=" + tmp}); err != nil {
+		if err := builder(ctx, []string{"-upload_base_dir=" + tmp}); err != nil {
 			t.Fatal(err)
 		}
 	}()
 
-	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "localhost:2019", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		t.Fatal(err)

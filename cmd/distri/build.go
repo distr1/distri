@@ -21,7 +21,6 @@ import (
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
-	"github.com/distr1/distri/internal/oninterrupt"
 	"github.com/distr1/distri/internal/trace"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -138,7 +137,7 @@ func updateFromDistriroot(builddir string) error {
 	return nil
 }
 
-func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
+func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
 	defer trace.Event("buildpkg", tidBuildpkg).Done()
 	c, err := ioutil.ReadFile("build.textproto")
 	if err != nil {
@@ -254,7 +253,6 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 
 		log.Printf("building on %s", remote)
 
-		ctx := context.Background()
 		conn, err := grpc.DialContext(ctx, remote, grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			return err
@@ -368,7 +366,7 @@ func buildpkg(hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd,
 	})
 
 	buildEv := trace.Event("build "+b.Pkg, tidBuildpkg)
-	meta, err := b.Build(buildLog)
+	meta, err := b.Build(ctx, buildLog)
 	if err != nil {
 		return xerrors.Errorf("build: %v", err)
 	}
@@ -529,7 +527,7 @@ func store(ctx context.Context, cl bpb.BuildClient, fn string) error {
 	return nil
 }
 
-func runBuildJob(job string) error {
+func runBuildJob(ctx context.Context, job string) error {
 	f := os.NewFile(uintptr(3), "")
 
 	var b build.Ctx
@@ -550,7 +548,7 @@ func runBuildJob(job string) error {
 	}
 	b.Proto = &buildProto
 
-	meta, err := b.Build(ioutil.Discard)
+	meta, err := b.Build(ctx, ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -571,7 +569,7 @@ func runBuildJob(job string) error {
 	return nil
 }
 
-func cmdbuild(args []string) error {
+func cmdbuild(ctx context.Context, args []string) error {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("build", flag.ExitOnError)
 	var (
@@ -619,7 +617,7 @@ func cmdbuild(args []string) error {
 	fset.Parse(args)
 
 	if *job != "" {
-		return runBuildJob(*job)
+		return runBuildJob(ctx, *job)
 	}
 
 	var pwd string
@@ -640,8 +638,6 @@ func cmdbuild(args []string) error {
 		// Enable writing ctrace output files by default for distri build. Not
 		// specifying the flag is a time- and power-costly mistake :)
 		trace.Enable("build." + filepath.Base(pwd))
-		ctx, canc := context.WithCancel(context.Background())
-		defer canc()
 		const freq = 1 * time.Second
 		go trace.CPUEvents(ctx, freq)
 		go trace.MemEvents(ctx, freq)
@@ -652,7 +648,6 @@ func cmdbuild(args []string) error {
 		if err != nil {
 			log.Printf("Setting “performance” CPU frequency scaling governor failed: %v", err)
 		} else {
-			oninterrupt.Register(cleanup)
 			defer cleanup()
 		}
 	}
@@ -674,7 +669,7 @@ func cmdbuild(args []string) error {
 		}
 	}
 
-	if err := buildpkg(*hermetic, *debug, *fuse, pwd, *cross, *remote, *artifactFd, *jobs); err != nil {
+	if err := buildpkg(ctx, *hermetic, *debug, *fuse, pwd, *cross, *remote, *artifactFd, *jobs); err != nil {
 		return err
 	}
 

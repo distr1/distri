@@ -8,19 +8,19 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/fuse"
 	internaltrace "github.com/distr1/distri/internal/trace"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
-
-	_ "github.com/distr1/distri/internal/oninterrupt"
 
 	_ "net/http/pprof"
 )
@@ -117,7 +117,7 @@ func funcmain() error {
 	}
 
 	type cmd struct {
-		fn func(args []string) error
+		fn func(ctx context.Context, args []string) error
 	}
 	verbs := map[string]cmd{
 		"build": {cmdbuild},
@@ -126,15 +126,15 @@ func funcmain() error {
 		"pack":     {pack},
 		"scaffold": {scaffold},
 		"install":  {cmdinstall},
-		"fuse": {func(args []string) error {
+		"fuse": {func(ctx context.Context, args []string) error {
 			if err := bumpRlimitNOFILE(); err != nil {
 				log.Printf("Warning: bumping RLIMIT_NOFILE failed: %v", err)
 			}
-			join, err := fuse.Mount(args)
+			join, err := fuse.Mount(ctx, args)
 			if err != nil {
 				return err
 			}
-			if err := join(context.Background()); err != nil {
+			if err := join(ctx); err != nil {
 				return xerrors.Errorf("Join: %w", err)
 			}
 			return nil
@@ -193,13 +193,24 @@ func funcmain() error {
 		verb = args[0]
 		args = []string{"-help"}
 	}
+	ctx, canc := context.WithCancel(context.Background())
+	defer canc()
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		// Subsequent signals will result in immediate termination, which is
+		// useful in case cleanup hangs:
+		signal.Stop(sig)
+		canc()
+	}()
 	v, ok := verbs[verb]
 	if !ok {
 		fmt.Fprintf(os.Stderr, "unknown command %q\n", verb)
 		fmt.Fprintf(os.Stderr, "syntax: distri <command> [options]\n")
 		os.Exit(2)
 	}
-	if err := v.fn(args); err != nil {
+	if err := v.fn(ctx, args); err != nil {
 		if *memprofile != "" {
 			f, err := os.Create(*memprofile)
 			if err != nil {

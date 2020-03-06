@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"flag"
@@ -332,7 +333,7 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 	return nil
 }
 
-func scaffold(args []string) error {
+func scaffold(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("scaffold", flag.ExitOnError)
 	var (
 		name    = fset.String("name", "", "If non-empty and specified with -version, overrides the detected package name")

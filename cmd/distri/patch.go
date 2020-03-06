@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"io/ioutil"
@@ -89,7 +90,7 @@ func patchJob(job string) error {
 	return nil
 }
 
-func patch(args []string) error {
+func patch(ctx context.Context, args []string) error {
 	//log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fset := flag.NewFlagSet("patch", flag.ExitOnError)
 	var (
@@ -196,7 +197,9 @@ func patch(args []string) error {
 		if err := os.MkdirAll(depsdir, 0755); err != nil {
 			return err
 		}
-		if _, err := cmdfuse.Mount([]string{"-overlays=/bin", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+		ctx, canc := context.WithCancel(context.Background())
+		defer canc()
+		if _, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 			return err
 		}
 		defer fuse.Unmount(depsdir)

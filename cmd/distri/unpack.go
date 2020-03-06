@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -25,7 +26,7 @@ Example:
   % distri unpack
 `
 
-func unpack(args []string) error {
+func unpack(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("unpack", flag.ExitOnError)
 	fset.Usage = usage(fset, unpackHelp)
 	fset.Parse(args)

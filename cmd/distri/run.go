@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -31,7 +32,7 @@ Example:
   % distri run -pkgs=coreutils ls
 `
 
-func run(args []string) error {
+func run(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("run", flag.ExitOnError)
 	var (
 		pkgs = fset.String("pkgs", "", "comma-separated list of packages to make available in the namespace. defaults to cmd[0]")
@@ -143,7 +144,9 @@ func run(args []string) error {
 	if err := os.MkdirAll(depsdir, 0755); err != nil {
 		return err
 	}
-	if _, err := cmdfuse.Mount([]string{"-overlays=/bin", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+	ctx, canc := context.WithCancel(context.Background())
+	defer canc()
+	if _, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 		return xerrors.Errorf("fuse mount: %w", err)
 	}
 	defer fuse.Unmount(depsdir)

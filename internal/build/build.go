@@ -761,7 +761,7 @@ int main(int argc, char *argv[]) {
 }
 `))
 
-func (b *Ctx) Build(buildLog io.Writer) (*pb.Meta, error) {
+func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	if os.Getenv("DISTRI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
 		if err != nil {
@@ -783,13 +783,17 @@ func (b *Ctx) Build(buildLog io.Writer) (*pb.Meta, error) {
 		}
 
 		if b.FUSE {
-			join, err := cmdfuse.Mount([]string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir})
+			ctx, canc := context.WithCancel(ctx)
+			defer canc()
+			join, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir})
 			if err != nil {
 				return nil, xerrors.Errorf("cmdfuse.Mount: %v", err)
 			}
-			ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
-			defer canc()
-			defer join(ctx)
+			defer func() {
+				ctx, canc := context.WithTimeout(ctx, 5*time.Second)
+				defer canc()
+				join(ctx)
+			}()
 			defer fuse.Unmount(depsdir)
 		} else {
 			for _, dep := range deps {
@@ -812,7 +816,7 @@ func (b *Ctx) Build(buildLog io.Writer) (*pb.Meta, error) {
 		if err != nil {
 			return nil, err
 		}
-		cmd := exec.Command("unshare",
+		cmd := exec.CommandContext(ctx, "unshare",
 			"--user",
 			"--map-root-user", // for mount permissions in the namespace
 			"--mount",
@@ -1184,7 +1188,7 @@ func (b *Ctx) Build(buildLog io.Writer) (*pb.Meta, error) {
 	times := make([]time.Duration, len(steps))
 	for idx, step := range steps {
 		start := time.Now()
-		cmd := exec.Command(b.substitute(step.Argv[0]), b.substituteStrings(step.Argv[1:])...)
+		cmd := exec.CommandContext(ctx, b.substitute(step.Argv[0]), b.substituteStrings(step.Argv[1:])...)
 		if b.Hermetic {
 			cmd.Env = env
 		}
@@ -1499,14 +1503,14 @@ func (b *Ctx) Build(buildLog io.Writer) (*pb.Meta, error) {
 		if err := os.MkdirAll(filepath.Dir(debugPath), 0755); err != nil {
 			return err
 		}
-		objcopy := exec.Command("objcopy", "--only-keep-debug", path, debugPath)
+		objcopy := exec.CommandContext(ctx, "objcopy", "--only-keep-debug", path, debugPath)
 		objcopy.Stdout = os.Stdout
 		objcopy.Stderr = os.Stderr
 		if err := objcopy.Run(); err != nil {
 			return xerrors.Errorf("%v: %v", objcopy.Args, err)
 		}
 		if b.Pkg != "binutils" {
-			strip := exec.Command("strip", "-g", path)
+			strip := exec.CommandContext(ctx, "strip", "-g", path)
 			strip.Stdout = os.Stdout
 			strip.Stderr = os.Stderr
 			if err := strip.Run(); err != nil {

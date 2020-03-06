@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,7 @@ Example:
   % distri update
 `
 
-func update(args []string) error {
+func update(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("update", flag.ExitOnError)
 	var (
 		root = fset.String("root",

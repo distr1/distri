@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io"
 	"io/ioutil"
@@ -114,7 +115,7 @@ func cp(w *squashfs.Directory, dir string) error {
 	return w.Flush()
 }
 
-func convert(args []string) error {
+func convert(ctx context.Context, args []string) error {
 	fset := flag.NewFlagSet("convert", flag.ExitOnError)
 	var pkg = fset.String("pkg", "", "path to tar.gz package to convert to squashfs")
 	fset.Usage = usage(fset, convertHelp)
