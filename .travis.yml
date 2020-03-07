@@ -3,7 +3,7 @@ dist: bionic
 language: go
 
 go:
-  - "1.13"
+  - "1.14"
 
 env:
   - GO111MODULE=on
