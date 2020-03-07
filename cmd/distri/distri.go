@@ -141,7 +141,7 @@ func funcmain() error {
 		"export":  {export},
 		"env":     {printenv},
 		"mirror":  {mirror},
-		"batch":   {batch},
+		"batch":   {cmdbatch},
 		"log":     {showlog},
 		"unpack":  {unpack},
 		"update":  {update},
