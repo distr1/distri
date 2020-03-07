@@ -145,6 +145,7 @@ func batch(ctx context.Context, args []string) error {
 
 		b := &build.Ctx{
 			Arch:   "amd64", // TODO
+			Pkg:    fi.Name(),
 			PkgDir: filepath.Join(pkgsDir, fi.Name()),
 			Proto:  &buildProto,
 		}
@@ -155,7 +156,8 @@ func batch(ctx context.Context, args []string) error {
 
 		fullname := pkg + "-" + arch + "-" + buildProto.GetVersion()
 		if !*simulate {
-			meta, err := pb.ReadMetaFile(filepath.Join(env.DistriRoot, "build", "distri", "pkg", pkg+"-"+arch+".meta.textproto"))
+			fn := filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".meta.textproto")
+			meta, err := pb.ReadMetaFile(fn)
 			if err != nil {
 				if !os.IsNotExist(err) {
 					return err
@@ -164,6 +166,10 @@ func batch(ctx context.Context, args []string) error {
 			if !*rebuild && meta.GetInputDigest() == inputDigest {
 				continue // package already built
 			}
+			log.Printf("stale package %s (got input_digest %q, want %q)",
+				pkg,
+				meta.GetInputDigest(),
+				inputDigest)
 			// fall-through: stale package
 		}
 
