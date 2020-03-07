@@ -354,7 +354,7 @@ func (a *autobuilder) run(ctx context.Context) error {
 	// ones will still be built (so that bisection remains precise).
 	for idx, c := range repoCommits {
 		commit := c.GetSHA()
-		if err := a.runCommit(commit); err != nil {
+		if err := a.runCommit(ctx, commit); err != nil {
 			log.Printf("runCommit(%s): %v", commit, err)
 			break // TODO: continue: change after debugging
 		} else {
