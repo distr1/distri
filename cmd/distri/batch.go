@@ -252,6 +252,10 @@ func batch(ctx context.Context, args []string) error {
 	}
 
 	if *dryRun {
+		if g.Nodes() == nil {
+			log.Printf("build 0 pkg")
+			return nil
+		}
 		log.Printf("build %d pkg", g.Nodes().Len())
 		for it := g.Nodes(); it.Next(); {
 			log.Printf("  build %s", it.Node().(*node).pkg)
