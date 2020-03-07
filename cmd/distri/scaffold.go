@@ -186,6 +186,7 @@ func (c *scaffoldctx) scaffold1() error {
 		Proto: &pb.Build{
 			Source: proto.String(c.SourceURL),
 		},
+		Repo: env.DefaultRepo,
 	}
 	builddir := filepath.Join(env.DistriRoot, "build", c.Name)
 	if err := os.MkdirAll(builddir, 0755); err != nil {

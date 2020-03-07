@@ -152,7 +152,10 @@ func (b *bumpctx) addPkg(pkg string) error {
 
 	{
 		deps := buildProto.GetDep()
-		bld := &build.Ctx{Arch: "amd64"} // TODO
+		bld := &build.Ctx{
+			Arch: "amd64", // TODO
+			Repo: env.DefaultRepo,
+		}
 		deps = append(deps, bld.Builderdeps(&buildProto)...)
 		deps = append(deps, buildProto.GetRuntimeDep()...)
 		srcs := make([]string, 0, len(deps))

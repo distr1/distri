@@ -176,18 +176,28 @@ type Ctx struct {
 	ChrootDir   string // only set if Hermetic is enabled
 	Jobs        int
 	InputDigest string // opaque result of digest()
+	Repo        string
 
 	// substituteCache maps from a variable name like ${DISTRI_RESOLVE:expat} to
 	// the resolved package name like expat-amd64-2.2.6-1.
 	substituteCache map[string]string
 
-	ArtifactWriter io.Writer `json:"-"`
+	ArtifactWriter io.Writer                                `json:"-"`
+	GlobHook       func(imgDir, pkg string) (string, error) `json:"-"`
 }
 
 func NewCtx() (*Ctx, error) {
 	return &Ctx{
 		Arch: "amd64", // TODO
+		Repo: env.DefaultRepo,
 	}, nil
+}
+
+func (b *Ctx) Clone() *Ctx {
+	result := &Ctx{}
+	// TODO: explicitly copy fields
+	*result = *b
+	return result
 }
 
 func (b *Ctx) Digest() (string, error) {
@@ -198,10 +208,16 @@ func (b *Ctx) Digest() (string, error) {
 	h := fnv.New128a()
 	h.Write([]byte(proto.MarshalTextString(b.Proto)))
 
-	// Resolve build dependencies:
-	deps, err := b.Builddeps(b.Proto)
+	// Resolve build dependencies.
+	//
+	// This explicitly does not use Builddeps, which calls GlobAndResolve. In
+	// this situation, we must only Glob, not Resolve: non-explicit runtime
+	// dependencies are covered by the code path below, and a .meta.textproto
+	// might not exist yet (e.g. when doing digests for a batch build).
+	bdeps := append(b.Builderdeps(b.Proto), b.Proto.GetDep()...)
+	deps, err := b.Glob(b.Repo, bdeps)
 	if err != nil {
-		return "", xerrors.Errorf("builddeps: %v", err)
+		return "", fmt.Errorf("builddeps: %w", err)
 	}
 	h.Write([]byte(strings.Join(deps, ",")))
 
@@ -217,6 +233,7 @@ func (b *Ctx) Digest() (string, error) {
 	// Resolve runtime-deps that go into the build (as opposed to those being
 	// discovered during the build, which can only ever reference build-time
 	// deps):
+	// TODO: also cover the non-split package!
 	for _, pkg := range b.Proto.GetSplitPackage() {
 		deps := append([]string{},
 			append(b.Proto.GetRuntimeDep(),
@@ -231,7 +248,7 @@ func (b *Ctx) Digest() (string, error) {
 			}
 			deps = pruned
 		}
-		resolved, err := b.GlobAndResolve(env.DefaultRepo, deps, pkg.GetName())
+		resolved, err := b.GlobAndResolve(b.Repo, deps, pkg.GetName())
 		if err != nil {
 			return "", err
 		}
@@ -702,7 +719,7 @@ func (b *Ctx) Builddeps(p *pb.Build) ([]string, error) {
 	// builderdeps must come first so that their ordering survives the resolve
 	// call below.
 	deps := append(b.Builderdeps(p), p.GetDep()...)
-	return b.GlobAndResolve(env.DefaultRepo, deps, "")
+	return b.GlobAndResolve(b.Repo, deps, "")
 }
 
 func fuseMkdirAll(ctl string, dir string) error {
@@ -868,7 +885,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		// We can only resolve run-time dependecies specified on the
 		// build.textproto-level (not automatically discovered ones or those
 		// specified on the package level).
-		resolved, err := b.GlobAndResolve(env.DefaultRepo, b.Proto.GetRuntimeDep(), "")
+		resolved, err := b.GlobAndResolve(b.Repo, b.Proto.GetRuntimeDep(), "")
 		if err != nil {
 			return nil, err
 		}

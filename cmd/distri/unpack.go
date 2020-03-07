@@ -52,6 +52,7 @@ func unpack(ctx context.Context, args []string) error {
 	}
 
 	b := &build.Ctx{
+		Repo:      env.DefaultRepo,
 		Proto:     &buildProto,
 		PkgDir:    pkgDir,
 		Pkg:       pkg,

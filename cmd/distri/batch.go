@@ -4,9 +4,12 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
 	"runtime"
 
 	"github.com/distr1/distri/internal/batch"
+	"github.com/distr1/distri/internal/build"
+	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/trace"
 )
 
@@ -88,5 +91,13 @@ func cmdbatch(ctx context.Context, args []string) error {
 		return bootstrapFrom(*bootstrapFromPath, *dryRun)
 	}
 
-	return batch.Batch(ctx, *dryRun, *simulate, *rebuild, *jobs)
+	bctx := &batch.Ctx{
+		Log:        log.New(os.Stdout, "", log.LstdFlags),
+		DistriRoot: env.DistriRoot,
+		DefaultBuildCtx: &build.Ctx{
+			Arch: "amd64", // TODO
+			Repo: env.DefaultRepo,
+		},
+	}
+	return bctx.Build(ctx, *dryRun, *simulate, *rebuild, *jobs)
 }

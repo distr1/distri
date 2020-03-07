@@ -149,6 +149,7 @@ func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remot
 	}
 
 	b := &build.Ctx{
+		Repo:           env.DefaultRepo,
 		Proto:          buildProto,
 		PkgDir:         pwd,
 		Pkg:            filepath.Base(pwd),

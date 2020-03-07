@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/trace"
@@ -35,15 +36,25 @@ type node struct {
 
 func (n *node) ID() int64 { return n.id }
 
-func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error {
-	log.Printf("distriroot %q", env.DistriRoot)
+// Ctx is a batch build context, containing configuration and state.
+type Ctx struct {
+	// Configuration
+	Log             *log.Logger
+	DistriRoot      string
+	DefaultBuildCtx *build.Ctx
+}
+
+func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error {
+	c.Log.Printf("distriroot %q", c.DistriRoot)
 
 	// TODO: use simple.NewDirectedMatrix instead?
 	g := simple.NewDirectedGraph()
 
 	const arch = "amd64" // TODO: configurable / auto-detect
 
-	pkgsDir := filepath.Join(env.DistriRoot, "pkgs")
+	std := c.DefaultBuildCtx.Clone()
+
+	pkgsDir := filepath.Join(c.DistriRoot, "pkgs")
 	fis, err := ioutil.ReadDir(pkgsDir)
 	if err != nil {
 		return err
@@ -55,29 +66,49 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 
 		// TODO(later): parallelize?
 		buildTextprotoPath := filepath.Join(pkgsDir, fi.Name(), "build.textproto")
-		c, err := ioutil.ReadFile(buildTextprotoPath)
+		buildProto, err := pb.ReadBuildFile(buildTextprotoPath)
 		if err != nil {
 			return err
 		}
-		var buildProto pb.Build
-		if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
-			return err
-		}
+		b := c.DefaultBuildCtx.Clone()
+		b.Pkg = fi.Name()
+		b.PkgDir = filepath.Join(pkgsDir, fi.Name())
+		b.Proto = buildProto
+		b.GlobHook = func(imgDir, pkg string) (out string, err error) {
+			// imgDir e.g. /home/michael/distri/build/distri/pkg
 
-		b := &build.Ctx{
-			Arch:   "amd64", // TODO
-			Pkg:    fi.Name(),
-			PkgDir: filepath.Join(pkgsDir, fi.Name()),
-			Proto:  &buildProto,
+			// TODO(later): implement computing source→split mapping so that
+			// we no longer need to read meta files
+
+			defer func() {
+				//log.Printf("GlobHook(imgDir=%s, pkg=%s) -> %s, %v", imgDir, pkg, out, err)
+			}()
+			out, err = std.Glob1(imgDir, pkg)
+			if err != nil {
+				return "", err
+			}
+			meta, err := pb.ReadMetaFile(filepath.Join(imgDir, out+".meta.textproto"))
+			if err != nil {
+				return "", err
+			}
+			build, err := pb.ReadBuildFile(filepath.Join(imgDir, "../../../pkgs", meta.GetSourcePkg(), "build.textproto"))
+			if err != nil {
+				return "", err
+			}
+			fullName := fmt.Sprintf("%s-%s-%s", distri.ParseVersion(out).Pkg, std.Arch, build.GetVersion())
+			if out != fullName {
+				return fullName, nil
+			}
+			return out, nil
 		}
 		inputDigest, err := b.Digest()
 		if err != nil {
-			return err
+			return fmt.Errorf("digest: %w", err)
 		}
 
 		fullname := pkg + "-" + arch + "-" + buildProto.GetVersion()
 		if !simulate {
-			fn := filepath.Join(env.DistriRoot, "build", "distri", "pkg", fullname+".meta.textproto")
+			fn := filepath.Join(c.DistriRoot, "build", "distri", "pkg", fullname+".meta.textproto")
 			meta, err := pb.ReadMetaFile(fn)
 			if err != nil {
 				if !os.IsNotExist(err) {
@@ -87,7 +118,7 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 			if !rebuild && meta.GetInputDigest() == inputDigest {
 				continue // package already built
 			}
-			log.Printf("stale package %s (got input_digest %q, want %q)",
+			c.Log.Printf("stale package %s (got input_digest %q, want %q)",
 				pkg,
 				meta.GetInputDigest(),
 				inputDigest)
@@ -106,7 +137,10 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 		g.AddNode(n)
 	}
 
-	b := &build.Ctx{Arch: "amd64"} // TODO
+	b := &build.Ctx{
+		Arch: "amd64", // TODO
+		Repo: env.DefaultRepo,
+	}
 
 	// add all constraints: <pkg>-<version> depends on <pkg>-<version>
 	for _, n := range byFullname {
@@ -166,7 +200,7 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 		for _, component := range uo { // cyclic component
 			//log.Printf("uo %d", idx)
 			for _, n := range component {
-				log.Printf("  bootstrap %v", n.(*node).pkg)
+				c.Log.Printf("  bootstrap %v", n.(*node).pkg)
 				from := g.From(n.ID())
 				for from.Next() {
 					g.RemoveEdge(n.ID(), from.Node().ID())
@@ -180,12 +214,12 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 
 	if dryRun {
 		if g.Nodes() == nil {
-			log.Printf("build 0 pkg")
+			c.Log.Printf("build 0 pkg")
 			return nil
 		}
-		log.Printf("build %d pkg", g.Nodes().Len())
+		c.Log.Printf("build %d pkg", g.Nodes().Len())
 		for it := g.Nodes(); it.Next(); {
-			log.Printf("  build %s", it.Node().(*node).pkg)
+			c.Log.Printf("  build %s", it.Node().(*node).pkg)
 		}
 		return nil
 	}
@@ -195,6 +229,8 @@ func Batch(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error 
 		return err
 	}
 	s := scheduler{
+		distriRoot: c.DistriRoot,
+		log:        c.Log,
 		logDir:     logDir,
 		simulate:   simulate,
 		workers:    jobs,
@@ -216,6 +252,8 @@ type buildResult struct {
 }
 
 type scheduler struct {
+	distriRoot string
+	log        *log.Logger
 	logDir     string
 	simulate   bool
 	workers    int
@@ -280,7 +318,7 @@ func (s *scheduler) updateStatus(idx int, newStatus string) {
 
 func (s *scheduler) buildDry(ctx context.Context, pkg string) bool {
 	dur := 10*time.Millisecond + time.Duration(rand.Int63n(int64(1000*time.Millisecond)))
-	//log.Printf("build of %s is taking %v", pkg, dur)
+	//s.log.Printf("build of %s is taking %v", pkg, dur)
 	select {
 	case <-ctx.Done():
 		return false
@@ -296,7 +334,7 @@ func (s *scheduler) build(ctx context.Context, pkg string) error {
 	}
 	defer logFile.Close()
 	build := exec.CommandContext(ctx, "distri", "build")
-	build.Dir = filepath.Join(env.DistriRoot, "pkgs", pkg)
+	build.Dir = filepath.Join(s.distriRoot, "pkgs", pkg)
 	build.Stdout = logFile
 	build.Stderr = logFile
 	if err := build.Run(); err != nil {
@@ -313,13 +351,13 @@ func (s *scheduler) run(ctx context.Context) error {
 	const freq = 1 * time.Second
 	go func() {
 		if err := trace.CPUEvents(ctx, freq); err != nil {
-			log.Println(err)
+			s.log.Println(err)
 			s.refreshStatus()
 		}
 	}()
 	go func() {
 		if err := trace.MemEvents(ctx, freq); err != nil {
-			log.Println(err)
+			s.log.Println(err)
 			s.refreshStatus()
 		}
 	}()
@@ -403,7 +441,7 @@ func (s *scheduler) run(ctx context.Context) error {
 		for len(s.built) < numNodes { // scheduler tick
 			select {
 			case result := <-done:
-				//log.Printf("build %s completed", result.name)
+				//s.log.Printf("build %s completed", result.name)
 				n := s.byFullname[result.node.fullname]
 				s.built[result.node.fullname] = result.err
 				s.updateStatus(0, fmt.Sprintf("%d of %d packages: %d built, %d failed", len(s.built), numNodes, succeeded, failed))
@@ -412,12 +450,12 @@ func (s *scheduler) run(ctx context.Context) error {
 					succeeded++
 					for to := s.g.To(n.ID()); to.Next(); {
 						if candidate := to.Node(); s.canBuild(candidate) {
-							//log.Printf("  → enqueuing %s", candidate.(*node).name)
+							//s.log.Printf("  → enqueuing %s", candidate.(*node).name)
 							work <- candidate.(*node)
 						}
 					}
 				} else {
-					log.Printf("build of %s failed (%v), see %s", result.node.pkg, result.err, filepath.Join(s.logDir, result.node.pkg+".log"))
+					s.log.Printf("build of %s failed (%v), see %s", result.node.pkg, result.err, filepath.Join(s.logDir, result.node.pkg+".log"))
 					s.refreshStatus()
 					failed += 1 + s.markFailed(n)
 				}
@@ -437,20 +475,20 @@ func (s *scheduler) run(ctx context.Context) error {
 		}
 	}
 
-	log.Printf("%d packages succeeded, %d failed, %d total", succeeded, len(s.built)-succeeded, len(s.built))
+	s.log.Printf("%d packages succeeded, %d failed, %d total", succeeded, len(s.built)-succeeded, len(s.built))
 
 	return nil
 }
 
 func (s *scheduler) markFailed(n graph.Node) int {
 	failed := 0
-	//log.Printf("marking deps of %s as failed", n.(*node).name)
+	//s.log.Printf("marking deps of %s as failed", n.(*node).name)
 	for to := s.g.To(n.ID()); to.Next(); {
 		d := to.Node()
 		name := d.(*node).fullname
-		//log.Printf("→ %s failed", name)
+		//s.log.Printf("→ %s failed", name)
 		if err, ok := s.built[name]; ok && err == nil {
-			log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", name)
+			s.log.Fatalf("BUG: %s already succeeded, but dependencies cannot be fulfilled", name)
 		}
 		if _, ok := s.built[name]; !ok {
 			s.built[d.(*node).fullname] = xerrors.Errorf("dependencies cannot be fulfilled")
@@ -463,11 +501,11 @@ func (s *scheduler) markFailed(n graph.Node) int {
 
 // canBuild returns whether all dependencies of candidate are built.
 func (s *scheduler) canBuild(candidate graph.Node) bool {
-	//log.Printf("  checking %s", candidate.(*node).name)
+	//s.log.Printf("  checking %s", candidate.(*node).name)
 	for from := s.g.From(candidate.ID()); from.Next(); {
 		name := from.Node().(*node).fullname
 		if err, ok := s.built[name]; !ok || err != nil {
-			//log.Printf("  dep %s not yet ready", name)
+			//s.log.Printf("  dep %s not yet ready", name)
 			return false
 		}
 	}

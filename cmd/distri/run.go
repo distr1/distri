@@ -47,6 +47,7 @@ func run(ctx context.Context, args []string) error {
 
 	p := &build.Ctx{
 		Arch: "amd64", // TODO: -cross flag
+		Repo: env.DefaultRepo,
 	}
 
 	chrootDir, err := ioutil.TempDir("", "distri-patchchroot")

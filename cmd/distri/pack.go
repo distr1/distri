@@ -234,7 +234,10 @@ func pack(ctx context.Context, args []string) error {
 		}
 
 		// Remove packages we don’t need to reduce docker container size:
-		b := &build.Ctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+		b := &build.Ctx{
+			Arch: "amd64",
+			Repo: env.DefaultRepo,
+		} // TODO: introduce a packctx, make glob take a common ctx
 		resolved, err := b.Glob(filepath.Join(p.repo, "pkg"), []string{
 			"linux-firmware",
 			"docker-engine",
@@ -351,7 +354,10 @@ func (p *packctx) pack(root string) error {
 		}
 	}
 
-	b := &build.Ctx{Arch: "amd64"} // TODO: introduce a packctx, make glob take a common ctx
+	b := &build.Ctx{
+		Arch: "amd64",
+		Repo: env.DefaultRepo,
+	} // TODO: introduce a packctx, make glob take a common ctx
 
 	basePkgNames := []string{"base"} // contains packages required for pack
 	if p.extraBase != "" {

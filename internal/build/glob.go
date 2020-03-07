@@ -17,6 +17,9 @@ var globCache = struct {
 }{C: make(map[string]string)}
 
 func (b *Ctx) Glob1(imgDir, pkg string) (string, error) {
+	if b.GlobHook != nil {
+		return b.GlobHook(imgDir, pkg)
+	}
 	key := imgDir + "/" + pkg
 	globCache.Lock()
 	globbed, ok := globCache.C[key]
