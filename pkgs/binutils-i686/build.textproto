@@ -1,4 +1,4 @@
-source: "https://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.xz"
+source: "distri+source://binutils"
 hash: "231036df7ef02049cdbff0681f4575e571f26ea8086cf70c2dcd3b6c0f4216bf"
 version: "2.31-5"
 

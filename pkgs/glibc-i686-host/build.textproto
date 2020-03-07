@@ -7,7 +7,7 @@
 
 # stick with 2.27 for the time being:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1573342
-source: "https://ftp.gnu.org/gnu/glibc/glibc-2.27.tar.gz"
+source: "distri+source://glibc"
 hash: "881ca905e6b5eec724de7948f14d66a07d97bdee8013e1b2a7d021ff5d540522"
 version: "2.27-5"
 

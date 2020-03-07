@@ -215,6 +215,24 @@ func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remot
 		if err := b.MakeEmpty(); err != nil {
 			return xerrors.Errorf("makeEmpty: %v", err)
 		}
+	} else if u.Scheme == "distri+source" {
+		redirected := b.Clone()
+		redirected.Pkg = u.Host
+		if err := os.Chdir("../" + redirected.Pkg); err != nil {
+			return err
+		}
+		redirected.PkgDir = filepath.Join(env.DistriRoot, "pkgs", redirected.Pkg)
+		bld, err := pb.ReadBuildFile(filepath.Join(redirected.PkgDir, "build.textproto"))
+		if err != nil {
+			return err
+		}
+		redirected.Proto = bld
+		redirected.SourceDir = build.TrimArchiveSuffix(filepath.Base(bld.GetSource()))
+		b.SourceDir = redirected.SourceDir
+		log.Printf("redirected.SourceDir=%s", redirected.SourceDir)
+		if err := redirected.Extract(); err != nil {
+			return xerrors.Errorf("extract: %v", err)
+		}
 	} else {
 		if err := b.Extract(); err != nil {
 			return xerrors.Errorf("extract: %v", err)

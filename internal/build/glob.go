@@ -80,7 +80,7 @@ func (b *Ctx) Glob(imgDir string, pkgs []string) ([]string, error) {
 	for _, pkg := range pkgs {
 		tmp, err := b.Glob1(imgDir, pkg)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("glob1(%v): %w", pkg, err)
 		}
 		if tmp == "" {
 			continue

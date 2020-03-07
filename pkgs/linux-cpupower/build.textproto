@@ -1,4 +1,4 @@
-source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.6.tar.xz"
+source: "distri+source://linux"
 hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
 version: "5.4.6-13"
 

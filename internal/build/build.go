@@ -217,7 +217,7 @@ func (b *Ctx) Digest() (string, error) {
 	bdeps := append(b.Builderdeps(b.Proto), b.Proto.GetDep()...)
 	deps, err := b.Glob(b.Repo, bdeps)
 	if err != nil {
-		return "", fmt.Errorf("builddeps: %w", err)
+		return "", fmt.Errorf("glob(%v): %w", b.Pkg, err)
 	}
 	h.Write([]byte(strings.Join(deps, ",")))
 
@@ -233,7 +233,8 @@ func (b *Ctx) Digest() (string, error) {
 	// Resolve runtime-deps that go into the build (as opposed to those being
 	// discovered during the build, which can only ever reference build-time
 	// deps):
-	// TODO: also cover the non-split package!
+	// TODO: also cover the non-split package so that we definitely hit
+	// b.Proto.GetRuntimeDep()
 	for _, pkg := range b.Proto.GetSplitPackage() {
 		deps := append([]string{},
 			append(b.Proto.GetRuntimeDep(),
@@ -1695,6 +1696,7 @@ func (b *Ctx) cherryPick(src, tmp string) error {
 	return nil
 }
 
+// TrimArchiveSuffix removes file extensions such as .tar, .gz, etc.
 func TrimArchiveSuffix(fn string) string {
 	for _, suffix := range []string{"gz", "lz", "xz", "bz2", "tar", "tgz", "deb"} {
 		fn = strings.TrimSuffix(fn, "."+suffix)

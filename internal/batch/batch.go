@@ -61,6 +61,23 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 	}
 	byFullname := make(map[string]*node) // e.g. gcc-amd64-8.2.0
 	byPkg := make(map[string]*node)      // e.g. gcc
+
+	sourceBySplit := make(map[string]string) // from split pkg to source pkg
+	for _, fi := range fis {
+		src := fi.Name()
+		sourceBySplit[src] = src
+		sourceBySplit[src+"-"+arch] = src
+		buildTextprotoPath := filepath.Join(pkgsDir, src, "build.textproto")
+		buildProto, err := pb.ReadBuildFile(buildTextprotoPath)
+		if err != nil {
+			return err
+		}
+		for _, pkg := range buildProto.GetSplitPackage() {
+			sourceBySplit[pkg.GetName()] = src
+			sourceBySplit[pkg.GetName()+"-"+arch] = src
+		}
+	}
+
 	for idx, fi := range fis {
 		pkg := fi.Name()
 
@@ -75,27 +92,22 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 		b.PkgDir = filepath.Join(pkgsDir, fi.Name())
 		b.Proto = buildProto
 		b.GlobHook = func(imgDir, pkg string) (out string, err error) {
-			// imgDir e.g. /home/michael/distri/build/distri/pkg
-
-			// TODO(later): implement computing source→split mapping so that
-			// we no longer need to read meta files
-
-			defer func() {
-				//log.Printf("GlobHook(imgDir=%s, pkg=%s) -> %s, %v", imgDir, pkg, out, err)
-			}()
-			out, err = std.Glob1(imgDir, pkg)
+			// imgDir is e.g. /home/michael/distri/build/distri/pkg
+			src, ok := sourceBySplit[pkg]
+			if !ok {
+				if arch, ok := distri.HasArchSuffix(pkg); ok {
+					pkg = strings.TrimSuffix(pkg, "-"+arch)
+				}
+				src, ok = sourceBySplit[pkg]
+				if !ok {
+					return "", fmt.Errorf("package not found!")
+				}
+			}
+			build, err := pb.ReadBuildFile(filepath.Join(imgDir, "../../../pkgs", src, "build.textproto"))
 			if err != nil {
 				return "", err
 			}
-			meta, err := pb.ReadMetaFile(filepath.Join(imgDir, out+".meta.textproto"))
-			if err != nil {
-				return "", err
-			}
-			build, err := pb.ReadBuildFile(filepath.Join(imgDir, "../../../pkgs", meta.GetSourcePkg(), "build.textproto"))
-			if err != nil {
-				return "", err
-			}
-			fullName := fmt.Sprintf("%s-%s-%s", distri.ParseVersion(out).Pkg, std.Arch, build.GetVersion())
+			fullName := fmt.Sprintf("%s-%s-%s", src, std.Arch, build.GetVersion())
 			if out != fullName {
 				return fullName, nil
 			}

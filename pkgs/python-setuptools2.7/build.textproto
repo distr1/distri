@@ -1,4 +1,4 @@
-source: "https://t.zekjur.net/setuptools-41.0.1.tar.gz"
+source: "distri+source://python-setuptools"
 hash: "125855e597d95dd0711078eaaa615523d39791a57c2de3f96805e5d0c64fa9b9"
 version: "41.0.1-5"
 
