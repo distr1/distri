@@ -583,6 +583,11 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 	return env
 }
 
+// Builderdeps returns specified builder’s (e.g. cmake builder, or perl builder)
+// dependencies. E.g., the Go builder declares a dependency on golang.
+//
+// Almost all builders include the C builder’s dependencies, as most languages
+// have a C interface.
 func (b *Ctx) Builderdeps(p *pb.Build) []string {
 	var deps []string
 	if builder := p.Builder; builder != nil {
@@ -692,6 +697,7 @@ func (b *Ctx) Builderdeps(p *pb.Build) []string {
 	return deps
 }
 
+// Builddeps globs and resolves Builderdeps() and proto build dependencies.
 func (b *Ctx) Builddeps(p *pb.Build) ([]string, error) {
 	// builderdeps must come first so that their ordering survives the resolve
 	// call below.

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/distr1/distri/internal/env"
 )
 
 func Export(ctx context.Context, repo string) (addr string, cleanup func(), _ error) {
@@ -51,3 +53,8 @@ func RemoveAll(t testing.TB, path string) {
 		t.Fatalf("cleanup: %v", err)
 	}
 }
+
+// Repo is the default build/distri/pkg directory to use in tests.
+var Repo = env.DefaultRepo
+
+var DistriRoot = env.DistriRoot

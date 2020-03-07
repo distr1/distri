@@ -71,13 +71,9 @@ func bumpAll(write bool) ([]versionIncrement, error) {
 	var inc []versionIncrement
 	for _, name := range names {
 		fn := filepath.Join(env.DistriRoot, "pkgs", name, "build.textproto")
-		b, err := ioutil.ReadFile(fn)
+		build, err := pb.ReadBuildFile(fn)
 		if err != nil {
 			return nil, err
-		}
-		var build pb.Build
-		if err := proto.UnmarshalText(string(b), &build); err != nil {
-			return nil, fmt.Errorf("%v: %v", name, err)
 		}
 
 		inc = append(inc, versionIncrement{

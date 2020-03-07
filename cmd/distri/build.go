@@ -139,12 +139,8 @@ func updateFromDistriroot(builddir string) error {
 
 func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
 	defer trace.Event("buildpkg", tidBuildpkg).Done()
-	c, err := ioutil.ReadFile("build.textproto")
+	buildProto, err := pb.ReadBuildFile("build.textproto")
 	if err != nil {
-		return err
-	}
-	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
 		return err
 	}
 
@@ -153,7 +149,7 @@ func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remot
 	}
 
 	b := &build.Ctx{
-		Proto:          &buildProto,
+		Proto:          buildProto,
 		PkgDir:         pwd,
 		Pkg:            filepath.Base(pwd),
 		Arch:           cross,
