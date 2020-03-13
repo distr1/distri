@@ -869,7 +869,9 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			return nil, err
 		}
 		if err := cmd.Wait(); err != nil {
-			fmt.Fprintf(os.Stderr, "\ntry sysctl -w kernel.unprivileged_userns_clone=1? (wild guess)\n\n")
+			if suggestion := usernsError(); suggestion != "" {
+				fmt.Fprintf(os.Stderr, "\n%s\n\n", suggestion)
+			}
 			return nil, xerrors.Errorf("%v: %w", cmd.Args, err)
 		}
 		return &meta, nil
