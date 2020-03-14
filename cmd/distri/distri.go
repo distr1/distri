@@ -152,6 +152,7 @@ func funcmain() error {
 		"reset":   {reset},
 		"run":     {run},
 		"initrd":  {initrd},
+		"list":    {cmdlist},
 	}
 
 	args := flag.Args()
