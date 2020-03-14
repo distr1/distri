@@ -1,0 +1,32 @@
+#compdef _distri distri
+
+function _distri {
+  local -a commands
+
+  _arguments -C \
+    "1: :->cmnds" \
+    "*::arg:->args"
+
+  case $state in
+  cmnds)
+    commands=(
+      "install:install a distri package"
+    )
+    _describe "command" commands
+    ;;
+  esac
+
+  case "$words[1]" in
+  install)
+    _distri_install
+    ;;
+  esac
+}
+
+function _distri_install {
+  _arguments \
+    '--repo[distri repository]:'
+
+  reply=(${(f)"$(=distri list ${words[@]:1})"})
+  compadd -a "$@" reply
+}
