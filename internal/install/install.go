@@ -6,8 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,10 +16,10 @@ import (
 	"time"
 
 	// TODO: consider "github.com/klauspost/pgzip"
-	gzip "compress/gzip"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/env"
+	"github.com/distr1/distri/internal/repo"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
@@ -36,14 +34,6 @@ import (
 // operation.
 var totalBytes int64
 
-type errNotFound struct {
-	url *url.URL
-}
-
-func (e errNotFound) Error() string {
-	return fmt.Sprintf("%v: HTTP status 404", e.url)
-}
-
 type errPackageNotFound struct {
 	pkg string
 }
@@ -53,66 +43,10 @@ func (e errPackageNotFound) Error() string {
 }
 
 func isNotExist(err error) bool {
-	if _, ok := err.(*errNotFound); ok {
+	if _, ok := err.(*repo.ErrNotFound); ok {
 		return true
 	}
 	return os.IsNotExist(err)
-}
-
-var httpClient = &http.Client{Transport: &http.Transport{
-	MaxIdleConnsPerHost: 10,
-	DisableCompression:  true,
-}}
-
-type gzipReader struct {
-	body io.ReadCloser
-	zr   *gzip.Reader
-}
-
-func (r *gzipReader) Read(p []byte) (n int, err error) {
-	return r.zr.Read(p)
-}
-
-func (r *gzipReader) Close() error {
-	if err := r.zr.Close(); err != nil {
-		return err
-	}
-	return r.body.Close()
-}
-
-func repoReader(ctx context.Context, repo distri.Repo, fn string) (io.ReadCloser, error) {
-	if strings.HasPrefix(repo.Path, "http://") ||
-		strings.HasPrefix(repo.Path, "https://") {
-		req, err := http.NewRequest("GET", repo.Path+"/"+fn, nil) // TODO: sanitize slashes
-		if err != nil {
-			return nil, err
-		}
-		if os.Getenv("DISTRI_REEXEC") == "1" {
-			req.Header.Set("X-Distri-Reexec", "yes")
-		}
-		// good for typical links (≤ gigabit)
-		// performance bottleneck for faster links (10 gbit/s+)
-		req.Header.Set("Accept-Encoding", "gzip")
-		resp, err := httpClient.Do(req.WithContext(ctx))
-		if err != nil {
-			return nil, err
-		}
-		if got, want := resp.StatusCode, http.StatusOK; got != want {
-			if got == http.StatusNotFound {
-				return nil, &errNotFound{url: req.URL}
-			}
-			return nil, fmt.Errorf("%s: HTTP status %v", req.URL, resp.Status)
-		}
-		if strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") {
-			rd, err := gzip.NewReader(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			return &gzipReader{body: resp.Body, zr: rd}, nil
-		}
-		return resp.Body, nil
-	}
-	return os.Open(filepath.Join(repo.Path, fn))
 }
 
 func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
@@ -178,7 +112,7 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 
 var SkipContentHooks = false
 
-func install1(ctx context.Context, root string, repo distri.Repo, pkg string, first bool) error {
+func install1(ctx context.Context, root string, installRepo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -198,7 +132,7 @@ func install1(ctx context.Context, root string, repo distri.Repo, pkg string, fi
 		if err != nil {
 			return err
 		}
-		in, err := repoReader(ctx, repo, "pkg/"+fn)
+		in, err := repo.Reader(ctx, installRepo, "pkg/"+fn)
 		if err != nil {
 			return err
 		}
@@ -411,8 +345,8 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		pkg += "-amd64" // TODO: configurable / auto-detect
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
-	for _, repo := range repos {
-		rd, err := repoReader(context.Background(), repo, "pkg/"+pkg+".meta.textproto")
+	for _, r := range repos {
+		rd, err := repo.Reader(context.Background(), r, "pkg/"+pkg+".meta.textproto")
 		if err != nil {
 			if isNotExist(err) {
 				continue
@@ -428,7 +362,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 		if err := proto.UnmarshalText(string(b), &pm); err != nil {
 			return err
 		}
-		metas[&pm] = repo
+		metas[&pm] = r
 	}
 	var pm *pb.Meta
 	var repo distri.Repo
