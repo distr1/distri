@@ -34,5 +34,6 @@ func printenv(ctx context.Context, args []string) error {
 	fmt.Printf("DISTRIROOT=%q\n", env.DistriRoot)
 	fmt.Printf("DISTRICFG=%q\n", env.DistriConfig)
 	fmt.Printf("DEFAULTREPO=%q\n", env.DefaultRepo)
+	fmt.Printf("DEFAULTREPOROOT=%q\n", env.DefaultRepoRoot)
 	return nil
 }

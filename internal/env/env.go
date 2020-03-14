@@ -66,10 +66,20 @@ func Repos() ([]distri.Repo, error) {
 }
 
 // DefaultRepoRoot is the default repository path or URL.
-var DefaultRepoRoot = join(DistriRoot, "build/distri/")
+var DefaultRepoRoot = func() string {
+	if env := os.Getenv("DEFAULTREPOROOT"); env != "" {
+		return env
+	}
+	return join(DistriRoot, "build/distri/") // default
+}()
 
 // DefaultRepo is the default repository path or URL to pkg/.
-var DefaultRepo = join(DistriRoot, "build/distri/pkg")
+var DefaultRepo = func() string {
+	if env := os.Getenv("DEFAULTREPO"); env != "" {
+		return env
+	}
+	return join(DistriRoot, "build/distri/pkg") // default
+}()
 
 func join(elem ...string) string {
 	if len(elem) == 0 {
