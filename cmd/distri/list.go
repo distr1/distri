@@ -56,7 +56,7 @@ func list(ctx context.Context, listRepo string, prefix []string) error {
 	// TODO: fetch metadata from repos concurrently
 	metas := make(map[*pb.MirrorMeta]distri.Repo)
 	for _, r := range repos {
-		rd, err := repo.Reader(context.Background(), r, "pkg/meta.binaryproto")
+		rd, err := repo.Reader(context.Background(), r, "pkg/meta.binaryproto", true /* cache */)
 		if err != nil {
 			if isNotExist(err) {
 				continue

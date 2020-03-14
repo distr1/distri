@@ -132,7 +132,7 @@ func install1(ctx context.Context, root string, installRepo distri.Repo, pkg str
 		if err != nil {
 			return err
 		}
-		in, err := repo.Reader(ctx, installRepo, "pkg/"+fn)
+		in, err := repo.Reader(ctx, installRepo, "pkg/"+fn, false)
 		if err != nil {
 			return err
 		}
@@ -346,7 +346,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
 	for _, r := range repos {
-		rd, err := repo.Reader(context.Background(), r, "pkg/"+pkg+".meta.textproto")
+		rd, err := repo.Reader(context.Background(), r, "pkg/"+pkg+".meta.textproto", false)
 		if err != nil {
 			if isNotExist(err) {
 				continue
