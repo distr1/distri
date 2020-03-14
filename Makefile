@@ -115,7 +115,7 @@ qemu-serial:
 qemu-graphic:
 	${QEMU}
 
-.PHONY: docs screen usb
+.PHONY: docs screen usb release
 
 docs: docs/building.asciidoc docs/package-format.asciidoc docs/index.asciidoc docs/rosetta-stone.asciidoc
 	mkdir -p ${DOCSDIR}
@@ -142,3 +142,6 @@ screen:
 usb:
 	[ -n "${USB_DISK_ID}" ] || (echo "Usage example: make usb USB_DISK_ID=usb-SanDisk_Extreme_Pro_12345878D17B-0:0" >&2; false)
 	sudo dd if=/tmp/distri-disk.img of=/dev/disk/by-id/${USB_DISK_ID} bs=1M status=progress oflag=direct
+
+release:
+	DISTRIROOT=$$PWD go run release/release.go
