@@ -345,6 +345,14 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/os-release"), []byte(`ID=distri
+VERSION_CODENAME=`+p.branch+`
+PRETTY_NAME="distri (`+p.branch+`)"
+HOME_URL=https://distr1.org
+`), 0644); err != nil {
+		return err
+	}
+
 	if p.authorizedKeys != "" {
 		if err := os.MkdirAll(filepath.Join(root, "root/.ssh"), 0700); err != nil {
 			return err
