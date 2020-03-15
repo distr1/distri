@@ -1,0 +1,48 @@
+# distri zshrc
+# /etc/zsh/zshrc is run for all interactive shells as per zsh(1) STARTUP/SHUTDOWN FILES
+
+################################################################################
+# Lazily enable completion when first trying to complete something
+################################################################################
+
+# When tab-completing, show dots. For fast tab completes, they will be
+# overwritten instantly, for long tab-completions, you have feedback.
+expand-or-complete-with-dots() {
+    echo -n -e "\e[37m...\e[0m\033[3D"
+    zle expand-or-complete
+    zle redisplay
+}
+
+load-completion() {
+    autoload compinit
+    compinit
+
+    bindkey '\t' expand-or-complete-with-dots
+}
+
+load-completion-and-expand-or-complete-with-dots() {
+    load-completion
+    zle -w expand-or-complete-with-dots
+}
+
+zle -N expand-or-complete-with-dots
+zle -N load-completion-and-expand-or-complete-with-dots
+bindkey '\t' load-completion-and-expand-or-complete-with-dots
+
+################################################################################
+# Enable history
+################################################################################
+
+# Load the most recent 4000 lines of history, but save O(∞)
+HISTSIZE=4000
+HISTFILE=~/.zsh_history
+SAVEHIST=10000000
+
+# Do not save duplicate entries
+setopt HIST_IGNORE_DUPS
+
+# Append history list to the history file rather than replacing it.
+#
+# Write new history lines to $HISTFILE as soon as they are entered
+# rather than waiting until the shell exits.
+setopt INC_APPEND_HISTORY

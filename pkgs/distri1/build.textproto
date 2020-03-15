@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-34"
+version: "native-39"
 
 gobuilder: {
   install: "./cmd/distri ./cmd/minitrd"
@@ -57,5 +57,10 @@ install: {
   file: {
     srcpath: "pkg/mod/distri1@v0/zsh/site-functions/_distri"
     destpath: "share/zsh/site-functions/_distri"
+  }
+
+  file: {
+    srcpath: "pkg/mod/distri1@v0/zsh/zshrc"
+    destpath: "../etc/zshrc"
   }
 }
