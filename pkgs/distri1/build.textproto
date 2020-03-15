@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-33"
+version: "native-34"
 
 gobuilder: {
   install: "./cmd/distri ./cmd/minitrd"
@@ -52,3 +52,10 @@ dep: "go-github.com-lib-pq"
 dep: "go-golang.org-x-mod"
 
 runtime_dep: "kbd"
+
+install: {
+  file: {
+    srcpath: "pkg/mod/distri1@v0/zsh/site-functions/_distri"
+    destpath: "share/zsh/site-functions/_distri"
+  }
+}
