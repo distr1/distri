@@ -161,17 +161,19 @@ func cp(w *squashfs.Directory, dir string) error {
 
 // Ctx is a build context: it contains state about a build.
 type Ctx struct {
-	Proto       *pb.Build `json:"-"`
-	PkgDir      string    // e.g. /home/michael/distri/pkgs/busybox
-	Pkg         string    // e.g. busybox
-	Arch        string    // e.g. amd64
-	Version     string    // e.g. 1.29.2
-	SourceDir   string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
-	BuildDir    string    // e.g. /tmp/distri-build-8123911
-	DestDir     string    // e.g. /tmp/distri-dest-3129384/tmp
-	Prefix      string    // e.g. /ro/busybox-1.29.2
-	Hermetic    bool
-	Debug       bool
+	Proto     *pb.Build `json:"-"`
+	PkgDir    string    // e.g. /home/michael/distri/pkgs/busybox
+	Pkg       string    // e.g. busybox
+	Arch      string    // e.g. amd64
+	Version   string    // e.g. 1.29.2
+	SourceDir string    // e.g. /home/michael/distri/build/busybox/busybox-1.29.2
+	BuildDir  string    // e.g. /tmp/distri-build-8123911
+	DestDir   string    // e.g. /tmp/distri-dest-3129384/tmp
+	Prefix    string    // e.g. /ro/busybox-1.29.2
+	Hermetic  bool
+	// Debug is one of after-steps, after-install, after-wrapper,
+	// after-loopmount, after-elf, after-libfarm
+	Debug       string
 	FUSE        bool
 	ChrootDir   string // only set if Hermetic is enabled
 	Jobs        int
@@ -1245,19 +1247,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		log.Printf("  step %d: %v (command: %v)", idx, times[idx], step.Argv)
 	}
 
-	if b.Debug {
-		log.Printf("starting debug shell because -debug is enabled")
-		cmd := exec.Command("bash", "-i")
-		if b.Hermetic {
-			cmd.Env = env
-		}
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			log.Printf("debug command failed: %v", err)
-		}
-	}
+	b.maybeStartDebugShell("after-steps", env)
 
 	// Remove if empty (fails if non-empty):
 	for _, subdir := range []string{"lib", "share"} {
@@ -1351,6 +1341,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			return nil, err
 		}
 	}
+
+	b.maybeStartDebugShell("after-install", env)
 
 	if err := os.MkdirAll(filepath.Join(b.DestDir, b.Prefix, "bin"), 0755); err != nil {
 		return nil, err
@@ -1466,6 +1458,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		}
 	}
 
+	b.maybeStartDebugShell("after-wrapper", env)
+
 	// Make the finished package available at /ro/<pkg>-<version>, so that
 	// patchelf will leave e.g. /ro/systemd-239/out/lib/systemd/ in the
 	// RPATH.
@@ -1476,6 +1470,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			}
 		}
 	}
+
+	b.maybeStartDebugShell("after-loopmount", env)
 
 	// Find shlibdeps while we’re still in the chroot, so that ldd(1) locates
 	// the dependencies.
@@ -1549,6 +1545,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		return nil, err
 	}
 
+	b.maybeStartDebugShell("after-elf", env)
+
 	// Replace the symlink to /ro/lib with a directory of links to the
 	// actually required libraries:
 	libDir := filepath.Join(b.DestDir, b.Prefix, "lib")
@@ -1565,6 +1563,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			return nil, err
 		}
 	}
+
+	b.maybeStartDebugShell("after-libfarm", env)
 
 	bin := filepath.Join(destDir, "out", "bin")
 	if err := filepath.Walk(bin, func(path string, info os.FileInfo, err error) error {

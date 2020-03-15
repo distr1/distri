@@ -142,7 +142,7 @@ func updateFromDistriroot(builddir string) error {
 	return nil
 }
 
-func buildpkg(ctx context.Context, hermetic, debug, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
+func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, cross, remote string, artifactFd, jobs int) error {
 	defer trace.Event("buildpkg", tidBuildpkg).Done()
 	buildProto, err := pb.ReadBuildFile("build.textproto")
 	if err != nil {
@@ -601,9 +601,9 @@ func cmdbuild(ctx context.Context, args []string) error {
 			true,
 			"build hermetically (if false, host dependencies are used)")
 
-		debug = fset.Bool("debug",
-			false,
-			"query to start an interactive shell during the build")
+		debug = fset.String("debug",
+			"",
+			"if non-empty, start an interactive shell at the specified stage in the build. one of after-steps, after-install, after-wrapper, after-loopmount, after-elf, after-libfarm")
 
 		fuse = fset.Bool("fuse",
 			true,
