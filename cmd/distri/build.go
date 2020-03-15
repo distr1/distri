@@ -51,13 +51,15 @@ func updateFromDistriroot(builddir string) error {
 	// TODO(later): fill ignore from .gitignore?
 	ignore := map[string]bool{
 		".git":         true,
-		"build":        true,
 		"linux-4.18.7": true,
 		"linux-5.1.9":  true,
 		"linux-5.1.10": true,
 		"pkgs":         true,
 		"docs":         true,
 		"org":          true,
+	}
+	ignoreRel := map[string]bool{
+		"build": true,
 	}
 	err := filepath.Walk(env.DistriRoot, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -69,6 +71,9 @@ func updateFromDistriroot(builddir string) error {
 		rel, err := filepath.Rel(env.DistriRoot, path)
 		if err != nil {
 			return err
+		}
+		if ignoreRel[rel] {
+			return filepath.SkipDir
 		}
 		dest := filepath.Join(builddir, "pkg/mod/distri1@v0", rel)
 		if info.IsDir() {
