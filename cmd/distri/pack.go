@@ -38,8 +38,14 @@ Example:
   % make qemu-serial
 `
 
-const passwd = `root:x:0:0:root:/root:/bin/sh
-`
+func passwd(root string) string {
+	loginShell := "/bin/sh"
+	if m, err := filepath.Glob(filepath.Join(root, "roimg", "zsh-*.meta.textproto")); err == nil && len(m) > 0 {
+		loginShell = "/bin/zsh"
+	}
+	return "root:x:0:0:root:/root:" + loginShell + "\n"
+}
+
 const group = `root:x:0:
 `
 
@@ -208,7 +214,7 @@ func pack(ctx context.Context, args []string) error {
 			}
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd), 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd(root)), 0644); err != nil {
 			return err
 		}
 
@@ -331,13 +337,6 @@ func (p *packctx) pack(root string) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd), 0644); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(filepath.Join(root, "etc/group"), []byte(group), 0644); err != nil {
-		return err
-	}
-
 	if err := os.MkdirAll(filepath.Join(root, "etc/distri/repos.d"), 0755); err != nil {
 		return err
 	}
@@ -386,6 +385,13 @@ HOME_URL=https://distr1.org
 
 	install.SkipContentHooks = true
 	if err := install.Packages(basePkgs, root, p.repo, false); err != nil {
+		return err
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd(root)), 0644); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/group"), []byte(group), 0644); err != nil {
 		return err
 	}
 
