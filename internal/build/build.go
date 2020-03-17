@@ -1372,10 +1372,15 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			} else {
 				oldname := filepath.Join(dir, fi.Name())
 
-				if b.Pkg == "bash" && (fi.Name() == "sh" || fi.Name() == "bash") {
+				if b.Pkg == "bash" && (fi.Name() == "sh" || fi.Name() == "bash") ||
+					b.Pkg == "zsh" && (fi.Name() == "zsh" || strings.HasPrefix(fi.Name(), "zsh-")) {
 					// prevent creation of a wrapper script for /bin/sh
 					// (wrappers execute /bin/sh) and /bin/bash (dracut uses
-					// /bin/bash) by using a symlink instead:
+					// /bin/bash) by using a symlink instead.
+					//
+					// zsh must not be wrapped, otherwise setting /bin/zsh as
+					// login shell results in shell instances which do not
+					// consider themselves to be a login shell.
 					oldname, err = filepath.Rel(filepath.Join(b.DestDir, b.Prefix, "bin"), oldname)
 					if err != nil {
 						return nil, err
