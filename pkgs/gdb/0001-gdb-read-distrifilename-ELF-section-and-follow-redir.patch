@@ -1,0 +1,270 @@
+From 9dece7176e2ded762b609bba666e9382953b1f5e Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Wed, 18 Mar 2020 22:15:22 +0100
+Subject: [PATCH] gdb: read distrifilename ELF section and follow redirect
+
+---
+ gdb/Makefile.in       |  3 +-
+ gdb/distri-filename.c | 83 +++++++++++++++++++++++++++++++++++++++++++
+ gdb/distri-filename.h | 30 ++++++++++++++++
+ gdb/exec.c            | 20 +++++++++++
+ gdb/main.c            |  8 +++++
+ gdb/symfile.c         | 16 +++++++++
+ 6 files changed, 159 insertions(+), 1 deletion(-)
+ create mode 100644 gdb/distri-filename.c
+ create mode 100644 gdb/distri-filename.h
+
+diff --git a/gdb/Makefile.in b/gdb/Makefile.in
+index 13627e0..787a55e 100644
+--- a/gdb/Makefile.in
++++ b/gdb/Makefile.in
+@@ -599,7 +599,7 @@ CLIBS = $(SIM) $(READLINE) $(OPCODES) $(BFD) $(ZLIB) $(INTL) $(LIBIBERTY) $(LIBD
+ 	$(XM_CLIBS) $(NAT_CLIBS) $(GDBTKLIBS) \
+ 	@LIBS@ @GUILE_LIBS@ @PYTHON_LIBS@ \
+ 	$(LIBEXPAT) $(LIBLZMA) $(LIBBABELTRACE) $(LIBIPT) \
+-	$(LIBIBERTY) $(WIN32LIBS) $(LIBGNU) $(LIBICONV) $(LIBMPFR)
++	$(LIBIBERTY) $(WIN32LIBS) $(LIBGNU) $(LIBICONV) $(LIBMPFR) -lelf
+ CDEPS = $(XM_CDEPS) $(NAT_CDEPS) $(SIM) $(BFD) $(READLINE_DEPS) \
+ 	$(OPCODES) $(INTL_DEPS) $(LIBIBERTY) $(CONFIG_DEPS) $(LIBGNU)
+ 
+@@ -999,6 +999,7 @@ COMMON_SFILES = \
+ 	dictionary.c \
+ 	disasm.c \
+ 	disasm-selftests.c \
++	distri-filename.c \
+ 	dummy-frame.c \
+ 	dwarf-index-common.c \
+ 	dwarf-index-write.c \
+diff --git a/gdb/distri-filename.c b/gdb/distri-filename.c
+new file mode 100644
+index 0000000..49184ce
+--- /dev/null
++++ b/gdb/distri-filename.c
+@@ -0,0 +1,83 @@
++/* Read distri filename ELF sections, for GDB, the GNU debugger.
++
++   Copyright (C) 1988-2018 Free Software Foundation, Inc.
++
++   This file is part of GDB.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
++
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <errno.h>
++#include <string.h>
++
++#include "defs.h"
++
++#include <err.h>
++#include <libelf.h>
++#include <gelf.h>
++
++char *read_elf_section(const char *filename, const char *section_name) {
++  int fd = open (filename, O_RDONLY, 0);
++  if (fd < 0) {
++    error ("\"%s\": open: %s", filename, strerror (errno));
++  }
++  Elf *e = elf_begin (fd, ELF_C_READ, NULL);
++  if (e == NULL) {
++    error ("\"%s\": elf_begin: %s", filename, elf_errmsg (-1));
++  }
++  if (elf_kind (e) != ELF_K_ELF) {
++    return NULL;
++  }
++  size_t shstrndx;
++  if (elf_getshdrstrndx (e, &shstrndx) != 0) {
++    error ("\"%s\": elf_getshdrstrndx: %s", filename, elf_errmsg (-1));
++  }
++  Elf_Scn *scn = NULL;
++  GElf_Shdr shdr;
++  while ((scn = elf_nextscn (e, scn)) != NULL) {
++    if (gelf_getshdr (scn, &shdr) != &shdr) {
++      error ("\"%s\": gelf_getshdr: %s", filename, elf_errmsg (-1));
++    }
++    char *name;
++    if ((name = elf_strptr (e, shstrndx, shdr.sh_name)) == NULL) {
++      error ("\"%s\": elf_strptr: %s", filename, elf_errmsg (-1));
++    }
++    if (strcmp (name, section_name) != 0) {
++      continue;
++    }
++    Elf_Data *data = NULL;
++    size_t n = 0;
++    char *out = (char *) xcalloc (shdr.sh_size, 1);
++    char *w = out;
++    while (n < shdr.sh_size && (data = elf_getdata (scn, data)) != NULL) {
++      char *p = (char *) data->d_buf;
++      while (p < (char *) data->d_buf + data->d_size) {
++	*w = *p;
++	n++;
++	p++;
++	w++;
++      }
++    }
++    return out;
++  }
++  close (fd);
++  return NULL;
++}
++
++static const char filenamesection[] = "distrifilename";
++
++gdb::unique_xmalloc_ptr<char> read_distri_filename(const char *filename) {
++  return gdb::unique_xmalloc_ptr<char> (read_elf_section(filename, filenamesection));
++}
+diff --git a/gdb/distri-filename.h b/gdb/distri-filename.h
+new file mode 100644
+index 0000000..e6e1982
+--- /dev/null
++++ b/gdb/distri-filename.h
+@@ -0,0 +1,30 @@
++/* Read distri filename ELF sections, for GDB, the GNU debugger.
++
++   Copyright (C) 2003-2018 Free Software Foundation, Inc.
++
++   This file is part of GDB.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
++
++#ifndef DISTRIFILENAME_H
++#define DISTRIFILENAME_H
++
++#include "target.h"
++#include "progspace.h"
++#include "memrange.h"
++#include "symfile-add-flags.h"
++
++gdb::unique_xmalloc_ptr<char> read_distri_filename(const char *filename);
++
++#endif
+diff --git a/gdb/exec.c b/gdb/exec.c
+index 3023ff7..f2d9727 100644
+--- a/gdb/exec.c
++++ b/gdb/exec.c
+@@ -36,6 +36,7 @@
+ #include "gdb_bfd.h"
+ #include "gcore.h"
+ #include "source.h"
++#include "errno.h"
+ 
+ #include <fcntl.h>
+ #include "readline/readline.h"
+@@ -47,6 +48,8 @@
+ #include <algorithm>
+ #include "common/pathstuff.h"
+ 
++#include "distri-filename.h"
++
+ void (*deprecated_file_changed_hook) (const char *);
+ 
+ static const target_info exec_target_info = {
+@@ -333,6 +336,23 @@ exec_file_attach (const char *filename, int from_tty)
+ 	  canonical_pathname = canonical_storage.get ();
+ 	}
+ 
++      gdb::unique_xmalloc_ptr<char> distrifilename;
++      if ((distrifilename = read_distri_filename(canonical_pathname)) != NULL) {
++	canonical_pathname = xstrdup (distrifilename.get ());
++	if (scratch_chan > -1) {
++	  close(scratch_chan);
++	  scratch_chan = openp (NULL, 0,
++				canonical_pathname, write_files ?
++				O_RDWR | O_BINARY
++				: O_RDONLY | O_BINARY,
++				&scratch_storage);
++	  if (scratch_chan < 0)
++	    perror_with_name (canonical_pathname);
++
++	  scratch_pathname = scratch_storage.get ();
++	}
++      }
++
+       gdb_bfd_ref_ptr temp;
+       if (write_files && !load_via_target)
+ 	temp = gdb_bfd_fopen (canonical_pathname, gnutarget,
+diff --git a/gdb/main.c b/gdb/main.c
+index 9694af2..9d84bec 100644
+--- a/gdb/main.c
++++ b/gdb/main.c
+@@ -48,6 +48,10 @@
+ #include <vector>
+ #include "common/pathstuff.h"
+ 
++#include <err.h>
++#include <libelf.h>
++#include <gelf.h>
++
+ /* The selected interpreter.  This will be used as a set command
+    variable, so it should always be malloc'ed - since
+    do_setshow_command will free it.  */
+@@ -1029,6 +1033,10 @@ captured_main_1 (struct captured_main_args *context)
+   save_auto_load = global_auto_load;
+   global_auto_load = 0;
+ 
++  if (elf_version (EV_CURRENT) == EV_NONE) {
++    error ("ELF library initialization failed: %s", elf_errmsg(-1));
++  }
++
+   if (execarg != NULL
+       && symarg != NULL
+       && strcmp (execarg, symarg) == 0)
+diff --git a/gdb/symfile.c b/gdb/symfile.c
+index 39d06d8..c385e73 100644
+--- a/gdb/symfile.c
++++ b/gdb/symfile.c
+@@ -68,6 +68,8 @@
+ 
+ #include "psymtab.h"
+ 
++#include "distri-filename.h"
++
+ int (*deprecated_ui_load_progress_hook) (const char *section,
+ 					 unsigned long num);
+ void (*deprecated_show_load_progress) (const char *section,
+@@ -1671,6 +1673,20 @@ symfile_bfd_open (const char *name)
+       name = absolute_name.get ();
+     }
+ 
++  gdb::unique_xmalloc_ptr<char> distrifilename;
++  if ((distrifilename = read_distri_filename(name)) != NULL) {
++    name = xstrdup (distrifilename.get ());
++    if (desc > -1) {
++      close(desc);
++      desc = openp (NULL, OPF_RETURN_REALPATH,
++		    name, O_RDONLY | O_BINARY, &absolute_name);
++      if (desc < 0)
++	perror_with_name (name);
++
++      name = absolute_name.get ();
++    }
++  }
++
+   gdb_bfd_ref_ptr sym_bfd (gdb_bfd_open (name, gnutarget, desc));
+   if (sym_bfd == NULL)
+     error (_("`%s': can't open to read symbols: %s."), name,
+-- 
+2.25.1
+
