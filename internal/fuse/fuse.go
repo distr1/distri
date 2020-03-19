@@ -2,6 +2,7 @@ package fuse
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -529,6 +530,8 @@ func (fs *fuseFS) scanPackagesSymlink(mu sync.Locker, rd *squashfs.Reader, pkg s
 	return nil
 }
 
+var errSkipPackage = errors.New("sentinel: skip package")
+
 func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
 	f, err := os.Open(filepath.Join(fs.repo, pkg+".squashfs"))
 	if err != nil {
@@ -545,7 +548,7 @@ func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Print(err)
-			return nil // recover by skipping this package
+			return errSkipPackage // recover by skipping this package
 		}
 		return err
 	}
@@ -633,12 +636,18 @@ func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 				delete(existing, pkg) // left-overs are deleted packages
 				continue
 			}
-			mu.Lock()
-			fs.pkgs = append(fs.pkgs, pkg)
-			mu.Unlock()
 			idx, pkg := idx, pkg // copy
 			eg.Go(func() error {
-				return fs.scanPackage(mu, idx, pkg)
+				if err := fs.scanPackage(mu, idx, pkg); err != nil {
+					if err == errSkipPackage {
+						return nil
+					}
+					return err
+				}
+				mu.Lock()
+				fs.pkgs = append(fs.pkgs, pkg)
+				mu.Unlock()
+				return nil
 			})
 		}
 		if err := eg.Wait(); err != nil {
