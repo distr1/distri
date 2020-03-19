@@ -10,6 +10,7 @@ import (
 	"github.com/distr1/distri/internal/addrfd"
 	"github.com/distr1/distri/internal/env"
 	"github.com/lpar/gzipped"
+	"golang.org/x/sync/errgroup"
 )
 
 const exportHelp = `distri export [-flags]
@@ -60,5 +61,11 @@ func export(ctx context.Context, args []string) error {
 	}
 
 	addrfd.MustWrite(addr)
-	return server.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
+	var eg errgroup.Group
+	eg.Go(func() error { return server.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)}) })
+	eg.Go(func() error {
+		<-ctx.Done()
+		return server.Shutdown(ctx)
+	})
+	return eg.Wait()
 }
