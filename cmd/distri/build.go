@@ -25,7 +25,6 @@ import (
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -378,13 +377,6 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		return nil
 	}
 
-	// concurrently create source squashfs image
-	var srcEg errgroup.Group
-	srcEg.Go(func() error {
-		defer trace.Event("squashfs src", tidSquashfsSrc).Done()
-		return b.PkgSource()
-	})
-
 	buildEv := trace.Event("build "+b.Pkg, tidBuildpkg)
 	meta, err := b.Build(ctx, buildLog)
 	if err != nil {
@@ -493,10 +485,6 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 			return err
 		}
 		writeEv.Done()
-	}
-
-	if err := srcEg.Wait(); err != nil {
-		return err
 	}
 
 	return nil

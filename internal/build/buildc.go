@@ -34,6 +34,7 @@ func (b *Ctx) buildc(opts *pb.Build, builder *pb.CBuilder, env []string) (newSte
 	}
 	steps = append(steps, [][]string{
 		// TODO: set --disable-silent-rules if found in configure help output
+		// TODO: set --enable-debug=[yes/info/profile/no] to info if found in configure help
 		append([]string{
 			"${DISTRI_SOURCEDIR}/configure",
 			"--host=" + target,

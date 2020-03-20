@@ -26,7 +26,8 @@ func findShlibDeps(ldd, fn string, env []string) ([]libDep, error) {
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
-		log.Printf("TODO: exclude file %s", fn)
+		// TODO: do not print an error for wrapper programs
+		log.Printf("TODO: exclude file %s: %v (out: %s)", fn, err, string(out))
 		return nil, errLddFailed // TODO: fix
 		return nil, err
 	}

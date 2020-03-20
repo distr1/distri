@@ -1,0 +1,45 @@
+package build
+
+import (
+	"debug/dwarf"
+	"debug/elf"
+	"path/filepath"
+	"strings"
+)
+
+func dwarfPaths(fn string) ([]string, error) {
+	f, err := elf.Open(fn)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	dwf, err := f.DWARF()
+	if err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	dr := dwf.Reader()
+	for {
+		ent, err := dr.Next()
+		if err != nil {
+			return nil, err
+		}
+		if ent == nil {
+			break
+		}
+		if ent.Tag != dwarf.TagCompileUnit {
+			dr.SkipChildren()
+			continue
+		}
+		name := ent.Val(dwarf.AttrName).(string)
+		dir := ent.Val(dwarf.AttrCompDir).(string)
+		full := name
+		if !strings.HasPrefix(full, "/") {
+			full = filepath.Join(dir, full)
+		}
+		paths = append(paths, full)
+	}
+	return paths, nil
+}

@@ -20,6 +20,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"text/template"
 	"time"
@@ -33,6 +34,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
@@ -108,6 +110,165 @@ func readXattrs(fd int) ([]squashfs.Xattr, error) {
 		attrs = append(attrs, squashfs.XattrFromAttr(attr, buf))
 	}
 	return attrs, nil
+}
+
+type cpFileInfo struct {
+	// config
+	root string
+	dir  string
+
+	// contents
+	fi       os.FileInfo
+	children []*cpFileInfo
+	byName   map[string]*cpFileInfo // children, keyed by fi.Name()
+}
+
+func cpscan(root, dir string) ([]*cpFileInfo, error) {
+	var children []*cpFileInfo
+
+	fis, err := ioutil.ReadDir(filepath.Join(root, dir))
+	if err != nil {
+		return nil, err
+	}
+	walk := func(root string, fis []os.FileInfo) error {
+		for _, fi := range fis {
+			info := &cpFileInfo{fi: fi, root: root, dir: dir}
+			if fi.IsDir() {
+				ch, err := cpscan(
+					root,
+					filepath.Join(dir, fi.Name()))
+				if err != nil {
+					return err
+				}
+				info.byName = make(map[string]*cpFileInfo)
+				for _, child := range ch {
+					info.byName[child.fi.Name()] = child
+				}
+				info.children = ch
+			} else if fi.Mode().IsRegular() {
+			} else if fi.Mode()&os.ModeSymlink != 0 {
+			} else {
+				log.Printf("ERROR: unsupported file: %v", filepath.Join(dir, fi.Name()))
+				continue
+			}
+			children = append(children, info)
+		}
+		return nil
+	}
+
+	// root is e.g. /tmp/integrationbuild212641383/build/debug/source
+	if err := walk(root, fis); err != nil {
+		return nil, err
+	}
+
+	return children, nil
+}
+
+func cpExtraFiles(root string, ef map[string][]os.FileInfo) error {
+	return nil
+}
+
+func (cpFi *cpFileInfo) mkdirAll(path, parent string) (*cpFileInfo, error) {
+	first := path
+	rest := ""
+	if idx := strings.IndexByte(first, '/'); idx > -1 {
+		first, rest = first[:idx], first[idx+1:]
+	}
+	// log.Printf("mkdirAll(path=%s, parent=%s) first=%s rest=%s", path, parent, first, rest)
+	fi, ok := cpFi.byName[first]
+	if !ok {
+		info, err := os.Stat(filepath.Join(parent, first))
+		if err != nil {
+			return nil, err
+		}
+
+		fi = &cpFileInfo{
+			fi:     info,
+			root:   cpFi.root,
+			dir:    cpFi.dir,
+			byName: make(map[string]*cpFileInfo),
+		}
+		// log.Printf("adding child %v", fi)
+		cpFi.addChild(fi)
+	}
+	if rest == "" {
+		return fi, nil
+	}
+	return fi.mkdirAll(rest, filepath.Join(parent, first))
+}
+
+func (cpFi *cpFileInfo) lookup(path string) (*cpFileInfo, error) {
+	first := path
+	rest := ""
+	if idx := strings.IndexByte(first, '/'); idx > -1 {
+		first, rest = first[:idx], first[idx+1:]
+	}
+	// log.Printf("lookup(path=%s) first=%s rest=%s", path, first, rest)
+	fi, ok := cpFi.byName[first]
+	if !ok {
+		return nil, fmt.Errorf("%s not found", first)
+	}
+	if rest == "" {
+		return fi, nil
+	}
+	return fi.lookup(rest)
+}
+
+func (cpFi *cpFileInfo) addChild(child *cpFileInfo) {
+	if _, ok := cpFi.byName[child.fi.Name()]; ok {
+		return // already exists
+	}
+	cpFi.children = append(cpFi.children, child)
+	cpFi.byName[child.fi.Name()] = child
+}
+
+func (cpFi *cpFileInfo) copyTo(w *squashfs.Directory) error {
+	// for convenience:
+	fi := cpFi.fi
+	dir := filepath.Join(cpFi.root, cpFi.dir)
+
+	// log.Printf("(%s/%s).copyTo(dir=%s)", cpFi.dir, cpFi.fi.Name(), dir)
+
+	if fi.IsDir() {
+		subdir := w.Directory(fi.Name(), fi.ModTime())
+		for _, child := range cpFi.children {
+			if err := child.copyTo(subdir); err != nil {
+				return err
+			}
+		}
+		subdir.Flush()
+	} else if fi.Mode().IsRegular() {
+		in, err := os.Open(filepath.Join(dir, fi.Name()))
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+		attrs, err := readXattrs(int(in.Fd()))
+		if err != nil {
+			return err
+		}
+		f, err := w.File(fi.Name(), fi.ModTime(), uint16(fi.Sys().(*syscall.Stat_t).Mode), attrs)
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(f, in); err != nil {
+			return err
+		}
+		if err := f.Close(); err != nil {
+			return err
+		}
+		in.Close()
+	} else if fi.Mode()&os.ModeSymlink != 0 {
+		// isSymlink
+		dest, err := os.Readlink(filepath.Join(dir, fi.Name()))
+		if err != nil {
+			return err
+		}
+		if err := w.Symlink(dest, fi.Name(), fi.ModTime(), fi.Mode().Perm()); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func cp(w *squashfs.Directory, dir string) error {
@@ -286,6 +447,59 @@ func (b *Ctx) serialize() (string, error) {
 
 func (b *Ctx) PkgSource() error {
 	const subdir = "src"
+	src := b.SourceDir
+	// Contains e.g. .build-id/63/f308646429e696f78291e5734b6fd83422d8bb.debug
+	debugDir := filepath.Join(b.DestDir, b.Prefix, "debug")
+	buildDir := func() string {
+		if b.Proto.GetCopyToBuilddir() {
+			return filepath.Join(b.ChrootDir, "usr", "src", b.FullName())
+		}
+		return filepath.Join(b.ChrootDir, b.BuildDir)
+	}()
+	_ = buildDir
+
+	var (
+		eg errgroup.Group
+
+		allPathsMu sync.Mutex
+		allPaths   []string
+	)
+	prefix := "/usr/src/" + b.FullName() + "/"
+	err := filepath.Walk(debugDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		eg.Go(func() error {
+			paths, err := dwarfPaths(path)
+			if err != nil {
+				return err
+			}
+			filtered := make([]string, 0, len(paths))
+			for _, p := range paths {
+				// Remove paths that reference other compilation units
+				// (e.g. /usr/src/glibc-amd64-2.27-3/csu/init.c):
+				if !strings.HasPrefix(p, prefix) {
+					continue
+				}
+				filtered = append(filtered, p)
+			}
+			allPathsMu.Lock()
+			defer allPathsMu.Unlock()
+			allPaths = append(allPaths, filtered...)
+			return nil
+		})
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
 	dest, err := filepath.Abs("../distri/" + subdir + "/" + b.FullName() + ".squashfs")
 	if err != nil {
 		return err
@@ -301,7 +515,7 @@ func (b *Ctx) PkgSource() error {
 			latest     time.Time
 			latestPath string
 		)
-		err := filepath.Walk(b.SourceDir, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
@@ -314,7 +528,22 @@ func (b *Ctx) PkgSource() error {
 		if err != nil {
 			return err
 		}
+		// TODO(correctness): switch from modtime to hashing contents
+		// the modtime of generated files changes all the time
+		for _, p := range allPaths {
+			p = filepath.Join(b.ChrootDir, p)
+			info, err := os.Stat(p)
+			if err != nil {
+				return err
+			}
+			if info.ModTime().After(latest) {
+				latest = info.ModTime()
+				latestPath = p
+			}
+		}
+
 		if stat.ModTime().After(latest) {
+			log.Printf("src squashfs %s up to date", src)
 			return nil // src squashfs up to date
 		}
 		log.Printf("file %v changed (maybe others), rebuilding src squashfs image", latestPath)
@@ -330,7 +559,59 @@ func (b *Ctx) PkgSource() error {
 		return err
 	}
 
-	if err := cp(w.Root, b.SourceDir); err != nil {
+	children, err := cpscan(src, "")
+	if err != nil {
+		return err
+	}
+	byName := make(map[string]*cpFileInfo)
+	for _, child := range children {
+		byName[child.fi.Name()] = child
+	}
+	wrapped := &cpFileInfo{
+		byName:   byName,
+		children: children,
+	}
+	for _, p := range allPaths {
+		info, err := os.Stat(filepath.Join(b.ChrootDir, p))
+		if err != nil {
+			return err
+		}
+		// dir is e.g. /usr/src/debug-amd64-1/subdir/another
+		dir := filepath.Dir(p)
+		// rel is e.g. subdir/another
+		rel := strings.TrimPrefix(dir, "/usr/src/"+b.FullName())
+		var cdir *cpFileInfo
+		if rel != "" {
+			path := strings.TrimPrefix(rel, "/")
+			parent := filepath.Join(b.ChrootDir, "/usr/src/"+b.FullName())
+			if _, err := wrapped.mkdirAll(path, parent); err != nil {
+				return err
+			}
+			var err error
+			cdir, err = wrapped.lookup(strings.TrimPrefix(rel, "/"))
+			if err != nil {
+				log.Printf("BUG: lookup(rel=%s): %v", rel, err)
+				continue
+			}
+		} else {
+			cdir = wrapped
+		}
+		if _, ok := cdir.byName[info.Name()]; ok {
+			continue
+		}
+		cdir.addChild(&cpFileInfo{
+			fi:   info,
+			root: buildDir,
+			dir:  rel,
+		})
+	}
+
+	for _, child := range wrapped.children {
+		if err := child.copyTo(w.Root); err != nil {
+			return err
+		}
+	}
+	if err := w.Root.Flush(); err != nil {
 		return err
 	}
 
@@ -876,6 +1157,9 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			}
 			return nil, xerrors.Errorf("%v: %w", cmd.Args, err)
 		}
+		if err := b.PkgSource(); err != nil {
+			return nil, err
+		}
 		return &meta, nil
 	}
 
@@ -943,13 +1227,9 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 					return nil, err
 				}
 
-				// Use /usr/src/<pkg>-<version> as (read-write) b.BuildDir,
-				// and make available b.SourceDir as (read-only)
-				// /usr/src-orig/<pkg>-<version>:
-				if err := os.MkdirAll(src, 0755); err != nil {
-					return nil, err
-				}
-				b.BuildDir = strings.TrimPrefix(src, b.ChrootDir)
+				// Build under /usr/src, which is distributed via srcfs
+				// auto-loading src squashfs images:
+				b.BuildDir = strings.TrimPrefix(filepath.Join(src, "build"), b.ChrootDir)
 
 				// Fill b.BuildDir with contents from b.SourceDir:
 				cp := exec.CommandContext(ctx, "cp", "-T", "-ar", b.SourceDir+"/", src)
@@ -1235,7 +1515,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		if b.Hermetic {
 			cmd.Env = env
 		}
-		log.Printf("build step %d of %d: %v", idx, len(steps), cmd.Args)
+		log.Printf("build step %d of %d: %v", idx+1, len(steps), cmd.Args)
 		cmd.Stdin = os.Stdin // for interactive debugging
 		// TODO: logging with io.MultiWriter results in output no longer being colored, e.g. during the systemd build. any workaround?
 		cmd.Stdout = io.MultiWriter(os.Stdout, buildLog)
@@ -1536,6 +1816,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 
 		buildid, err := readBuildid(path)
 		if err == errBuildIdNotFound {
+			log.Printf("no build id in %s, cannot extract debug symbols", path)
 			return nil // keep debug symbols, if any
 		}
 		if err != nil {
