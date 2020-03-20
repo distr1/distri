@@ -2,6 +2,8 @@ source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
 hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
 version: "2.22.7-7"
 
+copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+
 cmakebuilder: {
   extra_cmake_flag: "-DPORT=GTK"
   extra_cmake_flag: "-DJPEG_LIBRARY=/ro/${DISTRI_RESOLVE:libjpeg-turbo}/out/lib64/libjpeg.so"

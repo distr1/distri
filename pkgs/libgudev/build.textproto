@@ -2,6 +2,8 @@ source: "http://ftp.gnome.org/pub/gnome/sources/libgudev/231/libgudev-231.tar.xz
 hash: "3b1ef99d4a8984c35044103d8ddfc3cc52c80035c36abab2bcc5e3532e063f96"
 version: "231-6"
 
+copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+
 cbuilder: {
   extra_configure_flag: "--disable-umockdev"
 }

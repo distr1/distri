@@ -2,6 +2,8 @@ source: "http://ftp.gnome.org/pub/gnome/sources/json-glib/1.4/json-glib-1.4.4.ta
 hash: "720c5f4379513dc11fd97dc75336eb0c0d3338c53128044d9fabec4374f4bc47"
 version: "1.4.4-5"
 
+copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+
 mesonbuilder: {}
 
 # build dependencies:

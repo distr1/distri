@@ -2,6 +2,8 @@ source: "distri+source://binutils"
 hash: "231036df7ef02049cdbff0681f4575e571f26ea8086cf70c2dcd3b6c0f4216bf"
 version: "2.31-5"
 
+copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+
 cbuilder: {}
 
 build_step: {
