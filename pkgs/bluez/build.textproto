@@ -4,13 +4,14 @@ version: "5.50-7"
 
 cherry_pick: "SIOCGSTAMP.patch"
 
+copy_to_builddir: true
+
 cbuilder: {
   extra_configure_flag: "--disable-obex"
   extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
   extra_configure_flag: "--with-systemduserunitdir=${prefix}/lib/systemd/user"
   extra_configure_flag: "--localstatedir=/var"
   extra_configure_flag: "--enable-library"
-  copy_to_builddir: true
 }
 
 # build dependencies:

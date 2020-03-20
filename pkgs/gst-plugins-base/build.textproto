@@ -2,9 +2,10 @@ source: "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base
 hash: "6952be988abe67b5affd46b194e97863b160cd58846199873b4315fe5e1cdbf0"
 version: "1.15.2-4"
 
+copy_to_builddir: true  # for autoreconf
+
 cbuilder: {
   autoreconf: true
-  copy_to_builddir: true  # for autoreconf
 }
 
 cherry_pick: "make-4.3.patch"

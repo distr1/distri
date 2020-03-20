@@ -9,10 +9,6 @@ import (
 func (b *Ctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	dir := "${DISTRI_SOURCEDIR}"
 	var steps [][]string
-	if opts.GetCopyToBuilddir() {
-		dir = "."
-		steps = copyToBuilddirSteps()
-	}
 	steps = append(steps, [][]string{
 		append([]string{
 			"/bin/cmake",

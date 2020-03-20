@@ -5,8 +5,9 @@ version: "1.14.5-5"
 cherry_pick: "configure.local.patch"
 cherry_pick: "env-i.patch"
 
+copy_to_builddir: true
+
 cbuilder: {
-  copy_to_builddir: true
 }
 
 # build dependencies:

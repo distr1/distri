@@ -17,6 +17,28 @@ import (
 	"golang.org/x/xerrors"
 )
 
+func bindMount(source, target string) error {
+	if err := syscall.Mount(source, target, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
+		return err
+	}
+	return nil
+}
+
+func bindMountReadOnly(source, target string) error {
+	if err := bindMount(source, target); err != nil {
+		return err
+	}
+	if err := syscall.Mount("", target, "", syscall.MS_REMOUNT|syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
+		if err == syscall.EPERM {
+			// Happens in integration tests
+			log.Printf("bind remount read-only %s %s: %v", source, target, err)
+		} else {
+			return fmt.Errorf("remount read-only: %w", err)
+		}
+	}
+	return nil
+}
+
 func mountpoint(fn string) bool {
 	b, err := ioutil.ReadFile("/proc/self/mountinfo")
 	if err != nil {

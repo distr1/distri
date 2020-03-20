@@ -6,7 +6,6 @@ copy_to_builddir: true
 
 cbuilder: {
   # TODO: switch to cbuilder once we decide how custom make install arguments should be passed
-  #   copy_to_builddir: true
 }
 
 # build dependencies:

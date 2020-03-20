@@ -3,8 +3,9 @@ hash: "5d867baeb7f540abe8f3265ac18ed7a24f91fe3c5f4fd99ac3caba0708511b90"
 version: "0.13.1-5"
 # TODO: specify pattern for new version
 
+copy_to_builddir: true  # modifies source
+
 cbuilder: {
-  copy_to_builddir: true  # modifies source
 }
 
 # build dependencies:

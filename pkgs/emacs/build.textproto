@@ -2,8 +2,9 @@ source: "https://mirror.kumi.systems/gnu/emacs/emacs-26.1.tar.xz"
 hash: "1cf4fc240cd77c25309d15e18593789c8dbfba5c2b44d8f77c886542300fd32c"
 version: "26.1-12"
 
+copy_to_builddir: true  # modifies source
+
 cbuilder: {
-  copy_to_builddir: true  # modifies source
   extra_configure_flag: "--with-gnutls=no"  # TODO: why doesn’t configure locate gnutls?
   extra_configure_flag: "--with-x-toolkit=gtk3"
 }

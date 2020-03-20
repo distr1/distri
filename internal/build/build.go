@@ -937,15 +937,30 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			if err := os.MkdirAll(src, 0755); err != nil {
 				return nil, err
 			}
-			if err := syscall.Mount(b.SourceDir, src, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				return nil, xerrors.Errorf("bind mount %s %s: %v", b.SourceDir, src, err)
-			}
-			if err := syscall.Mount("", src, "", syscall.MS_REMOUNT|syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-				if err == syscall.EPERM {
-					// Happens in integration tests
-					log.Printf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
-				} else {
-					return nil, xerrors.Errorf("bind remount read-only %s %s: %v", b.SourceDir, src, err)
+			if b.Proto.GetCopyToBuilddir() {
+				// Otherwise a side effect of a b.BuildDir within /tmp:
+				if err := os.MkdirAll(filepath.Join(b.ChrootDir, "/tmp"), 0755); err != nil {
+					return nil, err
+				}
+
+				// Use /usr/src/<pkg>-<version> as (read-write) b.BuildDir,
+				// and make available b.SourceDir as (read-only)
+				// /usr/src-orig/<pkg>-<version>:
+				if err := os.MkdirAll(src, 0755); err != nil {
+					return nil, err
+				}
+				b.BuildDir = strings.TrimPrefix(src, b.ChrootDir)
+
+				// Fill b.BuildDir with contents from b.SourceDir:
+				cp := exec.CommandContext(ctx, "cp", "-T", "-ar", b.SourceDir+"/", src)
+				cp.Stdout = io.MultiWriter(os.Stdout, buildLog)
+				cp.Stderr = io.MultiWriter(os.Stderr, buildLog)
+				if err := cp.Run(); err != nil {
+					return nil, err
+				}
+			} else {
+				if err := bindMount(b.SourceDir, src); err != nil {
+					return nil, fmt.Errorf("bindMount(%s, %s): %v", b.SourceDir, src, err)
 				}
 			}
 			b.SourceDir = strings.TrimPrefix(src, b.ChrootDir)
@@ -958,7 +973,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 					return nil, err
 				}
 				if err := syscall.Mount(wrappersSrc, wrappers, "none", syscall.MS_BIND|syscall.MS_RDONLY, ""); err != nil {
-					return nil, xerrors.Errorf("bind mount %s %s: %v", wrappersSrc, wrappers, err)
+					return nil, fmt.Errorf("bind mount %s %s: %v", wrappersSrc, wrappers, err)
 				}
 			}
 		}
@@ -1152,16 +1167,12 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	env := b.env(deps, true)
 	runtimeEnv := b.runtimeEnv(deps)
 
-	var steps []*pb.BuildStep
-	if b.Proto.GetCopyToBuilddir() {
-		steps = stepsToProto(copyToBuilddirSteps())
-	}
-	steps = append(steps, b.Proto.GetBuildStep()...)
+	steps := b.Proto.GetBuildStep()
 	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
 		switch v := builder.(type) {
 		case *pb.Build_Cbuilder:
 			var err error
-			steps, env, err = b.buildc(v.Cbuilder, env)
+			steps, env, err = b.buildc(b.Proto, v.Cbuilder, env)
 			if err != nil {
 				return nil, err
 			}

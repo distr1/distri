@@ -5,8 +5,9 @@ version: "8.6.9-3"
 # sed -i 's,^#!/usr/bin/env python,#!/bin/python2.7,g' **/*.py
 cherry_pick: "python.patch"
 
+copy_to_builddir: true
+
 cbuilder: {
-  copy_to_builddir: true
   # TODO: remove once https://github.com/distr1/distri/issues/31 is fixed
   extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-3/etc"
 }
