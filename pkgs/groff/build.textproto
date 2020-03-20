@@ -2,16 +2,12 @@ source: "https://ftp.gnu.org/gnu/groff/groff-1.22.3.tar.gz"
 hash: "3a48a9d6c97750bfbd535feeb5be0111db6406ddb7bb79fc680809cda6d828a5"
 version: "1.22.3-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "perl"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "./configure"

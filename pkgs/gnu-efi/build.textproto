@@ -2,15 +2,11 @@ source: "https://repo.distr1.org/distri/jackherer/orig/gnu-efi/gnu-efi-3.0.9.tar
 hash: "6715ea7eae1c7e4fc5041034bd3f107ec2911962ed284a081e491646b12277f0"
 version: "3.0.9-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

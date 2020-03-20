@@ -2,13 +2,9 @@ source: "https://dl.google.com/go/go1.4.3.src.tar.gz"
 hash: "9947fc705b0b841b5938c48b22dc33e9647ec0752bae66e50278df4f23f64959"
 version: "1.4.3-5"
 
-cbuilder: {}
+copy_to_builddir: true
 
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
+cbuilder: {}
 
 build_step: {
   argv: "/bin/sh"

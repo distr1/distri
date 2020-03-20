@@ -5,6 +5,8 @@ source: "http://t.zekjur.net/mozjs-52.6.0gnome1.tar.bz2"  # https://download.gno
 hash: "da88d1206389d21f313dc68f37ca975583b87e9128050207b29752c1efbedf4a"
 version: "52.6.0gnome1-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
@@ -12,14 +14,6 @@ dep: "which"
 dep: "python2.7"  # https://bugzilla.mozilla.org/show_bug.cgi?id=1093212
 dep: "autoconf2.13"  # https://bugzilla.mozilla.org/show_bug.cgi?id=104642
 dep: "perl"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "/bin/sh"

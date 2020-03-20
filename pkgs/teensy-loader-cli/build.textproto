@@ -2,6 +2,8 @@ source: "https://github.com/PaulStoffregen/teensy_loader_cli/archive/eb61aa1a482
 hash: "3f30431ac0bb24bbc7646e03abb287b51bd78b3d9f1121550fe87648aa829a10"
 version: "2.1+g20180927-6"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 cherry_pick: "udev-rules.patch"
@@ -9,14 +11,6 @@ cherry_pick: "udev-rules.patch"
 # build dependencies:
 dep: "libusb"
 dep: "libusb-compat"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "make"

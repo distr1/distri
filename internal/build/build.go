@@ -1152,7 +1152,11 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	env := b.env(deps, true)
 	runtimeEnv := b.runtimeEnv(deps)
 
-	steps := b.Proto.GetBuildStep()
+	var steps []*pb.BuildStep
+	if b.Proto.GetCopyToBuilddir() {
+		steps = stepsToProto(copyToBuilddirSteps())
+	}
+	steps = append(steps, b.Proto.GetBuildStep()...)
 	if builder := b.Proto.Builder; builder != nil && len(steps) == 0 {
 		switch v := builder.(type) {
 		case *pb.Build_Cbuilder:

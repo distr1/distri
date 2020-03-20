@@ -2,6 +2,8 @@ source: "https://github.com/erikd/libsndfile/archive/1.0.28.tar.gz"
 hash: "89abe87316bc9afac9e5b34b137a399286cbcd6affad409b110596e3b749c897"
 version: "1.0.28-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
@@ -17,12 +19,6 @@ dep: "python3"
 
 # sndio
 # sqlite
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 # TODO: make /share/aclocal an exchange dir
 build_step: {

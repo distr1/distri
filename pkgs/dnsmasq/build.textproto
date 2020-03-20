@@ -2,6 +2,8 @@ source: "http://www.thekelleys.org.uk/dnsmasq/dnsmasq-2.80.tar.xz"
 hash: "cdaba2785e92665cf090646cba6f94812760b9d7d8c8d0cfb07ac819377a63bb"
 version: "2.80-3"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # sed -i 's,#include,#include <linux/sockios.h>\n#include,' src/dhcp.c
@@ -11,12 +13,6 @@ cherry_pick: "siocgstamp.patch"
 dep: "gettext"
 dep: "dbus"
 dep: "libidn2"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "make"

@@ -15,6 +15,8 @@ message CBuilder {
   // Enable if this package does not support building from a separate directory
   // (sometimes called “out-of-tree build”). A bug should be reported with the
   // package upstream.
+  //
+  // Deprecated: use the top-level copy_to_builddir instead
   optional bool copy_to_builddir = 2;
 
   // Additional flag to pass to `make`.
@@ -36,6 +38,8 @@ message CMakeBuilder {
   // Enable if this package does not support building from a separate directory
   // (sometimes called “out-of-tree build”). A bug should be reported with the
   // package upstream.
+  //
+  // Deprecated: use the top-level copy_to_builddir instead
   optional bool copy_to_builddir = 2;
 }
 
@@ -198,6 +202,11 @@ message Build {
   // order of directives is the order in which the patches are applied.
   repeated string cherry_pick = 6;
 
+  // Enable if this package does not support building from a separate directory
+  // (sometimes called “out-of-tree build”). A bug should be reported with the
+  // package upstream.
+  optional bool copy_to_builddir = 20;
+
   // ┌─────────────────────────────────────────────────────────────────────────┐
   // │ builder                                                                 │
   // └─────────────────────────────────────────────────────────────────────────┘
@@ -259,5 +268,5 @@ message Build {
   // guarantee ABI compatibility across versions.
   repeated Union runtime_union = 15;
 
-  // NEXT FREE FIELD NUMBER: 20
+  // NEXT FREE FIELD NUMBER: 21
 }

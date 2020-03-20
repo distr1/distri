@@ -2,6 +2,8 @@ source: "https://t.zekjur.net/mplayer-export-2019-02-19%2Bffmpeg.tar.bz2"
 hash: "ac054bad4754a2ee4e185ac94598906562aa4a30eaf63ff02b899e22f9756ac5"
 version: "0.2019-02-19-11"
 
+copy_to_builddir: true
+
 cbuilder: {
   #  extra_configure_flag: "--without-bash-malloc"
 }
@@ -12,14 +14,6 @@ dep: "libx11"
 dep: "mesa"
 dep: "freetype"
 dep: "fontconfig"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "./configure"

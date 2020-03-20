@@ -2,20 +2,14 @@ source: "https://w1.fi/releases/wpa_supplicant-2.6.tar.gz"
 hash: "b4936d34c4e6cdd44954beba74296d964bc2c9668ecaa5255e499636fe2b1450"
 version: "2.6-6"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "openssl"
 dep: "libnl"
 dep: "dbus"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "cp"

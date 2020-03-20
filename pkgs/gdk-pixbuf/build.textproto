@@ -2,6 +2,8 @@ source: "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38
 hash: "dd50973c7757bcde15de6bcd3a6d462a445efd552604ae6435a0532fbbadae47"
 version: "2.38.0-6"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
@@ -24,12 +26,6 @@ build_step: {
   argv: "mkdir"
   argv: "-p"
   argv: "/usr/share"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
 }
 
 build_step: {

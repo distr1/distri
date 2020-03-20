@@ -2,16 +2,12 @@ source: "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/File-Next-1.16.tar.g
 hash: "6965f25c2c132d0ba7a6f72b57b8bc6d25cf8c1b7032caa3a9bda8612e41d759"
 version: "1.16-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "perl"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

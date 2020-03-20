@@ -2,16 +2,12 @@ source: "https://www.openssl.org/source/openssl-1.0.2p.tar.gz"
 hash: "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
 version: "1.0.2p-3"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dep:
 dep: "perl"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "./config"

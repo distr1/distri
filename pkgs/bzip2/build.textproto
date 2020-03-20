@@ -2,17 +2,11 @@ source: "https://downloads.sourceforge.net/project/bzip2/bzip2-1.0.6.tar.gz"
 hash: "a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd"
 version: "1.0.6-4"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "make"

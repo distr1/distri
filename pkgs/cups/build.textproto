@@ -2,20 +2,13 @@ source: "https://github.com/apple/cups/releases/download/v2.2.8/cups-2.2.8-sourc
 hash: "3968fc1d26fc48727508db1c1380e36c6694ab90177fd6920aec5f6cc73af9e4"
 version: "2.2.8-4"
 
+copy_to_builddir: true
+
 cbuilder: {
-  copy_to_builddir: true
 }
 
 # build dependencies:
 dep: "gzip"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 build_step: {
   argv: "./configure"

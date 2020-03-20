@@ -11,9 +11,7 @@ func (b *Ctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*pb.Bu
 	var steps [][]string
 	if opts.GetCopyToBuilddir() {
 		dir = "."
-		steps = [][]string{
-			[]string{"cp", "-T", "-ar", "${DISTRI_SOURCEDIR}/", "."},
-		}
+		steps = copyToBuilddirSteps()
 	}
 	steps = append(steps, [][]string{
 		append([]string{

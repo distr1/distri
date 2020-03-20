@@ -2,17 +2,13 @@ source: "https://github.com/mesonbuild/meson/archive/0.47.1.tar.gz"
 hash: "c227ae37c1d4c8fc1531d536b38ff1fbf7afb08c59fc54a5321645164e5f92a8"
 version: "0.47.1-3"
 
+copy_to_builddir: true
+
 cherry_pick: "genmarshal.patch"
 
 pythonbuilder: {}
 
 runtime_dep: "ninja"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 # https://github.com/NixOS/nixpkgs/pull/28444#issuecomment-324033323
 build_step: {

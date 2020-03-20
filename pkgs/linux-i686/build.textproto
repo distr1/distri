@@ -2,6 +2,8 @@ source: "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.18.7.tar.xz"
 hash: "f03b425e262a71e5079736706233a4e9afaf77c8462b552b4d6db2d33f5af731"
 version: "4.18.7-5"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 cherry_pick: "config.patch"
@@ -17,12 +19,6 @@ dep: "openssl"
 dep: "perl"
 dep: "gzip"
 dep: "kmod"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "make"

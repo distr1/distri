@@ -5,16 +5,12 @@ pull: {
   releases_url: "https://golang.org/dl/"
 }
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "golang14"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

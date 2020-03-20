@@ -2,8 +2,9 @@ source: "distri+source://linux"
 hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
 version: "5.4.6-13"
 
+copy_to_builddir: true
+
 cbuilder: {
-  copy_to_builddir: true
 }
 
 # build dependencies:
@@ -14,12 +15,6 @@ cbuilder: {
 dep: "linux"
 dep: "pciutils"  # for libpci3
 dep: "gettext"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "make"

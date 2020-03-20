@@ -2,8 +2,9 @@ source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.5.2.tar.xz"
 hash: "24f5f383b0337374f160723bcf3bf679c75cb5bd3fd0824a56998e47c04ef99e"
 version: "5.5.2-12"
 
+copy_to_builddir: true
+
 cbuilder: {
-  copy_to_builddir: true
 }
 
 cherry_pick: "config.patch"
@@ -20,12 +21,6 @@ dep: "perl"
 dep: "gzip"
 dep: "kmod"
 dep: "rsync"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "make"

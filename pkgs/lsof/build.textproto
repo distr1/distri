@@ -2,17 +2,13 @@ source: "https://github.com/lsof-org/lsof/archive/4.93.2.tar.gz"
 hash: "3df912bd966fc24dc73ddea3e36a61d79270b21b085936a4caabca56e5b486a2"
 version: "4.93.2-6"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "perl"
 dep: "which"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

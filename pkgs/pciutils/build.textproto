@@ -2,17 +2,13 @@ source: "https://mirrors.edge.kernel.org/pub/software/utils/pciutils/pciutils-3.
 hash: "f67ff732976e2db2a5ccdf3960020796526ba6b05f6b1cdd24b7b206af706055"
 version: "3.6.4-2"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
 dep: "gzip"
 dep: "which"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

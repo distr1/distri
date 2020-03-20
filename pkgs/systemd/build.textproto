@@ -2,6 +2,8 @@ source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
 hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
 version: "239-10"
 
+copy_to_builddir: true
+
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
 cherry_pick: "udevdir.patch"
@@ -18,12 +20,6 @@ dep: "meson"
 dep: "kmod"
 dep: "cryptsetup"
 dep: "systemd"  # to pick up the latest version
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "cp -T -ar ${DISTRI_SOURCEDIR}/ ."
-}
 
 build_step: {
   argv: "/bin/sh"

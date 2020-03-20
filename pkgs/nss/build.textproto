@@ -4,6 +4,8 @@ version: "3.39-5"
 
 cherry_pick: "nss-3.39-standalone-1.patch"
 
+copy_to_builddir: true
+
 cbuilder: {}
 
 # build dependencies:
@@ -12,14 +14,6 @@ dep: "nspr"
 dep: "sqlite3"
 
 dep: "strace"
-
-build_step: {
-  argv: "cp"
-  argv: "-T"
-  argv: "-ar"
-  argv: "${DISTRI_SOURCEDIR}/"
-  argv: "."
-}
 
 # TODO: to work around g++ issue where #include_next <stdlib.h> from cstdlib.h won’t find the header
 build_step: {
