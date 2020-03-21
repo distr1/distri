@@ -16,12 +16,14 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-const buildTextproto = `
+const unversionedBuildTextproto = `
 source: "empty://"
 hash: ""
 version: "1"
 
 dep: "bash"
+# linux is a good test because linux-firmware is an easy false-positive
+dep: "linux"
 
 runtime_dep: "pkg-config"
 
@@ -32,7 +34,7 @@ build_step: <
 >
 `
 
-func TestBuild(t *testing.T) {
+func TestUnversionedBuild(t *testing.T) {
 	t.Parallel()
 
 	ctx, canc := distri.InterruptibleContext()
@@ -55,6 +57,8 @@ func TestBuild(t *testing.T) {
 	}
 	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
 		"bash",
+		"linux",
+		"linux-firmware",
 		"pkg-config",
 	}, "")
 	if err != nil {
@@ -78,7 +82,7 @@ func TestBuild(t *testing.T) {
 	}
 	if err := ioutil.WriteFile(
 		filepath.Join(pkgDir, "build.textproto"),
-		[]byte(buildTextproto),
+		[]byte(unversionedBuildTextproto),
 		0644); err != nil {
 		t.Fatal(err)
 	}
