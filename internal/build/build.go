@@ -580,41 +580,46 @@ func (b *Ctx) PkgSource() error {
 		byName:   byName,
 		children: children,
 	}
-	for _, p := range allPaths {
-		// dir is e.g. /usr/src/debug-amd64-1/subdir/another
-		dir := filepath.Dir(p)
-		// rel is e.g. subdir/another
-		rel := strings.TrimPrefix(dir, "/usr/src/"+b.FullName())
-		var cdir *cpFileInfo
-		if rel != "" {
-			path := strings.TrimPrefix(rel, "/")
-			parent := filepath.Join(b.ChrootDir, "/usr/src/"+b.FullName())
-			if _, err := wrapped.mkdirAll(path, parent); err != nil {
-				return err
+	if err := func() error {
+		for _, p := range allPaths {
+			// dir is e.g. /usr/src/debug-amd64-1/subdir/another
+			dir := filepath.Dir(p)
+			// rel is e.g. subdir/another
+			rel := strings.TrimPrefix(dir, "/usr/src/"+b.FullName())
+			var cdir *cpFileInfo
+			if rel != "" {
+				path := strings.TrimPrefix(rel, "/")
+				parent := filepath.Join(b.ChrootDir, "/usr/src/"+b.FullName())
+				if _, err := wrapped.mkdirAll(path, parent); err != nil {
+					return err
+				}
+				var err error
+				cdir, err = wrapped.lookup(strings.TrimPrefix(rel, "/"))
+				if err != nil {
+					log.Printf("BUG: lookup(rel=%s): %v", rel, err)
+					continue
+				}
+			} else {
+				cdir = wrapped
 			}
-			var err error
-			cdir, err = wrapped.lookup(strings.TrimPrefix(rel, "/"))
-			if err != nil {
-				log.Printf("BUG: lookup(rel=%s): %v", rel, err)
+			name := filepath.Base(p)
+			if _, ok := cdir.byName[name]; ok {
 				continue
 			}
-		} else {
-			cdir = wrapped
+			log.Printf("p=%s not present", p)
+			info, err := os.Lstat(filepath.Join(b.ChrootDir, p))
+			if err != nil {
+				return err
+			}
+			cdir.addChild(&cpFileInfo{
+				fi:   info,
+				root: buildDir,
+				dir:  rel,
+			})
 		}
-		name := filepath.Base(p)
-		if _, ok := cdir.byName[name]; ok {
-			continue
-		}
-		log.Printf("p=%s not present", p)
-		info, err := os.Lstat(filepath.Join(b.ChrootDir, p))
-		if err != nil {
-			return err
-		}
-		cdir.addChild(&cpFileInfo{
-			fi:   info,
-			root: buildDir,
-			dir:  rel,
-		})
+		return nil
+	}(); err != nil && b.Proto.GetAckMissingDwarf() == "" {
+		return err
 	}
 
 	for _, child := range wrapped.children {

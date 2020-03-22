@@ -200,6 +200,12 @@ message Build {
   // package upstream.
   optional bool in_tree_build = 21;
 
+  // By default, distri build will fail if there are empty .debug files.
+  // Use this option to acknowledge the failure and add a free-form note
+  // (for human consumption) with details.
+  // E.g. ack_missing_dwarf: "TODO" if the failure is not yet understood.
+  optional string ack_missing_dwarf = 22;
+
   // ┌─────────────────────────────────────────────────────────────────────────┐
   // │ builder                                                                 │
   // └─────────────────────────────────────────────────────────────────────────┘
@@ -261,5 +267,5 @@ message Build {
   // guarantee ABI compatibility across versions.
   repeated Union runtime_union = 15;
 
-  // NEXT FREE FIELD NUMBER: 22
+  // NEXT FREE FIELD NUMBER: 23
 }
