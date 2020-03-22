@@ -16,7 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-// TODO: separate test which verifies that without copy_to_builddir, building
+// TODO: separate test which verifies that without writable_sourcedir, building
 // spits out an error about missing files (based on DWARF debug info)
 
 // TODO(maintainability): implement secure:// URL scheme
@@ -28,7 +28,7 @@ source: "http://invalid.example/source.tar"
 hash: "8ffdc3ac9a42fbb74eba3bb5eadc8a9513c9591344487413e3f2f54d0a4887a5"
 version: "1"
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 dep: "bash"
 dep: "coreutils"

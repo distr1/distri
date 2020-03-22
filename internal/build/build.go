@@ -6,7 +6,9 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"debug/dwarf"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"io"
@@ -451,7 +453,7 @@ func (b *Ctx) PkgSource() error {
 	// Contains e.g. .build-id/63/f308646429e696f78291e5734b6fd83422d8bb.debug
 	debugDir := filepath.Join(b.DestDir, b.Prefix, "debug")
 	buildDir := func() string {
-		if b.Proto.GetCopyToBuilddir() {
+		if b.Proto.GetWritableSourcedir() {
 			return filepath.Join(b.ChrootDir, "usr", "src", b.FullName())
 		}
 		return filepath.Join(b.ChrootDir, b.BuildDir)
@@ -475,6 +477,13 @@ func (b *Ctx) PkgSource() error {
 		eg.Go(func() error {
 			paths, err := dwarfPaths(path)
 			if err != nil {
+				var decodeErr dwarf.DecodeError
+				if errors.As(err, &decodeErr) {
+					if decodeErr.Err == "too short" {
+						log.Printf("TODO: empty .debug DWARF in %s", b.FullName())
+						return nil
+					}
+				}
 				return err
 			}
 			filtered := make([]string, 0, len(paths))
@@ -505,49 +514,49 @@ func (b *Ctx) PkgSource() error {
 		return err
 	}
 
-	stat, err := os.Stat(dest)
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if err == nil {
-		// Check if the src squashfs image is up to date:
-		var (
-			latest     time.Time
-			latestPath string
-		)
-		err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.ModTime().After(latest) {
-				latest = info.ModTime()
-				latestPath = path
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-		// TODO(correctness): switch from modtime to hashing contents
-		// the modtime of generated files changes all the time
-		for _, p := range allPaths {
-			p = filepath.Join(b.ChrootDir, p)
-			info, err := os.Stat(p)
-			if err != nil {
-				return err
-			}
-			if info.ModTime().After(latest) {
-				latest = info.ModTime()
-				latestPath = p
-			}
-		}
+	// TODO(correctness): switch from modtime to hashing contents
+	// the modtime of generated files changes all the time
+	// stat, err := os.Stat(dest)
+	// if err != nil && !os.IsNotExist(err) {
+	// 	return err
+	// }
+	// if err == nil {
+	// 	// Check if the src squashfs image is up to date:
+	// 	var (
+	// 		latest     time.Time
+	// 		latestPath string
+	// 	)
+	// 	err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		if info.ModTime().After(latest) {
+	// 			latest = info.ModTime()
+	// 			latestPath = path
+	// 		}
+	// 		return nil
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	for _, p := range allPaths {
+	// 		p = filepath.Join(b.ChrootDir, p)
+	// 		info, err := os.Stat(p)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		if info.ModTime().After(latest) {
+	// 			latest = info.ModTime()
+	// 			latestPath = p
+	// 		}
+	// 	}
 
-		if stat.ModTime().After(latest) {
-			log.Printf("src squashfs %s up to date", src)
-			return nil // src squashfs up to date
-		}
-		log.Printf("file %v changed (maybe others), rebuilding src squashfs image", latestPath)
-	}
+	// 	if stat.ModTime().After(latest) {
+	// 		log.Printf("src squashfs %s up to date", src)
+	// 		return nil // src squashfs up to date
+	// 	}
+	// 	log.Printf("file %v changed (maybe others), rebuilding src squashfs image", latestPath)
+	// }
 
 	f, err := renameio.TempFile("", dest)
 	if err != nil {
@@ -572,10 +581,6 @@ func (b *Ctx) PkgSource() error {
 		children: children,
 	}
 	for _, p := range allPaths {
-		info, err := os.Stat(filepath.Join(b.ChrootDir, p))
-		if err != nil {
-			return err
-		}
 		// dir is e.g. /usr/src/debug-amd64-1/subdir/another
 		dir := filepath.Dir(p)
 		// rel is e.g. subdir/another
@@ -596,8 +601,14 @@ func (b *Ctx) PkgSource() error {
 		} else {
 			cdir = wrapped
 		}
-		if _, ok := cdir.byName[info.Name()]; ok {
+		name := filepath.Base(p)
+		if _, ok := cdir.byName[name]; ok {
 			continue
+		}
+		log.Printf("p=%s not present", p)
+		info, err := os.Lstat(filepath.Join(b.ChrootDir, p))
+		if err != nil {
+			return err
 		}
 		cdir.addChild(&cpFileInfo{
 			fi:   info,
@@ -1221,7 +1232,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			if err := os.MkdirAll(src, 0755); err != nil {
 				return nil, err
 			}
-			if b.Proto.GetCopyToBuilddir() {
+			if b.Proto.GetWritableSourcedir() {
 				// Otherwise a side effect of a b.BuildDir within /tmp:
 				if err := os.MkdirAll(filepath.Join(b.ChrootDir, "/tmp"), 0755); err != nil {
 					return nil, err

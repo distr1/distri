@@ -4,7 +4,7 @@ version: "3.39-5"
 
 cherry_pick: "nss-3.39-standalone-1.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {}

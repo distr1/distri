@@ -8,7 +8,7 @@ cherry_pick: "dm-uuid.patch"
 cherry_pick: "gcc_s.patch"
 cherry_pick: "elf-interp.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 cbuilder: {
 }

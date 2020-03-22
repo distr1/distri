@@ -2,6 +2,6 @@ source: "https://strace.io/files/5.1/strace-5.1.tar.xz"
 hash: "f5a341b97d7da88ee3760626872a4899bf23cf8dee56901f114be5b1837a9a8b"
 version: "5.1-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}

@@ -5,7 +5,7 @@ version: "1.14.5-5"
 cherry_pick: "configure.local.patch"
 cherry_pick: "env-i.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {

@@ -2,7 +2,7 @@ source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.2.6/fuse-3.
 hash: "cea4dad559b3fbdbb8e4ad5f9df6083fdb7f2b904104bd507ef790d311d271cf"
 version: "3.2.6-6"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}
 

@@ -2,7 +2,7 @@ source: "distri+source://linux"
 hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
 version: "5.4.6-13"
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 cbuilder: {
 }

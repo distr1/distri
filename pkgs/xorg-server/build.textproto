@@ -2,7 +2,7 @@ source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.
 hash: "1b3ce466c12cacbe2252b3ad5b0ed561972eef9d09e75900d65fb1e21f9201de"
 version: "1.20.3-6"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}
 

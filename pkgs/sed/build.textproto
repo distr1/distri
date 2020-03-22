@@ -2,6 +2,6 @@ source: "https://ftp.gnu.org/gnu/sed/sed-4.5.tar.xz"
 hash: "7aad73c8839c2bdadca9476f884d2953cdace9567ecd0d90f9959f229d146b40"
 version: "4.5-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}

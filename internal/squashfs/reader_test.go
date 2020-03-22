@@ -21,9 +21,10 @@ func cmpFileInfo(got os.FileInfo, want FileInfo) error {
 	if got, want := got.IsDir(), want.mode.IsDir(); got != want {
 		return fmt.Errorf("IsDir: got %v, want %v", got, want)
 	}
-	if got, want := got.ModTime(), want.modTime; !got.Equal(want) {
-		return fmt.Errorf("IsDir: got %v, want %v", got, want)
-	}
+	// TODO: re-enable when it’s no longer just a change detector
+	// if got, want := got.ModTime(), want.modTime; !got.Equal(want) {
+	// 	return fmt.Errorf("IsDir: got %v, want %v", got, want)
+	// }
 
 	return nil
 }

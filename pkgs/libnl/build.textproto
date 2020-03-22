@@ -2,7 +2,7 @@ source: "https://github.com/thom311/libnl/releases/download/libnl3_4_0/libnl-3.4
 hash: "b7287637ae71c6db6f89e1422c995f0407ff2fe50cecd61a312b6a9b0921f5bf"
 version: "3.4.0-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}
 

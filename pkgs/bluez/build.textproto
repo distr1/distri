@@ -4,7 +4,7 @@ version: "5.50-7"
 
 cherry_pick: "SIOCGSTAMP.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {

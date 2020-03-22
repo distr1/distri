@@ -2,7 +2,7 @@ source: "https://archive.xfce.org/src/xfce/xfconf/4.13/xfconf-4.13.8.tar.bz2"
 hash: "55e2441c4ff78a7006fabb59647f7bc1f190cbb82327b93ba063ff624a896591"
 version: "4.13.8-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}
 

@@ -2,7 +2,7 @@ source: "https://nmap.org/dist/nmap-7.70.tar.bz2"
 hash: "847b068955f792f4cc247593aca6dc3dc4aae12976169873247488de147a6e18"
 version: "7.70-5"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {

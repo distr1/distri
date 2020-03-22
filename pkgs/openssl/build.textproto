@@ -2,7 +2,7 @@ source: "https://www.openssl.org/source/openssl-1.0.2p.tar.gz"
 hash: "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
 version: "1.0.2p-3"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {}

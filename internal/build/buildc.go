@@ -18,12 +18,12 @@ func (b *Ctx) buildc(opts *pb.Build, builder *pb.CBuilder, env []string) (newSte
 
 	target := configureTarget[b.Arch]
 
-	if builder.GetAutoreconf() && !opts.GetCopyToBuilddir() {
-		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires copy_to_builddir")
+	if builder.GetAutoreconf() && !opts.GetWritableSourcedir() {
+		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires enabling writable_sourcedir")
 	}
 
 	var steps [][]string
-	if opts.GetCopyToBuilddir() {
+	if opts.GetWritableSourcedir() {
 		if builder.GetAutoreconf() {
 			steps = append(steps, [][]string{
 				[]string{"mkdir", "-p", "m4"},

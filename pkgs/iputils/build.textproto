@@ -2,7 +2,7 @@ source: "https://github.com/iputils/iputils/archive/s20180629.tar.gz"
 hash: "da14105291dd491f28ea91ade854ed10aee8ba019641c80eed233de3908be7c5"
 version: "20180629-5"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 # TODO: switch to cbuilder build steps

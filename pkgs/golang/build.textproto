@@ -5,7 +5,7 @@ pull: {
   releases_url: "https://golang.org/dl/"
 }
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 cbuilder: {}
 

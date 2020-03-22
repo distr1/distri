@@ -188,11 +188,12 @@ message Build {
   // order of directives is the order in which the patches are applied.
   repeated string cherry_pick = 6;
 
-  // Enable if this package does not support building from a separate directory
-  // (sometimes called “out-of-tree build”). A bug should be reported with the
-  // package upstream.
-// TODO: rename to writable_sourcedir
-  optional bool copy_to_builddir = 20;
+  // Enable writable_sourcedir if the package modifies files in its SourceDir
+  // (instead of only placing files in the build directory).
+  // A bug should be reported with the package upstream.
+  //
+  // Frequently also requires enabling in_tree_build.
+  optional bool writable_sourcedir = 20;
 
   // Enable if this package does not support building from a separate directory
   // (sometimes called “out-of-tree build”). A bug should be reported with the
@@ -260,5 +261,5 @@ message Build {
   // guarantee ABI compatibility across versions.
   repeated Union runtime_union = 15;
 
-  // NEXT FREE FIELD NUMBER: 21
+  // NEXT FREE FIELD NUMBER: 22
 }

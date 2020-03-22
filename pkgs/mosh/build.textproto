@@ -2,7 +2,7 @@ source: "https://github.com/mobile-shell/mosh/releases/download/mosh-1.3.2/mosh-
 hash: "da600573dfa827d88ce114e0fed30210689381bbdcff543c931e4d6a2e851216"
 version: "1.3.2-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {}
 

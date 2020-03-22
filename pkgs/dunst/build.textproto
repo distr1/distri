@@ -2,7 +2,7 @@ source: "https://github.com/dunst-project/dunst/archive/v1.4.1.tar.gz"
 hash: "1563fe8c9eaf3307a3d7dbed240521f79e8415f136497030512c69713118bdfe"
 version: "1.4.1-4"
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 cbuilder: {}
 

@@ -5,7 +5,7 @@ version: "8.6.9-3"
 # sed -i 's,^#!/usr/bin/env python,#!/bin/python2.7,g' **/*.py
 cherry_pick: "python.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {

@@ -6,7 +6,7 @@ version: "16d74befa4430eb024d81ee4070520afff697d60-6"
 cherry_pick: "libsystemd.patch"
 cherry_pick: "xservers.patch"
 
-copy_to_builddir: true
+writable_sourcedir: true
 
 cbuilder: {
   autoreconf: true

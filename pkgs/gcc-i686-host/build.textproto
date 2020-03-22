@@ -9,7 +9,7 @@ source: "distri+source://gcc"
 hash: "196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080"
 version: "8.2.0-5"
 
-copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 # cbuilder: <
 #   extra_configure_flag: "--disable-multilib" # TODO: fix multilib (requires 32-bit libc+headers)
