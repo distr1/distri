@@ -33,8 +33,14 @@ func dwarfPaths(fn string) ([]string, error) {
 			dr.SkipChildren()
 			continue
 		}
+		if ent.Val(dwarf.AttrName) == nil {
+			continue
+		}
 		name := ent.Val(dwarf.AttrName).(string)
-		dir := ent.Val(dwarf.AttrCompDir).(string)
+		var dir string
+		if v := ent.Val(dwarf.AttrCompDir); v != nil {
+			dir, _ = v.(string)
+		}
 		full := name
 		if !strings.HasPrefix(full, "/") {
 			full = filepath.Join(dir, full)
