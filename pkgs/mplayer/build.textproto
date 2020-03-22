@@ -3,6 +3,7 @@ hash: "ac054bad4754a2ee4e185ac94598906562aa4a30eaf63ff02b899e22f9756ac5"
 version: "0.2019-02-19-11"
 
 writable_sourcedir: true
+in_tree_build: true
 
 cbuilder: {
   #  extra_configure_flag: "--without-bash-malloc"

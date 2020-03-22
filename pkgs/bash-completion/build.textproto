@@ -3,6 +3,7 @@ hash: "fddd9e6739c972eea95d1f0e0e84fa9a17a5935ba21eab37308b27580cc4d790"
 version: "2.9-3"
 
 writable_sourcedir: true
+in_tree_build: true
 
 cbuilder: {
   autoreconf: true

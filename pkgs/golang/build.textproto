@@ -6,6 +6,7 @@ pull: {
 }
 
 writable_sourcedir: true
+in_tree_build: true
 
 cbuilder: {}
 

@@ -9,6 +9,7 @@ cherry_pick: "gcc_s.patch"
 cherry_pick: "elf-interp.patch"
 
 writable_sourcedir: true
+in_tree_build: true
 
 cbuilder: {
 }

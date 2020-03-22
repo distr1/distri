@@ -3,6 +3,7 @@ hash: "fda561bcdea397ddd59656319c53871002938b19b554f30efed90affa30989c8"
 version: "5.4.6-13"
 
 writable_sourcedir: true
+in_tree_build: true
 
 cbuilder: {
 }

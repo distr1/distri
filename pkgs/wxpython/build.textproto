@@ -3,6 +3,7 @@ hash: "0d9ef4260cb2f3e23ed9dcf6baa905ba585ac7d631613cddc299c4c83463ae29"
 version: "4.0.4-7"
 
 writable_sourcedir: true
+in_tree_build: true
 
 cherry_pick: "pythonpath.patch"
 
