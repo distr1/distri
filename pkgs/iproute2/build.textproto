@@ -3,6 +3,7 @@ hash: "a9e6c70c95f513871c5e1f4e452c04fcb3c4d8a05be651bd794cd994a52daa45"
 version: "4.18.0-5"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cbuilder: {
   # TODO: switch to cbuilder once we decide how custom make install arguments should be passed

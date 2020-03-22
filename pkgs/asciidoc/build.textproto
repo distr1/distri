@@ -6,6 +6,7 @@ version: "8.6.9-3"
 cherry_pick: "python.patch"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cbuilder: {
   # TODO: remove once https://github.com/distr1/distri/issues/31 is fixed

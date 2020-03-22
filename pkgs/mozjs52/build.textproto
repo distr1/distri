@@ -6,6 +6,7 @@ hash: "da88d1206389d21f313dc68f37ca975583b87e9128050207b29752c1efbedf4a"
 version: "52.6.0gnome1-5"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cbuilder: {}
 

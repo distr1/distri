@@ -3,6 +3,7 @@ hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
 version: "239-10"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"

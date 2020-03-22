@@ -1229,7 +1229,11 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 
 				// Build under /usr/src, which is distributed via srcfs
 				// auto-loading src squashfs images:
-				b.BuildDir = strings.TrimPrefix(filepath.Join(src, "build"), b.ChrootDir)
+				if b.Proto.GetInTreeBuild() {
+					b.BuildDir = strings.TrimPrefix(src, b.ChrootDir)
+				} else {
+					b.BuildDir = strings.TrimPrefix(filepath.Join(src, "build"), b.ChrootDir)
+				}
 
 				// Fill b.BuildDir with contents from b.SourceDir:
 				cp := exec.CommandContext(ctx, "cp", "-T", "-ar", b.SourceDir+"/", src)

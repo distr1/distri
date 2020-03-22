@@ -191,7 +191,13 @@ message Build {
   // Enable if this package does not support building from a separate directory
   // (sometimes called “out-of-tree build”). A bug should be reported with the
   // package upstream.
+// TODO: rename to writable_sourcedir
   optional bool copy_to_builddir = 20;
+
+  // Enable if this package does not support building from a separate directory
+  // (sometimes called “out-of-tree build”). A bug should be reported with the
+  // package upstream.
+  optional bool in_tree_build = 21;
 
   // ┌─────────────────────────────────────────────────────────────────────────┐
   // │ builder                                                                 │

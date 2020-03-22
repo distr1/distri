@@ -3,6 +3,7 @@ hash: "a4bea37ecb9a3fb5c0c8ef18c2f7eeaf8ccbcfec91f72f3bccfc6bf72a3e3902"
 version: "2.9.5-8"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cbuilder: {
   extra_configure_flag: "--without-tcltk"

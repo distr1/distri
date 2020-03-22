@@ -3,6 +3,7 @@ hash: "3968fc1d26fc48727508db1c1380e36c6694ab90177fd6920aec5f6cc73af9e4"
 version: "2.2.8-4"
 
 copy_to_builddir: true
+in_tree_build: true
 
 cbuilder: {
 }

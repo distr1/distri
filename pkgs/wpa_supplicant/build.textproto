@@ -3,6 +3,7 @@ hash: "b4936d34c4e6cdd44954beba74296d964bc2c9668ecaa5255e499636fe2b1450"
 version: "2.6-6"
 
 copy_to_builddir: true  # generate files in /usr/src (included in src squashfs)
+in_tree_build: true
 
 cbuilder: {}
 
