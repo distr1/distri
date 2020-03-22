@@ -94,10 +94,10 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 		b.GlobHook = func(imgDir, pkg string) (out string, err error) {
 			// imgDir is e.g. /home/michael/distri/build/distri/pkg
 			src, ok := sourceBySplit[pkg]
+			if arch, ok := distri.HasArchSuffix(pkg); ok {
+				pkg = strings.TrimSuffix(pkg, "-"+arch)
+			}
 			if !ok {
-				if arch, ok := distri.HasArchSuffix(pkg); ok {
-					pkg = strings.TrimSuffix(pkg, "-"+arch)
-				}
 				src, ok = sourceBySplit[pkg]
 				if !ok {
 					return "", fmt.Errorf("package not found!")
@@ -107,7 +107,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 			if err != nil {
 				return "", err
 			}
-			fullName := fmt.Sprintf("%s-%s-%s", src, std.Arch, build.GetVersion())
+			fullName := fmt.Sprintf("%s-%s-%s", pkg, std.Arch, build.GetVersion())
 			if out != fullName {
 				return fullName, nil
 			}

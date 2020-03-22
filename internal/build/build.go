@@ -365,6 +365,8 @@ func (b *Ctx) Clone() *Ctx {
 	return result
 }
 
+const digestDebug = false
+
 func (b *Ctx) Digest() (string, error) {
 	if b.InputDigest != "" {
 		return b.InputDigest, nil
@@ -384,10 +386,16 @@ func (b *Ctx) Digest() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("glob(%v): %w", b.Pkg, err)
 	}
+	if digestDebug {
+		log.Printf("Digest(%s); deps=%v", b.Pkg, deps)
+	}
 	h.Write([]byte(strings.Join(deps, ",")))
 
 	for _, cp := range b.Proto.GetCherryPick() {
 		fn := filepath.Join(b.PkgDir, cp)
+		if digestDebug {
+			log.Printf("Digest(%s); patch %v", b.Pkg, fn)
+		}
 		b, err := ioutil.ReadFile(fn)
 		if err != nil {
 			return "", err
@@ -417,6 +425,9 @@ func (b *Ctx) Digest() (string, error) {
 		resolved, err := b.GlobAndResolve(b.Repo, deps, pkg.GetName())
 		if err != nil {
 			return "", err
+		}
+		if digestDebug {
+			log.Printf("Digest(%s); resolved=%v", b.Pkg, resolved)
 		}
 		h.Write([]byte(strings.Join(resolved, ",")))
 	}
