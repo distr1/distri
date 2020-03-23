@@ -18,8 +18,8 @@ func (b *Ctx) buildc(opts *pb.Build, builder *pb.CBuilder, env []string) (newSte
 
 	target := configureTarget[b.Arch]
 
-	if builder.GetAutoreconf() && !opts.GetWritableSourcedir() {
-		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires enabling writable_sourcedir")
+	if builder.GetAutoreconf() && (!opts.GetWritableSourcedir() || !opts.GetInTreeBuild()) {
+		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires enabling writable_sourcedir and in_tree_build")
 	}
 
 	var steps [][]string
