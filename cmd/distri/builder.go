@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/distr1/distri/internal/addrfd"
 	"github.com/distr1/distri/internal/env"
 	"golang.org/x/sync/errgroup"
 
@@ -198,6 +199,7 @@ func builder(ctx context.Context, args []string) error {
 			"",
 			"directory in which to store uploaded files")
 	)
+	addrfd := addrfd.RegisterFlags(fset)
 	fset.Usage = usage(fset, builderHelp)
 	fset.Parse(args)
 
@@ -207,6 +209,7 @@ func builder(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
+	addrfd.MustWrite(ln.Addr().String())
 	srv := grpc.NewServer()
 	bpb.RegisterBuildServer(srv, &buildsrv{
 		uploadBaseDir: *uploadBaseDir,

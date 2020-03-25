@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -31,14 +33,27 @@ func TestBuilder(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer distritest.RemoveAll(t, tmp)
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	defer w.Close()
 	go func() {
-		// TODO: -listen=localhost:0 and -addrfd = fd of a pipe or sth
-		if err := builder(ctx, []string{"-upload_base_dir=" + tmp}); err != nil {
+		if err := builder(ctx, []string{
+			"-upload_base_dir=" + tmp,
+			"-listen=localhost:0",
+			fmt.Sprintf("-addrfd=%d", w.Fd()),
+		}); err != nil {
 			t.Fatal(err)
 		}
 	}()
+	addrb, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	conn, err := grpc.DialContext(ctx, "localhost:2019", grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.DialContext(ctx, string(addrb), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		t.Fatal(err)
 	}
