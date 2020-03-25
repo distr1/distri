@@ -445,7 +445,13 @@ func copyDistriBinaryToCPIO(iw *initrdWriter, destname, fn string) error {
 
 	dfn, err := readDistriFilename(target)
 	if err != nil {
-		return err
+		if err != sectionNotFound {
+			return err
+		}
+		// Either we are using the resolved path already (e.g. for minitrd,
+		// which is discovered alongside the distri binary) or the program does
+		// not use a wrapper program.
+		dfn = target
 	}
 
 	log.Printf("target: %q", target)
