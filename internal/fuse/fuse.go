@@ -189,6 +189,9 @@ func Mount(ctx context.Context, args []string) (join func(context.Context) error
 	server := fuseutil.NewFileSystemServer(fs)
 
 	go func() {
+		if !fs.autoDownload {
+			return
+		}
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGHUP)
 		for range c {
