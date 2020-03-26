@@ -145,3 +145,6 @@ usb:
 
 release:
 	DISTRIROOT=$$PWD go run release/release.go
+
+umount:
+	for f in $$(mount | grep distri | cut -d' ' -f 3); do fusermount -u "$$f"; done
