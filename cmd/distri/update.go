@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,9 @@ func update(ctx context.Context, args []string) error {
 	fset.Parse(args)
 
 	updateStart := time.Now()
+	if v, err := strconv.ParseInt(os.Getenv("UPDATE_START"), 0, 64); err == nil {
+		updateStart = time.Unix(v, 0)
+	}
 
 	if os.Getenv("DISTRI_REEXEC") != "1" {
 		if err := persistFileListing(fileListingFileName(*root, updateStart, "files.before.txt"), filepath.Join(*root, "roimg")); err != nil {
@@ -52,7 +56,9 @@ func update(ctx context.Context, args []string) error {
 		cmd := exec.Command(os.Args[0], append([]string{"update"}, args...)...)
 		log.Printf("re-executing %v", cmd.Args)
 		// TODO: clean the environment
-		cmd.Env = append(os.Environ(), "DISTRI_REEXEC=1")
+		cmd.Env = append(os.Environ(),
+			"DISTRI_REEXEC=1",
+			fmt.Sprintf("UPDATE_START=%d", updateStart.Unix()))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -98,7 +104,9 @@ func update(ctx context.Context, args []string) error {
 
 	if err := install.Packages(pkgs, *root, *repo, true); err != nil {
 		// try to persist an after file listing (best effort)
-		persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg"))
+		if err := persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg")); err != nil {
+			log.Println(err)
+		}
 		return err
 	}
 
