@@ -645,7 +645,11 @@ func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 					if err == errSkipPackage {
 						return nil
 					}
-					return err
+					log.Println(err)
+					// Not loading a package is a better failure mode than
+					// e.g. distri fuse (which is required for early system
+					// boot) not starting anymore.
+					return nil
 				}
 				mu.Lock()
 				fs.pkgs = append(fs.pkgs, pkg)
