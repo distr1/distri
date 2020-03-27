@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/distr1/distri"
 	"github.com/distr1/distri/pb"
 	"github.com/golang/protobuf/proto"
 
@@ -102,13 +103,25 @@ func logic(listen string) error {
 		// TODO: plumb SourcePackage into distri mirror for gcc-libs split package
 
 		indexData := struct {
-			Repo           string
-			Packages       []*pb.MirrorMeta_Package
-			UpstreamStatus map[string]upstreamStatus
+			Repo             string
+			Packages         []*pb.MirrorMeta_Package
+			UpstreamStatus   map[string]upstreamStatus
+			NewUpstreamCount int
+			UpToDateCount    int
 		}{
 			Repo:           repoURL.String(),
 			Packages:       meta.Package,
 			UpstreamStatus: upstream,
+		}
+
+		for _, pkg := range meta.Package {
+			pv := distri.ParseVersion(pkg.GetName())
+			status := upstream[pv.Pkg]
+			if status.SourcePackage != "" && !status.Unreachable && status.UpstreamVersion != pv.Upstream {
+				indexData.NewUpstreamCount++
+			} else if status.SourcePackage != "" && !status.Unreachable && status.UpstreamVersion == pv.Upstream {
+				indexData.UpToDateCount++
+			}
 		}
 
 		var buf bytes.Buffer

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 
 	"github.com/distr1/distri"
@@ -8,6 +9,9 @@ import (
 
 var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	"parseVersion": distri.ParseVersion,
+	"percentage": func(a, b int) string {
+		return fmt.Sprintf("%.2f%%", 100*float64(a)/float64(b))
+	},
 }).Parse(`<!doctype html>
 <html lang="en">
 <head>
@@ -30,13 +34,33 @@ td.upstreamversion {
 td.upstreamversion badge {
   display: inline;
 }
+
+#repostats td {
+  text-align: right;
+}
 </style>
 </head>
 <body>
 <div class="container">
+
+<table width="40%" style="float: right; margin-top: 1em" id="repostats">
+<tr>
+  <td>Total:</td>
+  <td>{{ len .Packages }} Packages</td>
+</tr>
+<tr>
+  <td>New upstream:</td>
+  <td>{{ .NewUpstreamCount }} Packages ({{ percentage .NewUpstreamCount (len .Packages) }})</td>
+</tr>
+<tr>
+  <td>Up-to-date:</td>
+  <td>{{ .UpToDateCount }} Packages ({{ percentage .UpToDateCount (len .Packages) }})</td>
+</tr>
+</table>
+
 <h1>distri repo browser</h1>
 <p>
-  Repository: <code>{{ .Repo }}</code>
+  Repository: <code>{{ .Repo }}</code><br>
 </p>
 <table width="100%" class="table table-striped table-hover table-sm">
 <thead>
