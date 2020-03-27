@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-39"
+version: "native-40"
 
 gobuilder: {
   install: "./cmd/distri ./cmd/minitrd"
@@ -50,6 +50,12 @@ dep: "go-github.com-klauspost-pgzip"
 dep: "go-github.com-s--urbaniak-uevent"
 dep: "go-github.com-lib-pq"
 dep: "go-golang.org-x-mod"
+dep: "go-github.com-census--instrumentation-opencensus--proto"
+dep: "go-github.com-cncf-udpa-go"
+dep: "go-github.com-envoyproxy-go--control--plane"
+dep: "go-github.com-envoyproxy-protoc--gen--validate"
+dep: "go-github.com-prometheus-client_model"
+dep: "go-google.golang.org-protobuf"
 
 runtime_dep: "kbd"
 

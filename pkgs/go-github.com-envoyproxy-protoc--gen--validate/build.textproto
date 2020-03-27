@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/envoyproxy/protoc-gen-validate@v0.1.0"
+hash: "d957002cc333eba5846eb5c10787eb924c746627cbd507f990923f55632827c9"
+version: "v0.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:
