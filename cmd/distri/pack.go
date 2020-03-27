@@ -194,8 +194,10 @@ func pack(ctx context.Context, args []string) error {
 		}
 		defer os.RemoveAll(root)
 
-		install.SkipContentHooks = true
-		if err := install.Packages([]string{
+		c := &install.Ctx{
+			SkipContentHooks: true,
+		}
+		if err := c.Packages([]string{
 			"base",
 			"rxvt-unicode",    // for its terminfo file
 			"ca-certificates", // so that we can install packages via https
@@ -383,8 +385,10 @@ HOME_URL=https://distr1.org
 		return err
 	}
 
-	install.SkipContentHooks = true
-	if err := install.Packages(basePkgs, root, p.repo, false); err != nil {
+	c := &install.Ctx{
+		SkipContentHooks: true,
+	}
+	if err := c.Packages(basePkgs, root, p.repo, false); err != nil {
 		return err
 	}
 

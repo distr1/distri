@@ -110,9 +110,14 @@ func unpackDir(dest string, rd *squashfs.Reader, inode squashfs.Inode) error {
 	return nil
 }
 
-var SkipContentHooks = false
+// Ctx is an install context, containing configuration and state.
+type Ctx struct {
+	// Configuration
+	SkipContentHooks bool
+	HookDryRun       io.Writer // if non-nil, write commands instead of executing
+}
 
-func install1(ctx context.Context, root string, installRepo distri.Repo, pkg string, first bool) error {
+func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo, pkg string, first bool) error {
 	if _, err := os.Stat(filepath.Join(root, "roimg", pkg+".squashfs")); err == nil {
 		return nil // package already installed
 	}
@@ -237,13 +242,17 @@ func install1(ctx context.Context, root string, installRepo distri.Repo, pkg str
 				return err
 			}
 
-			if root == "/" {
+			if root == "/" || c.HookDryRun != nil {
 				cmd := exec.Command("/etc/update-grub")
 				log.Printf("hook/linux: running %v", cmd.Args)
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				if err := cmd.Run(); err != nil {
-					return xerrors.Errorf("%v: %w", cmd.Args, err)
+				if c.HookDryRun != nil {
+					fmt.Fprintf(c.HookDryRun, "%v\n", cmd.Args)
+				} else {
+					if err := cmd.Run(); err != nil {
+						return xerrors.Errorf("%v: %w", cmd.Args, err)
+					}
 				}
 
 				distri.RegisterAtExit(func() error {
@@ -251,8 +260,12 @@ func install1(ctx context.Context, root string, installRepo distri.Repo, pkg str
 					dracut.Stderr = os.Stderr
 					dracut.Stdout = os.Stdout
 					log.Printf("hook/linux: running %v", dracut.Args)
-					if err := dracut.Run(); err != nil {
-						return xerrors.Errorf("%v: %v", dracut.Args, err)
+					if c.HookDryRun != nil {
+						fmt.Fprintf(c.HookDryRun, "%v\n", dracut.Args)
+					} else {
+						if err := dracut.Run(); err != nil {
+							return xerrors.Errorf("%v: %v", dracut.Args, err)
+						}
 					}
 					return nil
 				})
@@ -288,7 +301,7 @@ func install1(ctx context.Context, root string, installRepo distri.Repo, pkg str
 		return err
 	}
 
-	if !SkipContentHooks {
+	if !c.SkipContentHooks {
 		if _, err := rd.LookupPath("out/lib/sysusers.d"); err == nil {
 			distri.RegisterAtExit(func() error {
 				path, err := exec.LookPath("systemd-sysusers")
@@ -339,7 +352,7 @@ func install1(ctx context.Context, root string, installRepo distri.Repo, pkg str
 	return nil
 }
 
-func installTransitively1(root string, repos []distri.Repo, pkg string) error {
+func (c *Ctx) installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	origpkg := pkg
 	if _, ok := distri.HasArchSuffix(pkg); !ok && !distri.LikelyFullySpecified(pkg) {
 		pkg += "-amd64" // TODO: configurable / auto-detect
@@ -396,7 +409,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 			var err error
 			labels := pprof.Labels("package", pkg)
 			pprof.Do(context.Background(), labels, func(ctx context.Context) {
-				err = install1(ctx, root, repo, pkg, first)
+				err = c.install1(ctx, root, repo, pkg, first)
 			})
 			if err != nil {
 				return fmt.Errorf("installing %s: %v", pkg, err)
@@ -415,7 +428,7 @@ func installTransitively1(root string, repos []distri.Repo, pkg string) error {
 	return nil
 }
 
-func Packages(args []string, root, repo string, update bool) error {
+func (c *Ctx) Packages(args []string, root, repo string, update bool) error {
 	atomic.StoreInt64(&totalBytes, 0)
 
 	repos, err := env.Repos()
@@ -454,7 +467,7 @@ func Packages(args []string, root, repo string, update bool) error {
 	for _, pkg := range args {
 		pkg := pkg // copy
 		eg.Go(func() error {
-			err := installTransitively1(root, repos, pkg)
+			err := c.installTransitively1(root, repos, pkg)
 			if _, ok := err.(*errPackageNotFound); ok && update {
 				return nil // ignore package not found
 			}

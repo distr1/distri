@@ -37,5 +37,6 @@ func cmdinstall(ctx context.Context, args []string) error {
 		return xerrors.Errorf("syntax: install [options] <package> [<package>...]")
 	}
 
-	return install.Packages(fset.Args(), *root, *repo, *update)
+	c := &install.Ctx{}
+	return c.Packages(fset.Args(), *root, *repo, *update)
 }
