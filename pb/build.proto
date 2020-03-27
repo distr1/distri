@@ -1,6 +1,8 @@
 // https://developers.google.com/protocol-buffers/docs/proto
 syntax = "proto2";
 
+option go_package = ".;pb";
+
 package pb;
 
 message BuildStep {
