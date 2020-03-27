@@ -22,12 +22,12 @@ import (
 	"github.com/distr1/distri/internal/repo"
 	"github.com/distr1/distri/internal/squashfs"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
 	"golang.org/x/exp/mmap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 // totalBytes counts the number of bytes written to the disk for this install
@@ -390,7 +390,13 @@ func (c *Ctx) installTransitively1(root string, repos []distri.Repo, pkg string)
 			return err
 		}
 		var pm pb.Meta
-		if err := proto.UnmarshalText(string(b), &pm); err != nil {
+		if err := (prototext.UnmarshalOptions{
+			// Discarding unknown fields is more robust: when the user runs a
+			// different version of distri as FUSE daemon process and install
+			// process, installing packages with an unknown field might result
+			// in an error.
+			DiscardUnknown: true,
+		}).Unmarshal(b, &pm); err != nil {
 			return err
 		}
 		metas[&pm] = r

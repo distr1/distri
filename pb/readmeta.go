@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 var metaBufPool = sync.Pool{
@@ -28,7 +28,13 @@ func ReadMetaFile(path string) (*Meta, error) {
 	if _, err := io.Copy(b, f); err != nil {
 		return nil, err
 	}
-	if err := proto.UnmarshalText(b.String(), &meta); err != nil {
+	if err := (prototext.UnmarshalOptions{
+		// Discarding unknown fields is more robust: when the user runs a
+		// different version of distri as FUSE daemon process and install
+		// process, installing packages with an unknown field might result
+		// in an error.
+		DiscardUnknown: true,
+	}).Unmarshal(b.Bytes(), &meta); err != nil {
 		return nil, err
 	}
 	return &meta, nil
