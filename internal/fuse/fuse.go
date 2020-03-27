@@ -78,7 +78,7 @@ func Mount(ctx context.Context, args []string) (join func(context.Context) error
 		overlays     = fset.String("overlays", "", "comma-separated list of overlays to provide. if empty, all overlays will be provided")
 		pkgsList     = fset.String("pkgs", "", "comma-separated list of packages to provide. if empty, all packages within -repo will be provided")
 		autoDownload = fset.Bool("autodownload", false, "simulate availability of all packages, automatically downloading them as required. works well for e.g. /ro-dbg")
-		section      = fset.String("section", "pkg", "repository section to serve (one of pkg, debug)")
+		section      = fset.String("section", "pkg", "repository section to serve (one of pkg, debug, src)")
 	)
 	fset.Usage = func() {
 		fmt.Fprintln(os.Stderr, help)
@@ -550,10 +550,13 @@ func (fs *fuseFS) scanPackage(mu sync.Locker, idx int, pkg string) error {
 	meta, err := pb.ReadMetaFile(filepath.Join(fs.repo, pkg+".meta.textproto"))
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Print(err)
-			return errSkipPackage // recover by skipping this package
+			if fs.repoSection != "debug" {
+				log.Print(err)
+				return errSkipPackage // recover by skipping this package
+			}
+		} else {
+			return err
 		}
-		return err
 	}
 	for _, o := range meta.GetRuntimeUnion() {
 		// log.Printf("%s: runtime union: %v", pkg, o)
