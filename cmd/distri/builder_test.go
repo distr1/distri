@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/prototext"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/distr1/distri"
@@ -106,7 +106,7 @@ func TestBuilder(t *testing.T) {
 		t.Fatal(err)
 	}
 	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+	if err := prototext.Unmarshal(c, &buildProto); err != nil {
 		t.Fatal(err)
 	}
 	deps := buildProto.GetDep()

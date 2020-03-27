@@ -18,13 +18,13 @@ import (
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/internal/trace"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 type node struct {
@@ -162,7 +162,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 			return err
 		}
 		var buildProto pb.Build
-		if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+		if err := prototext.Unmarshal(c, &buildProto); err != nil {
 			return err
 		}
 		version := buildProto.GetVersion()

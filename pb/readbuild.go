@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 var buildBufPool = sync.Pool{
@@ -28,7 +28,7 @@ func ReadBuildFile(path string) (*Build, error) {
 	if _, err := io.Copy(b, f); err != nil {
 		return nil, err
 	}
-	if err := proto.UnmarshalText(b.String(), &build); err != nil {
+	if err := prototext.Unmarshal(b.Bytes(), &build); err != nil {
 		return nil, err
 	}
 	return &build, nil

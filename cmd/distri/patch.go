@@ -17,10 +17,10 @@ import (
 	"github.com/distr1/distri/internal/env"
 	cmdfuse "github.com/distr1/distri/internal/fuse"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"github.com/jacobsa/fuse"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 const patchHelp = `distri patch [-flags]
@@ -126,7 +126,7 @@ func patch(ctx context.Context, args []string) error {
 		return err
 	}
 	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+	if err := prototext.Unmarshal(c, &buildProto); err != nil {
 		return xerrors.Errorf("reading %s: %v", buildProtoPath, err)
 	}
 

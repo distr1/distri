@@ -14,11 +14,11 @@ import (
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
 	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 const bumpHelp = `distri bump [-flags] [package]
@@ -130,7 +130,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 		return err
 	}
 	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+	if err := prototext.Unmarshal(c, &buildProto); err != nil {
 		return fmt.Errorf("%v: %v", pkg, err)
 	}
 	fullname := pkg + "-" + b.arch + "-" + buildProto.GetVersion()

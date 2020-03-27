@@ -11,8 +11,8 @@ import (
 	"github.com/distr1/distri/internal/build"
 	"github.com/distr1/distri/internal/env"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 	"golang.org/x/xerrors"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 const unpackHelp = `distri unpack [-flags]
@@ -47,7 +47,7 @@ func unpack(ctx context.Context, args []string) error {
 		return xerrors.Errorf("reading accompanying build.textproto: %v", err)
 	}
 	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+	if err := prototext.Unmarshal(c, &buildProto); err != nil {
 		return err
 	}
 

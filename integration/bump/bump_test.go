@@ -10,7 +10,7 @@ import (
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/distritest"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 var files = map[string]string{
@@ -88,7 +88,7 @@ func TestBump(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := proto.UnmarshalText(string(b), &bld); err != nil {
+	if err := prototext.Unmarshal(b, &bld); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := bld.GetVersion(), "530-2"; got != want {
@@ -145,7 +145,7 @@ func TestBumpRdeps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := proto.UnmarshalText(string(b), &bld); err != nil {
+			if err := prototext.Unmarshal(b, &bld); err != nil {
 				t.Fatal(err)
 			}
 			if got, want := bld.GetVersion(), tt.want; got != want {

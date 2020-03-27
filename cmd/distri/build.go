@@ -29,6 +29,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/prototext"
 
 	bpb "github.com/distr1/distri/pb/builder"
 )
@@ -551,7 +552,7 @@ func runBuildJob(ctx context.Context, job string) error {
 		return err
 	}
 	var buildProto pb.Build
-	if err := proto.UnmarshalText(string(c), &buildProto); err != nil {
+	if err := prototext.Unmarshal(c, &buildProto); err != nil {
 		return err
 	}
 	b.Proto = &buildProto
