@@ -888,6 +888,10 @@ name=root`)
 		}
 	}
 
+	if err := ioutil.WriteFile("/mnt/etc/distri/initramfs-generator", []byte(p.initramfsGenerator+"\n"), 0644); err != nil {
+		return err
+	}
+
 	var params []string
 	if !p.serialOnly {
 		params = append(params, "console=tty1")

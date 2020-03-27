@@ -244,15 +244,31 @@ func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo
 
 			if root == "/" || c.HookDryRun != nil {
 				distri.RegisterAtExit(func() error {
-					dracut := exec.Command("sh", "-c", "dracut --force /boot/initramfs-"+pv.Upstream+"-"+strconv.FormatInt(pv.DistriRevision, 10)+".img "+pv.Upstream)
-					dracut.Stderr = os.Stderr
-					dracut.Stdout = os.Stdout
-					log.Printf("hook/linux: running %v", dracut.Args)
+					initramfsGenerator := "minitrd"
+					b, err := ioutil.ReadFile(filepath.Join(root, "etc", "distri", "initramfs-generator"))
+					if err == nil {
+						initramfsGenerator = strings.TrimSpace(string(b))
+					}
+					initramfs := "/boot/initramfs-" + pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10) + ".img"
+					var cmd *exec.Cmd
+					switch initramfsGenerator {
+					case "dracut":
+						cmd = exec.Command("sh", "-c", "dracut --force "+initramfs+" "+pv.Upstream)
+
+					case "minitrd":
+						cmd = exec.Command("sh", "-c", "distri initrd -release "+pv.Upstream+" -output "+initramfs)
+
+					default:
+						return fmt.Errorf("unknown initramfs generator %v", initramfsGenerator)
+					}
+					cmd.Stderr = os.Stderr
+					cmd.Stdout = os.Stdout
+					log.Printf("hook/linux: running %v", cmd.Args)
 					if c.HookDryRun != nil {
-						fmt.Fprintf(c.HookDryRun, "%v\n", dracut.Args)
+						fmt.Fprintf(c.HookDryRun, "%v\n", cmd.Args)
 					} else {
-						if err := dracut.Run(); err != nil {
-							return xerrors.Errorf("%v: %v", dracut.Args, err)
+						if err := cmd.Run(); err != nil {
+							return fmt.Errorf("%v: %v", cmd.Args, err)
 						}
 					}
 					return nil

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/distr1/distri"
@@ -18,6 +19,15 @@ func TestHooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(tmpdir)
+
+	fn := filepath.Join(tmpdir, "etc", "distri", "initramfs-generator")
+	if err := os.MkdirAll(filepath.Dir(fn), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(fn, []byte("minitrd\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
 	var buf bytes.Buffer
 	c := &install.Ctx{
 		HookDryRun: &buf,
@@ -26,7 +36,7 @@ func TestHooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	distri.RunAtExit()
-	want := `[sh -c dracut --force /boot/initramfs-5.5.2-12.img 5.5.2]
+	want := `[sh -c distri initrd -release 5.5.2 -output /boot/initramfs-5.5.2-12.img]
 [/etc/update-grub]
 `
 	got := buf.String()
