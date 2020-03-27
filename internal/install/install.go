@@ -243,18 +243,6 @@ func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo
 			}
 
 			if root == "/" || c.HookDryRun != nil {
-				cmd := exec.Command("/etc/update-grub")
-				log.Printf("hook/linux: running %v", cmd.Args)
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				if c.HookDryRun != nil {
-					fmt.Fprintf(c.HookDryRun, "%v\n", cmd.Args)
-				} else {
-					if err := cmd.Run(); err != nil {
-						return xerrors.Errorf("%v: %w", cmd.Args, err)
-					}
-				}
-
 				distri.RegisterAtExit(func() error {
 					dracut := exec.Command("sh", "-c", "dracut --force /boot/initramfs-"+pv.Upstream+"-"+strconv.FormatInt(pv.DistriRevision, 10)+".img "+pv.Upstream)
 					dracut.Stderr = os.Stderr
@@ -265,6 +253,20 @@ func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo
 					} else {
 						if err := dracut.Run(); err != nil {
 							return xerrors.Errorf("%v: %v", dracut.Args, err)
+						}
+					}
+					return nil
+				})
+				distri.RegisterAtExit(func() error {
+					cmd := exec.Command("/etc/update-grub")
+					log.Printf("hook/linux: running %v", cmd.Args)
+					cmd.Stdout = os.Stdout
+					cmd.Stderr = os.Stderr
+					if c.HookDryRun != nil {
+						fmt.Fprintf(c.HookDryRun, "%v\n", cmd.Args)
+					} else {
+						if err := cmd.Run(); err != nil {
+							return xerrors.Errorf("%v: %w", cmd.Args, err)
 						}
 					}
 					return nil
