@@ -85,7 +85,7 @@ func maybeV(v string) string {
 	return "v" + v
 }
 
-func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replaceAllExpr, replaceAllRepl string) (remoteSource, remoteHash, remoteVersion string, _ error) {
 	u, _ := url.Parse(releasesURL)
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -103,25 +103,44 @@ func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, 
 	if err != nil {
 		return "", "", "", err
 	}
-	// TODO: add special casing for parsing apache directory index?
-	base := path.Base(source)
-	log.Printf("base: %v", base)
-	idx := strings.Index(base, upstreamVersion)
-	if idx == -1 {
-		return "", "", "", fmt.Errorf("upstreamVersion %q not found in base %q", upstreamVersion, base)
+	pattern := rePatternExpr
+	if pattern == "" {
+		// TODO: add special casing for parsing apache directory index?
+		base := path.Base(source)
+		log.Printf("base: %v", base)
+		idx := strings.Index(base, upstreamVersion)
+		if idx == -1 {
+			idx = strings.Index(base, strings.ReplaceAll(upstreamVersion, ".", "_"))
+		}
+		if idx == -1 {
+			return "", "", "", fmt.Errorf("upstreamVersion %q not found in base %q", upstreamVersion, base)
+		}
+		pattern = regexp.QuoteMeta(base[:idx]) + `([0-9vp._-]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
 	}
-	pattern := regexp.QuoteMeta(base[:idx]) + `([0-9vp.-]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
+
 	if pattern == path.Base(source) {
 		return "", "", "", fmt.Errorf("could not derive regexp pattern, specify manually")
 	}
 	log.Printf("pattern: %v", pattern)
 	re, err := regexp.Compile(pattern)
 	if err != nil {
-		return "", "", "", err
+		return "", "", "", fmt.Errorf("compile(pattern): %v", err)
 	}
 	log.Printf("re: %v", re)
 	matches := re.FindAllStringSubmatch(string(b), -1)
 	log.Printf("matches: %v", matches)
+	if replaceAllExpr != "" {
+		re, err := regexp.Compile(replaceAllExpr)
+		if err != nil {
+			return "", "", "", fmt.Errorf("compile(replaceAllExpr): %v", err)
+		}
+		filtered := make([][]string, len(matches))
+		for idx, match := range matches {
+			filtered[idx] = []string{"", re.ReplaceAllString(match[1], replaceAllRepl)}
+		}
+		matches = filtered
+		log.Printf("filtered: %v", filtered)
+	}
 	versions := func() []string {
 		v := make(map[string]bool)
 		for _, m := range matches {
@@ -137,6 +156,7 @@ func checkHeuristic(upstreamVersion, source, releasesURL string) (remoteSource, 
 		valid := true
 		for _, r := range result {
 			if !semver.IsValid(maybeV(r)) {
+				log.Printf("not semver: %v", r)
 				valid = false
 				break
 			}
@@ -265,5 +285,9 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 	}
 
 	log.Printf("releases: %s", releases)
-	return checkHeuristic(pv.Upstream, source, releases)
+	rePatternExpr, _ := stringVal("pull", "release_regexp")
+	log.Printf("rePatternExpr: %s", rePatternExpr)
+	replaceAllExpr, _ := stringVal("pull", "release_replace_all", "expr")
+	replaceAllRepl, _ := stringVal("pull", "release_replace_all", "repl")
+	return checkHeuristic(pv.Upstream, source, releases, rePatternExpr, replaceAllExpr, replaceAllRepl)
 }

@@ -3,6 +3,8 @@ hash: "53c941a63e453be59961d9529fc39553357b294b3c1166c67383eaea049cc5f5"
 version: "20181104-5"
 pull: {
   releases_url: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+  # TODO: remove release_regexp once we switched from a snapshot to a release
+  release_regexp: "linux-firmware-([0-9]+).tar.gz"
 }
 
 cbuilder: {}

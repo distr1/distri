@@ -144,6 +144,11 @@ message Union {
   optional string pkg = 2; // required
 }
 
+message RegexpReplaceAll {
+  optional string expr = 1;
+  optional string repl = 2;
+}
+
 message Pull {
   // URL (https:// preferred, http:// accepted) to a Debian repository Packages
   // file. E.g. https://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages
@@ -152,6 +157,15 @@ message Pull {
   // URL (https:// preferred, http:// accepted) to a page listing at least the
   // latest release (or multiple releases).
   optional string releases_url = 2;
+
+  // Go regexp (see https://golang.org/pkg/regexp/) for matching upstream
+  // releases. The first capture group is expected to capture the upstream
+  // version number.
+  optional string release_regexp = 3;
+
+  // Go regexp (see https://golang.org/pkg/regexp/) for replacing matches in the
+  // version number. Can be used e.g. to convert _ to . (see pkgs/nss).
+  optional RegexpReplaceAll release_replace_all = 4;
 }
 
 message Build {

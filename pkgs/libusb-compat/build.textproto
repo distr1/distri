@@ -1,6 +1,10 @@
 source: "https://downloads.sourceforge.net/project/libusb/libusb-compat-0.1/libusb-compat-0.1.5/libusb-compat-0.1.5.tar.bz2"
 hash: "404ef4b6b324be79ac1bfb3d839eac860fbc929e6acb1ef88793a6ea328bc55a"
 version: "0.1.5-6"
+pull: {
+  releases_url: "https://sourceforge.net/projects/libusb/files/libusb-compat-0.1/"
+  release_regexp: "libusb-compat-([0-9.]+)"
+}
 
 cbuilder: {}
 

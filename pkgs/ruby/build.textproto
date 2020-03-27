@@ -1,6 +1,9 @@
 source: "https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.1.tar.gz"
 hash: "17024fb7bb203d9cf7a5a42c78ff6ce77140f9d083676044a7db67f1e5191cb8"
 version: "2.6.1-4"
+pull: {
+  releases_url: "https://www.ruby-lang.org/en/downloads/"
+}
 
 cbuilder: {}
 

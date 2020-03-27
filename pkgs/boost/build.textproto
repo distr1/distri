@@ -1,6 +1,12 @@
 source: "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.bz2"
 hash: "8f32d4617390d1c2d16f26a27ab60d97807b35440d45891fa340fc2648b04406"
 version: "1.69.0-4"
+pull: {
+  release_replace_all: {
+    expr: "_"
+    repl: "."
+  }
+}
 
 writable_sourcedir: true
 in_tree_build: true
