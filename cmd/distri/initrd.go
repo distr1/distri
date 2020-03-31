@@ -266,9 +266,10 @@ func pkgRootDir(fn string) string {
 }
 
 type initrdWriter struct {
-	wr    *cpio.Writer
-	dirs  map[string]bool
-	files map[string]bool
+	verbose bool
+	wr      *cpio.Writer
+	dirs    map[string]bool
+	files   map[string]bool
 }
 
 func (i *initrdWriter) mkdir(dir string) error {
@@ -293,7 +294,9 @@ func (i *initrdWriter) mkdir(dir string) error {
 }
 
 func (i *initrdWriter) mirror(fn string) error {
-	log.Printf("mirror(%v)", fn)
+	if i.verbose {
+		log.Printf("mirror(%v)", fn)
+	}
 	st, err := os.Lstat(fn)
 	if err != nil {
 		return err
@@ -358,7 +361,9 @@ func (i *initrdWriter) mirror(fn string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("[%v] rpath: %v", fn, rp)
+	if i.verbose {
+		log.Printf("[%v] rpath: %v", fn, rp)
+	}
 	// Explode the ELF binary RPATH into a flat []string together with the
 	// package’s lib directory and last resort exchange directory /ro/lib by
 	// joining, then splitting:
@@ -369,14 +374,18 @@ func (i *initrdWriter) mirror(fn string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("[%v] libs: %v", fn, libs)
+	if i.verbose {
+		log.Printf("[%v] libs: %v", fn, libs)
+	}
 	for _, lib := range libs {
 		// TODO: don’t hardcode this
 		if lib == "ld-linux-x86-64.so.2" {
 			continue
 		}
 		// TODO(perf): cache readdir and do lookup w/o filesystem access?
-		log.Printf("libpath: %v", libpath)
+		if i.verbose {
+			log.Printf("libpath: %v", libpath)
+		}
 		for _, libdir := range libpath {
 			if _, err := os.Stat(filepath.Join(libdir, lib)); err != nil {
 				continue
@@ -454,7 +463,9 @@ func copyDistriBinaryToCPIO(iw *initrdWriter, destname, fn string) error {
 		dfn = target
 	}
 
-	log.Printf("target: %q", target)
+	if iw.verbose {
+		log.Printf("target: %q", target)
+	}
 
 	// the binary itself:
 	if err := copyFileCPIO(iw.wr, destname, dfn); err != nil {
@@ -468,7 +479,9 @@ func copyDistriBinaryToCPIO(iw *initrdWriter, destname, fn string) error {
 	defer f.Close()
 
 	if interp, err := sectionContents(f.Section(".interp")); err == nil {
-		log.Printf("interp: %q", interp)
+		if iw.verbose {
+			log.Printf("interp: %q", interp)
+		}
 		if err := iw.mirror(interp); err != nil {
 			return err
 		}
@@ -501,18 +514,22 @@ func initrd(ctx context.Context, args []string) error {
 	var (
 		linuxRelease = fset.String("release", release(), "Linux kernel version to generate initrd for")
 		outputPath   = fset.String("output", "/tmp/initrd", "path to write the initrd to")
+		verbose      = fset.Bool("verbose", false, "print verbose messages")
 	//dryRun    = fset.Bool("dry_run", false, "only print packages which would otherwise be built")
 	)
 	fset.Usage = usage(fset, initrdHelp)
 	fset.Parse(args)
-	log.Printf("ohai") // TODO: print inputs
+
+	// TODO: print all inputs to the initrd
+
 	start := time.Now()
 	var buf bytes.Buffer
 	wr := cpio.NewWriter(&buf)
 	iw := &initrdWriter{
-		wr:    wr,
-		dirs:  make(map[string]bool),
-		files: make(map[string]bool),
+		verbose: *verbose,
+		wr:      wr,
+		dirs:    make(map[string]bool),
+		files:   make(map[string]bool),
 	}
 
 	if err := iw.mkdir("lib/modules"); err != nil {
