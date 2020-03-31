@@ -2103,6 +2103,19 @@ func (b *Ctx) Extract() error {
 	return nil
 }
 
+func (b *Ctx) Hash(fn string) (string, error) {
+	h := sha256.New()
+	f, err := os.Open(fn)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
 func (b *Ctx) verify(fn string) error {
 	if _, err := os.Stat(fn); err != nil {
 		if !os.IsNotExist(err) {
@@ -2115,16 +2128,10 @@ func (b *Ctx) verify(fn string) error {
 		}
 	}
 	log.Printf("verifying %s", fn)
-	h := sha256.New()
-	f, err := os.Open(fn)
+	sum, err := b.Hash(fn)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	if _, err := io.Copy(h, f); err != nil {
-		return err
-	}
-	sum := fmt.Sprintf("%x", h.Sum(nil))
 	if got, want := sum, b.Proto.GetHash(); got != want {
 		return xerrors.Errorf("hash mismatch for %s: got %s, want %s", fn, got, want)
 	}

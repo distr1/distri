@@ -245,7 +245,7 @@ Description: The web browser from Google
 	f.Close()
 	defer os.Remove(f.Name())
 	buildFilePath := f.Name()
-	if err := scaffoldPull(buildFilePath, false); err != nil {
+	if err := scaffoldPull("google-chrome", buildFilePath, false); err != nil {
 		t.Fatal(err)
 	}
 

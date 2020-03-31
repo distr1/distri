@@ -178,7 +178,8 @@ func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replace
 		return "", "", "", fmt.Errorf("not yet implemented")
 	}
 	u.Path = path.Join(u.Path, strings.Replace(path.Base(source), upstreamVersion, versions[0], 1))
-	return u.String(), "TODO", versions[0], nil
+	const hashFromDownload = "" // sentinel
+	return u.String(), hashFromDownload, versions[0], nil
 }
 
 // e.g. checkGoMod(github.com/lpar/gzipped@v1.1.0)

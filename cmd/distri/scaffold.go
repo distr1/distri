@@ -3,11 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -181,39 +179,41 @@ func (c *scaffoldctx) buildFile(hash string) ([]byte, error) {
 	return b, nil
 }
 
-func (c *scaffoldctx) scaffold1() error {
+func download1(name, sourceURL string) (string, error) {
 	b := &build.Ctx{
 		Proto: &pb.Build{
-			Source: proto.String(c.SourceURL),
+			Source: proto.String(sourceURL),
 		},
 		Repo: env.DefaultRepo,
 	}
-	builddir := filepath.Join(env.DistriRoot, "build", c.Name)
+	builddir := filepath.Join(env.DistriRoot, "build", name)
 	if err := os.MkdirAll(builddir, 0755); err != nil {
-		return err
+		return "", err
 	}
 	if err := os.Chdir(builddir); err != nil {
-		return err
+		return "", err
 	}
-	fn := filepath.Base(c.SourceURL)
-	if c.ScaffoldType == scaffoldGomod {
+	fn := filepath.Base(sourceURL)
+	u, err := url.Parse(sourceURL)
+	if err != nil {
+		return "", fmt.Errorf("url.Parse: %v", err)
+	}
+	if u.Scheme == "distri+gomod" {
 		fn += ".tar.gz"
 	}
-	if err := b.Download(fn); err != nil {
-		return err
-	}
 
-	h := sha256.New()
-	f, err := os.Open(fn)
+	if err := b.Download(fn); err != nil {
+		return "", err
+	}
+	return b.Hash(fn)
+}
+
+func (c *scaffoldctx) scaffold1() error {
+	hash, err := download1(c.Name, c.SourceURL)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	if _, err := io.Copy(h, f); err != nil {
-		return err
-	}
-
-	buf, err := c.buildFile(fmt.Sprintf("%x", h.Sum(nil)))
+	buf, err := c.buildFile(hash)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func scaffoldGo(gomod string) error {
 	return nil
 }
 
-func scaffoldPull(buildFilePath string, dryRun bool) error {
+func scaffoldPull(pkg, buildFilePath string, dryRun bool) error {
 	b, err := ioutil.ReadFile(buildFilePath)
 	if err != nil {
 		return err
@@ -304,6 +304,14 @@ func scaffoldPull(buildFilePath string, dryRun bool) error {
 		return nil // up to date
 	}
 	log.Printf("not up to date: updating from %s to %s", upstream, remoteVersion)
+
+	if remoteHash == "" {
+		var err error
+		remoteHash, err = download1(pkg, remoteSource)
+		if err != nil {
+			return err
+		}
+	}
 
 	val := strconv.QuoteToASCII(remoteSource)
 	ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
@@ -350,7 +358,7 @@ func scaffold(ctx context.Context, args []string) error {
 	}
 	if *pull != "" {
 		buildFilePath := filepath.Join(env.DistriRoot, "pkgs", *pull, "build.textproto")
-		return scaffoldPull(buildFilePath, *dryRun)
+		return scaffoldPull(*pull, buildFilePath, *dryRun)
 	}
 	if fset.NArg() != 1 {
 		return xerrors.Errorf("syntax: scaffold <url>")
