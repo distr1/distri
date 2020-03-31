@@ -67,11 +67,13 @@ func logic(listen string) error {
 	mux := http.NewServeMux()
 	mux.Handle("/", errHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
+		// TODO(later): default to https:// and fall back to http:/ with a warning
+		scheme := "http:/"
 		if path == "/" || path == "" {
 			// TODO: update whenever there is a new release. flag?
-			path = "/repo.distr1.org/distri/jackherer/"
+			scheme, path = "https:/", "/repo.distr1.org/distri/jackherer/"
 		}
-		repoURL, err := url.Parse("http:/" + path)
+		repoURL, err := url.Parse(scheme + path)
 		if err != nil {
 			return err
 		}
