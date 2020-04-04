@@ -422,14 +422,14 @@ func (b *Ctx) Digest() (string, error) {
 			}
 			deps = pruned
 		}
-		resolved, err := b.GlobAndResolve(b.Repo, deps, pkg.GetName())
+		globbed, err := b.Glob(b.Repo, deps)
 		if err != nil {
 			return "", err
 		}
 		if digestDebug {
-			log.Printf("Digest(%s); resolved=%v", b.Pkg, resolved)
+			log.Printf("Digest(%s); globbed=%v", b.Pkg, globbed)
 		}
-		h.Write([]byte(strings.Join(resolved, ",")))
+		h.Write([]byte(strings.Join(globbed, ",")))
 	}
 	b.InputDigest = fmt.Sprintf("%032x", h.Sum(nil))
 	return b.InputDigest, nil
