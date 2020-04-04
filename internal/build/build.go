@@ -803,13 +803,31 @@ func (b *Ctx) substituteStrings(strings []string) []string {
 	return output
 }
 
-func depLess(i, j string) bool {
-	vi := distri.ParseVersion(i)
-	vj := distri.ParseVersion(j)
-	if vi.Pkg != vj.Pkg {
-		return false // keep order
+func newerRevisionGoesFirst(deps []string) []string {
+	byPkg := make(map[string][]string)
+	for _, dep := range deps {
+		pv := distri.ParseVersion(dep)
+		byPkg[pv.Pkg] = append(byPkg[pv.Pkg], dep)
 	}
-	return vi.DistriRevision >= vj.DistriRevision
+	for _, versions := range byPkg {
+		sort.Slice(versions, func(i, j int) bool {
+			vi := distri.ParseVersion(versions[i])
+			vj := distri.ParseVersion(versions[j])
+			less := vi.DistriRevision < vj.DistriRevision
+			return !less // reverse
+		})
+	}
+	result := make([]string, 0, len(deps))
+	for _, dep := range deps {
+		pv := distri.ParseVersion(dep)
+		versions, ok := byPkg[pv.Pkg]
+		if !ok {
+			continue // already appended earlier
+		}
+		result = append(result, versions...)
+		delete(byPkg, pv.Pkg)
+	}
+	return result
 }
 
 func (b *Ctx) env(deps []string, hermetic bool) []string {
@@ -822,13 +840,12 @@ func (b *Ctx) env(deps []string, hermetic bool) []string {
 		pythonDirs    []string
 	)
 
-	sort.SliceStable(deps, func(i, j int) bool {
-		return depLess(deps[i], deps[j])
-	})
-
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(deps, b.FullName()) {
+	deps = append(deps, b.FullName())
+	deps = newerRevisionGoesFirst(deps)
+
+	for _, dep := range deps {
 		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
 		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
@@ -884,13 +901,12 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 		pythonDirs []string
 	)
 
-	sort.SliceStable(deps, func(i, j int) bool {
-		return depLess(deps[i], deps[j])
-	})
-
 	// add the package itself, not just its dependencies: the package might
 	// install a shared library which it also uses (e.g. systemd).
-	for _, dep := range append(deps, b.FullName()) {
+	deps = append(deps, b.FullName())
+	deps = newerRevisionGoesFirst(deps)
+
+	for _, dep := range deps {
 		// TODO: these need to be the bindirs of the runtime deps. move wrapper
 		// script creation and runtimeEnv call down to when we know runtimeDeps
 		binDirs = append(binDirs, "/ro/"+dep+"/bin")
@@ -1809,6 +1825,8 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	depPkgs := make(map[string]bool)
 	libs := make(map[libDep]bool)
 	destDir := filepath.Join(b.DestDir, b.Prefix)
+	ldd := filepath.Join("/ro", b.substituteCache["glibc-amd64"], "out", "bin", "ldd")
+	log.Printf("finding shlibdeps with %s", ldd)
 	var buf [4]byte
 	err = filepath.Walk(destDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -1832,7 +1850,6 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 
 		// We intentionally skip the wrapper program so that relevant
 		// environment variables (e.g. LIBRARY_PATH) do not get changed.
-		ldd := filepath.Join("/ro", b.substituteCache["glibc-amd64"], "out", "bin", "ldd")
 		libDeps, err := findShlibDeps(ldd, path, env)
 		if err != nil {
 			if err == errLddFailed {
