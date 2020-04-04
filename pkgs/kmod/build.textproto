@@ -1,6 +1,6 @@
-source: "https://cdn.kernel.org/pub/linux/utils/kernel/kmod/kmod-25.tar.xz"
-hash: "7165e6496656159dcb909a91ed708a0fe273a4b128b4b1dc997ccb5189eef1cd"
-version: "25-5"
+source: "https://cdn.kernel.org/pub/linux/utils/kernel/kmod/kmod-27.tar.xz"
+hash: "c1d3fbf16ca24b95f334c1de1b46f17bbe5a10b0e81e72668bdc922ebffbbc0c"
+version: "27-6"
 
 cbuilder: {
 }

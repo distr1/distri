@@ -1,6 +1,6 @@
-source: "https://www.cpan.org/src/5.0/perl-5.28.0.tar.gz"
-hash: "7e929f64d4cb0e9d1159d4a59fc89394e27fa1f7004d0836ca0d514685406ea8"
-version: "5.28.0-3"
+source: "https://www.cpan.org/src/5.0/perl-5.30.2.tar.gz"
+hash: "66db7df8a91979eb576fac91743644da878244cf8ee152f02cd6f5cd7a731689"
+version: "5.30.2-4"
 
 writable_sourcedir: true
 in_tree_build: true

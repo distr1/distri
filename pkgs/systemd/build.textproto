@@ -1,6 +1,6 @@
-source: "https://github.com/systemd/systemd/archive/v239.tar.gz"
-hash: "8a11b1b07d620f4c06a16e95bba4dd2a97e90efdf2a5ba47ed0a935085787a14"
-version: "239-10"
+source: "https://github.com/systemd/systemd/archive/v245.tar.gz"
+hash: "f34f1dc52b2dc60563c2deb6db86d78f6a97bceb29aa0511436844b2fc618040"
+version: "245-11"
 
 writable_sourcedir: true
 in_tree_build: true

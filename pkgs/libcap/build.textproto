@@ -1,6 +1,6 @@
-source: "https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.25.tar.xz"
-hash: "693c8ac51e983ee678205571ef272439d83afe62dd8e424ea14ad9790bc35162"
-version: "2.25-3"
+source: "https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.33.tar.xz"
+hash: "08edeaba2757021aeec45c4eeec52566675e0e0f5d4f057284d729e04f2643d6"
+version: "2.33-4"
 
 writable_sourcedir: true  # modifies source
 in_tree_build: true

@@ -1,6 +1,6 @@
-source: "https://repo.distr1.org/distri/jackherer/orig/file/file_5.34.orig.tar.xz"
-hash: "b83618b2b1e269d65a28b068460add53a690e53fa11c53174df293bb04d231b2"
-version: "5.34-3"
+source: "http://ftp.astron.com/pub/file/file-5.38.tar.gz"
+hash: "593c2ffc2ab349c5aea0f55fedfe4d681737b6b62376a9b3ad1e77b2cc19fa34"
+version: "5.38-4"
 
 cbuilder: {}
 

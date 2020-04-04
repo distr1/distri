@@ -1,6 +1,6 @@
-source: "https://www.openssl.org/source/openssl-1.0.2p.tar.gz"
-hash: "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
-version: "1.0.2p-3"
+source: "https://www.openssl.org/source/openssl-1.1.1e.tar.gz"
+hash: "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe"
+version: "1.1.1e-4"
 pull: {
   release_regexp: "openssl-([0-9.a-z]+).tar.gz"
 }
@@ -27,5 +27,6 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install INSTALL_PREFIX=${DISTRI_DESTDIR} INSTALLTOP=${DISTRI_PREFIX}"
+# TODO: -j${DISTRI_JOBS}
+  argv: "make install DESTDIR=${DISTRI_DESTDIR} INSTALLTOP=${DISTRI_PREFIX}"
 }

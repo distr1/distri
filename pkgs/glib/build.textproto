@@ -1,6 +1,6 @@
-source: "https://download.gnome.org/sources/glib/2.58/glib-2.58.0.tar.xz"
-hash: "c0f4ce0730b4f95c47b711613b5406a887c2ee13ea6d25930d72a4fa7fdb77f6"
-version: "2.58.0-3"
+source: "https://download.gnome.org/sources/glib/2.64/glib-2.64.1.tar.xz"
+hash: "17967603bcb44b6dbaac47988d80c29a3d28519210b28157c2bd10997595bbc7"
+version: "2.64.1-4"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -17,7 +17,7 @@ dep: "glib"  # to pick up new versions
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dselinux=false -Dgio_module_dir=/ro/lib/gio"
+  argv: "meson --prefix=${DISTRI_PREFIX} . ${DISTRI_SOURCEDIR} -Dselinux=disabled -Dgio_module_dir=/ro/lib/gio"
 }
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.

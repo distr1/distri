@@ -1,6 +1,6 @@
-source: "https://ftp.gnu.org/gnu/grep/grep-3.1.tar.xz"
-hash: "db625c7ab3bb3ee757b3926a5cfa8d9e1c3991ad24707a83dde8a5ef2bf7a07e"
-version: "3.1-3"
+source: "https://ftp.gnu.org/gnu/grep/grep-3.4.tar.xz"
+hash: "58e6751c41a7c25bfc6e9363a41786cff3ba5709cf11d5ad903cf7cce31cc3fb"
+version: "3.4-4"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
