@@ -1,6 +1,6 @@
 source: "https://downloads.sourceforge.net/project/asciidoc/asciidoc/8.6.9/asciidoc-8.6.9.tar.gz"
 hash: "78db9d0567c8ab6570a6eff7ffdf84eadd91f2dfc0a92a2d0105d323cab4e1f0"
-version: "8.6.9-3"
+version: "8.6.9-4"
 
 # sed -i 's,^#!/usr/bin/env python,#!/bin/python2.7,g' **/*.py
 cherry_pick: "python.patch"

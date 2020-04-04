@@ -1,6 +1,6 @@
 source: "https://github.com/kkos/oniguruma/releases/download/v6.9.1/onig-6.9.1.tar.gz"
 hash: "c7c3feb7be45a5cc9f2dec239b4a317a422e6ffea299cf91ffab1b926633ea12"
-version: "6.9.1-5"
+version: "6.9.1-6"
 
 cbuilder: {}
 

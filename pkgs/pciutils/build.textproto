@@ -1,6 +1,6 @@
 source: "https://mirrors.edge.kernel.org/pub/software/utils/pciutils/pciutils-3.6.4.tar.xz"
 hash: "f67ff732976e2db2a5ccdf3960020796526ba6b05f6b1cdd24b7b206af706055"
-version: "3.6.4-2"
+version: "3.6.4-3"
 
 writable_sourcedir: true
 in_tree_build: true

@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/golang/protobuf@v1.4.0-rc.4"
 hash: "e382b6b3fe3f5006b69992ea270fc07684db9b61e61198740aee304672353410"
-version: "v1.4.0-rc.4-4"
+version: "v1.4.0-rc.4-5"
 
 gomodbuilder: {}
 

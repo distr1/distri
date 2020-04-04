@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/lib/pq@v1.3.0"
 hash: "cf80a15e2d2aaac76f01f5671edaacbbd689a00438a9cf4c246af4def30cce3c"
-version: "v1.3.0-1"
+version: "v1.3.0-2"
 
 gomodbuilder: {}
 

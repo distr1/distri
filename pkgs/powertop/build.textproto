@@ -1,6 +1,6 @@
 source: "https://01.org/sites/default/files/downloads//powertop-v2.10.tar.gz"
 hash: "d3b7459eaba7d01c8841dd33a3b4d369416c01e9bd8951b0d88234cf18fe4a75"
-version: "v2.10-5"
+version: "v2.10-6"
 pull: {
   releases_url: "https://01.org/powertop/downloads"
 }

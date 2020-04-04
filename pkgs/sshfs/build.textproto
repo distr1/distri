@@ -1,6 +1,6 @@
 source: "https://github.com/libfuse/sshfs/releases/download/sshfs-3.5.1/sshfs-3.5.1.tar.xz"
 hash: "b505105980cd552481ab9f311bcf6fdb6134cdd200d5ac8aa828b31769d0b10b"
-version: "3.5.1-6"
+version: "3.5.1-7"
 
 mesonbuilder: {}
 

@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/jacobsa/fuse@v0.0.0-20200215073154-2f65426467b1"
 hash: "09d4f926e458201cd6815c287979c457855200c0c84f66af55dc733cc06c6b61"
-version: "v0.0.0-20200215073154-2f65426467b1-6"
+version: "v0.0.0-20200215073154-2f65426467b1-7"
 
 gomodbuilder: {}
 

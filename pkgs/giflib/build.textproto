@@ -1,6 +1,6 @@
 source: "https://repo.distr1.org/distri/jackherer/orig/giflib/giflib-5.1.4.tar.bz2"
 hash: "df27ec3ff24671f80b29e6ab1c4971059c14ac3db95406884fc26574631ba8d5"
-version: "5.1.4-4"
+version: "5.1.4-5"
 
 cbuilder: {}
 

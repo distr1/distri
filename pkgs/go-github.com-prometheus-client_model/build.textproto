@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/prometheus/client_model@v0.0.0-20190812154241-14fe0d1b01d4"
 hash: "c144ac0b1490ee990c471232cb2086629c899eaeb00a72c83f2250d9c0891a16"
-version: "v0.0.0-20190812154241-14fe0d1b01d4-1"
+version: "v0.0.0-20190812154241-14fe0d1b01d4-2"
 
 gomodbuilder: {}
 

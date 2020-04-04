@@ -1,6 +1,6 @@
 source: "distri+source://grub2"
 hash: "e5292496995ad42dabe843a0192cf2a2c502e7ffcc7479398232b10a472df77d"
-version: "2.04-6"
+version: "2.04-7"
 
 cherry_pick: "werror.patch"
 

@@ -1,6 +1,6 @@
 source: "https://repo.distr1.org/distri/jackherer/orig/docbook2x/docbook2X-0.8.8.tar.gz"
 hash: "4077757d367a9d1b1427e8d5dfc3c49d993e90deabc6df23d05cfe9cd2fcdc45"
-version: "0.8.8-5"
+version: "0.8.8-6"
 
 # build dependencies:
 dep: "perl"

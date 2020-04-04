@@ -1,6 +1,6 @@
 source: "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/ack-2.24.tar.gz"
 hash: "72934009ad8fe712deeb2c41960f2746d0a25e3a226ad7c54232c00105e54f00"
-version: "2.24-5"
+version: "2.24-6"
 
 perlbuilder: {}
 

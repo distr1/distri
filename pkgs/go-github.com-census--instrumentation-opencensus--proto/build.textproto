@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/census-instrumentation/opencensus-proto@v0.2.1"
 hash: "0003844fcd6ffc751d6b2640229f51318754ccc4a1eae6a21a7e5f5456100bd6"
-version: "v0.2.1-1"
+version: "v0.2.1-2"
 
 gomodbuilder: {}
 

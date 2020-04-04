@@ -1,6 +1,6 @@
 source: "https://www.freedesktop.org/software/accountsservice/accountsservice-0.6.54.tar.xz"
 hash: "26e9062c84797e9604182d0efdb2231cb01c98c3c9b0fea601ca79a2802d21ac"
-version: "0.6.54-9"
+version: "0.6.54-10"
 
 mesonbuilder: {
   extra_meson_flag: "-Dsystemdsystemunitdir=${DISTRI_PREFIX}/lib/systemd/system"

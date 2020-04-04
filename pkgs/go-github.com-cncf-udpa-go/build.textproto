@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/cncf/udpa/go@v0.0.0-20191209042840-269d4d468f6f"
 hash: "c8a0c8e194a6baa76d0822e7b28d44f477de8fae37d26c5855c4cea2f0170e4f"
-version: "v0.0.0-20191209042840-269d4d468f6f-1"
+version: "v0.0.0-20191209042840-269d4d468f6f-2"
 
 gomodbuilder: {}
 

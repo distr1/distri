@@ -1,6 +1,6 @@
 source: "https://github.com/PaulStoffregen/teensy_loader_cli/archive/eb61aa1a482c2ad98916229e02bb8caae2464f48.tar.gz"
 hash: "3f30431ac0bb24bbc7646e03abb287b51bd78b3d9f1121550fe87648aa829a10"
-version: "2.1+g20180927-6"
+version: "2.1+g20180927-7"
 
 writable_sourcedir: true
 in_tree_build: true

@@ -1,6 +1,6 @@
 source: "http://www.greenwoodsoftware.com/less/less-530.tar.gz"
 hash: "503f91ab0af4846f34f0444ab71c4b286123f0044a4964f1ae781486c617f2e2"
-version: "530-9"
+version: "530-10"
 pull: {
   release_regexp: "released version is less-(\\d+)"
 }

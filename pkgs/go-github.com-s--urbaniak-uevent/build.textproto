@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/s-urbaniak/uevent@v1.0.0"
 hash: "7ada728f4585367fef7be1022e5bb79b5423cc1f81fa1159ab4813e39332cf2f"
-version: "v1.0.0-1"
+version: "v1.0.0-2"
 
 gomodbuilder: {}
 

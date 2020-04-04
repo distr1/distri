@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/app/xrdb-1.1.1.tar.bz2"
 hash: "2d23ade7cdbb487996bf77cbb32cbe9bdb34d004748a53de7a4a97660d2217b7"
-version: "1.1.1-5"
+version: "1.1.1-6"
 
 cbuilder: {}
 

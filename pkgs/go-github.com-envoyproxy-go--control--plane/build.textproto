@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/envoyproxy/go-control-plane@v0.9.4"
 hash: "73de637539ce31c59ed20b61939af61121ccc59d19e8dbea7f23f7f39cb775b7"
-version: "v0.9.4-1"
+version: "v0.9.4-2"
 
 gomodbuilder: {}
 

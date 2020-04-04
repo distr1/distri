@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/jtolds/gls@v4.20.0+incompatible"
 hash: "d1b09552c928b01736e9037eaef64fa2edf549b997c53a820af95cad896fdb86"
-version: "v4.20.0+incompatible-3"
+version: "v4.20.0+incompatible-4"
 
 gomodbuilder: {}
 

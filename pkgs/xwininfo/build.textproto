@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/app/xwininfo-1.1.5.tar.bz2"
 hash: "7a405441dfc476666c744f5fcd1bc8a75abf8b5b1d85db7b88b370982365080e"
-version: "1.1.5-3"
+version: "1.1.5-4"
 
 cbuilder: {}
 

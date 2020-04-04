@@ -1,6 +1,6 @@
 source: "https://github.com/json-c/json-c/archive/json-c-0.13.1-20180305.tar.gz"
 hash: "5d867baeb7f540abe8f3265ac18ed7a24f91fe3c5f4fd99ac3caba0708511b90"
-version: "0.13.1-5"
+version: "0.13.1-6"
 # TODO: specify pattern for new version
 
 writable_sourcedir: true  # modifies source

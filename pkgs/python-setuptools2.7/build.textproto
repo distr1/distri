@@ -1,6 +1,6 @@
 source: "distri+source://python-setuptools"
 hash: "125855e597d95dd0711078eaaa615523d39791a57c2de3f96805e5d0c64fa9b9"
-version: "41.0.1-5"
+version: "41.0.1-6"
 
 writable_sourcedir: true
 in_tree_build: true

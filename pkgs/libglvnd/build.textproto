@@ -1,6 +1,6 @@
 source: "https://github.com/NVIDIA/libglvnd/releases/download/v1.1.0/libglvnd-1.1.0.tar.gz"
 hash: "f5a74598e769d55d652c464cb6507437dac5c2d513f16c6ddf3a1bec655a1824"
-version: "1.1.0-4"
+version: "1.1.0-5"
 
 cbuilder: {}
 

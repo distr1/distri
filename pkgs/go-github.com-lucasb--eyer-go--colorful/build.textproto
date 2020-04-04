@@ -1,6 +1,6 @@
 source: "distri+gomod://github.com/lucasb-eyer/go-colorful@v1.0.2"
 hash: "b2ef60594911bdfb412e0cc9f552403bed8e8c991c45bc42bef20681f9f314eb"
-version: "v1.0.2-3"
+version: "v1.0.2-4"
 
 gomodbuilder: {}
 

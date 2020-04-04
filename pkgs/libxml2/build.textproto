@@ -1,6 +1,6 @@
 source: "http://xmlsoft.org/sources/libxml2-2.9.8.tar.gz"
 hash: "0b74e51595654f958148759cfef0993114ddccccbb6f31aee018f3558e8e2732"
-version: "2.9.8-4"
+version: "2.9.8-5"
 
 cbuilder: {
   extra_configure_flag: "--with-python-install-dir=${DISTRI_PREFIX}/lib/python3.7/site-packages"

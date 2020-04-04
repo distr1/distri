@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/driver/xf86-input-synaptics-1.9.1.tar.bz2"
 hash: "7af83526eff1c76e8b9e1553b34245c203d029028d8044dd9dcf71eef1001576"
-version: "1.9.1-6"
+version: "1.9.1-7"
 
 cbuilder: {
   extra_configure_flag: "--with-xorg-conf-dir=/ro/${DISTRI_FULLNAME}/out/share/X11/xorg.conf.d"

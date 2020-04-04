@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/NetworkManager/1.22/NetworkManager-1.22.6.tar.xz"
 hash: "bc9923fc9bc41148ebadc786b62208247590f3cd3c246826c192106ecf84c564"
-version: "1.22.6-8"
+version: "1.22.6-9"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

@@ -1,6 +1,6 @@
 source: "https://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.58/gobject-introspection-1.58.0.tar.xz"
 hash: "27c1590a32749de0a5481ce897772547043e94bccba4bc0a7edb3d8513e401ec"
-version: "1.58.0-5"
+version: "1.58.0-6"
 
 cbuilder: {}
 
