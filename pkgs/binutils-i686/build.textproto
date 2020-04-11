@@ -6,6 +6,9 @@ writable_sourcedir: true  # generate files in /usr/src (included in src squashfs
 
 cbuilder: {}
 
+dep: "perl"
+dep: "texinfo"
+
 build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
