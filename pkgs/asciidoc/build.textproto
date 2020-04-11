@@ -10,7 +10,7 @@ in_tree_build: true
 
 cbuilder: {
   # TODO: remove once https://github.com/distr1/distri/issues/31 is fixed
-  extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-3/etc"
+  extra_make_flag: "ASCIIDOCCONF=/ro/asciidoc-amd64-8.6.9-4/etc"
 }
 
 # build dependencies:
