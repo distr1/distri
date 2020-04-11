@@ -83,6 +83,7 @@ type packctx struct {
 	serialOnly         bool
 	bootDebug          bool
 	branch             string
+	overrideRepo       string
 	rootPassword       string
 	cryptPassword      string
 	docker             bool
@@ -106,6 +107,7 @@ func pack(ctx context.Context, args []string) error {
 	fset.BoolVar(&p.serialOnly, "serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
 	fset.BoolVar(&p.bootDebug, "bootdebug", false, "Whether to debug early boot, i.e. add systemd.log_level=debug systemd.log_target=console")
 	fset.StringVar(&p.branch, "branch", "master", "Which git branch to track in repo URL")
+	fset.StringVar(&p.overrideRepo, "override_repo", "", "If non-empty, overrides the default repo URL (see -branch)")
 	fset.StringVar(&p.rootPassword, "root_password", "peace", "password to set for the root account")
 	fset.StringVar(&p.cryptPassword, "crypt_password", "peace", "disk encryption password to use with -encrypt")
 	fset.BoolVar(&p.docker, "docker", false, "generate a tar ball to feed to docker import")
@@ -220,7 +222,11 @@ func pack(ctx context.Context, args []string) error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte("https://repo.distr1.org/distri/"+p.branch+"\n"), 0644); err != nil {
+		distri1Repo := "https://repo.distr1.org/distri/" + p.branch
+		if p.overrideRepo != "" {
+			distri1Repo = p.overrideRepo
+		}
+		if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte(distri1Repo+"\n"), 0644); err != nil {
 			return err
 		}
 
@@ -342,7 +348,12 @@ func (p *packctx) pack(root string) error {
 	if err := os.MkdirAll(filepath.Join(root, "etc/distri/repos.d"), 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte("https://repo.distr1.org/distri/"+p.branch+"\n"), 0644); err != nil {
+	distri1Repo := "https://repo.distr1.org/distri/" + p.branch
+	if p.overrideRepo != "" {
+		distri1Repo = p.overrideRepo
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(root, "etc/distri/repos.d/distr1.repo"), []byte(distri1Repo+"\n"), 0644); err != nil {
 		return err
 	}
 
