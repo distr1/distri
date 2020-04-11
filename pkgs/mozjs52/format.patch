@@ -1,0 +1,33 @@
+--- old/js/src/jsapi-tests/moz.build	2018-01-14 22:05:14.000000000 +0100
++++ new/js/src/jsapi-tests/moz.build	2020-04-11 15:35:43.817326370 +0200
+@@ -147,7 +147,7 @@
+ OS_LIBS += CONFIG['MOZ_ZLIB_LIBS']
+ 
+ if CONFIG['GNU_CXX']:
+-    CXXFLAGS += ['-Wno-shadow', '-Werror=format']
++    CXXFLAGS += ['-Wno-shadow']
+ 
+ # This is intended as a temporary workaround to enable VS2015.
+ if CONFIG['_MSC_VER']:
+--- old/js/src/moz.build	2018-01-14 22:05:14.000000000 +0100
++++ new/js/src/moz.build	2020-04-11 15:35:37.810741408 +0200
+@@ -785,7 +785,7 @@
+         DEFINES['FFI_BUILDING'] = True
+ 
+ if CONFIG['GNU_CXX']:
+-    CXXFLAGS += ['-Wno-shadow', '-Werror=format']
++    CXXFLAGS += ['-Wno-shadow']
+ 
+ # Suppress warnings in third-party code.
+ if CONFIG['CLANG_CXX']:
+--- old/js/src/shell/moz.build	2018-01-14 22:05:14.000000000 +0100
++++ new/js/src/shell/moz.build	2020-04-11 15:35:48.123934456 +0200
+@@ -51,7 +51,7 @@
+ ]
+ 
+ if CONFIG['GNU_CXX']:
+-    CXXFLAGS += ['-Wno-shadow', '-Werror=format']
++    CXXFLAGS += ['-Wno-shadow']
+ 
+ # This is intended as a temporary workaround to enable VS2015.
+ if CONFIG['_MSC_VER']:
