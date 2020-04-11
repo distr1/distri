@@ -1,6 +1,6 @@
-source: "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.15.2.tar.xz"
-hash: "6952be988abe67b5affd46b194e97863b160cd58846199873b4315fe5e1cdbf0"
-version: "1.15.2-5"
+source: "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.16.2.tar.xz"
+hash: "b13e73e2fe74a4166552f9577c3dcb24bed077021b9c7fa600d910ec6987816a"
+version: "1.16.2-6"
 
 writable_sourcedir: true  # for autoreconf
 in_tree_build: true
