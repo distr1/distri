@@ -1,6 +1,6 @@
-source: "http://ftp.gnome.org/pub/gnome/sources/libgudev/231/libgudev-231.tar.xz"
-hash: "3b1ef99d4a8984c35044103d8ddfc3cc52c80035c36abab2bcc5e3532e063f96"
-version: "231-7"
+source: "http://ftp.gnome.org/pub/gnome/sources/libgudev/231233/libgudev-233.tar.xz"
+hash: "587c4970eb23f4e2deee2cb1fb7838c94a78c578f41ce12cac0a3f4a80dabb03"
+version: "233-8"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

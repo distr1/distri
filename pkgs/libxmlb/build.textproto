@@ -1,6 +1,6 @@
-source: "https://github.com/hughsie/libxmlb/archive/0.1.5.tar.gz"
-hash: "d42ed89600b6ce42b4aeac4a9293339ee8d7c00fe80d2699f3af2771a846b99d"
-version: "0.1.5-6"
+source: "https://github.com/hughsie/libxmlb/archive/0.1.15.tar.gz"
+hash: "fa29b6bbf7b91107da6f157e8f7903d176b0cf04bcb0ba1ab64cb38b19d09a19"
+version: "0.1.15-7"
 
 mesonbuilder: {
   extra_meson_flag: "-Dgtkdoc=false"
