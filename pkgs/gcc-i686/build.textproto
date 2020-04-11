@@ -1,6 +1,8 @@
-source: "distri+source://gcc"
+# NB: cannot use distri+source://nss here because we apply an additional
+# patch, so we need our own source dir.
+source: "https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.xz"
 hash: "71e197867611f6054aa1119b13a0c0abac12834765fe2d81f35ac57f84f742d1"
-version: "8.2.0-5"
+version: "9.3.0-6"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -104,11 +106,11 @@ build_step: {
 
 split_package: {
   name: "gcc-libs-i686"
-  claim: { glob: "out/i686-pc-linux-gnu/libgcc_s.so*" }
-  claim: { glob: "out/i686-pc-linux-gnu/libstdc++.so*" }
-  claim: { glob: "out/i686-pc-linux-gnu/libgomp.so*" }
+  claim: { glob: "out/i686-pc-linux-gnu/lib/libgcc_s.so*" }
+  claim: { glob: "out/i686-pc-linux-gnu/lib/libstdc++.so*" }
+  claim: { glob: "out/i686-pc-linux-gnu/lib/libgomp.so*" }
   claim: {
-    glob: "out/lib/gcc/i686-pc-linux-gnu/8.2.0/crt*.o"
+    glob: "out/lib/gcc/i686-pc-linux-gnu/9.3.0/crt*.o"
     dir: "out/lib"
   }
 }

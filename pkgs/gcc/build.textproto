@@ -87,7 +87,7 @@ split_package: {
   claim: { glob: "out/lib64/libstdc++.so*" }
   claim: { glob: "out/lib64/libgomp.so*" }
   claim: {
-    glob: "out/lib/gcc/x86_64-pc-linux-gnu/8.2.0/crt*.o"
+    glob: "out/lib/gcc/x86_64-pc-linux-gnu/9.3.0/crt*.o"
     dir: "out/lib64"
   }
 }
