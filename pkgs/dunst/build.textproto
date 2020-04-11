@@ -15,6 +15,7 @@ dep: "gdk-pixbuf"
 dep: "libxrandr"
 dep: "libxscrnsaver"
 dep: "pango"
+dep: "perl"  # for pod2man
 
 build_step: {
   argv: "/bin/sh"
