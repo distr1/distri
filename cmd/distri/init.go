@@ -1,11 +1,15 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"sort"
 	"syscall"
+
+	"github.com/distr1/distri"
 )
 
 func bootfuse() error {
@@ -45,6 +49,33 @@ func bootfuse() error {
 	return nil
 }
 
+func findLatestSystemd() (string, error) {
+	dir, err := os.Open("/ro")
+	if err != nil {
+		return "", err
+	}
+	names, err := dir.Readdirnames(-1)
+	if err != nil {
+		return "", err
+	}
+	var systemds []string
+	for _, n := range names {
+		pv := distri.ParseVersion(n)
+		if pv.Pkg != "systemd" {
+			continue
+		}
+		systemds = append(systemds, pv.String())
+	}
+	if len(systemds) == 0 {
+		return "", errors.New("no systemd packages found in /ro")
+	}
+	sort.Slice(systemds, func(i, j int) bool {
+		return distri.PackageRevisionLess(systemds[i], systemds[j])
+	})
+	pkg := systemds[len(systemds)-1] // most recent
+	return "/ro/" + pkg + "/out/lib/systemd/systemd", nil
+}
+
 func pid1() error {
 	log.Printf("FUSE-mounting package store /roimg on /ro")
 
@@ -52,11 +83,17 @@ func pid1() error {
 		return err
 	}
 
-	log.Printf("starting systemd")
+	systemd, err := findLatestSystemd()
+	if err != nil {
+		log.Printf("find latest systemd: %v", err)
+		// fall-through:
+	}
+	if systemd == "" {
+		// Fall back to compile-time latest version:
+		systemd = "/ro/systemd-amd64-245-11/out/lib/systemd/systemd"
+	}
 
-	// TODO: readdir /ro (does not mount any images)
-	// TODO: keep most recent systemd entry
+	log.Printf("starting systemd %s", systemd)
 
-	const systemd = "/ro/systemd-amd64-239-10/out/lib/systemd/systemd" // TODO(later): glob?
 	return syscall.Exec(systemd, []string{systemd}, nil)
 }
