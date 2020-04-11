@@ -337,7 +337,7 @@ func (p *packctx) pack(root string) error {
 	}
 
 	// TODO: de-duplicate with build.go
-	if err := os.Symlink("/ro/glibc-amd64-2.27-3/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
+	if err := os.Symlink("/ro/glibc-amd64-2.31-4/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
 		return err
 	}
 
