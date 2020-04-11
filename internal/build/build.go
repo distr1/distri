@@ -2041,6 +2041,7 @@ func (b *Ctx) cherryPick(src, tmp string) error {
 	cmd.Dir = tmp
 	cmd.Stdin = f
 	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", cmd.Args, err)
 	}
