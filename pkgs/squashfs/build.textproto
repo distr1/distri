@@ -1,6 +1,6 @@
-source: "https://downloads.sourceforge.net/project/squashfs/squashfs/squashfs4.3/squashfs4.3.tar.gz"
-hash: "0d605512437b1eb800b4736791559295ee5f60177e102e4d4ccd0ee241a5f3f6"
-version: "4.3-6"
+source: "https://github.com/plougher/squashfs-tools/archive/4.4.tar.gz"
+hash: "a7fa4845e9908523c38d4acf92f8a41fdfcd19def41bd5090d7ad767a6dc75c3"
+version: "4.4-7"
 
 writable_sourcedir: true
 in_tree_build: true
