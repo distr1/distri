@@ -417,7 +417,7 @@ HOME_URL=https://distr1.org
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", root, "/ro/systemd-amd64-239-10/bin/systemd-firstboot", "--hostname=distri0",
+		"chroot", root, "/ro/bin/systemd-firstboot", "--hostname=distri0",
 		"--root-password="+p.rootPassword,
 		"--copy-timezone",
 		"--copy-locale",
@@ -433,9 +433,9 @@ HOME_URL=https://distr1.org
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
-		"chroot", root, "/ro/systemd-amd64-239-10/bin/systemd-sysusers",
-		"/ro/systemd-amd64-239-10/out/lib/sysusers.d/basic.conf",
-		"/ro/systemd-amd64-239-10/out/lib/sysusers.d/systemd.conf")
+		"chroot", root, "/ro/bin/systemd-sysusers",
+		"/ro/lib/sysusers.d/basic.conf",
+		"/ro/lib/sysusers.d/systemd.conf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -459,7 +459,7 @@ HOME_URL=https://distr1.org
 			"--map-root-user", // for mount permissions in the namespace
 			"--mount",
 			"--",
-			"chroot", root, "/ro/systemd-amd64-239-10/bin/systemctl",
+			"chroot", root, "/ro/bin/systemctl",
 			"enable",
 		}, units...)...)
 	cmd.Stdout = os.Stdout
