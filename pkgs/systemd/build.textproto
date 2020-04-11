@@ -25,7 +25,7 @@ dep: "systemd"  # to pick up the latest version
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "./configure --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false -Dloadkeys-path=/bin/loadkeys -Dsetfont-path=/bin/setfont"
+  argv: "./configure --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false -Dloadkeys-path=/bin/loadkeys -Dsetfont-path=/bin/setfont -Ddefault-hierarchy=hybrid"
   #  argv: "LDFLAGS=-static"
 }
 
