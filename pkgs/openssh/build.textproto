@@ -1,6 +1,6 @@
-source: "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-7.8p1.tar.gz"
-hash: "1a484bb15152c183bb2514e112aa30dd34138c3cfb032eee5490a66c507144ca"
-version: "7.8p1-9"
+source: "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.2p1.tar.gz"
+hash: "43925151e6cf6cee1450190c0e9af4dc36b41c12737619edff8bcebdff64e671"
+version: "8.2p1-10"
 
 cherry_pick: "config.patch"
 cherry_pick: "service.patch"
