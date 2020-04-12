@@ -1,6 +1,9 @@
 source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.6.tar.xz"
 hash: "e342b04a2aa63808ea0ef1baab28fc520bd031ef8cf93d9ee4a31d4058fcb622"
-version: "5.6-13"
+# minitrd assumes the upstream version number matches the name of the
+# sub directory in /ro/lib/modules. Notably, for tarball linux-5.6.tar,
+# the version field should use 5.6.0 (trailing .0) as upstream version.
+version: "5.6.0-13"
 
 writable_sourcedir: true
 in_tree_build: true
