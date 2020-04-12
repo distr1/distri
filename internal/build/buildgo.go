@@ -40,7 +40,9 @@ func (b *Ctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, source st
 	}
 
 	gotool := func(args string) []string {
-		return []string{"/bin/sh", "-c", "GOSUMDB=off GOCACHE=/tmp/throwaway GOPATH=/tmp/gopath GOPROXY=off " + strings.Join(opts.GetGoEnv(), " ") + " " + args}
+		// Use CGO_LDFLAGS instead of GOFLAGS because the latter doesn’t work:
+		// https://github.com/golang/go/issues/26849#issuecomment-612579416
+		return []string{"/bin/sh", "-c", "GOSUMDB=off GOCACHE=/tmp/throwaway GOPATH=/tmp/gopath GOPROXY=off CGO_LDFLAGS=\"-g -O2 -Wl,--dynamic-linker=/ro/${DISTRI_RESOLVE:glibc}/out/lib/ld-linux-x86-64.so.2\" " + strings.Join(opts.GetGoEnv(), " ") + " " + args}
 	}
 
 	steps := [][]string{
