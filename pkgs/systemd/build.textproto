@@ -8,6 +8,7 @@ in_tree_build: true
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
 cherry_pick: "udevdir.patch"
+cherry_pick: "isatty.patch"
 
 cbuilder: {}
 

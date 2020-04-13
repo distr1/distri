@@ -1,0 +1,327 @@
+From 14f594b995bbaea85456a4c26e5c07446a4c446e Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Mon, 13 Apr 2020 10:09:44 +0200
+Subject: [PATCH 1/4] fileio: fileno() can realistically return -1
+
+An stdio FILE* stream usually refers to something with a file
+descriptor, but that's just "usually". It doesn't have to, when taking
+fmemopen() and similar into account. Most of our calls to fileno()
+assumed the call couldn't fail. In most cases this was correct, but in
+some cases where we didn't know whether we work on files or memory we'd
+use the returned fd as if it was unconditionally valid while it wasn't,
+and passed it to a multitude of kernel syscalls. Let's fix that, and do
+something reasonably smart when encountering this case.
+
+(Running test-fileio with this patch applied will remove tons of ioctl()
+calls on -1).
+---
+ src/basic/fileio.c        | 36 +++++++++++++++++++++++++++++-------
+ src/basic/terminal-util.c | 32 +++++++++++++++++++++++---------
+ src/shared/conf-parser.c  |  6 ++++--
+ 3 files changed, 56 insertions(+), 18 deletions(-)
+
+diff --git a/src/basic/fileio.c b/src/basic/fileio.c
+index 4c365ad6fa9..387b3253b5e 100644
+--- a/src/basic/fileio.c
++++ b/src/basic/fileio.c
+@@ -119,7 +119,7 @@ int write_string_stream_ts(
+                 struct timespec *ts) {
+ 
+         bool needs_nl;
+-        int r;
++        int r, fd;
+ 
+         assert(f);
+         assert(line);
+@@ -127,6 +127,14 @@ int write_string_stream_ts(
+         if (ferror(f))
+                 return -EIO;
+ 
++        if (ts) {
++                /* If we shall set the timestamp we need the fd. But fmemopen() streams generally don't have
++                 * an fd. Let's fail early in that case. */
++                fd = fileno(f);
++                if (fd < 0)
++                        return -EBADF;
++        }
++
+         needs_nl = !(flags & WRITE_STRING_FILE_AVOID_NEWLINE) && !endswith(line, "\n");
+ 
+         if (needs_nl && (flags & WRITE_STRING_FILE_DISABLE_BUFFER)) {
+@@ -154,7 +162,7 @@ int write_string_stream_ts(
+         if (ts) {
+                 struct timespec twice[2] = {*ts, *ts};
+ 
+-                if (futimens(fileno(f), twice) < 0)
++                if (futimens(fd, twice) < 0)
+                         return -errno;
+         }
+ 
+@@ -886,7 +894,7 @@ int fflush_and_check(FILE *f) {
+ }
+ 
+ int fflush_sync_and_check(FILE *f) {
+-        int r;
++        int r, fd;
+ 
+         assert(f);
+ 
+@@ -894,10 +902,16 @@ int fflush_sync_and_check(FILE *f) {
+         if (r < 0)
+                 return r;
+ 
+-        if (fsync(fileno(f)) < 0)
++        /* Not all file streams have an fd associated (think: fmemopen()), let's handle this gracefully and
++         * assume that in that case we need no explicit syncing */
++        fd = fileno(f);
++        if (fd < 0)
++                return 0;
++
++        if (fsync(fd) < 0)
+                 return -errno;
+ 
+-        r = fsync_directory_of_file(fileno(f));
++        r = fsync_directory_of_file(fd);
+         if (r < 0)
+                 return r;
+ 
+@@ -1074,8 +1088,16 @@ int read_line_full(FILE *f, size_t limit, ReadLineFlags flags, char **ret) {
+                                  * \n as the single EOL marker, so there is no need to wait. We check
+                                  * this condition last to avoid isatty() check if not necessary. */
+ 
+-                                if (tty < 0)
+-                                        tty = isatty(fileno(f));
++                                if (tty < 0) {
++                                        int fd;
++
++                                        fd = fileno(f);
++                                        if (fd < 0) /* Maybe an fmemopen() stream? Handle this gracefully,
++                                                     * and don't call isatty() on an invalid fd */
++                                                tty = false;
++                                        else
++                                                tty = isatty(fd);
++                                }
+                                 if (tty > 0)
+                                         break;
+                         }
+diff --git a/src/basic/terminal-util.c b/src/basic/terminal-util.c
+index 511734cbbb8..6cacde90bac 100644
+--- a/src/basic/terminal-util.c
++++ b/src/basic/terminal-util.c
+@@ -81,31 +81,34 @@ int chvt(int vt) {
+ int read_one_char(FILE *f, char *ret, usec_t t, bool *need_nl) {
+         _cleanup_free_ char *line = NULL;
+         struct termios old_termios;
+-        int r;
++        int r, fd;
+ 
+         assert(f);
+         assert(ret);
+ 
+-        /* If this is a terminal, then switch canonical mode off, so that we can read a single character */
+-        if (tcgetattr(fileno(f), &old_termios) >= 0) {
++        /* If this is a terminal, then switch canonical mode off, so that we can read a single
++         * character. (Note that fmemopen() streams do not have an fd associated with them, let's handle that
++         * nicely.) */
++        fd = fileno(f);
++        if (fd >= 0 && tcgetattr(fd, &old_termios) >= 0) {
+                 struct termios new_termios = old_termios;
+ 
+                 new_termios.c_lflag &= ~ICANON;
+                 new_termios.c_cc[VMIN] = 1;
+                 new_termios.c_cc[VTIME] = 0;
+ 
+-                if (tcsetattr(fileno(f), TCSADRAIN, &new_termios) >= 0) {
++                if (tcsetattr(fd, TCSADRAIN, &new_termios) >= 0) {
+                         char c;
+ 
+                         if (t != USEC_INFINITY) {
+-                                if (fd_wait_for_event(fileno(f), POLLIN, t) <= 0) {
+-                                        (void) tcsetattr(fileno(f), TCSADRAIN, &old_termios);
++                                if (fd_wait_for_event(fd, POLLIN, t) <= 0) {
++                                        (void) tcsetattr(fd, TCSADRAIN, &old_termios);
+                                         return -ETIMEDOUT;
+                                 }
+                         }
+ 
+                         r = safe_fgetc(f, &c);
+-                        (void) tcsetattr(fileno(f), TCSADRAIN, &old_termios);
++                        (void) tcsetattr(fd, TCSADRAIN, &old_termios);
+                         if (r < 0)
+                                 return r;
+                         if (r == 0)
+@@ -119,8 +122,13 @@ int read_one_char(FILE *f, char *ret, usec_t t, bool *need_nl) {
+                 }
+         }
+ 
+-        if (t != USEC_INFINITY) {
+-                if (fd_wait_for_event(fileno(f), POLLIN, t) <= 0)
++        if (t != USEC_INFINITY && fd > 0) {
++                /* Let's wait the specified amount of time for input. When we have no fd we skip this, under
++                 * the assumption that this is an fmemopen() stream or so where waiting doesn't make sense
++                 * anyway, as the data is either already in the stream or cannot possible be placed there
++                 * while we access the stream */
++
++                if (fd_wait_for_event(fd, POLLIN, t) <= 0)
+                         return -ETIMEDOUT;
+         }
+ 
+@@ -778,6 +786,9 @@ const char *default_term_for_tty(const char *tty) {
+ int fd_columns(int fd) {
+         struct winsize ws = {};
+ 
++        if (fd < 0)
++                return -EBADF;
++
+         if (ioctl(fd, TIOCGWINSZ, &ws) < 0)
+                 return -errno;
+ 
+@@ -812,6 +823,9 @@ unsigned columns(void) {
+ int fd_lines(int fd) {
+         struct winsize ws = {};
+ 
++        if (fd < 0)
++                return -EBADF;
++
+         if (ioctl(fd, TIOCGWINSZ, &ws) < 0)
+                 return -errno;
+ 
+diff --git a/src/shared/conf-parser.c b/src/shared/conf-parser.c
+index 657df0a517a..3ba33606fbc 100644
+--- a/src/shared/conf-parser.c
++++ b/src/shared/conf-parser.c
+@@ -294,7 +294,7 @@ int config_parse(const char *unit,
+         _cleanup_fclose_ FILE *ours = NULL;
+         unsigned line = 0, section_line = 0;
+         bool section_ignored = false, bom_seen = false;
+-        int r;
++        int r, fd;
+ 
+         assert(filename);
+         assert(lookup);
+@@ -311,7 +311,9 @@ int config_parse(const char *unit,
+                 }
+         }
+ 
+-        fd_warn_permissions(filename, fileno(f));
++        fd = fileno(f);
++        if (fd >= 0) /* stream might not have an fd, let's be careful hence */
++                fd_warn_permissions(filename, fd);
+ 
+         for (;;) {
+                 _cleanup_free_ char *buf = NULL;
+
+From 609ae0f59619619efe6db07e34f73a237e7f332b Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Mon, 13 Apr 2020 11:20:59 +0200
+Subject: [PATCH 2/4] fileio: optionally allow telling read_line_full() whether
+ we are processing a tty or not
+
+---
+ src/basic/fileio.c | 10 +++++-----
+ src/basic/fileio.h |  4 +++-
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/src/basic/fileio.c b/src/basic/fileio.c
+index 387b3253b5e..463a8596f5a 100644
+--- a/src/basic/fileio.c
++++ b/src/basic/fileio.c
+@@ -1009,7 +1009,7 @@ DEFINE_TRIVIAL_CLEANUP_FUNC(FILE*, funlockfile);
+ int read_line_full(FILE *f, size_t limit, ReadLineFlags flags, char **ret) {
+         size_t n = 0, allocated = 0, count = 0;
+         _cleanup_free_ char *buffer = NULL;
+-        int r, tty = -1;
++        int r;
+ 
+         assert(f);
+ 
+@@ -1088,17 +1088,17 @@ int read_line_full(FILE *f, size_t limit, ReadLineFlags flags, char **ret) {
+                                  * \n as the single EOL marker, so there is no need to wait. We check
+                                  * this condition last to avoid isatty() check if not necessary. */
+ 
+-                                if (tty < 0) {
++                                if ((flags & (READ_LINE_IS_A_TTY|READ_LINE_NOT_A_TTY)) == 0) {
+                                         int fd;
+ 
+                                         fd = fileno(f);
+                                         if (fd < 0) /* Maybe an fmemopen() stream? Handle this gracefully,
+                                                      * and don't call isatty() on an invalid fd */
+-                                                tty = false;
++                                                flags |= READ_LINE_NOT_A_TTY;
+                                         else
+-                                                tty = isatty(fd);
++                                                flags |= isatty(fd) ? READ_LINE_IS_A_TTY : READ_LINE_NOT_A_TTY;
+                                 }
+-                                if (tty > 0)
++                                if (FLAGS_SET(flags, READ_LINE_IS_A_TTY))
+                                         break;
+                         }
+ 
+diff --git a/src/basic/fileio.h b/src/basic/fileio.h
+index 58daabaa8ff..e6062121a33 100644
+--- a/src/basic/fileio.h
++++ b/src/basic/fileio.h
+@@ -88,7 +88,9 @@ int read_timestamp_file(const char *fn, usec_t *ret);
+ int fputs_with_space(FILE *f, const char *s, const char *separator, bool *space);
+ 
+ typedef enum ReadLineFlags {
+-        READ_LINE_ONLY_NUL = 1 << 0,
++        READ_LINE_ONLY_NUL  = 1 << 0,
++        READ_LINE_IS_A_TTY  = 1 << 1,
++        READ_LINE_NOT_A_TTY = 1 << 2,
+ } ReadLineFlags;
+ 
+ int read_line_full(FILE *f, size_t limit, ReadLineFlags flags, char **ret);
+
+From 451fcbfc58d3ccb9855095666aa9ba4ae1327224 Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Mon, 13 Apr 2020 11:25:43 +0200
+Subject: [PATCH 3/4] fileio: extend comment a bit
+
+---
+ src/basic/fileio.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/src/basic/fileio.c b/src/basic/fileio.c
+index 463a8596f5a..34ee939526f 100644
+--- a/src/basic/fileio.c
++++ b/src/basic/fileio.c
+@@ -1084,9 +1084,11 @@ int read_line_full(FILE *f, size_t limit, ReadLineFlags flags, char **ret) {
+                         count++;
+ 
+                         if (eol != EOL_NONE) {
+-                                /* If we are on a tty, we can't wait for more input. But we expect only
+-                                 * \n as the single EOL marker, so there is no need to wait. We check
+-                                 * this condition last to avoid isatty() check if not necessary. */
++                                /* If we are on a tty, we can't shouldn't wait for more input, because that
++                                 * generally means waiting for the user, interactively. In the case of a TTY
++                                 * we expect only \n as the single EOL marker, so we are in the lucky
++                                 * position that there is no need to wait. We check this condition last, to
++                                 * avoid isatty() check if not necessary. */
+ 
+                                 if ((flags & (READ_LINE_IS_A_TTY|READ_LINE_NOT_A_TTY)) == 0) {
+                                         int fd;
+
+From 648ba0ee8178105777502cfcd869d7c04511db96 Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Mon, 13 Apr 2020 11:26:15 +0200
+Subject: [PATCH 4/4] hwdb: optimize isatty()-per-line away
+
+Fixes: #15407
+---
+ src/libsystemd/sd-hwdb/hwdb-util.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libsystemd/sd-hwdb/hwdb-util.c b/src/libsystemd/sd-hwdb/hwdb-util.c
+index d790e8fd0b1..5c7521695ec 100644
+--- a/src/libsystemd/sd-hwdb/hwdb-util.c
++++ b/src/libsystemd/sd-hwdb/hwdb-util.c
+@@ -488,7 +488,7 @@ static int import_file(struct trie *trie, const char *filename, uint16_t file_pr
+                 size_t len;
+                 char *pos;
+ 
+-                r = read_line(f, LONG_LINE_MAX, &line);
++                r = read_line_full(f, LONG_LINE_MAX, READ_LINE_NOT_A_TTY, &line);
+                 if (r < 0)
+                         return r;
+                 if (r == 0)
