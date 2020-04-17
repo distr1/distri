@@ -75,6 +75,10 @@ ifdef override_repo
 PACKFLAGS+= -override_repo="${override_repo}"
 endif
 
+ifdef lvm
+PACKFLAGS+= -lvm
+endif
+
 IMAGE=distri pack \
 	-diskimg=${DISKIMG} \
 	-base=base-x11 ${PACKFLAGS}
