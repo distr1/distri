@@ -137,7 +137,7 @@ func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo
 		if err != nil {
 			return err
 		}
-		in, err := repo.Reader(ctx, installRepo, "pkg/"+fn, false)
+		in, err := repo.Reader(ctx, installRepo, fn, false)
 		if err != nil {
 			return err
 		}
@@ -377,7 +377,7 @@ func (c *Ctx) installTransitively1(root string, repos []distri.Repo, pkg string)
 	}
 	metas := make(map[*pb.Meta]distri.Repo)
 	for _, r := range repos {
-		rd, err := repo.Reader(context.Background(), r, "pkg/"+pkg+".meta.textproto", false)
+		rd, err := repo.Reader(context.Background(), r, pkg+".meta.textproto", false)
 		if err != nil {
 			if isNotExist(err) {
 				continue
@@ -460,7 +460,7 @@ func (c *Ctx) Packages(args []string, root, repo string, update bool) error {
 		return err
 	}
 	if repo != "" {
-		repos = []distri.Repo{{Path: repo}}
+		repos = []distri.Repo{{Path: repo, PkgPath: repo}}
 	}
 	if len(repos) == 0 {
 		return xerrors.Errorf("no repos configured")

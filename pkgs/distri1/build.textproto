@@ -3,7 +3,7 @@ hash: ""
 version: "native-41"
 
 gobuilder: {
-  install: "./cmd/distri ./cmd/minitrd"
+  install: "./cmd/distri ./cmd/minitrd ./cmd/distri-installer"
   import_path: "distri1"
   # Used as /init before the dynamic linker is available:
   go_env: "CGO_ENABLED=0"
@@ -58,6 +58,7 @@ dep: "go-github.com-prometheus-client_model"
 dep: "go-google.golang.org-protobuf"
 
 runtime_dep: "kbd"
+runtime_dep: "dosfstools"  # for mkfs.fat
 
 install: {
   file: {

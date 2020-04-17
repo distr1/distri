@@ -73,23 +73,26 @@ func copyFile(src, dest string) error {
 }
 
 type packctx struct {
-	root               string
-	repo               string
-	extraBase          string
-	diskImg            string
-	diskImgSize        int64
-	gcsDiskImg         string
-	encrypt            bool
-	serialOnly         bool
-	bootDebug          bool
-	branch             string
-	overrideRepo       string
-	rootPassword       string
-	cryptPassword      string
-	docker             bool
-	authorizedKeys     string
-	initramfsGenerator string
-	extraKernelParams  string
+	root                 string
+	repo                 string
+	extraBase            string
+	diskImg              string
+	diskImgSize          int64
+	gcsDiskImg           string
+	encrypt              bool
+	lvm                  bool
+	serialOnly           bool
+	bootDebug            bool
+	branch               string
+	overrideRepo         string
+	rootPassword         string
+	cryptPassword        string
+	docker               bool
+	authorizedKeys       string
+	initramfsGenerator   string
+	extraKernelParams    string
+	extraLVMHook         string
+	overwriteBlockDevice string
 }
 
 func pack(ctx context.Context, args []string) error {
@@ -98,7 +101,7 @@ func pack(ctx context.Context, args []string) error {
 	fset.StringVar(&p.root, "root",
 		"",
 		"TODO")
-	fset.StringVar(&p.repo, "repo", env.DefaultRepoRoot, "TODO")
+	fset.StringVar(&p.repo, "repo", env.DefaultRepo, "TODO")
 	fset.StringVar(&p.extraBase, "base", "", "if non-empty, an additional base image to install")
 	fset.StringVar(&p.diskImg, "diskimg", "", "Write an ext4 file system image to the specified path")
 	fset.Int64Var(&p.diskImgSize, "diskimg_size", 7*1024*1024*1024 /* 7 GiB */, "Disk image size in bytes (default: 7 GiB)")
@@ -115,10 +118,15 @@ func pack(ctx context.Context, args []string) error {
 	fset.StringVar(&p.authorizedKeys, "authorized_keys", "", "if non-empty, path to an SSH authorized_keys file to include for the root user")
 	fset.StringVar(&p.initramfsGenerator, "initramfs_generator", "minitrd", "Which initramfs generator to use: minitrd or dracut. Chose minitrd for fastest initramfs generation and boot, chose dracut for customizeability or features that minitrd does not implement.")
 	fset.StringVar(&p.extraKernelParams, "extra_kernel_params", "", "extra Linux kernel parameters to append to the kernel command line")
+	fset.StringVar(&p.extraLVMHook, "extra_lvm_hook", "", "path to an executable program that modifies the LVM setup after the distri installer created it")
+	fset.StringVar(&p.overwriteBlockDevice, "overwrite_block_device", "", "path to a block device to overwrite")
 	fset.Usage = usage(fset, packHelp)
 	fset.Parse(args)
 
-	if p.gcsDiskImg == "" && p.diskImg == "" && !p.docker {
+	if p.gcsDiskImg == "" &&
+		p.diskImg == "" &&
+		!p.docker &&
+		p.overwriteBlockDevice == "" {
 		if p.root == "" {
 			return xerrors.Errorf("syntax: pack -root=<directory>")
 		}
@@ -126,6 +134,13 @@ func pack(ctx context.Context, args []string) error {
 		if err := p.pack(p.root); err != nil {
 			return err
 		}
+	}
+
+	if p.overwriteBlockDevice != "" {
+		if err := p.overwriteBlockDevice0(p.overwriteBlockDevice); err != nil {
+			return fmt.Errorf("overwriteBlockDevice0: %v", err)
+		}
+		return nil
 	}
 
 	if p.gcsDiskImg != "" && p.diskImg == "" {
@@ -253,7 +268,7 @@ func pack(ctx context.Context, args []string) error {
 			Arch: "amd64",
 			Repo: env.DefaultRepo,
 		} // TODO: introduce a packctx, make glob take a common ctx
-		resolved, err := b.Glob(filepath.Join(p.repo, "pkg"), []string{
+		resolved, err := b.Glob(p.repo, []string{
 			"linux-firmware",
 			"docker-engine",
 			"dracut",
@@ -392,7 +407,7 @@ HOME_URL=https://distr1.org
 		}
 	}
 
-	basePkgs, err := b.Glob(filepath.Join(p.repo, "pkg"), basePkgNames)
+	basePkgs, err := b.Glob(p.repo, basePkgNames)
 	if err != nil {
 		return err
 	}
@@ -688,6 +703,10 @@ func (p *packctx) writeDiskImg(sz int64) error {
 		return errno
 	}
 
+	return p.overwriteBlockDevice0(loopdev)
+}
+
+func (p *packctx) overwriteBlockDevice0(loopdev string) error {
 	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
 	typeLinux := "0FC63DAF-8483-4772-8E79-3D69D8477DE4" // from sfdisk(8)
 	if p.lvm {
@@ -704,22 +723,26 @@ name=root,type=` + typeLinux)
 		return xerrors.Errorf("%v: %v", sfdisk.Args, err)
 	}
 
-	losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", p.diskImg)
-	losetup.Stderr = os.Stderr
-	out, err := losetup.Output()
-	if err != nil {
-		return xerrors.Errorf("%v: %v", losetup.Args, err)
-	}
-	base := strings.TrimSpace(string(out))
-	log.Printf("base: %q", base)
-	defer func() {
-		losetup := exec.Command("sudo", "losetup", "-d", base)
-		losetup.Stdout = os.Stdout
+	base := loopdev
+	if p.diskImg != "" {
+		// loopmount disk images
+		losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", p.diskImg)
 		losetup.Stderr = os.Stderr
-		if err := losetup.Run(); err != nil {
-			log.Printf("%v: %v", losetup.Args, err)
+		out, err := losetup.Output()
+		if err != nil {
+			return xerrors.Errorf("%v: %v", losetup.Args, err)
 		}
-	}()
+		base = strings.TrimSpace(string(out))
+		log.Printf("base: %q", base)
+		defer func() {
+			losetup := exec.Command("sudo", "losetup", "-d", base)
+			losetup.Stdout = os.Stdout
+			losetup.Stderr = os.Stderr
+			if err := losetup.Run(); err != nil {
+				log.Printf("%v: %v", losetup.Args, err)
+			}
+		}()
+	}
 
 	esp := base + "p1"
 	// p2 is the GRUB BIOS boot partition
@@ -812,10 +835,12 @@ name=root,type=` + typeLinux)
 		luksFormat.Stdin = strings.NewReader(p.cryptPassword)
 		luksFormat.Stdout = os.Stdout
 		luksFormat.Stderr = os.Stderr
+		log.Println(luksFormat.Args)
 		if err := luksFormat.Run(); err != nil {
 			return xerrors.Errorf("%v: %v", luksFormat.Args, err)
 		}
 
+		var err error
 		luksUUID, err = uuid(root, "fs")
 		if err != nil {
 			return xerrors.Errorf("lsblk: %v", err)

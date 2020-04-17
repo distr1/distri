@@ -59,7 +59,10 @@ func Repos() ([]distri.Repo, error) {
 			if idx := strings.Index(line, " "); idx > -1 {
 				line = line[:idx]
 			}
-			repos = append(repos, distri.Repo{Path: line})
+			repos = append(repos, distri.Repo{
+				Path:    line,
+				PkgPath: line + "pkg/",
+			})
 		}
 	}
 	return repos, nil

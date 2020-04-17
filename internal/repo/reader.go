@@ -68,7 +68,7 @@ func cacheFn(cache bool, repo distri.Repo, fn string) string {
 		log.Printf("cannot cache: %v", err)
 		return ""
 	}
-	cacheFn := filepath.Join(ucd, "distri", strings.ReplaceAll(repo.Path, "/", "_"), fn)
+	cacheFn := filepath.Join(ucd, "distri", strings.ReplaceAll(repo.PkgPath, "/", "_"), fn)
 	if err := os.MkdirAll(filepath.Dir(cacheFn), 0755); err != nil {
 		log.Printf("cannot cache: %v", err)
 		return ""
@@ -77,9 +77,9 @@ func cacheFn(cache bool, repo distri.Repo, fn string) string {
 }
 
 func Reader(ctx context.Context, repo distri.Repo, fn string, cache bool) (io.ReadCloser, error) {
-	if !strings.HasPrefix(repo.Path, "http://") &&
-		!strings.HasPrefix(repo.Path, "https://") {
-		return os.Open(filepath.Join(repo.Path, fn))
+	if !strings.HasPrefix(repo.PkgPath, "http://") &&
+		!strings.HasPrefix(repo.PkgPath, "https://") {
+		return os.Open(filepath.Join(repo.PkgPath, fn))
 	}
 
 	var ifModifiedSince time.Time
@@ -90,7 +90,7 @@ func Reader(ctx context.Context, repo distri.Repo, fn string, cache bool) (io.Re
 		}
 	}
 
-	req, err := http.NewRequest("GET", repo.Path+"/"+fn, nil) // TODO: sanitize slashes
+	req, err := http.NewRequest("GET", repo.PkgPath+"/"+fn, nil) // TODO: sanitize slashes
 	if err != nil {
 		return nil, err
 	}
