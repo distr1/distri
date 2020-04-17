@@ -104,6 +104,7 @@ func pack(ctx context.Context, args []string) error {
 	fset.Int64Var(&p.diskImgSize, "diskimg_size", 7*1024*1024*1024 /* 7 GiB */, "Disk image size in bytes (default: 7 GiB)")
 	fset.StringVar(&p.gcsDiskImg, "gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 	fset.BoolVar(&p.encrypt, "encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
+	fset.BoolVar(&p.lvm, "lvm", false, "Whether to place the root file system on an LVM logical volume")
 	fset.BoolVar(&p.serialOnly, "serialonly", false, "Whether to print output only on console=ttyS0,115200 (defaults to false, i.e. console=tty1)")
 	fset.BoolVar(&p.bootDebug, "bootdebug", false, "Whether to debug early boot, i.e. add systemd.log_level=debug systemd.log_target=console")
 	fset.StringVar(&p.branch, "branch", "master", "Which git branch to track in repo URL")
@@ -688,11 +689,15 @@ func (p *packctx) writeDiskImg(sz int64) error {
 	}
 
 	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
+	typeLinux := "0FC63DAF-8483-4772-8E79-3D69D8477DE4" // from sfdisk(8)
+	if p.lvm {
+		typeLinux = "E6D6D379-F507-44C2-A23C-238F2A3DF928" // from pvcreate(8)
+	}
 	sfdisk.Stdin = strings.NewReader(`label:gpt
 size=550M,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 size=1M,type=21686148-6449-6E6F-744E-656564454649
 size=250M, name=boot
-name=root`)
+name=root,type=` + typeLinux)
 	sfdisk.Stdout = os.Stdout
 	sfdisk.Stderr = os.Stderr
 	if err := sfdisk.Run(); err != nil {
@@ -733,6 +738,59 @@ name=root`)
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
 		return xerrors.Errorf("%v: %v", mkfs.Args, err)
+	}
+
+	if p.lvm {
+		pvcreate := exec.Command("sudo", "pvcreate", "--verbose", "--yes", "-ff", root)
+		pvcreate.Stdout = os.Stdout
+		pvcreate.Stderr = os.Stderr
+		if err := pvcreate.Run(); err != nil {
+			return fmt.Errorf("%v: %v", pvcreate.Args, err)
+		}
+
+		vgcreate := exec.Command("sudo", "vgcreate", "--verbose", "distrivg", root)
+		vgcreate.Stdout = os.Stdout
+		vgcreate.Stderr = os.Stderr
+		if err := vgcreate.Run(); err != nil {
+			return fmt.Errorf("%v: %v", vgcreate.Args, err)
+		}
+
+		lvcreate := exec.Command("sudo", "lvcreate", "--verbose", "--extents=100%FREE", "--name=root", "distrivg")
+		lvcreate.Stdout = os.Stdout
+		lvcreate.Stderr = os.Stderr
+		if err := lvcreate.Run(); err != nil {
+			return fmt.Errorf("%v: %v", lvcreate.Args, err)
+		}
+
+		// TODO: can we activate the volume at a different path?
+		// otherwise, this will fail on a distri system (see below)
+		// - maybe use temp name and vgrename?
+		// - look at how libguestfs works
+		vgchange := exec.Command("sudo", "vgchange", "--verbose", "--activate=y", "distrivg")
+		vgchange.Stdout = os.Stdout
+		vgchange.Stderr = os.Stderr
+		if err := vgchange.Run(); err != nil {
+			return fmt.Errorf("%v: %v", vgchange.Args, err)
+		}
+		defer func() {
+			vgchange := exec.Command("sudo", "vgchange", "--verbose", "--activate=n", "distrivg")
+			vgchange.Stdout = os.Stdout
+			vgchange.Stderr = os.Stderr
+			if err := vgchange.Run(); err != nil {
+				log.Printf("%v: %v", vgchange.Args, err)
+			}
+		}()
+
+		if p.extraLVMHook != "" {
+			hook := exec.Command("sudo", p.extraLVMHook)
+			hook.Stdout = os.Stdout
+			hook.Stderr = os.Stderr
+			if err := hook.Run(); err != nil {
+				return fmt.Errorf("%v: %v", hook.Args, err)
+			}
+		}
+
+		root = "/dev/distrivg/root"
 	}
 
 	districrypt := "districrypt"

@@ -77,15 +77,23 @@ func parseCmdline() error {
 	return nil
 }
 
+// execCommand is a wrapper around exec.Command which sets up the environment
+// and stdin/stdout/stderr.
+func execCommand(name string, arg ...string) error {
+	cmd := exec.Command(name, arg...)
+	// For locating the GCC runtime library (libgcc_s.so.1):
+	cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=/ro/lib:/ro/lib64")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%v: %v", cmd.Args, err)
+	}
+	return nil
+}
+
 func luksOpen(dev, name string) error {
-	cryptsetup := exec.Command("/cryptsetup", "luksOpen", dev, name)
-	//cryptsetup = exec.Command("/sh")
-	// Make cryptsetup locate the GCC runtime library (libgcc_s.so.1):
-	cryptsetup.Env = append(os.Environ(), "LD_LIBRARY_PATH=/ro/lib:/ro/lib64")
-	cryptsetup.Stdin = os.Stdin
-	cryptsetup.Stdout = os.Stdout
-	cryptsetup.Stderr = os.Stderr
-	return cryptsetup.Run()
+	return execCommand("/cryptsetup", "luksOpen", dev, name)
 }
 
 // There is a great explanation of the chdir/mount/chroot dance at
@@ -172,11 +180,12 @@ func devAdd(devpath, devname string, start time.Time, r io.Closer) error {
 			return err
 		}
 		dmPath := "/dev/mapper/" + strings.TrimSpace(dmName)
-		if got, want := dmPath, cmdline["root"]; got != want {
+		if got, want := dmPath, cmdline["root"]; got == want {
+			return rootFS(dmPath, r)
+		} else {
 			log.Printf("minitrd: ignoring %s, looking for root=%s", got, want)
-			return nil
+			// fall-through so that we can open e.g. LUKS volumes on top of LVM:
 		}
-		return rootFS(dmPath, r)
 	}
 
 	if strings.HasPrefix(devpath, "/devices/platform/floppy") {
@@ -187,8 +196,18 @@ func devAdd(devpath, devname string, start time.Time, r io.Closer) error {
 	if err != nil {
 		return fmt.Errorf("uevent: %v", err)
 	}
+	isLVM := probeLVM(f) == nil
 	uuid, err := blkid(f)
 	f.Close()
+	if isLVM {
+		if err := execCommand("/vgchange", "-ay"); err != nil {
+			return err
+		}
+		if err := execCommand("/vgmknodes"); err != nil {
+			return err
+		}
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("blkid(%v): %v", devname, err)
 	}
@@ -223,11 +242,7 @@ func setFont() error {
 		return nil // keep default consolefont
 	}
 	log.Printf("minitrd: setting console font %v", font)
-	setfont := exec.Command("/setfont", font)
-	setfont.Stdin = os.Stdin
-	setfont.Stdout = os.Stdout
-	setfont.Stderr = os.Stderr
-	return setfont.Run()
+	return execCommand("/setfont", font)
 }
 
 func setKeymap() error {
@@ -236,11 +251,7 @@ func setKeymap() error {
 		return nil // keep default keymap
 	}
 	log.Printf("minitrd: setting keymap %v", keymap)
-	loadkeys := exec.Command("/loadkeys", keymap)
-	loadkeys.Stdin = os.Stdin
-	loadkeys.Stdout = os.Stdout
-	loadkeys.Stderr = os.Stderr
-	return loadkeys.Run()
+	return execCommand("/loadkeys", keymap)
 }
 
 func logic() error {

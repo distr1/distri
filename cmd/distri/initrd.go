@@ -592,6 +592,14 @@ func initrd(ctx context.Context, args []string) error {
 		return err
 	}
 
+	if err := copyDistriBinaryToCPIO(iw, "vgchange", "/ro/bin/vgchange"); err != nil {
+		return err
+	}
+
+	if err := copyDistriBinaryToCPIO(iw, "vgmknodes", "/ro/bin/vgmknodes"); err != nil {
+		return err
+	}
+
 	// If the GCC runtime library is not present, cryptsetup fails at runtime:
 	// libgcc_s.so.1 must be installed for pthread_cancel to work
 	if err := iw.mirror("/ro/lib64/libgcc_s.so.1"); err != nil {

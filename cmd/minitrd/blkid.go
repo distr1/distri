@@ -39,6 +39,25 @@ func probeLUKS(r io.ReadSeeker) (string, error) {
 	return string(hdr.UUID[:bytes.IndexByte(hdr.UUID[:], 0)]), nil
 }
 
+func probeLVM(r io.ReadSeeker) error {
+	buf := make([]byte, 8)
+	// The LVM physical volume label can be stored in any of the first 4
+	// sectors:
+	for sector := 0; sector < 4; sector++ {
+		if _, err := r.Seek(int64(sector)*512, io.SeekStart); err != nil {
+			return err
+		}
+		if _, err := r.Read(buf); err != nil {
+			return err
+		}
+		wantMagic := []byte("LABELONE") // LVM physical volume signature
+		if bytes.Equal(buf, wantMagic) {
+			return nil
+		}
+	}
+	return errNotFound
+}
+
 func blkid(r io.ReadSeeker) (string, error) {
 	uuid, err := probeLUKS(r)
 	if err != nil && err != errNotFound {
