@@ -572,6 +572,7 @@ func initrd(ctx context.Context, args []string) error {
 			return err
 		}
 	}
+	log.Printf("using minitrd %s", minitrd)
 	if err := copyDistriBinaryToCPIO(iw, "init", minitrd); err != nil {
 		return err
 	}
