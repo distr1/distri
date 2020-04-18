@@ -30,6 +30,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -254,6 +255,27 @@ func setKeymap() error {
 	return execCommand("/loadkeys", keymap)
 }
 
+func skipDeviceMapper(dmCookie string) bool {
+	if dmCookie == "" {
+		return false // device not set up by libdevmapper
+	}
+
+	// skip device mapper devices if their cookie has flag
+	// DM_UDEV_DISABLE_DISK_RULES_FLAG set:
+	// https://sourceware.org/git/?p=lvm2.git;a=blob;f=lib/activate/dev_manager.c;hb=d9e8895a96539d75166c0f74e58f5ed4e729e551#l1935
+	cookie, err := strconv.ParseUint(dmCookie, 0, 32)
+	if err != nil {
+		return false // invalid cookie
+	}
+	// libdevmapper.h
+	const (
+		DM_UDEV_FLAGS_SHIFT             = 16
+		DM_UDEV_DISABLE_DISK_RULES_FLAG = 0x0004
+	)
+	flags := cookie >> DM_UDEV_FLAGS_SHIFT
+	return flags&DM_UDEV_DISABLE_DISK_RULES_FLAG > 0
+}
+
 func logic() error {
 	start := time.Now()
 	var eg errgroup.Group
@@ -357,13 +379,21 @@ func logic() error {
 					log.Printf("minitrd: loadModalias: %v", err)
 				}
 			}
-			if ev.Action != "add" ||
-				ev.Subsystem != "block" {
-				continue
-			}
 			devname, ok := ev.Vars["DEVNAME"]
 			if !ok {
 				continue // unexpected uevent message
+			}
+			// The libdevmapper activation sequence results in an add uevent
+			// before the device is ready, so wait for the change uevent:
+			// https://www.redhat.com/archives/linux-lvm/2020-April/msg00004.html
+			if !(((!strings.HasPrefix(devname, "dm-") && ev.Action == "add") ||
+				(strings.HasPrefix(devname, "dm-") && ev.Action == "change")) &&
+				ev.Subsystem == "block") {
+				continue
+			}
+			if skipDeviceMapper(ev.Vars["DM_COOKIE"]) {
+				log.Printf("skipping device mapper device %s because of DM_COOKIE", devname)
+				continue
 			}
 			if err := devAdd(ev.Devpath, devname, start, r); err != nil {
 				log.Printf("minitrd: %v", err)
