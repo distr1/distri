@@ -60,6 +60,10 @@ func filter(base, path string) bool {
 		rel == "/kernel/drivers/md/dm-integrity.ko" {
 		return keep // disk encryption
 	}
+	if strings.HasPrefix(rel, "/kernel/drivers/md/") ||
+		strings.HasPrefix(rel, "/kernel/lib/") {
+		return keep // device mapper
+	}
 	if strings.Contains(rel, "sd_mod") ||
 		strings.Contains(rel, "sr_mod") ||
 		strings.Contains(rel, "usb_storage") ||
