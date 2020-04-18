@@ -273,6 +273,23 @@ func logic() error {
 	if err := loadModule("algif_skcipher"); err != nil {
 		return err
 	}
+	// TODO(upstream): lvm2’s vgchange should load the kernel modules for
+	// individual RAID personalities automatically where required. It currently
+	// seems to depend on the initramfs loading the personalities, or the
+	// personalities being compiled not as a module (but as part of dm-raid).
+	for _, personality := range []string{
+		"linear",
+		"multipath",
+		"raid0",
+		"raid1",
+		"raid456",
+		"raid10",
+	} {
+		// TODO(optimization): load these in parallel
+		if err := loadModule(personality); err != nil {
+			return err
+		}
+	}
 	if err := parseCmdline(); err != nil {
 		return err
 	}
