@@ -576,7 +576,7 @@ func initrd(ctx context.Context, args []string) error {
 	if err := copyDistriBinaryToCPIO(iw, "init", minitrd); err != nil {
 		return err
 	}
-	if false {
+	if _, err := os.Stat("/tmp/sh"); err == nil {
 		// TODO: package busybox
 		if err := copyFileCPIO(wr, "sh", "/tmp/sh"); err != nil {
 			return err
