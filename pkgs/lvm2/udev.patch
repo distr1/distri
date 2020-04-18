@@ -1,0 +1,11 @@
+--- old/udev/10-dm.rules.in	2020-03-26 12:26:37.000000000 +0100
++++ new/udev/10-dm.rules.in	2020-04-17 09:47:46.058586877 +0200
+@@ -84,7 +84,7 @@
+ # script to not remove the existing udev database so we can reuse the information
+ # stored at the time of device activation in the initrd.
+ ACTION!="add", GOTO="dm_no_coldplug"
+-ENV{DM_UDEV_RULES_VSN}!="1", ENV{DM_UDEV_PRIMARY_SOURCE_FLAG}!="1", GOTO="dm_disable"
++ENV{SYNTH_ARG_SOURCE}!="UDEVTRIGGER", GOTO="dm_disable"
+ ENV{DM_ACTIVATION}="1"
+ LABEL="dm_no_coldplug"
+ 

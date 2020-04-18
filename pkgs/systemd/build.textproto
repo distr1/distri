@@ -9,6 +9,11 @@ cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
 cherry_pick: "udevdir.patch"
 cherry_pick: "isatty.patch"
+# Based on:
+# * https://github.com/systemd/systemd/pull/13881
+# * https://www.redhat.com/archives/linux-lvm/2020-April/msg00003.html
+# * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f36776fafbaa0094390dd4e7e3e29805e0b82730
+cherry_pick: "udevadm-synth.patch"
 
 cbuilder: {}
 

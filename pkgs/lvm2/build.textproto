@@ -2,6 +2,10 @@ source: "https://sourceware.org/pub/lvm2/LVM2.2.03.09.tgz"
 hash: "c03a8b8d5c03ba8ac54ebddf670ae0d086edac54a6577e8c50721a8e174eb975"
 version: "2.03.09-8"
 
+# sed -i 's/ENV{DM_UDEV_RULES_VSN}.*/ENV{SYNTH_ARG_SOURCE}!="UDEVTRIGGER", GOTO="dm_disable"/g' udev/10-dm.rules.in
+# https://www.redhat.com/archives/linux-lvm/2020-April/msg00003.html
+cherry_pick: "udev.patch"
+
 writable_sourcedir: true
 in_tree_build: true
 
