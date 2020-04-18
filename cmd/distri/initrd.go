@@ -615,6 +615,14 @@ func initrd(ctx context.Context, args []string) error {
 		return err
 	}
 
+	if err := iw.mkdir("ro/bin"); err != nil {
+		return err
+	}
+
+	if err := copyDistriBinaryToCPIO(iw, "ro/bin/modprobe", "/ro/bin/modprobe"); err != nil {
+		return err
+	}
+
 	{
 		start := time.Now()
 		if err := iw.mkdir("ro/share/consolefonts"); err != nil {
