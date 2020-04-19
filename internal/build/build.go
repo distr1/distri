@@ -1554,6 +1554,9 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		// 	log.Printf("  %s", kv)
 		// }
 	}
+
+	b.maybeStartDebugShell("before-steps", env)
+
 	// custom build steps
 	times := make([]time.Duration, len(steps))
 	for idx, step := range steps {
