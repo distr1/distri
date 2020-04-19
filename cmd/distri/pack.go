@@ -137,7 +137,13 @@ func pack(ctx context.Context, args []string) error {
 	}
 
 	if p.overwriteBlockDevice != "" {
-		if err := p.overwriteBlockDevice0(p.overwriteBlockDevice); err != nil {
+		loop, err := openLoop(p.overwriteBlockDevice, 0)
+		if err != nil {
+			return err
+		}
+		if err := p.overwriteBlockDevice0(loop, func() (*os.File, error) {
+			return openLoop(p.overwriteBlockDevice, 0)
+		}); err != nil {
 			return fmt.Errorf("overwriteBlockDevice0: %v", err)
 		}
 		return nil
@@ -638,9 +644,6 @@ func (p *packctx) writeDiskImg(sz int64) error {
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 	defer f.Close()
 	if err := f.Truncate(sz); err != nil {
 		return err
@@ -649,8 +652,6 @@ func (p *packctx) writeDiskImg(sz int64) error {
 	// Find the next free loop device:
 	const (
 		LOOP_CTL_GET_FREE = 0x4c82
-		LOOP_SET_FD       = 0x4c00
-		LOOP_SET_STATUS64 = 0x4c04
 	)
 
 	loopctl, err := os.Open("/dev/loop-control")
@@ -666,11 +667,49 @@ func (p *packctx) writeDiskImg(sz int64) error {
 	log.Printf("next free: %d", free)
 
 	loopdev := fmt.Sprintf("/dev/loop%d", free)
-	loop, err := os.OpenFile(loopdev, os.O_RDWR|unix.O_CLOEXEC, 0644)
+	loop, err := openLoop(loopdev, uintptr(f.Fd()))
 	if err != nil {
 		return err
 	}
-	defer loop.Close()
+	var cleanup string
+	defer func() {
+		if cleanup == "" {
+			return
+		}
+		losetup := exec.Command("sudo", "losetup", "-d", cleanup)
+		losetup.Stdout = os.Stdout
+		losetup.Stderr = os.Stderr
+		log.Println(losetup.Args)
+		if err := losetup.Run(); err != nil {
+			log.Printf("%v: %v", losetup.Args, err)
+		}
+	}()
+
+	return p.overwriteBlockDevice0(loop, func() (*os.File, error) {
+		loop.Close()
+		f.Close()
+		// TODO: implement partscan in native Go
+		losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", p.diskImg)
+		losetup.Stderr = os.Stderr
+		out, err := losetup.Output()
+		if err != nil {
+			return nil, xerrors.Errorf("%v: %v", losetup.Args, err)
+		}
+		base := strings.TrimSpace(string(out))
+		cleanup = base
+		log.Printf("base: %q", base)
+		return os.OpenFile(base, os.O_RDWR|unix.O_CLOEXEC, 0644)
+	})
+}
+
+func openLoop(loopdev string, fd uintptr) (*os.File, error) {
+	loop, err := os.OpenFile(loopdev, os.O_RDWR|unix.O_CLOEXEC, 0644)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(loopdev, "/dev/loop") {
+		return loop, nil
+	}
 	// TODO: get this into x/sys/unix
 	type LoopInfo64 struct {
 		device         uint64
@@ -688,11 +727,15 @@ func (p *packctx) writeDiskImg(sz int64) error {
 		init           [2]uint64
 	}
 	const (
+		LOOP_SET_FD       = 0x4c00
+		LOOP_SET_STATUS64 = 0x4c04
+	)
+	const (
 		LO_FLAGS_READ_ONLY = 1
 		LO_FLAGS_AUTOCLEAR = 4 // loop device will autodestruct on last close
 	)
-	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_FD, uintptr(f.Fd())); errno != 0 {
-		return errno
+	if _, _, errno := unix.Syscall(unix.SYS_IOCTL, loop.Fd(), LOOP_SET_FD, fd); errno != 0 {
+		return nil, fmt.Errorf("LOOP_SET_FD(%v): %v", fd, errno)
 	}
 	var filename [64]byte
 	copy(filename[:], []byte("root"))
@@ -700,13 +743,17 @@ func (p *packctx) writeDiskImg(sz int64) error {
 		flags:    LO_FLAGS_AUTOCLEAR | LO_FLAGS_READ_ONLY,
 		filename: filename,
 	}))); errno != 0 {
-		return errno
+		return nil, fmt.Errorf("LOOP_SET_STATUS64: %v", errno)
 	}
-
-	return p.overwriteBlockDevice0(loopdev)
+	return loop, nil
 }
 
-func (p *packctx) overwriteBlockDevice0(loopdev string) error {
+func (p *packctx) overwriteBlockDevice0(loop *os.File, reopen func() (*os.File, error)) error {
+	loopdev := loop.Name()
+	defer func() {
+		loop.Close()
+	}()
+
 	sfdisk := exec.Command("sudo", "sfdisk", loopdev)
 	typeLinux := "0FC63DAF-8483-4772-8E79-3D69D8477DE4" // from sfdisk(8)
 	if p.lvm {
@@ -725,23 +772,12 @@ name=root,type=` + typeLinux)
 
 	base := loopdev
 	if p.diskImg != "" {
-		// loopmount disk images
-		losetup := exec.Command("sudo", "losetup", "--show", "--find", "--partscan", p.diskImg)
-		losetup.Stderr = os.Stderr
-		out, err := losetup.Output()
+		var err error
+		loop, err = reopen()
 		if err != nil {
-			return xerrors.Errorf("%v: %v", losetup.Args, err)
+			return fmt.Errorf("re-opening: %v", err)
 		}
-		base = strings.TrimSpace(string(out))
-		log.Printf("base: %q", base)
-		defer func() {
-			losetup := exec.Command("sudo", "losetup", "-d", base)
-			losetup.Stdout = os.Stdout
-			losetup.Stderr = os.Stderr
-			if err := losetup.Run(); err != nil {
-				log.Printf("%v: %v", losetup.Args, err)
-			}
-		}()
+		base = loop.Name()
 	}
 
 	esp := base + "p1"
@@ -767,6 +803,7 @@ name=root,type=` + typeLinux)
 		pvcreate := exec.Command("sudo", "pvcreate", "--verbose", "--yes", "-ff", root)
 		pvcreate.Stdout = os.Stdout
 		pvcreate.Stderr = os.Stderr
+		log.Println(pvcreate.Args)
 		if err := pvcreate.Run(); err != nil {
 			return fmt.Errorf("%v: %v", pvcreate.Args, err)
 		}
@@ -774,6 +811,7 @@ name=root,type=` + typeLinux)
 		vgcreate := exec.Command("sudo", "vgcreate", "--verbose", "distrivg", root)
 		vgcreate.Stdout = os.Stdout
 		vgcreate.Stderr = os.Stderr
+		log.Println(vgcreate.Args)
 		if err := vgcreate.Run(); err != nil {
 			return fmt.Errorf("%v: %v", vgcreate.Args, err)
 		}
@@ -781,6 +819,7 @@ name=root,type=` + typeLinux)
 		lvcreate := exec.Command("sudo", "lvcreate", "--verbose", "--extents=100%FREE", "--name=root", "distrivg")
 		lvcreate.Stdout = os.Stdout
 		lvcreate.Stderr = os.Stderr
+		log.Println(lvcreate.Args)
 		if err := lvcreate.Run(); err != nil {
 			return fmt.Errorf("%v: %v", lvcreate.Args, err)
 		}
@@ -792,6 +831,7 @@ name=root,type=` + typeLinux)
 		vgchange := exec.Command("sudo", "vgchange", "--verbose", "--activate=y", "distrivg")
 		vgchange.Stdout = os.Stdout
 		vgchange.Stderr = os.Stderr
+		log.Println(vgchange.Args)
 		if err := vgchange.Run(); err != nil {
 			return fmt.Errorf("%v: %v", vgchange.Args, err)
 		}
