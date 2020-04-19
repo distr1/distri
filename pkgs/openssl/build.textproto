@@ -27,6 +27,6 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-# TODO: -j${DISTRI_JOBS}
+  # TODO: -j${DISTRI_JOBS}
   argv: "make install DESTDIR=${DISTRI_DESTDIR} INSTALLTOP=${DISTRI_PREFIX}"
 }

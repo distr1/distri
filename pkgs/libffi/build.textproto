@@ -2,5 +2,4 @@ source: "https://sourceware.org/pub/libffi/libffi-3.3.tar.gz"
 hash: "72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056"
 version: "3.3-4"
 
-
 cbuilder: {}

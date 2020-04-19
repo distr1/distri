@@ -29,8 +29,8 @@ build_step: {
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
-# TODO: remove again
-#  argv: "--enable-static-nss"
+  # TODO: remove again
+  #  argv: "--enable-static-nss"
 }
 
 build_step: {
