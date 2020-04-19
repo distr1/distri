@@ -10,10 +10,9 @@ cbuilder: {
   # TODO: does not result in any .pc files?
   extra_configure_flag: "--enable-pc-files"
 
-  # install headers to /usr/include/curses.h instead of /usr/include/ncurses (the latter is not picked up by psmisc)
-  extra_configure_flag: "--enable-overwrite"
-
   extra_configure_flag: "--with-shared"
 
   extra_configure_flag: "--with-terminfo-dirs=/ro/share/terminfo"
+
+  extra_configure_flag: "--enable-widec"
 }
