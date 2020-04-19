@@ -45,7 +45,7 @@ func hasPrefix(pkg string, prefix []string) bool {
 func list(ctx context.Context, listRepo string, prefix []string) error {
 	var repos []distri.Repo
 	if listRepo != "" {
-		repos = []distri.Repo{{Path: listRepo}}
+		repos = []distri.Repo{{Path: listRepo, PkgPath: listRepo + "/pkg/"}}
 	} else {
 		var err error
 		repos, err = env.Repos()
@@ -56,7 +56,7 @@ func list(ctx context.Context, listRepo string, prefix []string) error {
 	// TODO: fetch metadata from repos concurrently
 	metas := make(map[*pb.MirrorMeta]distri.Repo)
 	for _, r := range repos {
-		rd, err := repo.Reader(context.Background(), r, "pkg/meta.binaryproto", true /* cache */)
+		rd, err := repo.Reader(context.Background(), r, "meta.binaryproto", true /* cache */)
 		if err != nil {
 			if isNotExist(err) {
 				continue
