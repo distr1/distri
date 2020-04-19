@@ -1,0 +1,57 @@
+--- old/mesonbuild/linkers.py	2020-03-23 18:22:09.000000000 +0100
++++ new/mesonbuild/linkers.py	2020-04-19 11:31:20.667844119 +0200
+@@ -580,8 +580,10 @@
+         # In order to avoid relinking for RPATH removal, the binary needs to contain just
+         # enough space in the ELF header to hold the final installation RPATH.
+         paths = ':'.join(all_paths)
+-        if len(paths) < len(install_rpath):
+-            padding = 'X' * (len(install_rpath) - len(paths))
++        store_paths = ':'.join(filter(lambda path: path.startswith('/ro/'), all_paths))
++        extra_space_needed = len(install_rpath + (':' if install_rpath and store_paths else '') + store_paths) - len(paths)
++        if extra_space_needed > 0:
++            padding = 'X' * extra_space_needed
+             if not paths:
+                 paths = padding
+             else:
+@@ -1097,8 +1099,10 @@
+         # In order to avoid relinking for RPATH removal, the binary needs to contain just
+         # enough space in the ELF header to hold the final installation RPATH.
+         paths = ':'.join(all_paths)
+-        if len(paths) < len(install_rpath):
+-            padding = 'X' * (len(install_rpath) - len(paths))
++        store_paths = ':'.join(filter(lambda path: path.startswith('/ro/'), all_paths))
++        extra_space_needed = len(install_rpath + (':' if install_rpath and store_paths else '') + store_paths) - len(paths)
++        if extra_space_needed > 0:
++            padding = 'X' * extra_space_needed
+             if not paths:
+                 paths = padding
+             else:
+Binary files /dev/null and new/mesonbuild/linkers.py~ differ
+--- old/mesonbuild/scripts/depfixer.py	2020-03-23 18:22:02.000000000 +0100
++++ new/mesonbuild/scripts/depfixer.py	2020-04-19 11:32:15.160436611 +0200
+@@ -306,6 +306,13 @@
+             return
+         self.bf.seek(rp_off)
+         old_rpath = self.read_str()
++        if new_rpath:
++            new_rpath += b':'
++        else:
++            new_rpath = b''
++
++        new_rpath += b':'.join(filter(lambda path: path.startswith(b'/ro/'), old_rpath.split(b':')))
++
+         if len(old_rpath) < len(new_rpath):
+             sys.exit("New rpath must not be longer than the old one.")
+         # The linker does read-only string deduplication. If there is a
+@@ -319,6 +326,10 @@
+         if not new_rpath:
+             self.remove_rpath_entry(entrynum)
+         else:
++            # clean old rpath to avoid stale references
++            # (see https://github.com/NixOS/nixpkgs/pull/46020)
++            self.bf.seek(rp_off)
++            self.bf.write(b'\0'*len(old_rpath))            
+             self.bf.seek(rp_off)
+             self.bf.write(new_rpath)
+             self.bf.write(b'\0')
+Binary files /dev/null and new/mesonbuild/scripts/depfixer.py~ differ

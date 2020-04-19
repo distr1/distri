@@ -6,18 +6,12 @@ writable_sourcedir: true
 in_tree_build: true
 
 cherry_pick: "genmarshal.patch"
+# https://github.com/NixOS/nixpkgs/blob/257aff801079890e2c5ed3fa5b8e5f818f611fad/pkgs/development/tools/build-managers/meson/fix-rpath.patch
+cherry_pick: "rpath.patch"
 
 pythonbuilder: {}
 
 runtime_dep: "ninja"
-
-# https://github.com/NixOS/nixpkgs/pull/28444#issuecomment-324033323
-build_step: {
-  argv: "sed"
-  argv: "-i"
-  argv: "s/if os.path.isfile(outname):/if False:/g"
-  argv: "mesonbuild/minstall.py"
-}
 
 build_step: {
   argv: "python3"
