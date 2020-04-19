@@ -22,3 +22,6 @@ dep: "libndp"
 dep: "readline"
 dep: "ncurses"
 dep: "python3"
+
+# Without wpa_supplicant, WiFi devices cannot be managed without a clear error message
+runtime_dep: "wpa_supplicant"
