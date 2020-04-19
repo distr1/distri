@@ -1352,6 +1352,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			//   /lib64 → /ro/glibc-amd64-2.27/out/lib for ld-linux-x86-64.so.2
 			//   /lib → /ro/glibc-i686-amd64-2.27/out/lib for ld-linux.so.2
 			//   /usr/share → /ro/share (for e.g. gobject-introspection)
+			//   /usr/lib → /ro/lib (for e.g. python3)
 
 			// TODO: glob glibc? chose newest? error on >1 glibc?
 			// TODO: without this, gcc fails to produce binaries. /ro/gcc-amd64-8.2.0-1/out/bin/x86_64-pc-linux-gnu-gcc does not pick up our --dynamic-linker flag apparently
@@ -1385,6 +1386,10 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			}
 
 			if err := os.Symlink("/ro/share", filepath.Join(b.ChrootDir, "usr", "share")); err != nil {
+				return nil, err
+			}
+
+			if err := os.Symlink("/ro/lib", filepath.Join(b.ChrootDir, "usr", "lib")); err != nil {
 				return nil, err
 			}
 
