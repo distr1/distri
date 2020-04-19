@@ -1,0 +1,20 @@
+--- old/dstat	2019-01-17 02:22:32.000000000 +0100
++++ new/dstat	2020-04-19 18:19:01.835202124 +0200
+@@ -19,7 +19,7 @@
+ from __future__ import absolute_import, division, generators, print_function
+ __metaclass__ = type
+ 
+-import collections
++import collections.abc
+ import fnmatch
+ import getopt
+ import getpass
+@@ -512,7 +512,7 @@
+                 scale = self.scales[i]
+             else:
+                 scale = self.scale
+-            if isinstance(self.val[name], collections.Sequence) and not isinstance(self.val[name], six.string_types):
++            if isinstance(self.val[name], collections.abc.Sequence) and not isinstance(self.val[name], six.string_types):
+                 line = line + cprintlist(self.val[name], ctype, self.width, scale)
+                 sep = theme['frame'] + char['colon']
+                 if i + 1 != len(self.vars):
