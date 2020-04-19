@@ -1,6 +1,6 @@
 source: "https://launchpad.net/kicad/5.0/5.1.5/+download/kicad-5.1.5.tar.xz"
 hash: "80625a1da876e1be683dc08268fe43fe67bb704e841e977431f7a82bdc096474"
-version: "5.1.5-10"
+version: "5.1.5-11"
 pull: {
   releases_url: "https://kicad-pcb.org/download/source/"
 }

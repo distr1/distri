@@ -1,6 +1,6 @@
 source: "https://upower.freedesktop.org/releases/upower-0.99.11.tar.xz"
 hash: "64b5ffbfccd5bdb15d925777979a4dbee1a957f9eaeb158dc76175267eddbdef"
-version: "0.99.11-6"
+version: "0.99.11-7"
 
 cbuilder: {
   extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"

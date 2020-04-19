@@ -1,6 +1,6 @@
 source: "distri+source://glibc"
 hash: "cb2d64fb808affff30d8a99a85de9d2aa67dc2cbac4ae99af4500d6cfea2bda7"
-version: "2.31-6"
+version: "2.31-7"
 
 #cherry_pick: "ldd.patch" # TODO: figure out why RTLDLIST gets the wrong value
 

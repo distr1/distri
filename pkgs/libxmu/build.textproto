@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/lib/libXmu-1.1.2.tar.bz2"
 hash: "756edc7c383254eef8b4e1b733c3bf1dc061b523c9f9833ac7058378b8349d0b"
-version: "1.1.2-6"
+version: "1.1.2-7"
 
 cbuilder: {}
 

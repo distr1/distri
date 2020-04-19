@@ -1,6 +1,6 @@
 source: "https://w1.fi/releases/wpa_supplicant-2.9.tar.gz"
 hash: "fcbdee7b4a64bea8177973299c8c824419c413ec2e3a95db63dd6a5dc3541f17"
-version: "2.9-8"
+version: "2.9-9"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 in_tree_build: true

@@ -1,6 +1,6 @@
 source: "https://github.com/resurrecting-open-source-projects/scrot/archive/0.9.tar.gz"
 hash: "d9b6141c652f4c4c1a9d412d6d57d2045b515e70cd726e4787f5f066c837269e"
-version: "0.9-7"
+version: "0.9-8"
 
 writable_sourcedir: true  # for autoreconf
 in_tree_build: true

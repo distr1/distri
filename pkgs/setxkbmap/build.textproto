@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/app/setxkbmap-1.3.1.tar.bz2"
 hash: "a9ddb3963f263ba13f0ea105d8c45a531832140530217cc559587bb94f02d3e1"
-version: "1.3.1-6"
+version: "1.3.1-7"
 
 cbuilder: {
   extra_configure_flag: "--with-xkb-config-root=/ro/${DISTRI_RESOLVE:xkeyboard-config}/out/share/X11/xkb"

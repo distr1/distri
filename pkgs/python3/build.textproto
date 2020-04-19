@@ -1,6 +1,6 @@
 source: "https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz"
 hash: "0382996d1ee6aafe59763426cf0139ffebe36984474d0ec4126dd1c40a8b3549"
-version: "3.7.0-4"
+version: "3.7.0-5"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -9,10 +9,13 @@ cbuilder: {}
 # TODO: file upstream bug: pkg-config invocation does not ignore CPATH
 cherry_pick: "py.patch"
 
+cherry_pick: "curses.patch"
+
 # build dependencies:
 dep: "zlib"
 dep: "openssl"
 dep: "libffi"
+dep: "ncurses"
 
 build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"

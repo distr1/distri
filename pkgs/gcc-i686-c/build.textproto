@@ -7,7 +7,7 @@
 
 source: "distri+source://gcc"
 hash: "71e197867611f6054aa1119b13a0c0abac12834765fe2d81f35ac57f84f742d1"
-version: "9.3.0-6"
+version: "9.3.0-7"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

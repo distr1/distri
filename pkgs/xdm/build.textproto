@@ -1,6 +1,6 @@
 source: "https://gitlab.freedesktop.org/xorg/app/xdm/-/archive/16d74befa4430eb024d81ee4070520afff697d60/xdm-16d74befa4430eb024d81ee4070520afff697d60.tar.bz2"
 hash: "6420e03377e70c2c3313a55347c32f135ff478c6eae40b9a0149729ca21a1371"
-version: "16d74befa4430eb024d81ee4070520afff697d60-7"
+version: "16d74befa4430eb024d81ee4070520afff697d60-8"
 
 # https://git.archlinux.org/svntogit/packages.git/plain/trunk/libsystemd.patch?h=packages/xorg-xdm
 cherry_pick: "libsystemd.patch"

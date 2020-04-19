@@ -1,0 +1,15 @@
+--- old/Modules/Setup.dist	2018-06-27 05:07:35.000000000 +0200
++++ new/Modules/Setup.dist	2020-04-19 17:56:31.183794412 +0200
+@@ -306,9 +306,9 @@
+ # provided by the ncurses library.  e.g. on Linux, link with -lncurses
+ # instead of -lcurses).
+ 
+-#_curses _cursesmodule.c -lcurses -ltermcap
++_curses _cursesmodule.c -lncurses
+ # Wrapper for the panel library that's part of ncurses and SYSV curses.
+-#_curses_panel _curses_panel.c -lpanel -lncurses
++_curses_panel _curses_panel.c -lpanel -lncurses
+ 
+ 
+ # Modules that provide persistent dictionary-like semantics.  You will
+Binary files /dev/null and new/Modules/Setup.dist~ differ

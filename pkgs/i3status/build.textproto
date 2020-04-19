@@ -1,6 +1,6 @@
 source: "https://i3wm.org/i3status/i3status-2.13.tar.bz2"
 hash: "ce89c9ff8565f62e88299f1a611229afdfc356b4e97368a5f8c4f06ad2fa1466"
-version: "2.13-9"
+version: "2.13-10"
 
 # sed -i 's,@PATH_XMLTO@,XML_CATALOG_FILES=/ro/docbook-xsl-amd64-1.79.2-4/out/docbook-xsl.xmlcatalog @PATH_XMLTO@ --skip-validation,g' Makefile.in
 cherry_pick: "xmlto.patch"

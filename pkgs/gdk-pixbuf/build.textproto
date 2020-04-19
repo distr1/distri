@@ -1,6 +1,6 @@
 source: "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38.0.tar.xz"
 hash: "dd50973c7757bcde15de6bcd3a6d462a445efd552604ae6435a0532fbbadae47"
-version: "2.38.0-7"
+version: "2.38.0-8"
 
 writable_sourcedir: true
 in_tree_build: true
