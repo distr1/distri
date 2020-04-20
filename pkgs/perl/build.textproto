@@ -1,6 +1,6 @@
 source: "https://www.cpan.org/src/5.0/perl-5.30.2.tar.gz"
 hash: "66db7df8a91979eb576fac91743644da878244cf8ee152f02cd6f5cd7a731689"
-version: "5.30.2-4"
+version: "5.30.2-5"
 
 writable_sourcedir: true
 in_tree_build: true
@@ -10,7 +10,7 @@ cbuilder: {}
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "./Configure -ds -e -Dprefix=${DISTRI_PREFIX} -Dcc=gcc"
+  argv: "./Configure -ds -e -Dprefix=${DISTRI_PREFIX} -Dcc=gcc -Dldflags=\"$LDFLAGS\""
 }
 
 build_step: {
