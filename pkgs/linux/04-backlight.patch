@@ -1,0 +1,53 @@
+From 9ac7d53d70a2b4f43360e3aa0f14a2514339328f Mon Sep 17 00:00:00 2001
+From: Lyude Paul <lyude@redhat.com>
+Date: Thu, 16 Jan 2020 16:16:12 -0500
+Subject: [PATCH] drm/i915: Auto detect DPCD backlight support by default
+
+Turns out we actually already have some companies, such as Lenovo,
+shipping machines with AMOLED screens that don't allow controlling the
+backlight through the usual PWM interface and only allow controlling it
+through the standard EDP DPCD interface. One example of one of these
+laptops is the X1 Extreme 2nd Generation.
+
+Since we've got systems that need this turned on by default now to have
+backlight controls working out of the box, let's start auto-detecting it
+for systems by default based on what the VBT tells us. We do this by
+changing the default value for the enable_dpcd_backlight module param
+from 0 to -1.
+
+Tested-by: AceLan Kao <acelan.kao@canonical.com>
+Tested-by: Perry Yuan <pyuan@redhat.com>
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200116211623.53799-6-lyude@redhat.com
+---
+ drivers/gpu/drm/i915/i915_params.c | 2 +-
+ drivers/gpu/drm/i915/i915_params.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_params.c b/drivers/gpu/drm/i915/i915_params.c
+index 64009e99073d0..905decc36e534 100644
+--- a/drivers/gpu/drm/i915/i915_params.c
++++ b/drivers/gpu/drm/i915/i915_params.c
+@@ -172,7 +172,7 @@ i915_param_named_unsafe(inject_probe_failure, uint, 0400,
+ 
+ i915_param_named(enable_dpcd_backlight, int, 0600,
+ 	"Enable support for DPCD backlight control"
+-	"(-1=use per-VBT LFP backlight type setting, 0=disabled [default], 1=enabled)");
++	"(-1=use per-VBT LFP backlight type setting [default], 0=disabled, 1=enabled)");
+ 
+ #if IS_ENABLED(CONFIG_DRM_I915_GVT)
+ i915_param_named(enable_gvt, bool, 0400,
+diff --git a/drivers/gpu/drm/i915/i915_params.h b/drivers/gpu/drm/i915/i915_params.h
+index be6089e4f9e6f..947d0a38fa3c0 100644
+--- a/drivers/gpu/drm/i915/i915_params.h
++++ b/drivers/gpu/drm/i915/i915_params.h
+@@ -66,7 +66,7 @@ struct drm_printer;
+ 	param(int, reset, 3, 0600) \
+ 	param(unsigned int, inject_probe_failure, 0, 0600) \
+ 	param(int, fastboot, -1, 0600) \
+-	param(int, enable_dpcd_backlight, 0, 0600) \
++	param(int, enable_dpcd_backlight, -1, 0600) \
+ 	param(char *, force_probe, CONFIG_DRM_I915_FORCE_PROBE, 0400) \
+ 	param(unsigned long, fake_lmem_start, 0, 0400) \
+ 	/* leave bools at the end to not create holes */ \

@@ -1,0 +1,54 @@
+From 662884a9ad992240b8169624aae1b0cc273edc30 Mon Sep 17 00:00:00 2001
+From: Lyude Paul <lyude@redhat.com>
+Date: Thu, 16 Jan 2020 16:16:10 -0500
+Subject: [PATCH] drm/i915: Fix DPCD register order in
+ intel_dp_aux_enable_backlight()
+
+For eDP panels, it appears it's expected that so long as the panel is in
+DPCD control mode that the brightness value is never set to 0. Instead,
+if the desired effect is to set the panel's backlight to 0 we're
+expected to simply turn off the backlight through the
+DP_EDP_DISPLAY_CONTROL_REGISTER.
+
+We already do the latter correctly in intel_dp_aux_disable_backlight().
+But, we make the mistake of writing the DPCD registers in the wrong
+order when enabling the backlight in intel_dp_aux_enable_backlight()
+since we currently enable the backlight through
+DP_EDP_DISPLAY_CONTROL_REGISTER before writing the brightness level. On
+the X1 Extreme 2nd Generation, this appears to have the potential of
+confusing the panel in such a way that further attempts to set the
+brightness don't actually change the backlight as expected and leave it
+off. Presumably, this happens because the incorrect register writing
+order briefly leaves the panel with DPCD mode enabled and a 0 brightness
+level set.
+
+So, reverse the order we write the DPCD registers when enabling the
+panel backlight so that we write the brightness value first, and enable
+the backlight second. This fix appears to be the final bit needed to get
+the backlight on the ThinkPad X1 Extreme 2nd Generation's AMOLED screen
+working.
+
+Tested-by: AceLan Kao <acelan.kao@canonical.com>
+Tested-by: Perry Yuan <pyuan@redhat.com>
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200116211623.53799-4-lyude@redhat.com
+---
+ drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+index 5d4db5f8a1655..77a759361c5c7 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
++++ b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+@@ -207,8 +207,9 @@ static void intel_dp_aux_enable_backlight(const struct intel_crtc_state *crtc_st
+ 		}
+ 	}
+ 
++	intel_dp_aux_set_backlight(conn_state,
++				   connector->panel.backlight.level);
+ 	set_aux_backlight_enable(intel_dp, true);
+-	intel_dp_aux_set_backlight(conn_state, connector->panel.backlight.level);
+ }
+ 
+ static void intel_dp_aux_disable_backlight(const struct drm_connector_state *old_conn_state)

@@ -1,0 +1,139 @@
+From 17f5d57915be108b4967b7770c9ea87c493b30a7 Mon Sep 17 00:00:00 2001
+From: Lyude Paul <lyude@redhat.com>
+Date: Tue, 3 Mar 2020 16:53:18 -0500
+Subject: [PATCH] drm/i915: Force DPCD backlight mode on X1 Extreme 2nd Gen 4K
+ AMOLED panel
+
+The X1 Extreme is one of the systems that lies about which backlight
+interface that it uses in its VBIOS as PWM backlight controls don't work
+at all on this machine. It's possible that this panel could be one of
+the infamous ones that can switch between PWM mode and DPCD backlight
+control mode, but we haven't gotten any more details on this from Lenovo
+just yet. For the time being though, making sure the backlight 'just
+works' is a bit more important.
+
+So, add a quirk to force DPCD backlight controls on for these systems
+based on EDID (since this panel doesn't appear to fill in the device ID).
+Hopefully in the future we'll figure out a better way of probing this.
+
+Changes since v2:
+* The bugzilla URL is deprecated, bug reporting happens on gitlab now.
+  Update the messages we print to reflect this
+* Also, take the opportunity to move FDO_BUG_URL out of i915_utils.c and
+  into i915_utils.h so that other places which print things that aren't
+  traditional errors but are worth filing bugs about, can actually use
+  it.
+
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Reviewed-by: Adam Jackson <ajax@redhat.com>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200303215320.93491-1-lyude@redhat.com
+---
+ drivers/gpu/drm/drm_dp_helper.c               |  4 ++++
+ .../drm/i915/display/intel_dp_aux_backlight.c | 24 +++++++++++++++----
+ drivers/gpu/drm/i915/i915_utils.c             |  1 -
+ drivers/gpu/drm/i915/i915_utils.h             |  2 ++
+ include/drm/drm_dp_helper.h                   | 10 ++++++++
+ 5 files changed, 36 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
+index db23308f4d8b5..a39c3cdacb202 100644
+--- a/drivers/gpu/drm/drm_dp_helper.c
++++ b/drivers/gpu/drm/drm_dp_helper.c
+@@ -1236,6 +1236,10 @@ struct edid_quirk {
+  * DP quirks in such cases.
+  */
+ static const struct edid_quirk edid_quirk_list[] = {
++	/* Optional 4K AMOLED panel in the ThinkPad X1 Extreme 2nd Generation
++	 * only supports DPCD backlight controls
++	 */
++	{ MFG(0x4c, 0x83), PROD_ID(0x41, 0x41), BIT(DP_QUIRK_FORCE_DPCD_BACKLIGHT) },
+ };
+ 
+ #undef MFG
+diff --git a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+index 48276237b3623..3e706bb850a87 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
++++ b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+@@ -328,15 +328,31 @@ intel_dp_aux_display_control_capable(struct intel_connector *connector)
+ int intel_dp_aux_init_backlight_funcs(struct intel_connector *intel_connector)
+ {
+ 	struct intel_panel *panel = &intel_connector->panel;
+-	struct drm_i915_private *dev_priv = to_i915(intel_connector->base.dev);
++	struct intel_dp *intel_dp = enc_to_intel_dp(intel_connector->encoder);
++	struct drm_device *dev = intel_connector->base.dev;
++	struct drm_i915_private *dev_priv = to_i915(dev);
+ 
+ 	if (i915_modparams.enable_dpcd_backlight == 0 ||
+-	    (i915_modparams.enable_dpcd_backlight == -1 &&
+-	    dev_priv->vbt.backlight.type != INTEL_BACKLIGHT_VESA_EDP_AUX_INTERFACE))
++	    !intel_dp_aux_display_control_capable(intel_connector))
+ 		return -ENODEV;
+ 
+-	if (!intel_dp_aux_display_control_capable(intel_connector))
++	/*
++	 * There are a lot of machines that don't advertise the backlight
++	 * control interface to use properly in their VBIOS, :\
++	 */
++	if (dev_priv->vbt.backlight.type !=
++	    INTEL_BACKLIGHT_VESA_EDP_AUX_INTERFACE &&
++	    !drm_dp_has_quirk(&intel_dp->desc, intel_dp->edid_quirks,
++			      DP_QUIRK_FORCE_DPCD_BACKLIGHT)) {
++		DRM_DEV_INFO(dev->dev,
++			     "Panel advertises DPCD backlight support, but "
++			     "VBT disagrees. If your backlight controls "
++			     "don't work try booting with "
++			     "i915.enable_dpcd_backlight=1. If your machine "
++			     "needs this, please file a _new_ bug report on "
++			     "drm/i915, see " FDO_BUG_URL " for details.\n");
+ 		return -ENODEV;
++	}
+ 
+ 	panel->backlight.setup = intel_dp_aux_setup_backlight;
+ 	panel->backlight.enable = intel_dp_aux_enable_backlight;
+diff --git a/drivers/gpu/drm/i915/i915_utils.c b/drivers/gpu/drm/i915/i915_utils.c
+index 632d6953c78da..029854ae65fc7 100644
+--- a/drivers/gpu/drm/i915/i915_utils.c
++++ b/drivers/gpu/drm/i915/i915_utils.c
+@@ -8,7 +8,6 @@
+ #include "i915_drv.h"
+ #include "i915_utils.h"
+ 
+-#define FDO_BUG_URL "https://gitlab.freedesktop.org/drm/intel/-/wikis/How-to-file-i915-bugs"
+ #define FDO_BUG_MSG "Please file a bug on drm/i915; see " FDO_BUG_URL " for details."
+ 
+ void
+diff --git a/drivers/gpu/drm/i915/i915_utils.h b/drivers/gpu/drm/i915/i915_utils.h
+index b0ade76bec90e..cae0ae5203985 100644
+--- a/drivers/gpu/drm/i915/i915_utils.h
++++ b/drivers/gpu/drm/i915/i915_utils.h
+@@ -34,6 +34,8 @@
+ struct drm_i915_private;
+ struct timer_list;
+ 
++#define FDO_BUG_URL "https://gitlab.freedesktop.org/drm/intel/-/wikis/How-to-file-i915-bugs"
++
+ #undef WARN_ON
+ /* Many gcc seem to no see through this and fall over :( */
+ #if 0
+diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
+index 7f5dd2ee4a941..c5580e9888267 100644
+--- a/include/drm/drm_dp_helper.h
++++ b/include/drm/drm_dp_helper.h
+@@ -1535,6 +1535,16 @@ enum drm_dp_quirk {
+ 	 * The DSC caps can be read from the physical aux instead.
+ 	 */
+ 	DP_DPCD_QUIRK_DSC_WITHOUT_VIRTUAL_DPCD,
++	/**
++	 * @DP_QUIRK_FORCE_DPCD_BACKLIGHT:
++	 *
++	 * The device is telling the truth when it says that it uses DPCD
++	 * backlight controls, even if the system's firmware disagrees. This
++	 * quirk should be checked against both the ident and panel EDID.
++	 * When present, the driver should honor the DPCD backlight
++	 * capabilities advertised.
++	 */
++	DP_QUIRK_FORCE_DPCD_BACKLIGHT,
+ };
+ 
+ /**

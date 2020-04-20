@@ -1,0 +1,71 @@
+From 79946723092bde318ff11b3e57a02ba13a30b17e Mon Sep 17 00:00:00 2001
+From: Lyude Paul <lyude@redhat.com>
+Date: Thu, 16 Jan 2020 16:16:09 -0500
+Subject: [PATCH] drm/i915: Assume 100% brightness when not in DPCD control
+ mode
+
+Currently we always determine the initial panel brightness level by
+simply reading the value from DP_EDP_BACKLIGHT_BRIGHTNESS_MSB/LSB. This
+seems wrong though, because if the panel is not currently in DPCD
+control mode there's not really any reason why there would be any
+brightness value programmed in the first place.
+
+This appears to be the case on the Lenovo ThinkPad X1 Extreme 2nd
+Generation, where the default value in these registers is always 0 on
+boot despite the fact the panel runs at max brightness by default.
+Getting the initial brightness value correct here is important as well,
+since the panel on this laptop doesn't behave well if it's ever put into
+DPCD control mode while the brightness level is programmed to 0.
+
+So, let's fix this by checking what the current backlight control mode
+is before reading the brightness level. If it's in DPCD control mode, we
+return the programmed brightness level. Otherwise we assume 100%
+brightness and return the highest possible brightness level. This also
+prevents us from accidentally programming a brightness level of 0.
+
+This is one of the many fixes that gets backlight controls working on
+the ThinkPad X1 Extreme 2nd Generation with optional 4K AMOLED screen.
+
+Changes since v1:
+* s/DP_EDP_DISPLAY_CONTROL_REGISTER/DP_EDP_BACKLIGHT_MODE_SET_REGISTER/
+  - Jani
+
+Tested-by: AceLan Kao <acelan.kao@canonical.com>
+Tested-by: Perry Yuan <pyuan@redhat.com>
+Signed-off-by: Lyude Paul <lyude@redhat.com>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200116211623.53799-3-lyude@redhat.com
+---
+ .../drm/i915/display/intel_dp_aux_backlight.c   | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+index 345eed6414557..5d4db5f8a1655 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
++++ b/drivers/gpu/drm/i915/display/intel_dp_aux_backlight.c
+@@ -59,8 +59,25 @@ static u32 intel_dp_aux_get_backlight(struct intel_connector *connector)
+ {
+ 	struct intel_dp *intel_dp = enc_to_intel_dp(connector->encoder);
+ 	u8 read_val[2] = { 0x0 };
++	u8 mode_reg;
+ 	u16 level = 0;
+ 
++	if (drm_dp_dpcd_readb(&intel_dp->aux,
++			      DP_EDP_BACKLIGHT_MODE_SET_REGISTER,
++			      &mode_reg) != 1) {
++		DRM_DEBUG_KMS("Failed to read the DPCD register 0x%x\n",
++			      DP_EDP_BACKLIGHT_MODE_SET_REGISTER);
++		return 0;
++	}
++
++	/*
++	 * If we're not in DPCD control mode yet, the programmed brightness
++	 * value is meaningless and we should assume max brightness
++	 */
++	if ((mode_reg & DP_EDP_BACKLIGHT_CONTROL_MODE_MASK) !=
++	    DP_EDP_BACKLIGHT_CONTROL_MODE_DPCD)
++		return connector->panel.backlight.max;
++
+ 	if (drm_dp_dpcd_read(&intel_dp->aux, DP_EDP_BACKLIGHT_BRIGHTNESS_MSB,
+ 			     &read_val, sizeof(read_val)) < 0) {
+ 		DRM_DEBUG_KMS("Failed to read DPCD register 0x%x\n",

@@ -3,7 +3,7 @@ hash: "f79bd3dbcbe1e7afba256d59b4ca21da12d2c5b4189804dffb2a49fd2b9b52e6"
 # minitrd assumes the upstream version number matches the name of the
 # sub directory in /ro/lib/modules. Notably, for tarball linux-5.6.tar,
 # the version field should use 5.6.0 (trailing .0) as upstream version.
-version: "5.6.5-14"
+version: "5.6.5-15"
 
 writable_sourcedir: true
 in_tree_build: true
@@ -13,6 +13,14 @@ cbuilder: {
 
 cherry_pick: "config.patch"
 cherry_pick: "suspend-amistry.patch"
+
+cherry_pick: "00-backlight.patch"
+cherry_pick: "01-backlight.patch"
+cherry_pick: "02-backlight.patch"
+cherry_pick: "03-backlight.patch"
+cherry_pick: "04-backlight.patch"
+cherry_pick: "06-backlight.patch"
+cherry_pick: "07-backlight.patch"
 
 # build dependencies:
 dep: "bison"
