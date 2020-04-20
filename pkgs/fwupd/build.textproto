@@ -1,6 +1,6 @@
 source: "https://github.com/fwupd/fwupd/archive/1.3.9.tar.gz"
 hash: "d96c6a8e194c5190137d3a01fb1b9c17926c6b00860542380a5719e38ca4911b"
-version: "1.3.9-14"
+version: "1.3.9-15"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -32,8 +32,10 @@ dep: "gnu-efi"
 dep: "dejavu-fonts-ttf"
 dep: "polkit"
 dep: "tpm2-tss"
+dep: "gpgme"
 
 runtime_dep: "shared-mime-info"
+runtime_dep: "glib-networking"  # for downloading metadata via TLS via libsoup
 
 # po/make-images requires a working fontconfig:
 build_step: {
@@ -51,7 +53,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "meson --prefix=${DISTRI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${DISTRI_SOURCEDIR} -Dgpg=false -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/${DISTRI_RESOLVE:gnu-efi}/out/lib -Dsystemdunitdir=${DISTRI_PREFIX}/lib/systemd/system"
+  argv: "meson --prefix=${DISTRI_PREFIX} --sysconfdir=/etc --localstatedir=/var . ${DISTRI_SOURCEDIR} -Dgtkdoc=false -Dtests=false -Dman=false -Defi-libdir=/ro/${DISTRI_RESOLVE:gnu-efi}/out/lib -Dsystemdunitdir=${DISTRI_PREFIX}/lib/systemd/system"
 }
 
 # kludge: the LD_LIBRARY_PATH change is required because we patched rpath handling out of meson.
