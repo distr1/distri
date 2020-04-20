@@ -1,0 +1,12 @@
+source: "https://xorg.freedesktop.org/releases/individual/app/xinput-1.6.3.tar.gz"
+hash: "9f29f9bfe387c5a3d582f9edc8c5a753510ecc6fdfb154c03b5cea5975b10ce4"
+version: "1.6.3-1"
+
+cbuilder: {}
+
+# build dependencies:
+dep: "libx11"
+dep: "libxext"
+dep: "libxi"
+dep: "libxrandr"
+dep: "libxinerama"
