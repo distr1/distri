@@ -1,6 +1,6 @@
-source: "https://cpan.metacpan.org/authors/id/O/OA/OALDERS/Net-HTTP-6.18.tar.gz"
-hash: "7e42df2db7adce3e0eb4f78b88c450f453f5380f120fd5411232e03374ba951c"
-version: "6.18-6"
+source: "https://cpan.metacpan.org/authors/id/O/OA/OALDERS/Net-HTTP-6.19.tar.gz"
+hash: "52b76ec13959522cae64d965f15da3d99dcb445eddd85d2ce4e4f4df385b2fc4"
+version: "6.19-7"
 
 perlbuilder: {}
 

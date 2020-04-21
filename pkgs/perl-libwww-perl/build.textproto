@@ -1,6 +1,6 @@
-source: "https://cpan.metacpan.org/authors/id/E/ET/ETHER/libwww-perl-6.35.tar.gz"
-hash: "dda2578d7b32152c4afce834761a61d117de286c705a9f7972c7ac6032ca5953"
-version: "6.35-6"
+source: "https://cpan.metacpan.org/authors/id/E/ET/ETHER/libwww-perl-6.36.tar.gz"
+hash: "75c034ab4b37f4b9506dc644300697505582cf9545bcf2e2079e7263f675290a"
+version: "6.36-7"
 
 perlbuilder: {}
 

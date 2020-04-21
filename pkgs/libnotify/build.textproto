@@ -1,10 +1,14 @@
-source: "http://ftp.gnome.org/pub/gnome/sources/libnotify/0.7/libnotify-0.7.7.tar.xz"
-hash: "9cb4ce315b2655860c524d46b56010874214ec27e854086c1a1d0260137efc04"
-version: "0.7.7-9"
+source: "http://ftp.gnome.org/pub/gnome/sources/libnotify/0.7/libnotify-0.7.9.tar.xz"
+hash: "66c0517ed16df7af258e83208faaf5069727dfd66995c4bbc51c16954d674761"
+version: "0.7.9-10"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
-cbuilder: {}
+mesonbuilder: {
+  # TODO: build with manpages
+  extra_meson_flag: "-Dman=false"
+  extra_meson_flag: "-Dgtk_doc=false"
+}
 
 # build dependencies:
 dep: "gdk-pixbuf"
@@ -12,3 +16,5 @@ dep: "shared-mime-info"  # TODO: should be pulled in via gdk-pixbuf
 dep: "gtk+"
 dep: "mesa"  # TODO: should be pulled in via epoxy via gtk+
 dep: "python3"
+dep: "libxslt"
+dep: "gobject-introspection"

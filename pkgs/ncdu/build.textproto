@@ -1,6 +1,6 @@
-source: "https://dev.yorhel.nl/download/ncdu-1.14.tar.gz"
-hash: "c694783aab21e27e64baad314b7c1ff34541bfa219fe9645ef6780f1c5558c44"
-version: "1.14-6"
+source: "https://dev.yorhel.nl/download/ncdu-1.14.2.tar.gz"
+hash: "947a7f5c1d0cd4e338e72b4f5bc5e2873651442cec3cb012e04ad2c37152c6b1"
+version: "1.14.2-7"
 
 cbuilder: {}
 

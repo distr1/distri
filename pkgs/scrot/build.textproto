@@ -2,6 +2,9 @@ source: "https://github.com/resurrecting-open-source-projects/scrot/archive/0.9.
 hash: "d9b6141c652f4c4c1a9d412d6d57d2045b515e70cd726e4787f5f066c837269e"
 version: "0.9-8"
 
+# TODO: hopefully releases > 1.3 will not need autoreconf / autoconf-archive:
+# https://github.com/resurrecting-open-source-projects/scrot/issues/42
+
 writable_sourcedir: true  # for autoreconf
 in_tree_build: true
 

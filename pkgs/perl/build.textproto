@@ -2,6 +2,8 @@ source: "https://www.cpan.org/src/5.0/perl-5.30.2.tar.gz"
 hash: "66db7df8a91979eb576fac91743644da878244cf8ee152f02cd6f5cd7a731689"
 version: "5.30.2-5"
 
+# TODO: upstream check: ignore odd release (e.g. 5.31), only even releases are stable (e.g. 5.30)
+
 writable_sourcedir: true
 in_tree_build: true
 

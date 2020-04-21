@@ -1,6 +1,6 @@
 source: "distriroot://distri1-1.tar.gz"
 hash: ""
-version: "native-42"
+version: "native-44"
 
 gobuilder: {
   install: "./cmd/distri ./cmd/minitrd ./cmd/distri-installer"

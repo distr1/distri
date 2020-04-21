@@ -1,6 +1,6 @@
-source: "https://github.com/dell/libsmbios/archive/v2.4.2.tar.gz"
-hash: "ebfe18415e24bbec06d0a9ea1066c8dcd82982555373712713d7e194138650de"
-version: "2.4.2-7"
+source: "https://github.com/dell/libsmbios/archive/v2.4.3.tar.gz"
+hash: "36c36a0f6b59190d6b4fef11696886e4511091929a5eb7ae7cf5fea0c32d3f58"
+version: "2.4.3-8"
 
 writable_sourcedir: true
 in_tree_build: true

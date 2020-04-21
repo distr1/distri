@@ -1,5 +1,5 @@
-source: "https://ftp.gnu.org/gnu/ed/ed-1.14.2.tar.lz"
-hash: "f57962ba930d70d02fc71d6be5c5f2346b16992a455ab9c43be7061dec9810db"
-version: "1.14.2-4"
+source: "https://ftp.gnu.org/gnu/ed/ed-1.16.tar.lz"
+hash: "cfc07a14ab048a758473ce222e784fbf031485bcd54a76f74acfee1f390d8b2c"
+version: "1.16-5"
 
 cbuilder: {}

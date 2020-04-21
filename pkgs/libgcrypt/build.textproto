@@ -1,6 +1,6 @@
-source: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.3.tar.bz2"
-hash: "66ec90be036747602f2b48f98312361a9180c97c68a690a5f376fa0f67d0af7c"
-version: "1.8.3-6"
+source: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.5.tar.bz2"
+hash: "3b4a2a94cb637eff5bdebbcaf46f4d95c4f25206f459809339cdada0eb577ac3"
+version: "1.8.5-7"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

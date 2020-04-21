@@ -1,6 +1,6 @@
-source: "http://ftp.gnome.org/pub/gnome/sources/libsecret/0.18/libsecret-0.18.6.tar.xz"
-hash: "5efbc890ba41a323ffe0599cd260fd12bd8eb62a04aa1bd1b2762575d253d66f"
-version: "0.18.6-7"
+source: "http://ftp.gnome.org/pub/gnome/sources/libsecret/0.18/libsecret-0.18.8.tar.xz"
+hash: "3bfa889d260e0dbabcf5b9967f2aae12edcd2ddc9adc365de7a5cc840c311d15"
+version: "0.18.8-8"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

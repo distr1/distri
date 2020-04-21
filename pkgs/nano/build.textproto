@@ -1,6 +1,6 @@
-source: "https://www.nano-editor.org/dist/v4/nano-4.3.tar.gz"
-hash: "63b6dd621e3e21bb130ca931d761f84b48d974a7b5b4d489189c2df354ca2b4a"
-version: "4.3-4"
+source: "https://www.nano-editor.org/dist/v4/nano-4.9.2.tar.gz"
+hash: "31186eab2c266575a049d73216d422f3ad035304e071a82a9f34560b1cfee320"
+version: "4.9.2-5"
 
 cbuilder: {}
 

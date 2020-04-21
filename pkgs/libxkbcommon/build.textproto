@@ -1,11 +1,15 @@
-source: "http://xkbcommon.org/download/libxkbcommon-0.8.2.tar.xz"
-hash: "7ab8c4b3403d89d01898066b72cb6069bddeb5af94905a65368f671a026ed58c"
-version: "0.8.2-7"
+source: "http://xkbcommon.org/download/libxkbcommon-0.10.0.tar.xz"
+hash: "57c3630cdc38fb4734cd57fa349e92244f5ae3862813e533cedbd86721a0b6f2"
+version: "0.10.0-8"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
-cbuilder: {
-  extra_configure_flag: "--with-xkb-config-root=/ro/${DISTRI_RESOLVE:xkeyboard-config}/out/share/X11/xkb"
+mesonbuilder: {
+  extra_meson_flag: "-Dxkb-config-root=/ro/${DISTRI_RESOLVE:xkeyboard-config}/out/share/X11/xkb"
+  # Disable Wayland demo programs:
+  extra_meson_flag: "-Denable-wayland=false"
+  # Disable docs (require doxygen):
+  extra_meson_flag: "-Denable-docs=false"
 }
 
 # build dependencies:
