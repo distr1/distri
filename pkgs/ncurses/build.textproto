@@ -2,6 +2,12 @@ source: "https://invisible-mirror.net/archives/ncurses/ncurses-6.1.tar.gz"
 hash: "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17"
 version: "6.1-8"
 
+# contains INPUT(-lncursesw) redirect
+extra_file: "ncursesw.so.ld"
+extra_file: "panelw.so.ld"
+extra_file: "formw.so.ld"
+extra_file: "menuw.so.ld"
+
 cbuilder: {
   # TODO: enable C++ support?
   extra_configure_flag: "--without-cxx-binding"
@@ -15,4 +21,26 @@ cbuilder: {
   extra_configure_flag: "--with-terminfo-dirs=/ro/share/terminfo"
 
   extra_configure_flag: "--enable-widec"
+}
+
+install: {
+  # required e.g. for bash:
+  symlink: { oldname: "libncurses.so" newname: "lib/libcurses.so" }
+
+  file: {
+    srcpath: "ncursesw.so.ld"
+    destpath: "lib/libncurses.so"
+  }
+  file: {
+    srcpath: "panelw.so.ld"
+    destpath: "lib/libpanel.so"
+  }
+  file: {
+    srcpath: "menuw.so.ld"
+    destpath: "lib/libmenu.so"
+  }
+  file: {
+    srcpath: "formw.so.ld"
+    destpath: "lib/libform.so"
+  }
 }
