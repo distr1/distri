@@ -21,6 +21,10 @@ cbuilder: {
   extra_configure_flag: "--with-terminfo-dirs=/ro/share/terminfo"
 
   extra_configure_flag: "--enable-widec"
+
+  # install headers to /usr/include/curses.h instead of /usr/include/ncurses
+  # (the latter is not found by e.g. python3)
+  extra_configure_flag: "--enable-overwrite"
 }
 
 install: {
