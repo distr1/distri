@@ -130,7 +130,8 @@ func (c *Ctx) install1(ctx context.Context, root string, installRepo distri.Repo
 		return err
 	}
 
-	log.Printf("installing package %q to root %s", pkg, root)
+	// TODO: print this as a table if the output is a tty
+	log.Printf("installing package %q to root %s from repo %s", pkg, root, installRepo.Path)
 
 	for _, fn := range []string{pkg + ".squashfs", pkg + ".meta.textproto"} {
 		f, err := os.Create(filepath.Join(tmpDir, fn))
