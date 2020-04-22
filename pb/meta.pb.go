@@ -31,7 +31,7 @@ type Meta struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Transitive closure of runtime dependency package names. E.g.:
-	// ["glibc-amd64-2.27-3", "pam-amd64-1.3.1-3"]
+	// ["glibc-amd64-2.31-4", "pam-amd64-1.3.1-11"]
 	RuntimeDep []string `protobuf:"bytes,1,rep,name=runtime_dep,json=runtimeDep" json:"runtime_dep,omitempty"`
 	// The source package from which this package was built. Useful to tie
 	// split packages back to their source, and for globbing versions.

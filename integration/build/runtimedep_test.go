@@ -104,8 +104,8 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 		{
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27-3",     // from shlibdeps
-				"libepoxy-amd64-1.5.2-5", // from pkgconfig
+				"glibc-amd64-2.31-4",     // from shlibdeps
+				"libepoxy-amd64-1.5.2-7", // from pkgconfig
 			},
 		},
 	} {
@@ -143,7 +143,7 @@ dep: "musl" # for wrapper programs
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; echo '#!/ro/perl-amd64-5.28.0-3/bin/perl' > $d/foo"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; echo '#!/ro/perl-amd64-5.30.2-5/bin/perl' > $d/foo"
 >
 `
 
@@ -221,8 +221,8 @@ func TestShebangRuntimeDep(t *testing.T) {
 		{
 			meta: "shebang-amd64-1.meta.textproto",
 			want: []string{
-				"glibc-amd64-2.27-3",  // from shlibdeps
-				"perl-amd64-5.28.0-3", // from shebang
+				"glibc-amd64-2.31-4",  // from shlibdeps
+				"perl-amd64-5.30.2-5", // from shebang
 			},
 		},
 	} {

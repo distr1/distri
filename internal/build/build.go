@@ -500,7 +500,7 @@ func (b *Ctx) PkgSource() error {
 			filtered := make([]string, 0, len(paths))
 			for _, p := range paths {
 				// Remove paths that reference other compilation units
-				// (e.g. /usr/src/glibc-amd64-2.27-3/csu/init.c):
+				// (e.g. /usr/src/glibc-amd64-2.31-4/csu/init.c):
 				if !strings.HasPrefix(p, prefix) {
 					continue
 				}

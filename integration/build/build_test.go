@@ -103,13 +103,14 @@ func TestBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := []string{
-			"pkg-config-amd64-0.29.2-3", // from hello-1 (direct)
-			"glib-amd64-2.58.0-3",       // from pkg-config (transitive)
-			"glibc-amd64-2.27-3",        // from glib-2.58.0
-			"zlib-amd64-1.2.11-3",       // from glib-2.58.0
-			"util-linux-amd64-2.32-6",   // from glib-2.58.0
-			"pam-amd64-1.3.1-10",        // from util-linux-2.32
-			"libffi-amd64-3.2.1-3",      // from glib-2.58.0
+			"pkg-config-amd64-0.29.2-4", // from hello-1 (direct)
+			"glib-amd64-2.64.1-4",       // from pkg-config (transitive)
+			"glibc-amd64-2.31-4",        // from glib
+			"zlib-amd64-1.2.11-4",       // from glib
+			"util-linux-amd64-2.32.1-7", // from glib
+			"pam-amd64-1.3.1-11",        // from util-linux
+			"libffi-amd64-3.3-4",        // from glib
+			"ncurses-amd64-6.1-8",       // from bash (transitive)
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {

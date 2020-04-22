@@ -609,7 +609,7 @@ The following build environment is created in ChrootDir:
 | `/dest/tmp` | DestDir (e.g. `/tmp/distri-dest-3129384/tmp`)
 | `/dest/tmp/ro/share` | symlink to `$DESTDIR/ro/i3status-amd64-2.13-3/out/share`
 | `/dest/tmp/ro/lib` | symlink to `$DESTDIR/ro/i3status-amd64-2.13-3/out/lib`
-| `/lib64` | symlink to `/ro/glibc-amd64-2.27-3/out/lib`
+| `/lib64` | symlink to `/ro/glibc-amd64-2.31-4/out/lib`
 | `/usr/include` | symlink to `/ro/include`
 | `/bin` | symlink to `/ro/bin`
 | `/sbin` | symlink to `/ro/bin`

@@ -63,8 +63,8 @@ func anyFullySpecified(filename string) string {
 }
 
 // ParseVersion constructs a PackageVersion from filename,
-// e.g. glibc-amd64-2.27-37, which parses into PackageVersion{Upstream: "2.27",
-// DistriRevision: 37}.
+// e.g. glibc-amd64-2.31-4, which parses into PackageVersion{Upstream: "2.31",
+// DistriRevision: 4}.
 func ParseVersion(filename string) PackageVersion {
 	filename = anyFullySpecified(filename)
 	var pkg, arch string

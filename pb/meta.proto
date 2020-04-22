@@ -8,7 +8,7 @@ import "build.proto";
 
 message Meta {
   // Transitive closure of runtime dependency package names. E.g.:
-  // ["glibc-amd64-2.27-3", "pam-amd64-1.3.1-3"]
+  // ["glibc-amd64-2.31-4", "pam-amd64-1.3.1-11"]
   repeated string runtime_dep = 1;
 
   // The source package from which this package was built. Useful to tie

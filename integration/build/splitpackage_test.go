@@ -199,16 +199,18 @@ func TestSplitPackageBuild(t *testing.T) {
 			want: []string{
 				"multi-libs-amd64-1", // from splitting
 				// from multi-libs:
-				"bash-amd64-4.4.18-3",
-				"glibc-amd64-2.27-3", // from bash
+				"bash-amd64-5.0-4",
+				"glibc-amd64-2.31-4",  // from bash
+				"ncurses-amd64-6.1-8", // from bash
 			},
 		},
 
 		{
 			meta: "multi-libs-amd64-1.meta.textproto",
 			want: []string{
-				"bash-amd64-4.4.18-3",
-				"glibc-amd64-2.27-3", // from bash
+				"bash-amd64-5.0-4",
+				"glibc-amd64-2.31-4",  // from bash
+				"ncurses-amd64-6.1-8", // from bash
 			},
 		},
 	} {

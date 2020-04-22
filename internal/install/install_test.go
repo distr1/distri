@@ -32,11 +32,11 @@ func TestHooks(t *testing.T) {
 	c := &install.Ctx{
 		HookDryRun: &buf,
 	}
-	if err := c.Packages([]string{"linux"}, tmpdir, env.DefaultRepoRoot, false /* update */); err != nil {
+	if err := c.Packages([]string{"linux"}, tmpdir, env.DefaultRepo, false /* update */); err != nil {
 		t.Fatal(err)
 	}
 	distri.RunAtExit()
-	want := `[sh -c distri initrd -release 5.5.2 -output /boot/initramfs-5.5.2-12.img]
+	want := `[sh -c distri initrd -release 5.6.5 -output /boot/initramfs-5.6.5-15.img]
 [/etc/update-grub]
 `
 	got := buf.String()

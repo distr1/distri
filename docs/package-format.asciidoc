@@ -142,7 +142,7 @@ program of the package (in `out/bin`).
 
 This directory is used in the `rpath` and results in faster dependency
 resolution (thanks to caching, and a flattened search path) than using an
-`rpath` containing all individual paths (e.g. `/ro/glibc-amd64-2.27-3/out/lib`
+`rpath` containing all individual paths (e.g. `/ro/glibc-amd64-2.31-4/out/lib`
 etc.).
 
 debug::
@@ -165,8 +165,8 @@ squashfs-root/bin
 squashfs-root/bin/haveged
 squashfs-root/debug -> ../haveged-amd64-1.9.4-3-debug/debug
 squashfs-root/lib
-squashfs-root/lib/libc.so.6 -> /ro/glibc-amd64-2.27-3/out/lib/libc-2.27.so
-squashfs-root/lib/libhavege.so.1 -> /ro/haveged-amd64-1.9.4-3/out/lib/libhavege.so.1.1.0
+squashfs-root/lib/libc.so.6 -> /ro/glibc-amd64-2.31-4/out/lib/libc-2.31.so
+squashfs-root/lib/libhavege.so.1 -> /ro/haveged-amd64-1.9.4-6/out/lib/libhavege.so.1.1.0
 squashfs-root/out
 squashfs-root/out/include
 squashfs-root/out/include/haveged
