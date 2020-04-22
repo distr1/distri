@@ -1,5 +1,5 @@
-source: "https://sourceforge.net/projects/libpng/files/libpng-1.6.37.tar.xz"
-hash: "fd04e57e0d91d4d61a0440c0ee926facfea552a39ed37817fcbd35dbc9708662"
+source: "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz"
+hash: "505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca"
 version: "1.6.37-7"
 
 cbuilder: {}
