@@ -40,7 +40,7 @@ func Repos() ([]distri.Repo, error) {
 	fis, err := ioutil.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []distri.Repo{{Path: DefaultRepoRoot}}, nil
+			return []distri.Repo{{Path: DefaultRepoRoot, PkgPath: DefaultRepo}}, nil
 		}
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func Repos() ([]distri.Repo, error) {
 			}
 			repos = append(repos, distri.Repo{
 				Path:    line,
-				PkgPath: line + "pkg/",
+				PkgPath: line + "/pkg",
 			})
 		}
 	}

@@ -38,5 +38,8 @@ func cmdinstall(ctx context.Context, args []string) error {
 	}
 
 	c := &install.Ctx{}
+	if *repo != "" {
+		*repo = *repo + "/pkg"
+	}
 	return c.Packages(fset.Args(), *root, *repo, *update)
 }

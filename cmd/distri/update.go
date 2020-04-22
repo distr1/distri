@@ -50,7 +50,7 @@ func update(ctx context.Context, args []string) error {
 		}
 
 		c := &install.Ctx{}
-		if err := c.Packages([]string{"distri1"}, *root, *repo, false); err != nil {
+		if err := c.Packages([]string{"distri1"}, *root, *repo+"/pkg", false); err != nil {
 			return err
 		}
 
@@ -69,7 +69,7 @@ func update(ctx context.Context, args []string) error {
 	}
 
 	c := &install.Ctx{}
-	if err := c.Packages([]string{"base"}, *root, *repo, false); err != nil {
+	if err := c.Packages([]string{"base"}, *root, *repo+"/pkg", false); err != nil {
 		return err
 	}
 
@@ -105,7 +105,7 @@ func update(ctx context.Context, args []string) error {
 	}
 
 	c = &install.Ctx{}
-	if err := c.Packages(pkgs, *root, *repo, true); err != nil {
+	if err := c.Packages(pkgs, *root, *repo+"/pkg", true); err != nil {
 		// try to persist an after file listing (best effort)
 		if err := persistFileListing(fileListingFileName(*root, updateStart, "files.after.txt"), filepath.Join(*root, "roimg")); err != nil {
 			log.Println(err)
