@@ -177,6 +177,8 @@ func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replace
 	if len(versions) == 0 {
 		return "", "", "", fmt.Errorf("not yet implemented")
 	}
+	u, _ = url.Parse(source)
+	u.Path = path.Dir(u.Path)
 	u.Path = path.Join(u.Path, strings.Replace(path.Base(source), upstreamVersion, versions[0], 1))
 	const hashFromDownload = "" // sentinel
 	return u.String(), hashFromDownload, versions[0], nil
