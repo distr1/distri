@@ -1,6 +1,6 @@
-source: "https://ftp.gnu.org/gnu/gawk/gawk-5.0.1.tar.xz"
-hash: "8e4e86f04ed789648b66f757329743a0d6dfb5294c3b91b756a474f1ce05a794"
-version: "5.0.1-4"
+source: "https://ftp.gnu.org/gnu/gawk/gawk-5.1.0.tar.xz"
+hash: "cf5fea4ac5665fd5171af4716baab2effc76306a9572988d5ba1078f196382bd"
+version: "5.1.0-5"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

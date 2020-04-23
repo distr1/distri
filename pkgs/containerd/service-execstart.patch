@@ -1,11 +1,11 @@
---- a/O.containerd.service	2018-09-10 15:52:25.394222347 +0200
-+++ b/containerd.service	2018-09-10 15:53:35.121210765 +0200
+--- a/containerd.service	2020-04-16 02:38:46.000000000 +0200
++++ b/containerd.service	2020-04-23 09:15:12.260049680 +0200
 @@ -5,7 +5,7 @@
  
  [Service]
- ExecStartPre=/sbin/modprobe overlay
+ ExecStartPre=-/sbin/modprobe overlay
 -ExecStart=/usr/local/bin/containerd
-+ExecStart=/ro/containerd-amd64-1.2.0-beta.2-7/out/bin/docker-containerd
++ExecStart=/ro/containerd-amd64-1.3.4-8/out/bin/docker-containerd
+ 
+ Type=notify
  Delegate=yes
- KillMode=process
- LimitNOFILE=1048576

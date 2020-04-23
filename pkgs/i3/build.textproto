@@ -1,6 +1,6 @@
-source: "https://i3wm.org/downloads/i3-4.18.tar.bz2"
-hash: "1fbb58d580e8f8afb7e807fe71164d6003e454d71f22eea5eb3256c73c7a6537"
-version: "4.18-10"
+source: "https://i3wm.org/downloads/i3-4.18.1.tar.bz2"
+hash: "9abf90fa803f2cb8e53e3bc8c952eba48c43463083608e4107fc53ab224be07c"
+version: "4.18.1-11"
 
 cbuilder: {
   # adds -g to the compilation flags

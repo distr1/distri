@@ -1,6 +1,6 @@
-source: "https://github.com/opencontainers/runc/archive/v1.0.0-rc5.tar.gz"
-hash: "770e180d1cca1f3c1a67512ebf9720caafe97af4fc2fe12fa43a3cf7bfa77522"
-version: "1.0.0-rc5-7"
+source: "https://github.com/opencontainers/runc/archive/v1.0.0-rc9.tar.gz"
+hash: "2ec69c25df9f02c6fd38eb287145f8afba6772f809abe01df4534b5bfd68e8d4"
+version: "1.0.0-rc9-8"
 pull: {
   release_regexp: "v([0-9.a-z-]+)\\.tar\\.gz"
 }

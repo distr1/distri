@@ -1,6 +1,6 @@
-source: "https://github.com/scop/bash-completion/archive/2.9.tar.gz"
-hash: "fddd9e6739c972eea95d1f0e0e84fa9a17a5935ba21eab37308b27580cc4d790"
-version: "2.9-4"
+source: "https://github.com/scop/bash-completion/archive/2.10.tar.gz"
+hash: "185f5c912440cc99c066315047dcced7e314ded24cf08732125bd24ad928d29f"
+version: "2.10-5"
 
 writable_sourcedir: true
 in_tree_build: true

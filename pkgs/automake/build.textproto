@@ -1,6 +1,6 @@
-source: "https://ftp.gnu.org/gnu/automake/automake-1.16.tar.xz"
-hash: "f98f2d97b11851cbe7c2d4b4eaef498ae9d17a3c2ef1401609b7b4ca66655b8a"
-version: "1.16-6"
+source: "https://ftp.gnu.org/gnu/automake/automake-1.16.2.tar.xz"
+hash: "ccc459de3d710e066ab9e12d2f119bd164a08c9341ca24ba22c9adaa179eedd0"
+version: "1.16.2-7"
 
 cbuilder: {}
 

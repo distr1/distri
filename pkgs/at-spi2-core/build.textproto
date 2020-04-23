@@ -1,6 +1,6 @@
-source: "https://download.gnome.org/sources/at-spi2-core/2.30/at-spi2-core-2.30.0.tar.xz"
-hash: "0175f5393d19da51f4c11462cba4ba6ef3fa042abf1611a70bdfed586b7bfb2b"
-version: "2.30.0-7"
+source: "https://download.gnome.org/sources/at-spi2-core/2.30/at-spi2-core-2.30.1.tar.xz"
+hash: "856f1f8f1bf0482a1bc275b18b9f28815d346bc4175004d37e175a1a0e50ca48"
+version: "2.30.1-8"
 
 cbuilder: {}
 

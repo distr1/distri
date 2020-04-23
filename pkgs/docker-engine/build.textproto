@@ -1,6 +1,6 @@
-source: "https://github.com/docker/engine/archive/v18.06.1-ce.tar.gz"
-hash: "df4a3d2100d9b55c36288e721277dc61e4ceded5738423b09fe0d5ed42369f54"
-version: "18.06.1-ce-7"
+source: "https://github.com/docker/engine/archive/v19.03.8.tar.gz"
+hash: "13ec45ad45091111bd566aca9d81989b3f05e0625dab68d33c3ad81ff924172f"
+version: "19.03.8-8"
 
 cbuilder: {}  # TODO: remove once the Go builder takes care of pulling in the C deps
 
