@@ -23,7 +23,7 @@ type checker struct {
 }
 
 func (c *checker) check1(pkg string) error {
-	b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", pkg, "build.textproto"))
+	b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot.PkgDir(pkg), "build.textproto"))
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(
 		db:            db,
 		updateVersion: updateVersion,
 	}
-	fis, err := ioutil.ReadDir(filepath.Join(env.DistriRoot, "pkgs"))
+	fis, err := ioutil.ReadDir(env.DistriRoot.PkgDir(""))
 	if err != nil {
 		return err
 	}

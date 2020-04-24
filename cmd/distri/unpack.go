@@ -36,7 +36,7 @@ func unpack(ctx context.Context, args []string) error {
 		return err
 	}
 
-	if buildDir := filepath.Join(env.DistriRoot, "build"); !strings.HasPrefix(wd, buildDir+"/") {
+	if buildDir := env.DistriRoot.BuildDir(""); !strings.HasPrefix(wd, buildDir+"/") {
 		return xerrors.Errorf("run unpack in a subdirectory of %s", buildDir)
 	}
 	pkg := filepath.Base(wd)

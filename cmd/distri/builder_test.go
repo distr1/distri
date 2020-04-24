@@ -101,7 +101,7 @@ func TestBuilder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", "hello", "build.textproto"))
+	c, err := ioutil.ReadFile(filepath.Join(env.DistriRoot.PkgDir("hello"), "build.textproto"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func TestBuilder(t *testing.T) {
 
 	prefixed := make([]string, len(expanded))
 	for i, e := range expanded {
-		prefixed[i] = "build/distri/pkg/" + e
+		prefixed[i] = "_build/distri/pkg/" + e
 	}
 
 	inputs := append([]string{
@@ -162,7 +162,7 @@ func TestBuilder(t *testing.T) {
 
 	var squashfs string
 	for _, artifact := range artifacts {
-		if strings.HasPrefix(artifact, "build/distri/pkg/hello") &&
+		if strings.HasPrefix(artifact, "_build/distri/pkg/hello") &&
 			strings.HasSuffix(artifact, ".squashfs") {
 			squashfs = artifact
 			break

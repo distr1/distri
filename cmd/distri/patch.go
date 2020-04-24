@@ -113,14 +113,14 @@ func patch(ctx context.Context, args []string) error {
 		if err != nil {
 			return err
 		}
-		if pkgs := filepath.Join(env.DistriRoot, "pkgs"); filepath.Dir(wd) != pkgs {
+		if pkgs := env.DistriRoot.PkgDir(""); filepath.Dir(wd) != pkgs {
 			return xerrors.Errorf("either run distri patch inside of %s or specify -pkg", pkgs)
 		}
 		*pkg = filepath.Base(wd)
 	}
 	log.Printf("patching package %s, persisting to %s", *pkg, patchfile)
 
-	buildProtoPath := filepath.Join(env.DistriRoot, "pkgs", *pkg, "build.textproto")
+	buildProtoPath := filepath.Join(env.DistriRoot.PkgDir(*pkg), "build.textproto")
 	c, err := ioutil.ReadFile(buildProtoPath)
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func patch(ctx context.Context, args []string) error {
 			return err
 		}
 		defer os.RemoveAll(upperdir)
-		lowerdir := filepath.Join(env.DistriRoot, "build", p.Pkg, build.TrimArchiveSuffix(filepath.Base(p.Proto.GetSource())))
+		lowerdir := filepath.Join(env.DistriRoot.BuildDir(p.Pkg), build.TrimArchiveSuffix(filepath.Base(p.Proto.GetSource())))
 		target := filepath.Join(p.ChrootDir, "usr", "src", p.fullName())
 		if err := os.MkdirAll(target, 0755); err != nil {
 			return xerrors.Errorf("MkdirAll(%s) = %v", target, err)
@@ -335,7 +335,7 @@ func patch(ctx context.Context, args []string) error {
 			return err
 		}
 
-		fn := filepath.Join(env.DistriRoot, "pkgs", *pkg, patchfile)
+		fn := filepath.Join(env.DistriRoot.PkgDir(*pkg), patchfile)
 		if err := ioutil.WriteFile(fn, patch.Bytes(), 0644); err != nil {
 			return err
 		}

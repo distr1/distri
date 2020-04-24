@@ -31,11 +31,12 @@ func TestRebuild(t *testing.T) {
 	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
-	distriroot, err := ioutil.TempDir("", "integrationbuild")
+	dr, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer distritest.RemoveAll(t, distriroot)
+	defer distritest.RemoveAll(t, dr)
+	distriroot := env.DistriRootDir(dr)
 
 	// arranges for these inputs
 	// - libxcb 1.13-5 (meta/squashfs)
@@ -44,11 +45,11 @@ func TestRebuild(t *testing.T) {
 	// - i3 4.17-7 (build.textproto)
 
 	// Copy build dependencies (and their build.textproto) into our temporary DISTRIROOT:
-	repo := filepath.Join(distriroot, "build", "distri", "pkg")
+	repo := filepath.Join(distriroot.BuildDir("distri"), "pkg")
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
-	pkgs := filepath.Join(distriroot, "pkgs")
+	pkgs := distriroot.PkgDir("")
 	if err := os.MkdirAll(pkgs, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +71,7 @@ func TestRebuild(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		pkgDir := filepath.Join(env.DistriRoot, "pkgs", meta.GetSourcePkg())
+		pkgDir := env.DistriRoot.PkgDir(meta.GetSourcePkg())
 		cp = exec.Command("cp", "-r", pkgDir, pkgs)
 		cp.Stderr = os.Stderr
 		if err := cp.Run(); err != nil {
@@ -80,7 +81,7 @@ func TestRebuild(t *testing.T) {
 
 	// bump distri revision of libxcb
 	{
-		buildFilePath := filepath.Join(distriroot, "pkgs/libxcb/build.textproto")
+		buildFilePath := filepath.Join(distriroot.PkgDir("libxcb"), "build.textproto")
 		existing, err := ioutil.ReadFile(buildFilePath)
 		if err != nil {
 			t.Fatal(err)
@@ -127,7 +128,7 @@ func TestRebuild(t *testing.T) {
 	var buf bytes.Buffer
 	bctx := &batch.Ctx{
 		Log:        log.New(&buf, "", 0 /* no time and date for easier processing */),
-		DistriRoot: distriroot,
+		DistriRoot: env.DistriRootDir(distriroot),
 		DefaultBuildCtx: &build.Ctx{
 			Arch: "amd64", // TODO
 			Repo: repo,

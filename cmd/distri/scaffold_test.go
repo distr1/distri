@@ -115,7 +115,7 @@ func TestExistingFile(t *testing.T) {
 		return string(b)
 	}()
 	want := func() string {
-		b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot, "pkgs", "gcc", "build.textproto"))
+		b, err := ioutil.ReadFile(filepath.Join(env.DistriRoot.PkgDir("gcc"), "build.textproto"))
 		if err != nil {
 			t.Fatal(err)
 		}

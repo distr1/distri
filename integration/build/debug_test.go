@@ -107,20 +107,21 @@ func TestDebugBuild(t *testing.T) {
 	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
-	distriroot, err := ioutil.TempDir("", "integrationbuild")
+	dr, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer distritest.RemoveAll(t, distriroot)
+	defer distritest.RemoveAll(t, dr)
+	distriroot := env.DistriRootDir(dr)
 
 	// Write source tarball:
 	writeSingleFileTarball(t,
-		filepath.Join(distriroot, "build", "debug", "source.tar"),
+		filepath.Join(distriroot.BuildDir("debug"), "source.tar"),
 		"sourcedir.c",
 		sourceDirC)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
-	repo := filepath.Join(distriroot, "build", "distri", "pkg")
+	repo := filepath.Join(distriroot.BuildDir("distri"), "pkg")
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +152,7 @@ func TestDebugBuild(t *testing.T) {
 	}
 
 	// Write package build instructions:
-	pkgDir := filepath.Join(distriroot, "pkg", "debug")
+	pkgDir := distriroot.PkgDir("debug")
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +166,7 @@ func TestDebugBuild(t *testing.T) {
 	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
-		"DISTRIROOT=" + distriroot,
+		"DISTRIROOT=" + string(distriroot),
 		"PATH=" + os.Getenv("PATH"), // to locate tar(1)
 	}
 	build.Stdout = os.Stdout
@@ -174,7 +175,7 @@ func TestDebugBuild(t *testing.T) {
 		t.Fatalf("%v: %v", build.Args, err)
 	}
 
-	f, err := os.Open(filepath.Join(distriroot, "build", "distri", "src", "debug-amd64-1.squashfs"))
+	f, err := os.Open(filepath.Join(distriroot.BuildDir("distri"), "src", "debug-amd64-1.squashfs"))
 	if err != nil {
 		t.Fatal(err)
 	}

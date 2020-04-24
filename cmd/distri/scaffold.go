@@ -145,7 +145,7 @@ func (c *scaffoldctx) buildFileExisting(buildFilePath string, hash string, exist
 }
 
 func (c *scaffoldctx) buildFile(hash string) ([]byte, error) {
-	buildFilePath := filepath.Join(env.DistriRoot, "pkgs", c.Name, "build.textproto")
+	buildFilePath := filepath.Join(env.DistriRoot.PkgDir(c.Name), "build.textproto")
 	if existing, err := ioutil.ReadFile(buildFilePath); err == nil {
 		return c.buildFileExisting(buildFilePath, hash, existing)
 	} else if !os.IsNotExist(err) {
@@ -186,7 +186,7 @@ func download1(name, sourceURL string) (string, error) {
 		},
 		Repo: env.DefaultRepo,
 	}
-	builddir := filepath.Join(env.DistriRoot, "build", name)
+	builddir := env.DistriRoot.BuildDir(name)
 	if err := os.MkdirAll(builddir, 0755); err != nil {
 		return "", err
 	}
@@ -218,7 +218,7 @@ func (c *scaffoldctx) scaffold1() error {
 		return err
 	}
 
-	pkgdir := filepath.Join(env.DistriRoot, "pkgs", c.Name)
+	pkgdir := env.DistriRoot.PkgDir(c.Name)
 	if err := os.MkdirAll(pkgdir, 0755); err != nil {
 		return err
 	}
@@ -357,7 +357,7 @@ func scaffold(ctx context.Context, args []string) error {
 		return scaffoldGo(*gomod)
 	}
 	if *pull != "" {
-		buildFilePath := filepath.Join(env.DistriRoot, "pkgs", *pull, "build.textproto")
+		buildFilePath := filepath.Join(env.DistriRoot.PkgDir(*pull), "build.textproto")
 		return scaffoldPull(*pull, buildFilePath, *dryRun)
 	}
 	if fset.NArg() != 1 {

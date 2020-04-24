@@ -40,7 +40,7 @@ func (n *node) ID() int64 { return n.id }
 type Ctx struct {
 	// Configuration
 	Log             *log.Logger
-	DistriRoot      string
+	DistriRoot      env.DistriRootDir
 	DefaultBuildCtx *build.Ctx
 }
 
@@ -54,7 +54,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 
 	std := c.DefaultBuildCtx.Clone()
 
-	pkgsDir := filepath.Join(c.DistriRoot, "pkgs")
+	pkgsDir := c.DistriRoot.PkgDir("")
 	fis, err := ioutil.ReadDir(pkgsDir)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 
 		fullname := pkg + "-" + arch + "-" + buildProto.GetVersion()
 		if !simulate {
-			fn := filepath.Join(c.DistriRoot, "build", "distri", "pkg", fullname+".meta.textproto")
+			fn := filepath.Join(c.DistriRoot.BuildDir("distri"), "pkg", fullname+".meta.textproto")
 			meta, err := pb.ReadMetaFile(fn)
 			if err != nil {
 				if !os.IsNotExist(err) {
@@ -264,7 +264,7 @@ type buildResult struct {
 }
 
 type scheduler struct {
-	distriRoot string
+	distriRoot env.DistriRootDir
 	log        *log.Logger
 	logDir     string
 	simulate   bool
@@ -346,7 +346,7 @@ func (s *scheduler) build(ctx context.Context, pkg string) error {
 	}
 	defer logFile.Close()
 	build := exec.CommandContext(ctx, "distri", "build")
-	build.Dir = filepath.Join(s.distriRoot, "pkgs", pkg)
+	build.Dir = s.distriRoot.PkgDir(pkg)
 	build.Stdout = logFile
 	build.Stderr = logFile
 	if err := build.Run(); err != nil {

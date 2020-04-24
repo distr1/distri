@@ -13,15 +13,25 @@ import (
 )
 
 // DistriRoot is the root directory of where the distri repository was checked out.
-var DistriRoot = func() string {
+type DistriRootDir string
+
+var DistriRoot = func() DistriRootDir {
 	if env := os.Getenv("DISTRIROOT"); env != "" {
-		return env
+		return DistriRootDir(env)
 	}
 
 	// TODO: find the dominating distri directory, if any.
 
-	return os.ExpandEnv("$HOME/distri") // default
+	return DistriRootDir(os.ExpandEnv("$HOME/distri")) // default
 }()
+
+func (d *DistriRootDir) BuildDir(pkg string) string {
+	return filepath.Join(string(*d), "_build", pkg)
+}
+
+func (d *DistriRootDir) PkgDir(pkg string) string {
+	return filepath.Join(string(*d), "pkgs", pkg)
+}
 
 // DistriConfig is the directory containing distri config files (typically
 // /etc/distri).
@@ -73,7 +83,7 @@ var DefaultRepoRoot = func() string {
 	if env := os.Getenv("DEFAULTREPOROOT"); env != "" {
 		return env
 	}
-	return join(DistriRoot, "build/distri/") // default
+	return DistriRoot.BuildDir("distri") // default
 }()
 
 // DefaultRepo is the default repository path or URL to pkg/.
@@ -81,7 +91,7 @@ var DefaultRepo = func() string {
 	if env := os.Getenv("DEFAULTREPO"); env != "" {
 		return env
 	}
-	return join(DistriRoot, "build/distri/pkg") // default
+	return join(DefaultRepoRoot, "pkg") // default
 }()
 
 func join(elem ...string) string {

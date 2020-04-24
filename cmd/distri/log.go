@@ -36,9 +36,9 @@ func showlog(ctx context.Context, args []string) error {
 
 	var match string
 	if *version != "" {
-		match = filepath.Join(env.DistriRoot, "build", pkg, "build-"+*version+".log")
+		match = filepath.Join(env.DistriRoot.BuildDir(pkg), "build-"+*version+".log")
 	} else {
-		matches, err := filepath.Glob(filepath.Join(env.DistriRoot, "build", pkg, "*.log"))
+		matches, err := filepath.Glob(filepath.Join(env.DistriRoot.BuildDir(pkg), "*.log"))
 		if err != nil {
 			return err
 		}

@@ -50,25 +50,23 @@ const (
 func updateFromDistriroot(builddir string) error {
 	// TODO(later): fill ignore from .gitignore?
 	ignore := map[string]bool{
-		".git":         true,
-		"linux-4.18.7": true,
-		"linux-5.1.9":  true,
-		"linux-5.1.10": true,
-		"pkgs":         true,
-		"docs":         true,
-		"org":          true,
+		".git": true,
+		"pkgs": true,
+		"docs": true,
+		"org":  true,
 	}
 	ignoreRel := map[string]bool{
-		"build": true,
+		"build":  true,
+		"_build": true,
 	}
-	err := filepath.Walk(env.DistriRoot, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(string(env.DistriRoot), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() && ignore[info.Name()] {
 			return filepath.SkipDir
 		}
-		rel, err := filepath.Rel(env.DistriRoot, path)
+		rel, err := filepath.Rel(string(env.DistriRoot), path)
 		if err != nil {
 			return err
 		}
@@ -184,7 +182,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		b.DestDir = filepath.Join(tmpdir, "tmp")
 	}
 
-	pkgbuilddir := filepath.Join("../../build/", b.Pkg)
+	pkgbuilddir := filepath.Join("../../_build/", b.Pkg)
 
 	if err := os.MkdirAll(pkgbuilddir, 0755); err != nil {
 		return err
@@ -226,7 +224,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		if err := os.Chdir("../" + redirected.Pkg); err != nil {
 			return err
 		}
-		redirected.PkgDir = filepath.Join(env.DistriRoot, "pkgs", redirected.Pkg)
+		redirected.PkgDir = env.DistriRoot.PkgDir(redirected.Pkg)
 		bld, err := pb.ReadBuildFile(filepath.Join(redirected.PkgDir, "build.textproto"))
 		if err != nil {
 			return err
@@ -359,7 +357,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 					if chunk.GetPath() == "" {
 						return fmt.Errorf("protocol error: first chunk did not contain a path")
 					}
-					f, err = renameio.TempFile("", filepath.Join(env.DistriRoot, chunk.GetPath()))
+					f, err = renameio.TempFile("", filepath.Join(string(env.DistriRoot), chunk.GetPath()))
 					if err != nil {
 						return err
 					}
@@ -478,7 +476,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 			InputDigest:  proto.String(b.InputDigest),
 		})
 		fn := filepath.Join("../distri/pkg/" + fullName + ".meta.textproto")
-		b.ArtifactWriter.Write([]byte("build/" + strings.TrimPrefix(fn, "../") + "\n"))
+		b.ArtifactWriter.Write([]byte("_build/" + strings.TrimPrefix(fn, "../") + "\n"))
 		if err := renameio.WriteFile(fn, []byte(c), 0644); err != nil {
 			return err
 		}
@@ -492,7 +490,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 }
 
 func store(ctx context.Context, cl bpb.BuildClient, fn string) error {
-	f, err := os.Open(filepath.Join(env.DistriRoot, fn))
+	f, err := os.Open(filepath.Join(string(env.DistriRoot), fn))
 	if err != nil {
 		return err
 	}
@@ -631,7 +629,7 @@ func cmdbuild(ctx context.Context, args []string) error {
 
 	var pwd string
 	if *pkg != "" {
-		pwd = filepath.Join(env.DistriRoot, "pkgs", *pkg)
+		pwd = env.DistriRoot.PkgDir(*pkg)
 		if err := os.Chdir(pwd); err != nil {
 			return err
 		}
@@ -673,7 +671,7 @@ func cmdbuild(ctx context.Context, args []string) error {
 		"pkg",
 		"src",
 	} {
-		if err := os.MkdirAll(filepath.Join("../../build/distri/", subdir), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join("../../_build/distri/", subdir), 0755); err != nil {
 			return err
 		}
 	}

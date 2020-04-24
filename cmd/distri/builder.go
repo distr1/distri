@@ -103,7 +103,7 @@ func (b *buildsrv) Build(req *bpb.BuildRequest, srv bpb.Build_BuildServer) error
 	// TODO: enforce inputs can only be read
 
 	for _, subdir := range []string{"pkg", "debug"} {
-		if err := os.MkdirAll(filepath.Join(b.uploadBaseDir, "build", "distri", subdir), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(b.uploadBaseDir, "_build", "distri", subdir), 0755); err != nil {
 			return err
 		}
 	}

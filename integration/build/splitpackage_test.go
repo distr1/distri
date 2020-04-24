@@ -78,14 +78,15 @@ func TestSplitPackageBuild(t *testing.T) {
 	ctx, canc := distri.InterruptibleContext()
 	defer canc()
 
-	distriroot, err := ioutil.TempDir("", "integrationbuild")
+	dr, err := ioutil.TempDir("", "integrationbuild")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer distritest.RemoveAll(t, distriroot)
+	defer distritest.RemoveAll(t, dr)
+	distriroot := env.DistriRootDir(dr)
 
 	// Copy build dependencies into our temporary DISTRIROOT:
-	repo := filepath.Join(distriroot, "build", "distri", "pkg")
+	repo := filepath.Join(distriroot.BuildDir("distri"), "pkg")
 	if err := os.MkdirAll(repo, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +113,7 @@ func TestSplitPackageBuild(t *testing.T) {
 	}
 
 	// Write package build instructions:
-	pkgDir := filepath.Join(distriroot, "pkg", "multi")
+	pkgDir := distriroot.PkgDir("multi")
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +127,7 @@ func TestSplitPackageBuild(t *testing.T) {
 	build := exec.CommandContext(ctx, "distri", "build")
 	build.Dir = pkgDir
 	build.Env = []string{
-		"DISTRIROOT=" + distriroot,
+		"DISTRIROOT=" + string(distriroot),
 		"PATH=" + os.Getenv("PATH"), // to locate tar(1)
 	}
 	build.Stdout = os.Stdout
@@ -158,7 +159,7 @@ func TestSplitPackageBuild(t *testing.T) {
 	} {
 		test := test // copy
 		t.Run("VerifySquashFS/"+test.image, func(t *testing.T) {
-			f, err := os.Open(filepath.Join(distriroot, "build", "distri", "pkg", test.image))
+			f, err := os.Open(filepath.Join(distriroot.BuildDir("distri"), "pkg", test.image))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -216,7 +217,7 @@ func TestSplitPackageBuild(t *testing.T) {
 	} {
 		test := test // copy
 		t.Run("VerifyRuntimeDep/"+test.meta, func(t *testing.T) {
-			meta, err := pb.ReadMetaFile(filepath.Join(distriroot, "build", "distri", "pkg", test.meta))
+			meta, err := pb.ReadMetaFile(filepath.Join(distriroot.BuildDir("distri"), "pkg", test.meta))
 			if err != nil {
 				t.Fatal(err)
 			}

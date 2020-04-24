@@ -34,7 +34,7 @@ func Builddeps(t testing.TB, packages ...string) []string {
 			continue
 		}
 		seen[pkg] = true
-		build, err := pb.ReadBuildFile(filepath.Join(distritest.DistriRoot, "pkgs", pkg, "build.textproto"))
+		build, err := pb.ReadBuildFile(filepath.Join(distritest.DistriRoot.PkgDir(pkg), "build.textproto"))
 		if err != nil {
 			t.Fatal(err)
 		}

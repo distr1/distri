@@ -42,10 +42,10 @@ hash: ""
 version: "1-1"
 `,
 
-	"build/distri/pkg/test-amd64-530-1.meta.textproto":     `source_pkg: "test"`,
-	"build/distri/pkg/lvm2-amd64-2.03.00-3.meta.textproto": `source_pkg: "lvm2"`,
-	"build/distri/pkg/systemd-amd64-239-8.meta.textproto":  `source_pkg: "systemd"`,
-	"build/distri/pkg/unaffected-amd64-1-1.meta.textproto": `source_pkg: "unaffected"`,
+	"_build/distri/pkg/test-amd64-530-1.meta.textproto":     `source_pkg: "test"`,
+	"_build/distri/pkg/lvm2-amd64-2.03.00-3.meta.textproto": `source_pkg: "lvm2"`,
+	"_build/distri/pkg/systemd-amd64-239-8.meta.textproto":  `source_pkg: "systemd"`,
+	"_build/distri/pkg/unaffected-amd64-1-1.meta.textproto": `source_pkg: "unaffected"`,
 }
 
 func TestBump(t *testing.T) {

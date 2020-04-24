@@ -649,7 +649,7 @@ func (b *Ctx) PkgSource() error {
 	if err := f.CloseAtomicallyReplace(); err != nil {
 		return err
 	}
-	b.ArtifactWriter.Write([]byte("build/distri/" + subdir + "/" + b.FullName() + ".squashfs" + "\n"))
+	b.ArtifactWriter.Write([]byte("_build/distri/" + subdir + "/" + b.FullName() + ".squashfs" + "\n"))
 	log.Printf("source package successfully created in %s", dest)
 
 	return nil
@@ -761,7 +761,7 @@ func (b *Ctx) Package() error {
 		if err := f.CloseAtomicallyReplace(); err != nil {
 			return err
 		}
-		b.ArtifactWriter.Write([]byte("build/distri/" + pkg.subdir + "/" + fullName + ".squashfs" + "\n"))
+		b.ArtifactWriter.Write([]byte("_build/distri/" + pkg.subdir + "/" + fullName + ".squashfs" + "\n"))
 		log.Printf("package successfully created in %s", dest)
 		pkgEv.Done()
 	}

@@ -37,7 +37,7 @@ type versionIncrement struct {
 }
 
 func (i *versionIncrement) Perform() error {
-	fn := filepath.Join(env.DistriRoot, "pkgs", i.pkg, "build.textproto")
+	fn := filepath.Join(env.DistriRoot.PkgDir(i.pkg), "build.textproto")
 	b, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func incrementVersion(current string) string {
 }
 
 func bumpAll(write bool) ([]versionIncrement, error) {
-	d, err := os.Open(filepath.Join(env.DistriRoot, "pkgs"))
+	d, err := os.Open(env.DistriRoot.PkgDir(""))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func bumpAll(write bool) ([]versionIncrement, error) {
 	d.Close()
 	var inc []versionIncrement
 	for _, name := range names {
-		fn := filepath.Join(env.DistriRoot, "pkgs", name, "build.textproto")
+		fn := filepath.Join(env.DistriRoot.PkgDir(name), "build.textproto")
 		build, err := pb.ReadBuildFile(fn)
 		if err != nil {
 			return nil, err
@@ -124,7 +124,7 @@ func (b *bumpctx) srcOf(pkg string) (string, error) {
 }
 
 func (b *bumpctx) addPkg(pkg string) error {
-	buildTextprotoPath := filepath.Join(env.DistriRoot, "pkgs", pkg, "build.textproto")
+	buildTextprotoPath := filepath.Join(env.DistriRoot.PkgDir(pkg), "build.textproto")
 	c, err := ioutil.ReadFile(buildTextprotoPath)
 	if err != nil {
 		return err
@@ -193,7 +193,7 @@ func newBumpctx() (*bumpctx, error) {
 		globCache:  make(map[string][]string),
 		bumped:     make(map[string]bool),
 	}
-	d, err := os.Open(filepath.Join(env.DistriRoot, "pkgs"))
+	d, err := os.Open(env.DistriRoot.PkgDir(""))
 	if err != nil {
 		return nil, err
 	}
