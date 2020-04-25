@@ -1,0 +1,23 @@
+source: "https://github.com/blueman-project/blueman/releases/download/2.1.2/blueman-2.1.2.tar.xz"
+hash: "517db22cdf5b80af7865efb3fdf0d056fb549ba63b7f39d9d7346bfafc83894c"
+version: "2.1.2-11"
+
+cbuilder: {
+  extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
+  extra_configure_flag: "--with-systemduserunitdir=${prefix}/lib/systemd/user"
+}
+
+# build dependencies:
+dep: "intltool"
+dep: "python3"
+dep: "iproute2"
+dep: "pygobject"
+dep: "cython"
+dep: "bluez"
+dep: "pycairo"
+
+runtime_dep: "pygobject"  # gi
+runtime_dep: "pycairo"
+runtime_dep: "gtk+"
+
+# TODO:blueman-mechanism.service references libexec directly but PYTHONPATH is not set in the context of a systemd service. should all systemd services get an EnvironmentFile?
