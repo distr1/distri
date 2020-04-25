@@ -1,6 +1,6 @@
-source: "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.5/gnutls-3.5.19.tar.xz"
-hash: "1936eb64f03aaefd6eb16cef0567457777618573826b94d03376bb6a4afadc44"
-version: "3.5.19-7"
+source: "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.13.tar.xz"
+hash: "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"
+version: "3.6.13-8"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

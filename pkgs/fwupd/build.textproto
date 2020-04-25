@@ -1,6 +1,6 @@
-source: "https://github.com/fwupd/fwupd/archive/1.3.9.tar.gz"
-hash: "d96c6a8e194c5190137d3a01fb1b9c17926c6b00860542380a5719e38ca4911b"
-version: "1.3.9-15"
+source: "https://github.com/fwupd/fwupd/archive/1.4.0.tar.gz"
+hash: "fda5d1170c93aa376ba4f5a6072e58e556a6454f6e7c116de85c9766639db1fa"
+version: "1.4.0-16"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -33,6 +33,7 @@ dep: "dejavu-fonts-ttf"
 dep: "polkit"
 dep: "tpm2-tss"
 dep: "gpgme"
+dep: "libjcat"
 
 runtime_dep: "shared-mime-info"
 runtime_dep: "glib-networking"  # for downloading metadata via TLS via libsoup

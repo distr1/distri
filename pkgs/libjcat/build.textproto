@@ -1,0 +1,16 @@
+source: "https://github.com/hughsie/libjcat/archive/0.1.1.tar.gz"
+hash: "0b1fae2b1ca8658848ae20b190ae7a70b480730ac0342cc86b2c9aa48a5a2c46"
+version: "0.1.1-1"
+
+mesonbuilder: {
+  # The help2man invocation on jcat-tool(1) fails the build:
+  extra_meson_flag: "-Dman=false"
+}
+
+# build dependencies:
+dep: "json-glib"
+dep: "gnutls"
+dep: "gpgme"
+dep: "gobject-introspection"
+dep: "vala"
+#dep: "help2man"
