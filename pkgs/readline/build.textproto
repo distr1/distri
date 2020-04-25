@@ -5,6 +5,16 @@ version: "8.0-8"
 cherry_pick: "ncurses.patch"
 cherry_pick: "ncurses2.patch"
 
+# Upstream suggests adding -D_FUNCTION_DEF to programs that link against
+# readline, but we can be more aggressive and just drop the (deprecated,
+# compatibility) code in question outright:
+# https://lists.gnu.org/archive/html/bug-readline/2017-05/msg00006.html
+cherry_pick: "funcdef.patch"
+
+# TODO: report this as a bug! HAVE_STDARG_H is not necessarily defined
+# when using readline/rlstdc.h
+cherry_pick: "stdarg.patch"
+
 # build dependencies:
 dep: "ncurses"
 

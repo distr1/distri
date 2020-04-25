@@ -1,0 +1,12 @@
+--- old/rlstdc.h	2011-03-26 20:00:21.000000000 +0100
++++ new/rlstdc.h	2020-04-25 15:54:08.374162497 +0200
+@@ -44,7 +44,7 @@
+ 
+ /* Moved from config.h.in because readline.h:rl_message depends on these
+    defines. */
+-#if defined (__STDC__) && defined (HAVE_STDARG_H)
++#if defined (__STDC__)
+ #  define PREFER_STDARG
+ #  define USE_VARARGS
+ #else
+Binary files /dev/null and new/rlstdc.h~ differ
