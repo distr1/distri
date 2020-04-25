@@ -56,6 +56,7 @@ dep: "go-github.com-envoyproxy-go--control--plane"
 dep: "go-github.com-envoyproxy-protoc--gen--validate"
 dep: "go-github.com-prometheus-client_model"
 dep: "go-google.golang.org-protobuf"
+dep: "go-github.com-mattn-go--isatty"
 
 runtime_dep: "kbd"
 runtime_dep: "dosfstools"  # for mkfs.fat

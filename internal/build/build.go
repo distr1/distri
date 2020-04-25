@@ -36,6 +36,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/renameio"
 	"github.com/jacobsa/fuse"
+	"github.com/mattn/go-isatty"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/unix"
 	"golang.org/x/xerrors"
@@ -1595,7 +1596,12 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		cmd.Stdout = io.MultiWriter(os.Stdout, buildLog)
 		cmd.Stderr = io.MultiWriter(os.Stderr, buildLog)
 		if err := cmd.Run(); err != nil {
-			// TODO: ask the user first if they want to debug, and only during interactive builds. detect pty?
+			// We check stdin because stdout and stderr are redirected to the
+			// log file:
+			if !isatty.IsTerminal(os.Stdin.Fd()) {
+				return nil, fmt.Errorf("build step %v failed (%v)", cmd.Args, err)
+			}
+			// TODO: ask the user first if they want to debug, and only during interactive builds
 			// TODO: ring the bell :)
 			log.Printf("build step %v failed (%v), starting debug shell", cmd.Args, err)
 			cmd := exec.Command("bash", "-i")

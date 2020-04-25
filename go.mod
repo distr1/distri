@@ -12,6 +12,7 @@ require (
 	github.com/klauspost/pgzip v1.2.1
 	github.com/lib/pq v1.3.0
 	github.com/lpar/gzipped v1.1.0
+	github.com/mattn/go-isatty v0.0.12
 	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20191018194151-ab9b9b21328a
 	github.com/s-urbaniak/uevent v1.0.0
