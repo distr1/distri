@@ -1,6 +1,6 @@
-source: "https://github.com/apple/cups/releases/download/v2.2.8/cups-2.2.8-source.tar.gz"
-hash: "3968fc1d26fc48727508db1c1380e36c6694ab90177fd6920aec5f6cc73af9e4"
-version: "2.2.8-5"
+source: "https://github.com/apple/cups/releases/download/v2.3.1/cups-2.3.1-source.tar.gz"
+hash: "1bca9d89507e3f68cbc84482fe46ae8d5333af5bc2b9061347b2007182ac77ce"
+version: "2.3.1-6"
 
 writable_sourcedir: true
 in_tree_build: true

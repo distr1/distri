@@ -1,6 +1,6 @@
-source: "https://github.com/irssi/irssi/releases/download/1.1.1/irssi-1.1.1.tar.xz"
-hash: "784807e7a1ba25212347f03e4287cff9d0659f076edfb2c6b20928021d75a1bf"
-version: "1.1.1-6"
+source: "https://github.com/irssi/irssi/releases/download/1.2.2/irssi-1.2.2.tar.xz"
+hash: "6727060c918568ba2ff4295ad736128dba0b995d7b20491bca11f593bd857578"
+version: "1.2.2-7"
 
 cbuilder: {}
 
