@@ -1,12 +1,11 @@
-source: "https://github.com/iputils/iputils/archive/s20180629.tar.gz"
-hash: "da14105291dd491f28ea91ade854ed10aee8ba019641c80eed233de3908be7c5"
-version: "20180629-6"
+source: "https://github.com/iputils/iputils/archive/s20190709.tar.gz"
+hash: "a15720dd741d7538dd2645f9f516d193636ae4300ff7dbc8bfca757bf166490a"
+version: "20190709-7"
 
-writable_sourcedir: true
-in_tree_build: true
+cherry_pick: "setuid.patch"
 
-# TODO: switch to cbuilder build steps
-cbuilder: {
+mesonbuilder: {
+  extra_meson_flag: "-DBUILD_MANS=false"
 }
 
 # build dependencies:
@@ -15,15 +14,4 @@ dep: "libidn2"
 dep: "iconv"  # TODO: remove this libidn2 dep
 dep: "libunistring"  # TODO: remove this libidn2 dep
 dep: "nettle"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "CC=gcc make"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp {ping,tracepath,traceroute6,clockdiff,rdisc,arping,tftpd,rarpd} $d/"
-}
+dep: "libxslt"
