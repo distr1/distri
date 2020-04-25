@@ -1,6 +1,6 @@
-source: "https://archive.mozilla.org/pub/security/nss/releases/NSS_3_39_RTM/src/nss-3.39.tar.gz"
-hash: "6be64dd76f212415cc8bc34343ac1e7389048db4db9a023a84873c411dc5864b"
-version: "3.39-6"
+source: "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_51_1_RTM/src/nss-3.51.1.tar.gz"
+hash: "085c5eaceef040eddea639e2e068e70f0e368f840327a678ef74ae3d6c15ca78"
+version: "3.51.1-7"
 pull: {
   releases_url: "https://ftp.mozilla.org/pub/security/nss/releases/"
   release_regexp: "NSS_([0-9]+_[0-9]+(?:_[0-9]+)?)_RTM"
@@ -10,7 +10,7 @@ pull: {
   }
 }
 
-cherry_pick: "nss-3.39-standalone-1.patch"
+cherry_pick: "nss-3.51.1-standalone-1.patch"
 
 writable_sourcedir: true
 in_tree_build: true
@@ -44,6 +44,7 @@ build_step: {
   argv: "NSPR_INCLUDE_DIR=/ro/${DISTRI_RESOLVE:nspr}/out/include/nspr/"
   argv: "CROSS_COMPILE=1"  # otherwise cmd/shlibsign tries to call sign.sh, which requires /dev/urandom
   argv: "NSS_USE_SYSTEM_SQLITE=1"  # prevent linking errors in e.g. networkmanager
+  argv: "PREFIX=${DISTRI_PREFIX}"
   # TODO: USE_SYSTEM_ZLIB=1
 }
 
@@ -56,7 +57,7 @@ build_step: {
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/include; mkdir -p $d; cp -RL dist/{public,private}/nss/* $d"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/include/nss/; mkdir -p $d; cp -RL dist/{public,private}/nss/* $d"
 }
 
 build_step: {
