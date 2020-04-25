@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -196,6 +197,7 @@ func extractVersions(upstreamVersion, source, b, rePatternExpr, replaceAllExpr, 
 // TODO: signature is getting long. move to a struct
 func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replaceAllExpr, replaceAllRepl string) (remoteSource, remoteHash, remoteVersion string, _ error) {
 	u, _ := url.Parse(releasesURL)
+	log.Printf("fetching releases from %s", u.String())
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return "", "", "", err
@@ -212,12 +214,10 @@ func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replace
 	if err != nil {
 		return "", "", "", err
 	}
-	// TODO: parse HTML, try to find <a> elements whose basename(target) matches
-	// links, err := extractLinks(u, b)
-	// if err != nil {
-	// 	return "", "", "", err
-	// }
-	// log.Printf("links: %v", links)
+	links, err := extractLinks(u, b)
+	if err != nil {
+		return "", "", "", err
+	}
 
 	versions, err := extractVersions(upstreamVersion, source, string(b), rePatternExpr, replaceAllExpr, replaceAllRepl)
 	if err != nil {
@@ -226,10 +226,24 @@ func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replace
 	if len(versions) == 0 {
 		return "", "", "", fmt.Errorf("not yet implemented")
 	}
+
+	const hashFromDownload = "" // sentinel
+
+	newBase := strings.Replace(path.Base(source), upstreamVersion, versions[0], 1)
+	log.Printf("looking for <a> with href=%s", newBase)
+	for _, l := range links {
+		if filepath.Base(l) == newBase {
+			log.Printf("found link: %s", l)
+			return l, hashFromDownload, versions[0], nil
+		}
+	}
+
+	// Fall back: try to update the existing source URL.
+	// This will not work if releases are in different sub directories.
 	u, _ = url.Parse(source)
 	u.Path = path.Dir(u.Path)
-	u.Path = path.Join(u.Path, strings.Replace(path.Base(source), upstreamVersion, versions[0], 1))
-	const hashFromDownload = "" // sentinel
+	u.Path = path.Join(u.Path, newBase)
+	log.Printf("fallback: %s", u.String())
 	return u.String(), hashFromDownload, versions[0], nil
 }
 
@@ -381,7 +395,7 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 			}
 			// e.g. https://launchpad.net/lightdm-gtk-greeter/
 		} else {
-			u.Path = path.Dir(u.Path)
+			u.Path = path.Dir(u.Path) + "/"
 		}
 		releases = u.String()
 	}
