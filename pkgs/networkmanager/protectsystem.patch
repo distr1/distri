@@ -1,0 +1,11 @@
+--- old/data/NetworkManager.service.in	2020-04-10 18:40:56.000000000 +0200
++++ new/data/NetworkManager.service.in	2020-04-25 20:42:01.577309535 +0200
+@@ -16,7 +16,6 @@
+ KillMode=process
+ CapabilityBoundingSet=CAP_NET_ADMIN CAP_DAC_OVERRIDE CAP_NET_RAW CAP_NET_BIND_SERVICE CAP_SETGID CAP_SETUID CAP_SYS_MODULE CAP_AUDIT_WRITE CAP_KILL CAP_SYS_CHROOT
+ 
+-ProtectSystem=true
+ ProtectHome=read-only
+ 
+ [Install]
+Binary files /dev/null and new/data/NetworkManager.service.in~ differ

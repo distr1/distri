@@ -1,0 +1,12 @@
+--- old/meson.build	2020-04-10 18:41:02.000000000 +0200
++++ new/meson.build	2020-04-25 20:08:17.631624504 +0200
+@@ -919,6 +919,8 @@
+   assert(meson.version().version_compare('>= 0.46.0'), '-Ddocs requires meson >= 0.46')
+   subdir('man')
+   subdir('docs')
++else
++  subdir('man')
+ endif
+ 
+ configure_file(
+Binary files /dev/null and new/meson.build~ differ

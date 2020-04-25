@@ -1,0 +1,12 @@
+--- old/libnm/meson.build	2020-04-10 18:40:56.000000000 +0200
++++ new/libnm/meson.build	2020-04-25 19:52:36.141221992 +0200
+@@ -255,7 +255,7 @@
+   ld_library_path = meson.current_build_dir() + ld_library_path
+ 
+   generate_setting_docs_env = [
+-    'env', '-i',
++    'env',
+     'GI_TYPELIB_PATH=' + gi_typelib_path,
+     'LD_LIBRARY_PATH=' + ld_library_path,
+   ]
+Binary files /dev/null and new/libnm/meson.build~ differ

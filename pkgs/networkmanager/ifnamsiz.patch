@@ -1,0 +1,19 @@
+--- old/src/systemd/sd-adapt-core/nm-sd-adapt-core.h	2020-04-10 18:40:56.000000000 +0200
++++ new/src/systemd/sd-adapt-core/nm-sd-adapt-core.h	2020-04-25 19:51:58.171742796 +0200
+@@ -62,15 +62,6 @@
+ 	return 0;
+ }
+ 
+-/* Can't include both net/if.h and linux/if.h; so have to define this here */
+-#ifndef IF_NAMESIZE
+-#define IF_NAMESIZE 16
+-#endif
+-
+-#ifndef IFNAMSIZ
+-#define IFNAMSIZ IF_NAMESIZE
+-#endif
+-
+ #ifndef MAX_HANDLE_SZ
+ #define MAX_HANDLE_SZ 128
+ #endif
+Binary files /dev/null and new/src/systemd/sd-adapt-core/nm-sd-adapt-core.h~ differ

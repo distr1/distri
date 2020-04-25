@@ -1,16 +1,28 @@
-source: "https://download.gnome.org/sources/NetworkManager/1.22/NetworkManager-1.22.10.tar.xz"
-hash: "2b29ccc1531ba7ebba95a97f40c22b963838e8b6833745efe8e6fb71fd8fca77"
-version: "1.22.10-11"
+source: "https://download.gnome.org/sources/NetworkManager/1.23/NetworkManager-1.23.90.tar.xz"
+hash: "d85b4f2dcae9d9dc634fdb4a28be2750a3ab1f0bffc948a747978b645d655ef7"
+version: "1.23.90-12"
+
+# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/merge_requests/478
+cherry_pick: "env-i.patch"
+
+cherry_pick: "man-only.patch"
+
+# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/424
+cherry_pick: "protectsystem.patch"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
-cbuilder: {
-  extra_configure_flag: "--disable-ppp"
-  extra_configure_flag: "--disable-ovs"
-  extra_configure_flag: "--localstatedir=/var"  # TODO: make default
+mesonbuilder: {
+  extra_meson_flag: "-Dppp=false"
+  extra_meson_flag: "-Dovs=false"
+  extra_meson_flag: "-Dselinux=false"
+  extra_meson_flag: "-Dlibaudit=no"
+  extra_meson_flag: "-Djson_validation=false"
+  extra_meson_flag: "-Dmodem_manager=false"
+  extra_meson_flag: "-Dnmtui=false"
+  extra_meson_flag: "-Dqt=false"  # disable Qt examples
+  extra_meson_flag: "-Dsystemdsystemunitdir=${DISTRI_PREFIX}/lib/systemd/system"
 }
-
-# TODO: patch ProtectSystem=false, as otherwise sub-directories under /run cannot be created
 
 # build dependencies:
 dep: "systemd"  # for udev
@@ -22,6 +34,14 @@ dep: "libndp"
 dep: "readline"
 dep: "ncurses"
 dep: "python3"
+dep: "libxslt"
+dep: "docbook-xsl"  # for man page generation
+dep: "dbus"
+dep: "gobject-introspection"
+dep: "polkit"
+dep: "glibmm"  # TODO: not found via pkgconfig?
+dep: "libpsl"
+dep: "pygobject"
 
 # Without wpa_supplicant, WiFi devices cannot be managed without a clear error message
 runtime_dep: "wpa_supplicant"
