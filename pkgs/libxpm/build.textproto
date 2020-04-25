@@ -1,6 +1,6 @@
-source: "https://xorg.freedesktop.org/releases/individual/lib/libXpm-3.5.12.tar.bz2"
-hash: "fd6a6de3da48de8d1bb738ab6be4ad67f7cb0986c39bd3f7d51dd24f7854bdec"
-version: "3.5.12-7"
+source: "https://xorg.freedesktop.org/releases/individual/lib/libXpm-3.5.9.tar.bz2"
+hash: "8add01029cab0598ca86e01a2f7781a636f74b757abe6b50ba61b2a6e2fd621e"
+version: "3.5.9-8"
 
 cbuilder: {}
 

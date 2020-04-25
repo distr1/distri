@@ -1,8 +1,8 @@
-source: "https://dri.freedesktop.org/libdrm/libdrm-2.4.94.tar.bz2"
-hash: "b73c59b0a3760502c428ba81de49cd4807657d26be5e697eba3a87dd021d16be"
-version: "2.4.94-6"
+source: "https://dri.freedesktop.org/libdrm/libdrm-2.4.101.tar.xz"
+hash: "ddf31baa8e49473624860bd166ce654dc349873f7a6c7b3305964249315c78a7"
+version: "2.4.101-7"
 
-cbuilder: {}
+mesonbuilder: {}
 
 # build dependencies:
 dep: "libpciaccess"

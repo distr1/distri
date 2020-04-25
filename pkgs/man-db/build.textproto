@@ -3,6 +3,7 @@ hash: "103c185f9d8269b9ee3b8a4cb27912b3aa393e952731ef96fedc880723472bc3"
 version: "2.8.4-6"
 
 # TODO: version 2.9.1 hangs when building?
+# /ro/coreutils-amd64-8.32-4/out/bin/mkdir: cannot create directory '/dest/tmp/lib/systemd': Permission denied
 
 cbuilder: {
   extra_configure_flag: "--disable-cache-owner"  # don’t try to chown to man
