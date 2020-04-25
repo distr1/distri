@@ -1,6 +1,6 @@
-source: "https://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
-hash: "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334"
-version: "7.0-7"
+source: "https://ftp.gnu.org/gnu/readline/readline-8.0.tar.gz"
+hash: "e339f51971478d369f8a053a330a190781acb9864cf4c541060f12078948e461"
+version: "8.0-8"
 
 cherry_pick: "ncurses.patch"
 cherry_pick: "ncurses2.patch"

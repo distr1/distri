@@ -1,6 +1,6 @@
-source: "https://www.openssl.org/source/openssl-1.1.1e.tar.gz"
-hash: "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe"
-version: "1.1.1e-4"
+source: "https://www.openssl.org/source/openssl-1.1.1g.tar.gz"
+hash: "ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46"
+version: "1.1.1g-5"
 pull: {
   release_regexp: "openssl-([0-9.a-z]+).tar.gz"
 }

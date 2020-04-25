@@ -1,6 +1,6 @@
-source: "https://data.iana.org/time-zones/releases/tzdb-2019c.tar.lz"
-hash: "0f9ebf1d04c21d95f8ca2371f342133503388d215e5e2599ae6213b4aeeb3118"
-version: "2019c-9"
+source: "https://data.iana.org/time-zones/releases/tzdb-2020a.tar.lz"
+hash: "99a6e52363fdb9a386671f0dbcd76e38403aab8c5a7b35e4c8d66c60ec6c70af"
+version: "2020a-10"
 pull: {
   release_regexp: "tzdb-([0-9a-z]+)\\.tar\\.lz"
 }

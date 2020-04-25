@@ -1,6 +1,6 @@
-source: "https://github.com/tmux/tmux/releases/download/3.0/tmux-3.0.tar.gz"
-hash: "9edcd78df80962ee2e6471a8f647602be5ded62bb41c574172bb3dc3d0b9b4b4"
-version: "3.0-5"
+source: "https://github.com/tmux/tmux/releases/download/3.1/tmux-3.1.tar.gz"
+hash: "979bf38db2c36193de49149aaea5c540d18e01ccc27cf76e2aff5606bd186722"
+version: "3.1-6"
 
 writable_sourcedir: true
 in_tree_build: true

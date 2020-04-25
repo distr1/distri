@@ -1,6 +1,6 @@
-source: "https://www.sudo.ws/dist/sudo-1.8.26.tar.gz"
-hash: "40da219a6f0341ccb22d04a98988e27f09b831d2561b14c6154067a49ef3fee2"
-version: "1.8.26-8"
+source: "https://www.sudo.ws/dist/sudo-1.8.31p1.tar.gz"
+hash: "c73cfdfbc1c5cc259fcc3a355e1bacfed99c5580daeadec9704a24cd5e6d15d8"
+version: "1.8.31p1-9"
 
 cbuilder: {
   extra_configure_flag: "--with-editor=/bin/emacs"

@@ -1,6 +1,6 @@
-source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.2.6/fuse-3.2.6.tar.xz"
-hash: "cea4dad559b3fbdbb8e4ad5f9df6083fdb7f2b904104bd507ef790d311d271cf"
-version: "3.2.6-7"
+source: "https://github.com/libfuse/libfuse/releases/download/fuse-3.9.1/fuse-3.9.1.tar.xz"
+hash: "1bafcfd6c66ba35b7b0beb822532a9106eb8409ad6cde988888fde85f89be645"
+version: "3.9.1-8"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
