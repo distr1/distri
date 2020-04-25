@@ -183,6 +183,7 @@ func patch(ctx context.Context, args []string) error {
 			"emacs",
 			"zsh",
 			"findutils",
+			"rxvt-unicode", // for its terminfo file
 		}
 		deps, err = p.Glob(env.DefaultRepo, deps)
 		if err != nil {
@@ -199,7 +200,7 @@ func patch(ctx context.Context, args []string) error {
 		}
 		ctx, canc := context.WithCancel(context.Background())
 		defer canc()
-		if _, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
+		if _, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin,/out/share", "-pkgs=" + strings.Join(deps, ","), depsdir}); err != nil {
 			return err
 		}
 		defer fuse.Unmount(depsdir)
