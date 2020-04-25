@@ -1262,6 +1262,20 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			}
 		}
 
+		// Quick and dirty hack to make manpage generation with docbook-xsl work:
+		//
+		// TODO: remove this in favor of finding the preferred location for
+		// .xmlcatalog files (and the corresponding search dir to set in libxml2)
+		{
+			catalog := filepath.Join(b.ChrootDir, "etc", "xml", "catalog")
+			if err := os.MkdirAll(filepath.Dir(catalog), 0755); err != nil {
+				return nil, err
+			}
+			if err := os.Symlink("/ro/"+b.substituteCache["docbook-xsl"]+"/out/docbook-xsl.xmlcatalog", catalog); err != nil {
+				return nil, err
+			}
+		}
+
 		// We are running in a separate mount namespace now.
 		{
 			// Make available b.SourceDir as /usr/src/<pkg>-<version> (read-only):
@@ -1288,7 +1302,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 				cp.Stdout = io.MultiWriter(os.Stdout, buildLog)
 				cp.Stderr = io.MultiWriter(os.Stderr, buildLog)
 				if err := cp.Run(); err != nil {
-					return nil, err
+					return nil, fmt.Errorf("%v: %v", cp.Args, err)
 				}
 			} else {
 				if err := bindMount(b.SourceDir, src); err != nil {
