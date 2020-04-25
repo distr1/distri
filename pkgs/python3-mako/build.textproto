@@ -1,0 +1,7 @@
+source: "https://files.pythonhosted.org/packages/42/64/fc7c506d14d8b6ed363e7798ffec2dfe4ba21e14dda4cfab99f4430cba3a/Mako-1.1.2.tar.gz"
+hash: "3139c5d64aa5d175dbafb95027057128b5fbd05a40c53999f3905ceb53366d9d"
+version: "1.1.2-1"
+
+pythonbuilder: {}
+
+# build dependencies:

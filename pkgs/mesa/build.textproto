@@ -1,10 +1,12 @@
-source: "https://mesa.freedesktop.org/archive/mesa-18.2.0.tar.xz"
-hash: "22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce"
-version: "18.2.0-7"
+source: "https://mesa.freedesktop.org/archive/mesa-20.0.5.tar.xz"
+hash: "2c56a82a28cc924e40ea49752abdf1d701c9952481f53cbc7a080271597f572e"
+version: "20.0.5-8"
 
-cbuilder: {
-  extra_configure_flag: "--disable-llvm"  # TODO
-  extra_configure_flag: "--with-gallium-drivers="  # TODO
+mesonbuilder: {
+  extra_meson_flag: "-Dllvm=false"  # TODO: package llvm
+  extra_meson_flag: "-Dgallium-drivers="  # TODO: package llvm
+  extra_meson_flag: "-Dvulkan-drivers=intel"  # TODO: package llvm
+  extra_meson_flag: "-Dplatforms=x11"  # TODO: package wayland
 }
 
 # build dependencies:
@@ -18,23 +20,7 @@ dep: "libxshmfence"
 dep: "libxrandr"
 dep: "expat"
 dep: "python3"
-
-build_step: {
-  argv: "${DISTRI_SOURCEDIR}/configure"
-  argv: "--prefix=${DISTRI_PREFIX}"
-  argv: "--disable-llvm"  # TODO
-  argv: "--with-gallium-drivers="  # TODO
-}
-
-build_step: {
-  argv: "make"
-  argv: "-j${DISTRI_JOBS}"
-  argv: "V=1"
-}
-
-build_step: {
-  argv: "make"
-  argv: "install"
-  argv: "DESTDIR=${DISTRI_DESTDIR}"
-  argv: "PREFIX=${DISTRI_PREFIX}"
-}
+dep: "python3-mako"
+dep: "bison"
+dep: "flex"
+dep: "libxxf86vm"
