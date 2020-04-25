@@ -55,6 +55,10 @@ var ExchangeDirs = []string{
 	"/out/share",
 	"/out/share/aclocal",
 	"/out/share/gettext",
+	// TODO: patch gettext’s msgfmt code to search in
+	// /ro/gettext…/out/share/gettext-0.19.8 directly (too tight coupling to
+	// qualify for an exchange directory).
+	"/out/share/gettext-0.19.8",
 	"/out/share/gir-1.0",
 	"/out/share/glib-2.0/schemas",
 	"/out/share/mime",

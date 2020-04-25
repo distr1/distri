@@ -1136,7 +1136,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		if b.FUSE {
 			ctx, canc := context.WithCancel(ctx)
 			defer canc()
-			join, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir})
+			join, err := cmdfuse.Mount(ctx, []string{"-overlays=/bin,/out/lib/pkgconfig,/out/include,/out/share/aclocal,/out/share/gir-1.0,/out/share/mime,/out/gopath,/out/lib/gio,/out/lib/girepository-1.0,/out/share/gettext,/out/share/gettext-0.19.8,/out/lib", "-pkgs=" + strings.Join(deps, ","), depsdir})
 			if err != nil {
 				return nil, xerrors.Errorf("cmdfuse.Mount: %v", err)
 			}
