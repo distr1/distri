@@ -1160,19 +1160,24 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 		}
 		defer os.Remove(serialized)
 
-		// TODO(later): get rid of unshare dependency, re-implement in pure Go
-		// TODO(later): proper error message telling people to sysctl -w kernel.unprivileged_userns_clone=1
 		r, w, err := os.Pipe()
 		if err != nil {
 			return nil, err
 		}
-		cmd := exec.CommandContext(ctx, "unshare",
-			"--user",
-			"--map-root-user", // for mount permissions in the namespace
-			"--mount",
-			"--",
+		cmd := exec.CommandContext(ctx,
 			os.Args[0], "build", "-job="+serialized)
-		//"strace", "-f", "-o", "/tmp/st", os.Args[0], "-job="+serialized)
+		//"strace", "-fvy", "-o", "/tmp/st", os.Args[0], "build", "-job="+serialized)
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER,
+			// In the namespace, map the current effective uid and gid to root,
+			// so that we can mount file systems:
+			UidMappings: []syscall.SysProcIDMap{
+				{ContainerID: 0, HostID: 1000, Size: 1},
+			},
+			GidMappings: []syscall.SysProcIDMap{
+				{ContainerID: 0, HostID: 1000, Size: 1},
+			},
+		}
 		cmd.ExtraFiles = []*os.File{w}
 		// TODO: clean the environment
 		cmd.Env = append(os.Environ(), "DISTRI_BUILD_PROCESS=1")
