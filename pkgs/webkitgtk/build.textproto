@@ -2,6 +2,12 @@ source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
 hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
 version: "2.22.7-9"
 
+pull: {
+  # webkitgtk-2.1.90.1.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cmakebuilder: {
@@ -20,6 +26,7 @@ cmakebuilder: {
   extra_cmake_flag: "-DX11_Xdamage_LIB=/ro/${DISTRI_RESOLVE:libxdamage}/out/lib/libXdamage.so"
   extra_cmake_flag: "-DX11_Xrender_LIB=/ro/${DISTRI_RESOLVE:libxrender}/out/lib/libXrender.so"
   extra_cmake_flag: "-DX11_Xt_LIB=/ro/${DISTRI_RESOLVE:libxt}/out/lib/libXt.so"
+  extra_cmake_flag: "-DENABLE_BUBBLEWRAP_SANDBOX:BOOL=OFF"
 }
 
 # build dependencies:
@@ -47,6 +54,7 @@ dep: "libnotify"
 dep: "gstreamer"
 dep: "gst-plugins-base"
 dep: "gettext"  # TODO: not checked in cmake, build fails!
+dep: "openjpeg"
 
 # 1   0x7f76c4fe2ab9 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(WTFCrash+0x9) [0x7f76c4fe2ab9]
 # 2   0x7f76c4ffbe39 /tmp/distri-build281472861/lib/libjavascriptcoregtk-4.0.so.18(+0xed1e39) [0x7f76c4ffbe39]

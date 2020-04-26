@@ -2,8 +2,6 @@ source: "http://www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz"
 hash: "5ffcaae18bbb6155f1591be8c24898dc12f062075a40b538b745bfd477481911"
 version: "5.50-9"
 
-cherry_pick: "SIOCGSTAMP.patch"
-
 writable_sourcedir: true
 in_tree_build: true
 

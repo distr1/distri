@@ -1,6 +1,6 @@
-source: "https://ftp.acc.umu.se/pub/GNOME/sources/pygobject/3.31/pygobject-3.31.2.tar.xz"
-hash: "e75c9bc1f220863cea8386c121a6313fbc80bfe17e825538063252ffb28861c6"
-version: "3.31.2-7"
+source: "https://ftp.acc.umu.se/pub/GNOME/sources/pygobject/3.31/pygobject-3.31.4.tar.xz"
+hash: "d17a3ee2fc71fb51b512fdf81520bfc0a85cd5811214b4ae917f20151df78e45"
+version: "3.31.4-8"
 
 mesonbuilder: {}
 
