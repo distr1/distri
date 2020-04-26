@@ -13,6 +13,7 @@ func (b *Ctx) buildmeson(opts *pb.MesonBuilder, env []string) (newSteps []*pb.Bu
 			"meson",
 			"--prefix=${DISTRI_PREFIX}",
 			"--sysconfdir=/etc",
+			"--localstatedir=/var",
 			".", // build dir
 			"${DISTRI_SOURCEDIR}",
 		}, opts.GetExtraMesonFlag()...),
