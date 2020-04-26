@@ -263,7 +263,7 @@ func patch(ctx context.Context, args []string) error {
 		cmd := exec.Command(os.Args[0], "patch")
 		cmd.Dir = "/"
 		// TODO: clean the environment
-		cmd.Env = append(os.Environ(), "DISTRI_PATCH_PROCESS=1", "DISTRI_PATCH_JOB="+string(enc))
+		cmd.Env = append(os.Environ(), "DISTRI_PATCH_PROCESS=1", "DISTRI_PATCH_JOB="+string(enc), "PATH=/bin:"+os.Getenv("PATH"))
 		cmd.Stdin = os.Stdin // for interactive debugging
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
