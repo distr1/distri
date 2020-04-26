@@ -2,6 +2,11 @@ source: "https://www.sudo.ws/dist/sudo-1.8.31p1.tar.gz"
 hash: "c73cfdfbc1c5cc259fcc3a355e1bacfed99c5580daeadec9704a24cd5e6d15d8"
 version: "1.8.31p1-9"
 
+pull: {
+  releases_url: "https://www.sudo.ws"
+  release_regexp: "stable</a> release is\\s*<a href=\\\"/dist/sudo-([^\\\"]+)\\.tar"
+}
+
 cbuilder: {
   extra_configure_flag: "--with-editor=/bin/emacs"
 }
