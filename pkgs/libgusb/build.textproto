@@ -1,6 +1,6 @@
-source: "https://github.com/hughsie/libgusb/archive/0.3.0.tar.gz"
-hash: "b36310f8405d5fd68f6caf4a829f7ab4c627b38fd3d02a139d411fce0f3a49f1"
-version: "0.3.0-8"
+source: "https://github.com/hughsie/libgusb/archive/0.3.4.tar.gz"
+hash: "07049389eb20847eedb664e2a2d954412a28bee125647ea6a445c59bebbd9944"
+version: "0.3.4-9"
 
 pull: {
   # gusb_0_2_9.tar.gz is not valid semver, but newer releases are
