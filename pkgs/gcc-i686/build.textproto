@@ -41,7 +41,7 @@ dep: "mpfr"
 dep: "mpc"
 dep: "tar"
 
-dep: "strace"
+#dep: "strace"
 
 runtime_dep: "binutils-i686-amd64"
 

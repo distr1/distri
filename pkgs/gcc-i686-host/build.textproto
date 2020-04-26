@@ -40,7 +40,7 @@ dep: "mpfr"
 dep: "mpc"
 dep: "tar"
 
-dep: "strace"
+#dep: "strace"
 
 # kludge: the C++ header cstdlib uses the #include_next pragma, which requires
 # that /ro/glibc-amd64-2.27/out/include comes _after_ the g++ includes. This

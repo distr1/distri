@@ -32,7 +32,9 @@ dep: "mpfr"
 dep: "mpc"
 dep: "tar"
 
-dep: "strace"  # for debugging
+# strace now depends on libunwind, and having libunwind
+# available makes gcc FTBFS: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78251
+#dep: "strace"  # for debugging
 
 # kludge: the C++ header cstdlib uses the #include_next pragma, which requires
 # that /ro/glibc-amd64-2.27/out/include comes _after_ the g++ includes. This
