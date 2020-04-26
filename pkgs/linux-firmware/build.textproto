@@ -1,6 +1,6 @@
-source: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-20200316.tar.gz"
-hash: "b442ad49e0002c6ff8443f4745810fe10d4cd6df43a7ce5e37ac40057c75ac13"
-version: "20200316-7"
+source: "https://cdn.kernel.org/pub/linux/kernel/firmware/linux-firmware-20200421.tar.xz"
+hash: "6dd7cba25d694c031f65529b9027cc8faaffaddfae70a4e3b58c2e4a0af3bfa8"
+version: "20200421-8"
 pull: {
   releases_url: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
   # TODO: remove release_regexp once we switched from a snapshot to a release
