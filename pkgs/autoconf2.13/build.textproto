@@ -2,6 +2,10 @@ source: "https://ftp.gnu.org/pub/gnu/autoconf/autoconf-2.13.tar.gz"
 hash: "f0611136bee505811e9ca11ca7ac188ef5323a8e2ef19cffd3edb3cf08fd791e"
 version: "2.13-6"
 
+pull: {
+  releases_url: "http://localhost:9/"  # disable upstream check
+}
+
 cbuilder: {
   extra_configure_flag: "--program-suffix=2.13"
   extra_make_flag: "prefix=${DISTRI_DESTDIR}/${DISTRI_PREFIX}"
