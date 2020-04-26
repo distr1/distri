@@ -1,6 +1,6 @@
-source: "https://www.freedesktop.org/software/polkit/releases/polkit-0.115.tar.gz"
-hash: "2f87ecdabfbd415c6306673ceadc59846f059b18ef2fce42bac63fe283f12131"
-version: "0.115-10"
+source: "https://www.freedesktop.org/software/polkit/releases/polkit-0.116.tar.gz"
+hash: "88170c9e711e8db305a12fdb8234fac5706c61969b94e084d0f117d8ec5d34b1"
+version: "0.116-11"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
@@ -11,7 +11,7 @@ cbuilder: {
 }
 
 # build dependencies:
-dep: "mozjs52"
+dep: "mozjs"
 dep: "expat"
 dep: "systemd"
 dep: "intltool"

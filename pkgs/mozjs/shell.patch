@@ -1,0 +1,12 @@
+--- old/build/moz.configure/old.configure	2019-09-01 15:09:05.000000000 +0200
++++ new/build/moz.configure/old.configure	2020-04-26 21:51:09.556330907 +0200
+@@ -105,7 +105,7 @@
+     if refresh:
+         log.info('Refreshing %s with %s', old_configure, autoconf)
+         script = subprocess.check_output([
+-            shell, autoconf,
++            autoconf,
+             '--localdir=%s' % os.path.dirname(old_configure),
+             old_configure + '.in'])
+         if not script:
+Binary files /dev/null and new/build/moz.configure/old.configure~ differ
