@@ -1263,6 +1263,17 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			}
 		}
 
+		// Set up /dev/shm (for mozjs):
+		{
+			etc := filepath.Join(b.ChrootDir, "dev", "shm")
+			if err := os.MkdirAll(etc, 0755); err != nil {
+				return nil, err
+			}
+			if err := syscall.Mount("tmpfs", "/dev/shm", "tmpfs", 0, ""); err != nil {
+				return nil, err
+			}
+		}
+
 		// Quick and dirty hack to make manpage generation with docbook-xsl work:
 		//
 		// TODO: remove this in favor of finding the preferred location for
