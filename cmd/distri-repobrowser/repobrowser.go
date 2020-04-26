@@ -84,13 +84,14 @@ func logic(listen string) error {
 		// TODO: other sections, too
 		var meta pb.MirrorMeta
 		// TODO: use context for cancelation/timeout
-		resp, err := http.Get(repoURL.String() + "pkg/meta.binaryproto")
+		u := repoURL.String() + "pkg/meta.binaryproto"
+		resp, err := http.Get(u)
 		if err != nil {
 			return err
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("unexpected HTTP status: got %v, want OK", resp.Status)
+			return fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
 		}
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
