@@ -1,6 +1,6 @@
-source: "https://www.freedesktop.org/software/libevdev/libevdev-1.5.6.tar.xz"
-hash: "ecec7e9d66b1d3692f10b3b20aa97fb25e874a784c5552a7b1698091fef5a688"
-version: "1.5.6-7"
+source: "https://www.freedesktop.org/software/libevdev/libevdev-1.9.0.tar.xz"
+hash: "e7e18a64264f2dea19b6c50a481f8c062529d42919ccda0bc861495bce28eb9e"
+version: "1.9.0-8"
 
 cbuilder: {}
 

@@ -1,13 +1,15 @@
-source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.3.tar.bz2"
-hash: "1b3ce466c12cacbe2252b3ad5b0ed561972eef9d09e75900d65fb1e21f9201de"
-version: "1.20.3-8"
+source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.8.tar.bz2"
+hash: "d17b646bee4ba0fb7850c1cc55b18e3e8513ed5c02bdf38da7e107f84e2d0146"
+version: "1.20.8-9"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
-cbuilder: {}
+mesonbuilder: {
+  extra_meson_flag: "-Dxdmcp=false"
+  extra_meson_flag: "-Dsecure-rpc=false"
+  extra_meson_flag: "-Dxwayland=false"
+}
 
-# https://gitlab.freedesktop.org/xorg/xserver/issues/17
-cherry_pick: "xwayland-config.patch"
 cherry_pick: "moduledir.patch"
 
 # build dependencies:
@@ -31,21 +33,3 @@ dep: "font-util"
 dep: "meson"
 
 runtime_dep: "xkbcomp"
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" meson ${DISTRI_SOURCEDIR} --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dlocalstatedir=/var -Dxdmcp=false -Dsecure-rpc=false"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "LDFLAGS=\"$LDFLAGS -Wl,-rpath=/ro/${DISTRI_RESOLVE:xorg-server}/out/lib/systemd\" ninja -j ${DISTRI_JOBS} -v"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} ninja -j ${DISTRI_JOBS} -v install"
-}
