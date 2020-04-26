@@ -2,6 +2,11 @@ source: "https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-13.
 hash: "961b23ca1acfd28f2bc87414c27bb40e12436efcf2158d29721b1e89f3f28057"
 version: "13.0-13"
 
+pull: {
+  releases_url: "https://www.freedesktop.org/wiki/Software/PulseAudio/"
+  release_regexp: "PulseAudio ([^ ]+)</a> has been released"
+}
+
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 ack_missing_dwarf: "TODO"
 
