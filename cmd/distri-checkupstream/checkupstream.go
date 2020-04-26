@@ -32,11 +32,11 @@ func (c *checker) check1(pkg string) error {
 		return err
 	}
 
-	_, _, version, err := checkupstream.Check(nodes)
+	remote, err := checkupstream.Check(nodes)
 	if err != nil {
 		return err
 	}
-	if _, err := c.updateVersion.Exec(pkg, version); err != nil {
+	if _, err := c.updateVersion.Exec(pkg, remote.Version); err != nil {
 		return err
 	}
 	return nil

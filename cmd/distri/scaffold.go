@@ -294,34 +294,34 @@ func scaffoldPull(pkg, buildFilePath string, dryRun bool) error {
 	}
 	upstream := distri.ParseVersion(version).Upstream
 
-	remoteSource, remoteHash, remoteVersion, err := checkupstream.Check(nodes)
+	remote, err := checkupstream.Check(nodes)
 	if err != nil {
 		return err
 	}
 
-	if remoteVersion == upstream {
-		log.Printf("up to date: %s", remoteVersion)
+	if remote.Version == upstream {
+		log.Printf("up to date: %s", remote.Version)
 		return nil // up to date
 	}
-	log.Printf("not up to date: updating from %s to %s", upstream, remoteVersion)
+	log.Printf("not up to date: updating from %s to %s", upstream, remote.Version)
 
-	if remoteHash == "" {
+	if remote.Hash == "" {
 		var err error
-		remoteHash, err = download1(pkg, remoteSource)
+		remote.Hash, err = download1(pkg, remote.Source)
 		if err != nil {
 			return err
 		}
 	}
 
-	val := strconv.QuoteToASCII(remoteSource)
+	val := strconv.QuoteToASCII(remote.Source)
 	ast.GetFromPath(nodes, []string{"source"})[0].Values[0].Value = val
 
-	val = strconv.QuoteToASCII(remoteHash)
+	val = strconv.QuoteToASCII(remote.Hash)
 	ast.GetFromPath(nodes, []string{"hash"})[0].Values[0].Value = val
 
 	pv := distri.ParseVersion(version)
-	if pv.Upstream != remoteVersion {
-		pv.Upstream = remoteVersion
+	if pv.Upstream != remote.Version {
+		pv.Upstream = remote.Version
 		pv.DistriRevision++
 		val := strconv.QuoteToASCII(pv.Upstream + "-" + strconv.FormatInt(pv.DistriRevision, 10))
 		ast.GetFromPath(nodes, []string{"version"})[0].Values[0].Value = val

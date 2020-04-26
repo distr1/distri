@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,32 +25,55 @@ import (
 	"golang.org/x/net/html"
 )
 
-func checkDebian(debianPackagesURL, source string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+const hashFromDownload = "" // sentinel
+
+// CheckResult encapsulates the result of an upstream check, i.e. the latest
+// remote version.
+type CheckResult struct {
+	Source  string
+	Hash    string
+	Version string
+}
+
+type check struct {
+	// config
+	source             string // TODO: maybe retire this field in favor of sourceURL?
+	sourceURL          *url.URL
+	sourceForgeProject string // extracted from source
+	pv                 distri.PackageVersion
+	rePatternExpr      string
+	replaceAllExpr     string
+	replaceAllRepl     string
+}
+
+func (c *check) SourceURL() *url.URL {
+	clone := *c.sourceURL
+	return &clone
+}
+
+func (c *check) checkDebian(debianPackagesURL string) (*CheckResult, error) {
 	ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer canc()
 	req, err := http.NewRequestWithContext(ctx, "GET", debianPackagesURL, nil)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return "", "", "", fmt.Errorf("%v: HTTP %v", debianPackagesURL, resp.Status)
+		return nil, fmt.Errorf("%v: HTTP %v", debianPackagesURL, resp.Status)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	lines := strings.Split(string(b), "\n")
-	sourceUrl, err := url.Parse(source)
-	if err != nil {
-		return "", "", "", err
-	}
+	sourceUrl := c.SourceURL()
 	sourceUrl.Path = path.Dir(sourceUrl.Path)
-	var filename string
+	var filename, remoteVersion, remoteHash string
 	for _, line := range lines {
 		switch {
 		case strings.HasPrefix(line, "Filename: "):
@@ -76,9 +100,13 @@ func checkDebian(debianPackagesURL, source string) (remoteSource, remoteHash, re
 		}
 		remoteBase := path.Base(filename)
 		sourceUrl.Path = path.Join(sourceUrl.Path, remoteBase)
-		return sourceUrl.String(), remoteHash, remoteVersion, nil
+		return &CheckResult{
+			Source:  sourceUrl.String(),
+			Hash:    remoteHash,
+			Version: remoteVersion,
+		}, nil
 	}
-	return "", "", "", fmt.Errorf("package not found in Debian Packages file")
+	return nil, fmt.Errorf("package not found in Debian Packages file")
 }
 
 func maybeV(v string) string {
@@ -119,12 +147,13 @@ func extractLinks(parent *url.URL, b []byte) ([]string, error) {
 	return links, nil
 }
 
-func extractVersions(upstreamVersion, source, b, rePatternExpr, replaceAllExpr, replaceAllRepl string) ([]string, error) {
-	pattern := rePatternExpr
+func (c *check) extractVersions(b string) ([]string, error) {
+	pattern := c.rePatternExpr
 	if pattern == "" {
 		// TODO: add special casing for parsing apache directory index?
-		base := path.Base(source)
+		base := path.Base(c.source)
 		log.Printf("base: %v", base)
+		upstreamVersion := c.pv.Upstream
 		idx := strings.Index(base, upstreamVersion)
 		if idx == -1 {
 			idx = strings.Index(base, strings.ReplaceAll(upstreamVersion, ".", "_"))
@@ -132,10 +161,10 @@ func extractVersions(upstreamVersion, source, b, rePatternExpr, replaceAllExpr, 
 		if idx == -1 {
 			return nil, fmt.Errorf("upstreamVersion %q not found in base %q", upstreamVersion, base)
 		}
-		pattern = regexp.QuoteMeta(base[:idx]) + `([0-9vp._-]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
+		pattern = regexp.QuoteMeta(base[:idx]) + `([0-9vBp._-]*)` + regexp.QuoteMeta(base[idx+len(upstreamVersion):])
 	}
 
-	if pattern == path.Base(source) {
+	if pattern == path.Base(c.source) {
 		return nil, fmt.Errorf("could not derive regexp pattern, specify manually")
 	}
 	log.Printf("pattern: %v", pattern)
@@ -146,14 +175,14 @@ func extractVersions(upstreamVersion, source, b, rePatternExpr, replaceAllExpr, 
 	log.Printf("re: %v", re)
 	matches := re.FindAllStringSubmatch(string(b), -1)
 	log.Printf("matches: %v", matches)
-	if replaceAllExpr != "" {
-		re, err := regexp.Compile(replaceAllExpr)
+	if c.replaceAllExpr != "" {
+		re, err := regexp.Compile(c.replaceAllExpr)
 		if err != nil {
 			return nil, fmt.Errorf("compile(replaceAllExpr): %v", err)
 		}
 		filtered := make([][]string, len(matches))
 		for idx, match := range matches {
-			filtered[idx] = []string{"", re.ReplaceAllString(match[1], replaceAllRepl)}
+			filtered[idx] = []string{"", re.ReplaceAllString(match[1], c.replaceAllRepl)}
 		}
 		matches = filtered
 		log.Printf("filtered: %v", filtered)
@@ -195,60 +224,67 @@ func extractVersions(upstreamVersion, source, b, rePatternExpr, replaceAllExpr, 
 }
 
 // TODO: signature is getting long. move to a struct
-func checkHeuristic(upstreamVersion, source, releasesURL, rePatternExpr, replaceAllExpr, replaceAllRepl string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+func (c *check) checkHeuristic(releasesURL string) (*CheckResult, error) {
 	u, _ := url.Parse(releasesURL)
 	log.Printf("fetching releases from %s", u.String())
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", "", "", fmt.Errorf("unexpected HTTP response: got %v, want 200 OK", resp.Status)
+		return nil, fmt.Errorf("unexpected HTTP response: got %v, want 200 OK", resp.Status)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	links, err := extractLinks(u, b)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 
-	versions, err := extractVersions(upstreamVersion, source, string(b), rePatternExpr, replaceAllExpr, replaceAllRepl)
+	upstreamVersion := c.pv.Upstream
+	versions, err := c.extractVersions(string(b))
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	if len(versions) == 0 {
-		return "", "", "", fmt.Errorf("not yet implemented")
+		return nil, fmt.Errorf("not yet implemented")
 	}
 
-	const hashFromDownload = "" // sentinel
-
-	newBase := strings.Replace(path.Base(source), upstreamVersion, versions[0], 1)
+	newBase := strings.Replace(path.Base(c.source), upstreamVersion, versions[0], 1)
 	log.Printf("looking for <a> with href=%s", newBase)
 	for _, l := range links {
 		if filepath.Base(l) == newBase {
 			log.Printf("found link: %s", l)
-			return l, hashFromDownload, versions[0], nil
+			return &CheckResult{
+				Source:  l,
+				Hash:    hashFromDownload,
+				Version: versions[0],
+			}, nil
 		}
 	}
 
 	// Fall back: try to update the existing source URL.
 	// This will not work if releases are in different sub directories.
-	u, _ = url.Parse(source)
+	u = c.SourceURL()
 	u.Path = path.Dir(u.Path)
 	u.Path = path.Join(u.Path, newBase)
 	log.Printf("fallback: %s", u.String())
-	return u.String(), hashFromDownload, versions[0], nil
+	return &CheckResult{
+		Source:  u.String(),
+		Hash:    hashFromDownload,
+		Version: versions[0],
+	}, nil
 }
 
 // e.g. checkGoMod(github.com/lpar/gzipped@v1.1.0)
-func checkGoMod(v string) (remoteSource, remoteHash, remoteVersion string, _ error) {
+func checkGoMod(v string) (*CheckResult, error) {
 	mod := v
 	if idx := strings.Index(mod, "@"); idx > -1 {
 		mod = mod[:idx]
@@ -256,50 +292,48 @@ func checkGoMod(v string) (remoteSource, remoteHash, remoteVersion string, _ err
 	// https://github.com/golang/go/blob/master/src/cmd/go/internal/modfetch/proxy.go
 	modEsc, err := module.EscapePath(mod)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	u := "https://proxy.golang.org/" + modEsc + "/@latest"
 	resp, err := http.Get(u)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", "", "", fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
+		return nil, fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	var version struct{ Version string }
 	if err := json.Unmarshal(b, &version); err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 
-	remoteVersion = version.Version
-	remoteSource = mod + "@" + remoteVersion
-	return remoteSource, remoteHash, remoteVersion, nil
+	remoteVersion := version.Version
+	remoteSource := mod + "@" + remoteVersion
+	return &CheckResult{
+		Source:  remoteSource,
+		Hash:    hashFromDownload,
+		Version: remoteVersion,
+	}, nil
 }
 
-var sourceForgeProjectRe = regexp.MustCompile(`sourceforge.net/project/([^/]+)/`)
-
-func checkSourceForge(upstreamVersion, source, rePatternExpr, replaceAllExpr, replaceAllRepl string) (remoteSource, remoteHash, remoteVersion string, _ error) {
-	matches := sourceForgeProjectRe.FindStringSubmatch(source)
-	if len(matches) != 2 {
-		return "", "", "", fmt.Errorf("could not find /project/ in source %q", source)
-	}
-	u := "https://sourceforge.net/projects/" + matches[1] + "/best_release.json"
+func (c *check) checkSourceForge() (*CheckResult, error) {
+	u := "https://sourceforge.net/projects/" + c.sourceForgeProject + "/best_release.json"
 	resp, err := http.Get(u)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", "", "", fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
+		return nil, fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	var reply struct {
 		PlatformReleases struct {
@@ -310,32 +344,39 @@ func checkSourceForge(upstreamVersion, source, rePatternExpr, replaceAllExpr, re
 		} `json:"platform_releases"`
 	}
 	if err := json.Unmarshal(b, &reply); err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 
-	versions, err := extractVersions(upstreamVersion, source, string(b), rePatternExpr, replaceAllExpr, replaceAllRepl)
+	versions, err := c.extractVersions(string(b))
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	if len(versions) == 0 {
-		return "", "", "", fmt.Errorf("no version found")
+		return nil, fmt.Errorf("no version found")
 	}
 
 	stripped, err := url.Parse(reply.PlatformReleases.Linux.URL)
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
 	stripped.RawQuery = ""
 
-	const hashFromDownload = "" // sentinel
-	return stripped.String(), hashFromDownload, versions[0], nil
+	return &CheckResult{
+		Source:  stripped.String(),
+		Hash:    hashFromDownload,
+		Version: versions[0],
+	}, nil
 }
 
 var projectRe = regexp.MustCompile(`^/project/([^/]+)/`)
 
-func Check(build []*ast.Node) (source, hash, version string, _ error) {
+func Check(build []*ast.Node) (*CheckResult, error) {
+	errNotSpecified := errors.New("not specified")
 	stringVal := func(path ...string) (string, error) {
 		nodes := ast.GetFromPath(build, path)
+		if len(nodes) == 0 {
+			return "", errNotSpecified
+		}
 		if got, want := len(nodes), 1; got != want {
 			return "", fmt.Errorf("malformed build file: got %d version keys, want %d", got, want)
 		}
@@ -347,44 +388,55 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 	}
 	source, err := stringVal("source")
 	if err != nil {
-		return "", "", "", err
+		return nil, err
+	}
+	u, err := url.Parse(source)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &check{
+		source:    source,
+		sourceURL: u,
+	}
+
+	if u.Host == "downloads.sourceforge.net" && strings.HasPrefix(u.Path, "/project/") {
+		project := projectRe.FindStringSubmatch(u.Path)
+		if got, want := len(project), 2; got != want {
+			return nil, fmt.Errorf("downloads.sourceforge.net: got %d matches, want %d", got, want)
+		}
+		c.sourceForgeProject = project[1]
 	}
 
 	if strings.HasSuffix(source, ".deb") {
 		u, err := stringVal("pull", "debian_packages")
 		if err != nil {
-			return "", "", "", err
+			return nil, err
 		}
-		return checkDebian(u, source)
+		return c.checkDebian(u)
 	}
 
 	if strings.HasPrefix(source, "distri+gomod://") {
 		return checkGoMod(strings.TrimPrefix(source, "distri+gomod://"))
 	}
 
-	version, err = stringVal("version")
+	version, err := stringVal("version")
 	if err != nil {
-		return "", "", "", err
+		return nil, err
 	}
+	c.pv = distri.ParseVersion(version)
 
-	pv := distri.ParseVersion(version)
 	// fall back: see if we can obtain an index page
 	releases, err := stringVal("pull", "releases_url")
+	releasesSpecified := err == nil
 	if err != nil {
-		u, err := url.Parse(source)
-		if err != nil {
-			return "", "", "", err
-		}
+		u := c.SourceURL()
 		if u.Host == "github.com" && strings.Contains(u.Path, "/releases/") {
 			u.Path = u.Path[:strings.Index(u.Path, "/releases/")+len("/releases/")]
 		} else if u.Host == "github.com" && strings.Contains(u.Path, "/archive/") {
 			u.Path = u.Path[:strings.Index(u.Path, "/archive/")] + "/releases/"
 		} else if u.Host == "downloads.sourceforge.net" && strings.HasPrefix(u.Path, "/project/") {
-			project := projectRe.FindStringSubmatch(u.Path)
-			if got, want := len(project), 2; got != want {
-				return "", "", "", fmt.Errorf("downloads.sourceforge.net: got %d matches, want %d", got, want)
-			}
-			u.Path = "/projects/" + project[1] + "/files/"
+			u.Path = "/projects/" + c.sourceForgeProject + "/files/"
 			u.Host = "sourceforge.net"
 			// u e.g. https://sourceforge.net/projects/bzip2/files/
 		} else if u.Host == "launchpad.net" {
@@ -401,21 +453,31 @@ func Check(build []*ast.Node) (source, hash, version string, _ error) {
 	}
 
 	log.Printf("releases: %s", releases)
-	rePatternExpr, _ := stringVal("pull", "release_regexp")
-	log.Printf("rePatternExpr: %s", rePatternExpr)
-	replaceAllExpr, _ := stringVal("pull", "release_replace_all", "expr")
-	replaceAllRepl, _ := stringVal("pull", "release_replace_all", "repl")
 
-	if u, err := url.Parse(source); err == nil && (u.Host == "sourceforge.net" ||
-		u.Host == "downloads.sourceforge.net") {
+	c.rePatternExpr, err = stringVal("pull", "release_regexp")
+	if err != nil && err != errNotSpecified {
+		return nil, fmt.Errorf("pull.release_regexp: %v", err)
+	}
+
+	c.replaceAllExpr, err = stringVal("pull", "release_replace_all", "expr")
+	if err != nil && err != errNotSpecified {
+		return nil, fmt.Errorf("pull.release_replace_all.expr: %v", err)
+	}
+
+	c.replaceAllRepl, err = stringVal("pull", "release_replace_all", "repl")
+	if err != nil && err != errNotSpecified {
+		return nil, fmt.Errorf("pull.release_replace_all.repl: %v", err)
+	}
+
+	if u := c.SourceURL(); !releasesSpecified && (u.Host == "sourceforge.net" || u.Host == "downloads.sourceforge.net") {
 		// No explicit releases_url was specified, so default to using the
 		// SourceForge API:
-		remoteSource, remoteHash, remoteVersion, err := checkSourceForge(pv.Upstream, source, rePatternExpr, replaceAllExpr, replaceAllRepl)
+		remote, err := c.checkSourceForge()
 		if err == nil {
-			return remoteSource, remoteHash, remoteVersion, nil
+			return remote, nil
 		}
 		log.Println(err)
 	}
 
-	return checkHeuristic(pv.Upstream, source, releases, rePatternExpr, replaceAllExpr, replaceAllRepl)
+	return c.checkHeuristic(releases)
 }
