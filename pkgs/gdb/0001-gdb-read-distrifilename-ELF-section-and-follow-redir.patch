@@ -15,26 +15,26 @@ Subject: [PATCH] gdb: read distrifilename ELF section and follow redirect
  create mode 100644 gdb/distri-filename.h
 
 diff --git a/gdb/Makefile.in b/gdb/Makefile.in
-index 13627e0..787a55e 100644
+index c3e074b..2ad7ff6 100644
 --- a/gdb/Makefile.in
 +++ b/gdb/Makefile.in
-@@ -599,7 +599,7 @@ CLIBS = $(SIM) $(READLINE) $(OPCODES) $(BFD) $(ZLIB) $(INTL) $(LIBIBERTY) $(LIBD
- 	$(XM_CLIBS) $(NAT_CLIBS) $(GDBTKLIBS) \
+@@ -612,7 +612,7 @@ CLIBS = $(SIM) $(READLINE) $(OPCODES) $(BFD) $(LIBCTF) $(ZLIB) \
  	@LIBS@ @GUILE_LIBS@ @PYTHON_LIBS@ \
  	$(LIBEXPAT) $(LIBLZMA) $(LIBBABELTRACE) $(LIBIPT) \
--	$(LIBIBERTY) $(WIN32LIBS) $(LIBGNU) $(LIBICONV) $(LIBMPFR)
-+	$(LIBIBERTY) $(WIN32LIBS) $(LIBGNU) $(LIBICONV) $(LIBMPFR) -lelf
- CDEPS = $(XM_CDEPS) $(NAT_CDEPS) $(SIM) $(BFD) $(READLINE_DEPS) \
+ 	$(LIBIBERTY) $(WIN32LIBS) $(LIBGNU) $(LIBICONV) $(LIBMPFR) \
+-	$(SRCHIGH_LIBS) $(LIBXXHASH) $(PTHREAD_LIBS)
++	$(SRCHIGH_LIBS) $(LIBXXHASH) $(PTHREAD_LIBS) -lelf
+ CDEPS = $(NAT_CDEPS) $(SIM) $(BFD) $(READLINE_DEPS) $(LIBCTF) \
  	$(OPCODES) $(INTL_DEPS) $(LIBIBERTY) $(CONFIG_DEPS) $(LIBGNU)
  
-@@ -999,6 +999,7 @@ COMMON_SFILES = \
+@@ -1019,6 +1019,7 @@ COMMON_SFILES = \
  	dictionary.c \
  	disasm.c \
  	disasm-selftests.c \
 +	distri-filename.c \
  	dummy-frame.c \
+ 	dwarf-index-cache.c \
  	dwarf-index-common.c \
- 	dwarf-index-write.c \
 diff --git a/gdb/distri-filename.c b/gdb/distri-filename.c
 new file mode 100644
 index 0000000..49184ce
@@ -161,7 +161,7 @@ index 0000000..e6e1982
 +
 +#endif
 diff --git a/gdb/exec.c b/gdb/exec.c
-index 3023ff7..f2d9727 100644
+index 906ae61..b4d1d05 100644
 --- a/gdb/exec.c
 +++ b/gdb/exec.c
 @@ -36,6 +36,7 @@
@@ -171,17 +171,17 @@ index 3023ff7..f2d9727 100644
 +#include "errno.h"
  
  #include <fcntl.h>
- #include "readline/readline.h"
+ #include "readline/tilde.h"
 @@ -47,6 +48,8 @@
  #include <algorithm>
- #include "common/pathstuff.h"
+ #include "gdbsupport/pathstuff.h"
  
 +#include "distri-filename.h"
 +
  void (*deprecated_file_changed_hook) (const char *);
  
  static const target_info exec_target_info = {
-@@ -333,6 +336,23 @@ exec_file_attach (const char *filename, int from_tty)
+@@ -321,6 +324,23 @@ exec_file_attach (const char *filename, int from_tty)
  	  canonical_pathname = canonical_storage.get ();
  	}
  
@@ -206,12 +206,12 @@ index 3023ff7..f2d9727 100644
        if (write_files && !load_via_target)
  	temp = gdb_bfd_fopen (canonical_pathname, gnutarget,
 diff --git a/gdb/main.c b/gdb/main.c
-index 9694af2..9d84bec 100644
+index 66a9e6a..75f92cd 100644
 --- a/gdb/main.c
 +++ b/gdb/main.c
-@@ -48,6 +48,10 @@
- #include <vector>
- #include "common/pathstuff.h"
+@@ -54,6 +54,10 @@
+ #endif
+ #include "gdbsupport/alt-stack.h"
  
 +#include <err.h>
 +#include <libelf.h>
@@ -220,7 +220,7 @@ index 9694af2..9d84bec 100644
  /* The selected interpreter.  This will be used as a set command
     variable, so it should always be malloc'ed - since
     do_setshow_command will free it.  */
-@@ -1029,6 +1033,10 @@ captured_main_1 (struct captured_main_args *context)
+@@ -1059,6 +1063,10 @@ captured_main_1 (struct captured_main_args *context)
    save_auto_load = global_auto_load;
    global_auto_load = 0;
  
@@ -232,10 +232,10 @@ index 9694af2..9d84bec 100644
        && symarg != NULL
        && strcmp (execarg, symarg) == 0)
 diff --git a/gdb/symfile.c b/gdb/symfile.c
-index 39d06d8..c385e73 100644
+index 8fb0c9c..0df6af4 100644
 --- a/gdb/symfile.c
 +++ b/gdb/symfile.c
-@@ -68,6 +68,8 @@
+@@ -71,6 +71,8 @@
  
  #include "psymtab.h"
  
@@ -244,7 +244,7 @@ index 39d06d8..c385e73 100644
  int (*deprecated_ui_load_progress_hook) (const char *section,
  					 unsigned long num);
  void (*deprecated_show_load_progress) (const char *section,
-@@ -1671,6 +1673,20 @@ symfile_bfd_open (const char *name)
+@@ -1749,6 +1751,20 @@ symfile_bfd_open (const char *name)
        name = absolute_name.get ();
      }
  
@@ -267,4 +267,3 @@ index 39d06d8..c385e73 100644
      error (_("`%s': can't open to read symbols: %s."), name,
 -- 
 2.25.1
-
