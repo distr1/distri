@@ -1,6 +1,8 @@
-source: "https://ftp.gnu.org/gnu/autogen/autogen-5.18.7.tar.xz"
-hash: "a7a580a5e18931cb341b255cec2fee2dfd81bea5ddbf0d8ad722703e19aaa405"
-version: "5.18.7-6"
+source: "https://ftp.gnu.org/gnu/autogen/rel5.18.16/autogen-5.18.16.tar.xz"
+hash: "f8a13466b48faa3ba99fe17a069e71c9ab006d9b1cfabe699f8c60a47d5bb49a"
+version: "5.18.16-7"
+
+cherry_pick: "werror.patch"
 
 cbuilder: {}
 

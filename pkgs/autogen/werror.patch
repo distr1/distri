@@ -1,0 +1,12 @@
+--- old/configure	2018-08-26 19:44:54.000000000 +0200
++++ new/configure	2020-04-26 20:01:13.697087933 +0200
+@@ -18924,7 +18924,7 @@
+ WARN_CFLAGS=
+ test "X${GCC}" = Xyes && {
+   CFLAGS="$CFLAGS -Wno-format-contains-nul -fno-strict-aliasing"
+-  WARN_CFLAGS="$CFLAGS "`echo -Wall -Werror -Wcast-align -Wmissing-prototypes \
++  WARN_CFLAGS="$CFLAGS "`echo -Wall -Wcast-align -Wmissing-prototypes \
+ 	-Wpointer-arith -Wshadow -Wstrict-prototypes -Wwrite-strings \
+ 	-Wstrict-aliasing=3 -Wextra -Wno-cast-qual`
+ }
+Binary files /dev/null and new/configure~ differ
