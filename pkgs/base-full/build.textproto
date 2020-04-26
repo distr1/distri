@@ -36,3 +36,4 @@ runtime_dep: "man-db"
 runtime_dep: "debugfs"
 runtime_dep: "srcfs"
 runtime_dep: "gdb"  # for debugging
+runtime_dep: "less"
