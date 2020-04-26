@@ -2,6 +2,12 @@ source: "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.2.20.tar.bz2"
 hash: "04a7c9d48b74c399168ee8270e548588ddbe52218c337703d7f06373d326ca30"
 version: "2.2.20-7"
 
+pull: {
+  # gnupg-1.4.2.1.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 cbuilder: {}
 
 # build dependencies:

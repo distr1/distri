@@ -44,6 +44,7 @@ type check struct {
 	rePatternExpr      string
 	replaceAllExpr     string
 	replaceAllRepl     string
+	forceSemver        bool
 }
 
 func (c *check) SourceURL() *url.URL {
@@ -200,11 +201,22 @@ func (c *check) extractVersions(b string) ([]string, error) {
 			result = append(result, version)
 		}
 		valid := true
-		for _, r := range result {
-			if !semver.IsValid(maybeV(r)) {
-				log.Printf("not semver: %v", r)
-				valid = false
-				break
+		if c.forceSemver {
+			filtered := make([]string, 0, len(result))
+			for _, r := range result {
+				if !semver.IsValid(maybeV(r)) {
+					continue
+				}
+				filtered = append(filtered, r)
+			}
+			result = filtered
+		} else {
+			for _, r := range result {
+				if !semver.IsValid(maybeV(r)) {
+					log.Printf("not semver: %v", r)
+					valid = false
+					break
+				}
 			}
 		}
 		if !valid {
@@ -372,7 +384,7 @@ var projectRe = regexp.MustCompile(`^/project/([^/]+)/`)
 
 func Check(build []*ast.Node) (*CheckResult, error) {
 	errNotSpecified := errors.New("not specified")
-	stringVal := func(path ...string) (string, error) {
+	valVal := func(path ...string) (string, error) {
 		nodes := ast.GetFromPath(build, path)
 		if len(nodes) == 0 {
 			return "", errNotSpecified
@@ -384,7 +396,25 @@ func Check(build []*ast.Node) (*CheckResult, error) {
 		if got, want := len(values), 1; got != want {
 			return "", fmt.Errorf("malformed build file: got %d Values, want %d", got, want)
 		}
-		return strconv.Unquote(values[0].Value)
+		return values[0].Value, nil
+	}
+	stringVal := func(path ...string) (string, error) {
+		v, err := valVal(path...)
+		if err != nil {
+			return "", err
+		}
+		return strconv.Unquote(v)
+	}
+	boolVal := func(path ...string) (bool, error) {
+		s, err := valVal(path...)
+		if err != nil {
+			return false, err
+		}
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			return false, err
+		}
+		return b, nil
 	}
 	source, err := stringVal("source")
 	if err != nil {
@@ -467,6 +497,11 @@ func Check(build []*ast.Node) (*CheckResult, error) {
 	c.replaceAllRepl, err = stringVal("pull", "release_replace_all", "repl")
 	if err != nil && err != errNotSpecified {
 		return nil, fmt.Errorf("pull.release_replace_all.repl: %v", err)
+	}
+
+	c.forceSemver, err = boolVal("pull", "force_semver")
+	if err != nil && err != errNotSpecified {
+		return nil, fmt.Errorf("pull.force_semver: %v", err)
 	}
 
 	if u := c.SourceURL(); !releasesSpecified && (u.Host == "sourceforge.net" || u.Host == "downloads.sourceforge.net") {

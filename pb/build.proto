@@ -166,6 +166,11 @@ message Pull {
   // Go regexp (see https://golang.org/pkg/regexp/) for replacing matches in the
   // version number. Can be used e.g. to convert _ to . (see pkgs/nss).
   optional RegexpReplaceAll release_replace_all = 4;
+
+  // Enforce version numbers to conform to SemVer by filtering out non-conforming
+  // version numbers. This is useful for projects which have now committed to
+  // SemVer but have previous, non-conforming releases still available.
+  optional bool force_semver = 5;
 }
 
 message Build {

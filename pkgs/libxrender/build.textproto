@@ -2,6 +2,12 @@ source: "https://xorg.freedesktop.org/releases/individual/lib/libXrender-0.9.10.
 hash: "c06d5979f86e64cabbde57c223938db0b939dff49fdb5a793a1d3d0396650949"
 version: "0.9.10-7"
 
+pull: {
+  # libXrender-0.9.0.2.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 cbuilder: {}
 
 # build dependencies:
