@@ -1,12 +1,10 @@
-source: "http://download.savannah.nongnu.org/releases/man-db/man-db-2.8.4.tar.xz"
-hash: "103c185f9d8269b9ee3b8a4cb27912b3aa393e952731ef96fedc880723472bc3"
-version: "2.8.4-6"
-
-# TODO: version 2.9.1 hangs when building?
-# /ro/coreutils-amd64-8.32-4/out/bin/mkdir: cannot create directory '/dest/tmp/lib/systemd': Permission denied
+source: "http://download.savannah.nongnu.org/releases/man-db/man-db-2.9.1.tar.xz"
+hash: "ba3d8afc5c09a7265a8dabfa0e7c1f4b3ab97df9abf1f6810faa8f301056c74f"
+version: "2.9.1-7"
 
 cbuilder: {
   extra_configure_flag: "--disable-cache-owner"  # don’t try to chown to man
+  extra_configure_flag: "--with-systemdsystemunitdir=${prefix}/lib/systemd/system"
 }
 
 # build dependencies:
@@ -14,5 +12,6 @@ dep: "libpipeline"
 dep: "gdbm"
 dep: "groff"  # NOTE: man-db doesn’t compile without groff
 dep: "gzip"  # NOTE: man-db doesn’t compile if no compressors are found
+dep: "flex"
 
 runtime_dep: "groff"

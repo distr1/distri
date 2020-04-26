@@ -1,6 +1,6 @@
-source: "https://github.com/mesonbuild/meson/releases/download/0.54.0/meson-0.54.0.tar.gz"
-hash: "dde5726d778112acbd4a67bb3633ab2ee75d33d1e879a6283a7b4a44c3363c27"
-version: "0.54.0-4"
+source: "https://github.com/mesonbuild/meson/releases/download/0.54.1/meson-0.54.1.tar.gz"
+hash: "2f76fb4572762be13ee479292610091b4509af5788bcceb391fe222bcd0296dc"
+version: "0.54.1-5"
 
 writable_sourcedir: true
 in_tree_build: true

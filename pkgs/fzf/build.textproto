@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/junegunn/fzf@v0.0.0-20190719042446-65773882505b"
-hash: "f0f038bbaf3e9b1a907e15045cccd562e6c52777ffe7d3101dca030c987afc15"
-version: "v0.0.0-20190719042446-65773882505b-8"
+source: "distri+gomod://github.com/junegunn/fzf@v0.0.0-20200424135655-e6d33f77da8c"
+hash: "5fb5139f43473deb5ed5c63936d27740b28b3f3912b9e56c55c77c56f8c31c68"
+version: "v0.0.0-20200424135655-e6d33f77da8c-9"
 
 gobuilder: {}
 
@@ -23,3 +23,4 @@ dep: "go-golang.org-x-tools"
 dep: "go-golang.org-x-sync"
 dep: "go-golang.org-x-xerrors"
 dep: "go-github.com-DATA--DOG-go--sqlmock"
+dep: "go-github.com-saracen-walker"

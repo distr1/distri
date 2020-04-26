@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/saracen/walker@v0.0.0-20191201085201-324a081bae7e"
+hash: "aa8f4845527b5cbb955ef698ebd2656bfffb6baea0a3a03ae61406e0e52d0c92"
+version: "v0.0.0-20191201085201-324a081bae7e-1"
+
+gomodbuilder: {}
+
+# build dependencies:

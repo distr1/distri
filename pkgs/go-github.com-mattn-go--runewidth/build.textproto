@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/mattn/go-runewidth@v0.0.4"
-hash: "b26dcc4b5dad48fcb67be61f8b8c5123ceea3ccc86d8107972526340a2f7dac6"
-version: "v0.0.4-4"
+source: "distri+gomod://github.com/mattn/go-runewidth@v0.0.8"
+hash: "93a80e02b396d3feeffa15c7564972294b36582244219cd1c0d01681950a91a5"
+version: "v0.0.8-5"
 
 gomodbuilder: {}
 

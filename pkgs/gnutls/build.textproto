@@ -2,6 +2,12 @@ source: "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.13.tar.xz"
 hash: "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"
 version: "3.6.13-8"
 
+pull: {
+  # gnutls-3.6.11.1.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {

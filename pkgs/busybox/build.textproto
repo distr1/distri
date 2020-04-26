@@ -2,6 +2,12 @@ source: "https://busybox.net/downloads/busybox-1.31.1.tar.bz2"
 hash: "d0f940a72f648943c1f2211e0e3117387c31d765137d92bd8284a3fb9752a998"
 version: "1.31.1-7"
 
+pull: {
+  # busybox-1.2.2.1.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 cbuilder: {}
 
 cherry_pick: "stime.patch"

@@ -1,6 +1,6 @@
-source: "distri+gomod://golang.org/x/sys@v0.0.0-20200323222414-85ca7c5b95cd"
-hash: "5e671253118a66aaa016646470c6ecaaac90cfc60e2e4c7cd5d36cb9b29749d9"
-version: "v0.0.0-20200323222414-85ca7c5b95cd-5"
+source: "distri+gomod://golang.org/x/sys@v0.0.0-20200202164722-d101bd2416d5"
+hash: "11474ad1c04f7323073da5983509fa9c1a7596f35fe8fb227c041001115538c5"
+version: "v0.0.0-20200202164722-d101bd2416d5-6"
 
 gomodbuilder: {}
 

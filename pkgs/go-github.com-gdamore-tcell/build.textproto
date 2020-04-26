@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/gdamore/tcell@v1.1.4"
-hash: "cf6545648bb7d738c538b9d2662c3e1303d214d8c561a5d5f208433d4c50e4ee"
-version: "v1.1.4-4"
+source: "distri+gomod://github.com/gdamore/tcell@v1.3.0"
+hash: "e76bd5314ec9c4d12ccfac2acff900bb5852c8b76b9f308b42423e5c67720a90"
+version: "v1.3.0-5"
 
 gomodbuilder: {}
 

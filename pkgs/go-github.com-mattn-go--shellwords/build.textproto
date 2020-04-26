@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/mattn/go-shellwords@v1.0.5"
-hash: "84c52c260ca652083ddf51c4d5567d7cd8a8db1af51d6581d4b501a6abf31d43"
-version: "v1.0.5-4"
+source: "distri+gomod://github.com/mattn/go-shellwords@v1.0.9"
+hash: "5aaf2926ec10a7c5488ff09ab70abdb9bd867254178df6743397633d41400806"
+version: "v1.0.9-5"
 
 gomodbuilder: {}
 
