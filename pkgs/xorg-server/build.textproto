@@ -2,6 +2,12 @@ source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.
 hash: "d17b646bee4ba0fb7850c1cc55b18e3e8513ed5c02bdf38da7e107f84e2d0146"
 version: "1.20.8-9"
 
+pull: {
+  # xorg-server-1.14.5.901.tar.bz2 is not valid semver, but newer releases are
+  # TODO: ask upstream for a commitment to semver
+  force_semver: true
+}
+
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 mesonbuilder: {
