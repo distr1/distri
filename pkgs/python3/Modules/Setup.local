@@ -1,0 +1,4 @@
+zlib zlibmodule.c -I$(prefix)/include -L$(exec_prefix)/lib -L/ro/zlib-i686-1.2.11-4/out/lib -lz
+_curses _cursesmodule.c -L/ro/ncurses-i686-6.2-9/out/lib -lncurses
+_curses_panel _curses_panel.c -L/ro/ncurses-i686-6.2-9/out/lib -lpanel -lncurses
+

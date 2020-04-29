@@ -9,7 +9,9 @@ cbuilder: {}
 # TODO: file upstream bug: pkg-config invocation does not ignore CPATH
 cherry_pick: "py.patch"
 
-cherry_pick: "curses.patch"
+cherry_pick: "python-build-interpreter.patch"
+
+extra_file: "Modules/Setup.local"
 
 # build dependencies:
 dep: "zlib"
@@ -18,10 +20,26 @@ dep: "libffi"
 dep: "ncurses"
 
 build_step: {
+  argv: "mkdir"
+  argv: "Modules"
+}
+
+build_step: {
+  argv: "cp"
+  argv: "${DISTRI_SOURCEDIR}/Modules/Setup.local"
+  argv: "Modules/Setup.local"
+}
+
+build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--host=${DISTRI_CONFIGURE_HOST}"
+  argv: "--build=x86_64-pc-linux-gnu"
   argv: "--prefix=${DISTRI_PREFIX}"
   argv: "--with-openssl=/ro/${DISTRI_RESOLVE:openssl}/out"
   argv: "--enable-shared"  # for building e.g. libxml2’s Python bindings
+  argv: "--enable-ipv6"  # required to be set when cross-compiling
+  argv: "ac_cv_file__dev_ptmx=yes"  # for cross-compiling
+  argv: "ac_cv_file__dev_ptc=no"  # for cross-compiling
 }
 
 # https://bugs.python.org/issue34823
@@ -33,22 +51,19 @@ build_step: {
 }
 
 build_step: {
-  argv: "sed"
-  argv: "-i"
-  argv: "s,^#zlib,zlib,g"
-  argv: "Modules/Setup"
+  argv: "/bin/sh"
+  argv: "-c"
+  # LD_LIBRARY_PATH needs to contain the build directory so that
+  # $PYTHON_FOR_BUILD (./python) can locate libpython3.7m.so.1.0.
+  argv: "LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH make -j${DISTRI_JOBS}"
 }
 
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make -j${DISTRI_JOBS}"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} make install DESTDIR=${DISTRI_DESTDIR}"
+  # LD_LIBRARY_PATH needs to contain the build directory so that
+  # $PYTHON_FOR_BUILD (./python) can locate libpython3.7m.so.1.0.
+  argv: "LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH DESTDIR=${DISTRI_DESTDIR} make install DESTDIR=${DISTRI_DESTDIR}"
 }
 
 install: {
