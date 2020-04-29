@@ -325,7 +325,7 @@ func checkGoMod(v string) (*CheckResult, error) {
 	}
 
 	remoteVersion := version.Version
-	remoteSource := mod + "@" + remoteVersion
+	remoteSource := "distri+gomod://" + mod + "@" + remoteVersion
 	return &CheckResult{
 		Source:  remoteSource,
 		Hash:    hashFromDownload,
