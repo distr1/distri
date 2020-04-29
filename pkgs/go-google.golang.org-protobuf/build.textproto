@@ -1,6 +1,6 @@
-source: "distri+gomod://google.golang.org/protobuf@v1.20.1"
-hash: "107b24bd8d3f52b75fab4f3cf4c95e4e7323762895adce3ba6869b3f47543adb"
-version: "v1.20.1-2"
+source: "distri+gomod://google.golang.org/protobuf@v1.21.0"
+hash: "6817b1542fa40ada7ac893ab9e70f99d271f8910b13d7fbb91b6f4d7e85f294a"
+version: "v1.21.0-3"
 
 gomodbuilder: {}
 

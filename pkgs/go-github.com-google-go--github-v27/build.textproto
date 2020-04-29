@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/google/go-github/v27@v27.0.4"
-hash: "837a2e4d68a11e365439218b140d3cdcaae00cb45eb7541c8dcaa6afb1ec2af2"
-version: "v27.0.4-3"
+source: "distri+gomod://github.com/google/go-github/v27@v27.0.6"
+hash: "d52c30dfc0fc028710082452567e30b8191c0dd0dacc2aba1691af9c96dc6a5c"
+version: "v27.0.6-4"
 
 gomodbuilder: {}
 

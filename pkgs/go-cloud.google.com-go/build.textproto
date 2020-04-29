@@ -1,6 +1,6 @@
-source: "distri+gomod://cloud.google.com/go@v0.26.0"
-hash: "5a37b993588a5eb7f224dc8d25f21d64aa5e773fbd91fc47e909017d80bc187b"
-version: "v0.26.0-4"
+source: "distri+gomod://cloud.google.com/go@v0.34.0"
+hash: "3f352837b121ec26371f8d816dc69f92b4bbcb56ef7be07fd785f6fde1446354"
+version: "v0.34.0-5"
 
 gomodbuilder: {}
 
