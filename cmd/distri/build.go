@@ -191,7 +191,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		return err
 	}
 
-	buildLog, err := os.Create("build-" + b.Version + ".log")
+	buildLog, err := os.Create("build-" + b.Arch + "-" + b.Version + ".log")
 	if err != nil {
 		return err
 	}
