@@ -887,9 +887,15 @@ func (b *Ctx) env(deps []string, hermetic bool) []string {
 	// Exclude LDFLAGS for glibc as per
 	// https://github.com/Linuxbrew/legacy-linuxbrew/issues/126
 	if b.Pkg != "glibc" && b.Pkg != "glibc-i686" {
-		env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
-			"-Wl,--dynamic-linker=/ro/"+b.substituteCache["glibc-amd64"]+"/out/lib/ld-linux-x86-64.so.2 "+
-			strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		if b.Arch == "i686" {
+			env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
+				"-Wl,--dynamic-linker=/ro/"+b.substituteCache["glibc-i686-amd64"]+"/out/lib/ld-linux.so.2 "+
+				strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		} else {
+			env = append(env, "LDFLAGS=-Wl,-rpath="+b.Prefix+"/lib "+
+				"-Wl,--dynamic-linker=/ro/"+b.substituteCache["glibc-amd64"]+"/out/lib/ld-linux-x86-64.so.2 "+
+				strings.Join(b.Proto.GetCbuilder().GetExtraLdflag(), " ")) // for ld
+		}
 	}
 	return env
 }
