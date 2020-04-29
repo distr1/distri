@@ -1876,7 +1876,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	depPkgs := make(map[string]bool)
 	libs := make(map[libDep]bool)
 	destDir := filepath.Join(b.DestDir, b.Prefix)
-	ldd := filepath.Join("/ro", b.substituteCache["glibc-amd64"], "out", "bin", "ldd")
+	ldd := filepath.Join("/ro", b.substituteCache["glibc-"+b.Arch], "out", "bin", "ldd")
 	log.Printf("finding shlibdeps with %s", ldd)
 	var buf [4]byte
 	err = filepath.Walk(destDir, func(path string, info os.FileInfo, err error) error {
