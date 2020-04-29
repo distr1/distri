@@ -173,7 +173,7 @@ version: "80.0.3987.106-1-13"
 		t.Fatal(err)
 	}
 
-	remoteSource, remoteHash, remoteVersion, err := checkupstream.Check(nodes)
+	remote, err := checkupstream.Check(nodes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,13 +181,13 @@ version: "80.0.3987.106-1-13"
 	wantSource := ts.URL + "/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb"
 	wantHash := "33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d"
 	wantVersion := "80.0.3987.106-1"
-	if got, want := remoteSource, wantSource; got != want {
+	if got, want := remote.Source, wantSource; got != want {
 		t.Errorf("scaffoldPullDebian: got source %q, want %q", got, want)
 	}
-	if got, want := remoteHash, wantHash; got != want {
+	if got, want := remote.Hash, wantHash; got != want {
 		t.Errorf("scaffoldPullDebian: got hash %q, want %q", got, want)
 	}
-	if got, want := remoteVersion, wantVersion; got != want {
+	if got, want := remote.Version, wantVersion; got != want {
 		t.Errorf("scaffoldPullDebian: got version %q, want %q", got, want)
 	}
 }

@@ -202,7 +202,7 @@ func TestSplitPackageBuild(t *testing.T) {
 				// from multi-libs:
 				"bash-amd64-5.0-4",
 				"glibc-amd64-2.31-4",  // from bash
-				"ncurses-amd64-6.1-8", // from bash
+				"ncurses-amd64-6.2-9", // from bash
 			},
 		},
 
@@ -211,7 +211,7 @@ func TestSplitPackageBuild(t *testing.T) {
 			want: []string{
 				"bash-amd64-5.0-4",
 				"glibc-amd64-2.31-4",  // from bash
-				"ncurses-amd64-6.1-8", // from bash
+				"ncurses-amd64-6.2-9", // from bash
 			},
 		},
 	} {

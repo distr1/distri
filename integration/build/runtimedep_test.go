@@ -106,7 +106,7 @@ func TestPkgConfigRuntimeDeps(t *testing.T) {
 			meta: "pkgconfig-amd64-1.meta.textproto",
 			want: []string{
 				"glibc-amd64-2.31-4",     // from shlibdeps
-				"libepoxy-amd64-1.5.2-7", // from pkgconfig
+				"libepoxy-amd64-1.5.4-8", // from pkgconfig
 			},
 		},
 	} {

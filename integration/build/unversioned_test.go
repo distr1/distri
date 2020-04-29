@@ -109,13 +109,13 @@ func TestUnversionedBuild(t *testing.T) {
 		}
 		want := []string{
 			"pkg-config-amd64-0.29.2-4", // from hello-1 (direct)
-			"glib-amd64-2.64.1-4",       // from pkg-config (transitive)
+			"glib-amd64-2.64.2-5",       // from pkg-config (transitive)
 			"glibc-amd64-2.31-4",        // from glib
 			"zlib-amd64-1.2.11-4",       // from glib
 			"util-linux-amd64-2.32.1-7", // from glib
 			"pam-amd64-1.3.1-11",        // from util-linux
 			"libffi-amd64-3.3-4",        // from glib
-			"ncurses-amd64-6.1-8",       // from bash
+			"ncurses-amd64-6.2-9",       // from bash
 		}
 		opts := []cmp.Option{
 			cmpopts.SortSlices(func(a, b string) bool {
