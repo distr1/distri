@@ -793,6 +793,7 @@ func (b *Ctx) substitute(s string) string {
 	for k, v := range b.substituteCache {
 		s = strings.ReplaceAll(s, "${DISTRI_RESOLVE:"+k+"}", v)
 	}
+	s = strings.ReplaceAll(s, "${DISTRI_CONFIGURE_HOST}", configureTarget[b.Arch])
 	return s
 }
 
