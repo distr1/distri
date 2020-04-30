@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/tailscale/winipcfg-go@v0.0.0-20200413171540-609dcf2df55f"
+hash: "049f294b82256bd66b8c80e25899eda20a7db547a660017debe01fad61671758"
+version: "v0.0.0-20200413171540-609dcf2df55f-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,8 @@
+source: "distri+gomod://github.com/apenwarr/fixconsole@v0.0.0-20191012055117-5a9f6489cc29"
+hash: "7fec4856f2bccce3c5f9c5f3657bcdf822a777e2689cd7a30979dba7177a1e45"
+version: "v0.0.0-20191012055117-5a9f6489cc29-1"
+
+gomodbuilder: {}
+
+# build dependencies:
+dep: "go-github.com-apenwarr-w32"

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/mdlayher/netlink@v1.1.0"
+hash: "0a58e041fb9da237ecf2f0d7ef2d29c648b704cf04ed8ae135bfb8b352c6398b"
+version: "v1.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/toqueteos/webbrowser@v1.2.0"
+hash: "73adaf6a5b00f93f699f1d8c6db8b21b8d4b4665da7cfa4b359de4a830073d86"
+version: "v1.2.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

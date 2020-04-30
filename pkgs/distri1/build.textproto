@@ -38,6 +38,12 @@ dep: "go-google.golang.org-appengine"
 dep: "go-google.golang.org-genproto"
 dep: "go-google.golang.org-grpc"
 dep: "go-honnef.co-go-tools"
+dep: "go-github.com-rogpeppe-go--internal"  # via tools
+dep: "go-gopkg.in-errgo.v2"  # via go-internal
+dep: "go-github.com-kr-pretty"  # via errgo.v2
+dep: "go-github.com-kr-text"  # via pretty
+dep: "go-github.com-kr-pty"  # via text
+dep: "go-gopkg.in-check.v1"  # via errgo.v2
 dep: "go-golang.org-x-xerrors"
 dep: "go-github.com-orcaman-writerseeker"
 dep: "go-github.com-protocolbuffers-txtpbfmt"

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/apenwarr/w32@v0.0.0-20190407065021-aa00fece76ab"
+hash: "fa3990f71b3d27b102a95e05126457c0b1129cd5944951b7b75c46d624755b20"
+version: "v0.0.0-20190407065021-aa00fece76ab-1"
+
+gomodbuilder: {}
+
+# build dependencies:

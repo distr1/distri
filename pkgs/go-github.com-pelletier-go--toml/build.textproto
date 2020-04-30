@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/pelletier/go-toml@v1.6.0"
+hash: "902cea72c4454401502631e427778c121728869749d753c4df5916e8b8ead42c"
+version: "v1.6.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/google/rpmpack@v0.0.0-20191226140753-aa36bfddb3a0"
+hash: "7505262f567ef080d214fed7a8c3e04be5c8be364ed24f47329454f32fe8a211"
+version: "v0.0.0-20191226140753-aa36bfddb3a0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

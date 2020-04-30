@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/stretchr/objx@v0.1.0"
+hash: "1cb050efc7feb51ee4cc3fefd9d92497b91bdee7421e552fd454992221e39504"
+version: "v0.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/stretchr/testify@v1.4.0"
+hash: "eca5a68b23af49f31744748f7de5e8c578d11f15e0343b00c0cdd5bb137a321e"
+version: "v1.4.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/rogpeppe/go-internal@v1.3.0"
+hash: "93ae347c216da429464dbd58372e48006eb1cb076855d217b2e986885acb10de"
+version: "v1.3.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

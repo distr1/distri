@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/kr/text@v0.1.0"
+hash: "57b36889faa928a490a13abccb437f1c33b17d20b012c1fcf9861902de7457f4"
+version: "v0.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

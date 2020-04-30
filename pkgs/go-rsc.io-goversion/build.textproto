@@ -1,0 +1,7 @@
+source: "distri+gomod://rsc.io/goversion@v1.2.0"
+hash: "8348a44026ba6cb87f0468a8b30adbb7dc75c3d725d05ea05390a4211379eb8e"
+version: "v1.2.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

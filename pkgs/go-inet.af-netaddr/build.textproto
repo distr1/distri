@@ -1,0 +1,7 @@
+source: "distri+gomod://inet.af/netaddr@v0.0.0-20200417213433-f9e5bcc2d6ea"
+hash: "c98e76078be598da8394e5ff143e7df28433580524c29fd313e7000dee49a95c"
+version: "v0.0.0-20200417213433-f9e5bcc2d6ea-1"
+
+gomodbuilder: {}
+
+# build dependencies:

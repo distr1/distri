@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/blakesmith/ar@v0.0.0-20190502131153-809d4375e1fb"
+hash: "4d10ab2fffed3cbf97e2e2a58cad3afc040d8484ca0f097c0886f427780ca3e2"
+version: "v0.0.0-20190502131153-809d4375e1fb-1"
+
+gomodbuilder: {}
+
+# build dependencies:

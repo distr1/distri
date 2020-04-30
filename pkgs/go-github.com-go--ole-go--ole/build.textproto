@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/go-ole/go-ole@v1.2.4"
+hash: "5702e6098e67ddd438f91e0a1fb679ed74a7833a56733ac583addcf4639a6f9e"
+version: "v1.2.4-1"
+
+gomodbuilder: {}
+
+# build dependencies:

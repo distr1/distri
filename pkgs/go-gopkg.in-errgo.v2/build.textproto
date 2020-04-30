@@ -1,0 +1,7 @@
+source: "distri+gomod://gopkg.in/errgo.v2@v2.1.0"
+hash: "0ba6f8843af031f4ead7106d71707162d317d4ab03b9396b0cf008b0a9eba721"
+version: "v2.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

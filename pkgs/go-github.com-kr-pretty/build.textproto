@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/kr/pretty@v0.1.0"
+hash: "5735ecd5dd5f492f09598f36a208e901c6c964012c05fe64618838520c1714bf"
+version: "v0.1.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

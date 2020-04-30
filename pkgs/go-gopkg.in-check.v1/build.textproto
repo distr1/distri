@@ -1,0 +1,7 @@
+source: "distri+gomod://gopkg.in/check.v1@v1.0.0-20190902080502-41f04d3bba15"
+hash: "a66163a1be133557635ce2801b92b42957d84a45e12fb344e3b1567f70803c74"
+version: "v1.0.0-20190902080502-41f04d3bba15-1"
+
+gomodbuilder: {}
+
+# build dependencies:

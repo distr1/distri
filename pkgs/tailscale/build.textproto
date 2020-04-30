@@ -1,0 +1,86 @@
+source: "distri+gomod://tailscale.com/@v0.97.0"
+hash: "de874e7f8c7e5dd6a0bd7524824e983ef095d23707086684a22e18a1f4303c24"
+version: "v0.97.0-3"
+
+cherry_pick: "service.patch"
+
+gobuilder: {
+  install: "./cmd/tailscaled ./cmd/tailscale"
+}
+
+# build dependencies:
+dep: "go-github.com-anmitsu-go--shlex"
+dep: "go-github.com-apenwarr-fixconsole"
+dep: "go-github.com-apenwarr-w32"  # via fixconsole
+dep: "go-github.com-coreos-go--iptables"
+dep: "go-github.com-flynn-go--shlex"
+dep: "go-github.com-gliderlabs-ssh"
+dep: "go-github.com-go--ole-go--ole"
+dep: "go-github.com-golang-groupcache"
+dep: "go-github.com-google-go--cmp"
+dep: "go-golang.org-x-xerrors"  # via cmp
+dep: "go-github.com-goreleaser-nfpm"
+dep: "go-github.com-Masterminds-semver-v3"  # via nfpm
+dep: "go-github.com-alecthomas-kingpin"  # via nfpm
+dep: "go-github.com-alecthomas-template"  # via nfpm
+dep: "go-github.com-alecthomas-units"  # via nfpm
+dep: "go-github.com-blakesmith-ar"  # via nfpm
+dep: "go-github.com-davecgh-go--spew"  # via nfpm
+dep: "go-github.com-google-rpmpack"  # via nfpm
+dep: "go-github.com-cavaliercoder-go--cpio"  # via rpmpack
+dep: "go-github.com-ulikunitz-xz"  # via rpmpack
+dep: "go-github.com-imdario-mergo"  # via nfpm
+dep: "go-github.com-kr-pretty"  # via nfpm
+dep: "go-github.com-kr-text"  # via pretty
+dep: "go-github.com-mattn-go--zglob"  # via nfpm
+dep: "go-github.com-op-go--logging"  # via nfpm
+dep: "go-github.com-pkg-errors"  # via nfpm
+dep: "go-github.com-sassoftware-go--rpmutils"  # via nfpm
+dep: "go-github.com-stretchr-testify"  # via nfpm
+dep: "go-github.com-pmezard-go--difflib"  # via testify
+dep: "go-github.com-stretchr-objx"  # via testify
+dep: "go-github.com-xi2-xz"  # via nfpm
+dep: "go-gopkg.in-check.v1"  # via nfpm
+dep: "go-gopkg.in-yaml.v2"  # via nfpm
+dep: "go-github.com-klauspost-compress"
+dep: "go-github.com-kr-pty"
+dep: "go-github.com-mdlayher-netlink"
+dep: "go-github.com-jsimonetti-rtnetlink"  # via netlink
+dep: "go-github.com-pborman-getopt"
+dep: "go-github.com-peterbourgon-ff"
+dep: "go-github.com-mitchellh-go--wordwrap"  # via ff
+dep: "go-github.com-pelletier-go--toml"  # via ff
+dep: "go-github.com-peterbourgon-ff-v2"
+dep: "go-github.com-tailscale-winipcfg--go"
+dep: "go-github.com-tailscale-wireguard--go"
+dep: "go-golang.org-x-text"  # via wireguard-go
+dep: "go-github.com-toqueteos-webbrowser"
+dep: "go-go4.org-mem"
+dep: "go-golang.org-x-crypto"
+dep: "go-golang.org-x-net"
+dep: "go-golang.org-x-oauth2"
+dep: "go-cloud.google.com-go"  # via oauth2
+dep: "go-google.golang.org-appengine"  # via oauth2
+dep: "go-github.com-golang-protobuf"  # via appengine
+dep: "go-google.golang.org-protobuf"  # via protobuf
+dep: "go-golang.org-x-sync"
+dep: "go-golang.org-x-sys"
+dep: "go-golang.org-x-time"
+dep: "go-gortc.io-stun"
+dep: "go-inet.af-netaddr"
+dep: "go-rsc.io-goversion"
+dep: "go-github.com-tailscale-hujson"
+dep: "go-honnef.co-go-tools"
+dep: "go-github.com-BurntSushi-toml"  # via tools
+dep: "go-github.com-google-renameio"  # via tools
+dep: "go-github.com-kisielk-gotool"  # via tools
+dep: "go-github.com-rogpeppe-go--internal"  # via tools
+dep: "go-gopkg.in-errgo.v2"  # via go-internal
+dep: "go-golang.org-x-mod"  # via tools
+dep: "go-golang.org-x-tools"  # via tools
+
+install: {
+  # Referencing ${DISTRI_BUILDDIR} is easier than constructing the
+  # module cache path relative to ${DISTRI_SOURCEDIR}:
+  systemd_unit: "${DISTRI_BUILDDIR}/cmd/tailscaled/tailscaled.service"
+}

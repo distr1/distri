@@ -1,0 +1,7 @@
+source: "distri+gomod://gopkg.in/yaml.v2@v2.2.7"
+hash: "8b871bbccc79c2e4c5de6830ed453b18caa8441437657144f09007aab6f5c035"
+version: "v2.2.7-1"
+
+gomodbuilder: {}
+
+# build dependencies:

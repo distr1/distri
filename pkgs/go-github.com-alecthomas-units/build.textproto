@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/alecthomas/units@v0.0.0-20190924025748-f65c72e2690d"
+hash: "65608c45826441f3cbc8780fcc57a3064652843aa2f46f2072f5beaa7c6b2a9f"
+version: "v0.0.0-20190924025748-f65c72e2690d-1"
+
+gomodbuilder: {}
+
+# build dependencies:

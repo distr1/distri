@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/ulikunitz/xz@v0.5.6"
+hash: "9f4c2ef4f8bddb969c0b70a7b226ca4e77e0ee7efa2f9115d46ce45948f9f5c7"
+version: "v0.5.6-1"
+
+gomodbuilder: {}
+
+# build dependencies:

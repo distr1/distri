@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/peterbourgon/ff@v1.7.0"
+hash: "9190efe8c22b30fd611bc98530994ffac921905c0c586b9d506b58461274e193"
+version: "v1.7.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

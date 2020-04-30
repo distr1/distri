@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/jsimonetti/rtnetlink@v0.0.0-20200117123717-f846d4f6c1f4"
+hash: "6119b105ccf6b3110996117b3167af9cc48d387e9f26f160c9ca7538deb09b63"
+version: "v0.0.0-20200117123717-f846d4f6c1f4-1"
+
+gomodbuilder: {}
+
+# build dependencies:

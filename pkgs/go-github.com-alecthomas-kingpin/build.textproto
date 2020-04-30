@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/alecthomas/kingpin@v2.2.6+incompatible"
+hash: "774c01f133233843b791f1ffb38ea0cefacbd4afdafb9c390a163861c58df8ac"
+version: "v2.2.6+incompatible-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/mattn/go-zglob@v0.0.1"
+hash: "f1036039e78ea9033c668bbfe1b4544c162b445b2e99a54d3f9c06a33f5dadf3"
+version: "v0.0.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

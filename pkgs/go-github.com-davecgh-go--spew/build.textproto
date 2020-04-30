@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/davecgh/go-spew@v1.1.1"
+hash: "8b578e0f891da960a4f66e38b5619522cbffc0b91263f7c2870584a1072cd35c"
+version: "v1.1.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

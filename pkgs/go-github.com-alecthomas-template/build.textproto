@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/alecthomas/template@v0.0.0-20190718012654-fb15b899a751"
+hash: "fe26ad12c29f9fc4d880607a58de7311faed2d420782088d1892239ba3018694"
+version: "v0.0.0-20190718012654-fb15b899a751-1"
+
+gomodbuilder: {}
+
+# build dependencies:

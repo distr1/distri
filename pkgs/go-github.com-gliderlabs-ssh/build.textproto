@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/gliderlabs/ssh@v0.2.2"
+hash: "1d280ea3e523ed38070bf613b83a4d191f73e2eb75ea28d1f82dbd82e6110e15"
+version: "v0.2.2-1"
+
+gomodbuilder: {}
+
+# build dependencies:

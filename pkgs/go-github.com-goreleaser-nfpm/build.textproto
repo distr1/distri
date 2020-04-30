@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/goreleaser/nfpm@v1.1.10"
+hash: "aca457a75fc35a736d6644b089d4490edeb50e2ed3dedd3524aa78588fb4fc4e"
+version: "v1.1.10-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/tailscale/wireguard-go@v0.0.0-20200317013323-239518935266"
+hash: "d5b11c69de714ddb12430333de1d5774de165a8979093947f229eac647be4dfc"
+version: "v0.0.0-20200317013323-239518935266-1"
+
+gomodbuilder: {}
+
+# build dependencies:

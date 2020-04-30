@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/kr/pty@v1.1.1"
+hash: "9dd879010271a0c5bfa9f258e160efe3cc75a5a54934ea95223f804ea23edb2f"
+version: "v1.1.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

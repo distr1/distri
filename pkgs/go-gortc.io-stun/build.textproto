@@ -1,0 +1,7 @@
+source: "distri+gomod://gortc.io/stun@v1.22.1"
+hash: "1d73fd6de312c8f30296d07c2f936d3a6f510698d12ef23e88fd52266a07f3f1"
+version: "v1.22.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

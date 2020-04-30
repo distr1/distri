@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/sassoftware/go-rpmutils@v0.0.0-20190420191620-a8f1baeba37b"
+hash: "62f8bc31c31a2a78794496d19d843e48efe97504f680ade795f5c339c6b34fd8"
+version: "v0.0.0-20190420191620-a8f1baeba37b-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/coreos/go-iptables@v0.4.5"
+hash: "34c60c35723c4104b0b52124700514d60594c50bf534bfc892c1979db84be2fc"
+version: "v0.4.5-1"
+
+gomodbuilder: {}
+
+# build dependencies:

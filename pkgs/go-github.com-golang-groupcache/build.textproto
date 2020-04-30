@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/golang/groupcache@v0.0.0-20200121045136-8c9f03a8e57e"
+hash: "bddfd970048f978e3002fa4b089a83a207faa89f233753a9196e3e23e01d977f"
+version: "v0.0.0-20200121045136-8c9f03a8e57e-1"
+
+gomodbuilder: {}
+
+# build dependencies:

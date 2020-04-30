@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/pkg/errors@v0.8.1"
+hash: "393ae7cfb36a3425f1a60ff38c3ad1104b4f52cbec0da58934b8a9aae16cb4b5"
+version: "v0.8.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

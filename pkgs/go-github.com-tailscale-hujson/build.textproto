@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/tailscale/hujson@v0.0.0-20190930033718-5098e564d9b3"
+hash: "684a85433c3093c7543e0e62ff9f8bd8c999e1378049b64e920aea110039eca4"
+version: "v0.0.0-20190930033718-5098e564d9b3-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/flynn/go-shlex@v0.0.0-20150515145356-3f9db97f8568"
+hash: "a6ab88801098aa95f5eef32f836b45910cd87aca11d500f67dba639337586c7d"
+version: "v0.0.0-20150515145356-3f9db97f8568-1"
+
+gomodbuilder: {}
+
+# build dependencies:

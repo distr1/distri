@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/Masterminds/semver/v3@v3.0.3"
+hash: "70ea6e700fe795d0916bcb01e2f4c383057abb58dacbb48e1d0fa7b4943f670d"
+version: "v3.0.3-1"
+
+gomodbuilder: {}
+
+# build dependencies:

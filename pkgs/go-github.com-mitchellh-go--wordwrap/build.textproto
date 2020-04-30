@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/mitchellh/go-wordwrap@v1.0.0"
+hash: "02228fdc0b58bac47f25194b2f43be1a87dcbfdca1a6756763e47adf112f0718"
+version: "v1.0.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

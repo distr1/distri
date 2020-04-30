@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/anmitsu/go-shlex@v0.0.0-20161002113705-648efa622239"
+hash: "45cb01c2b3798bd353dc42cb9abb42e8358be0f2f5ce394a9c15339761a61981"
+version: "v0.0.0-20161002113705-648efa622239-1"
+
+gomodbuilder: {}
+
+# build dependencies:

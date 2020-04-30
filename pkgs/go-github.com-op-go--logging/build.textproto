@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/op/go-logging@v0.0.0-20160315200505-970db520ece7"
+hash: "e2869b314a729733ae42a7f127494a4277b2b9eb6b5ef725b97855d9b7d1215d"
+version: "v0.0.0-20160315200505-970db520ece7-1"
+
+gomodbuilder: {}
+
+# build dependencies:

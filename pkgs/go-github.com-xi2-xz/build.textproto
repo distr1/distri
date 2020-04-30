@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/xi2/xz@v0.0.0-20171230120015-48954b6210f8"
+hash: "f76aa2b30d3ef1f61cfea29de124d9cccd5264f6e3c4ce6959b52c34cd5f4624"
+version: "v0.0.0-20171230120015-48954b6210f8-1"
+
+gomodbuilder: {}
+
+# build dependencies:
