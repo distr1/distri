@@ -1,0 +1,21 @@
+--- old/src/core/namespace.c	2020-05-01 01:01:15.872718385 +0200
++++ new/src/core/namespace.c	2020-05-01 01:01:55.112181671 +0200
+@@ -144,7 +144,7 @@
+ 
+ /* ProtectSystem=yes table */
+ static const MountEntry protect_system_yes_table[] = {
+-        { "/usr",                READONLY,     false },
++//        { "/usr",                READONLY,     false },
+         { "/boot",               READONLY,     true  },
+         { "/efi",                READONLY,     true  },
+ #if HAVE_SPLIT_USR
+@@ -159,7 +159,7 @@
+ 
+ /* ProtectSystem=full includes ProtectSystem=yes */
+ static const MountEntry protect_system_full_table[] = {
+-        { "/usr",                READONLY,     false },
++//        { "/usr",                READONLY,     false },
+         { "/boot",               READONLY,     true  },
+         { "/efi",                READONLY,     true  },
+         { "/etc",                READONLY,     false },
+Binary files /dev/null and new/src/core/namespace.c~ differ

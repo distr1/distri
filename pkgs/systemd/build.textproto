@@ -5,14 +5,23 @@ version: "245-11"
 writable_sourcedir: true
 
 cherry_pick: "getty-paths.patch"
+
 cherry_pick: "serial-getty-simple.patch"
+
 cherry_pick: "udevdir.patch"
+
 cherry_pick: "isatty.patch"
+
 # Based on:
 # * https://github.com/systemd/systemd/pull/13881
 # * https://www.redhat.com/archives/linux-lvm/2020-April/msg00003.html
 # * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f36776fafbaa0094390dd4e7e3e29805e0b82730
 cherry_pick: "udevadm-synth.patch"
+
+# ProtectSystem=yes and ProtectSystem=full try to remount /usr read-only,
+# but on distri, /usr is a symlink to /, which means it will mount / read-only
+# (one element of ProtectSystem=strict), which unsurprisingly breaks programs.
+cherry_pick: "protectsystem-usr.patch"
 
 mesonbuilder: {
   # TODO: should this go into the mesonbuilder, or should systemd’s meson
