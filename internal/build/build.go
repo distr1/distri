@@ -2214,7 +2214,13 @@ func (b *Ctx) Download(fn string) error {
 	}
 
 	if u.Scheme == "distri+gomod" {
-		return b.downloadGoModule(fn, u.Host+u.Path)
+		importPath := u.Host + u.Path
+		// Kludge: URLs cannot contain a Go import path, at least not split into
+		// host and path. Module “tailscale.com@v0.97.0” is an example.
+		if strings.HasPrefix(u.Path, "/@") {
+			importPath = u.Host + strings.TrimPrefix(u.Path, "/")
+		}
+		return b.downloadGoModule(fn, importPath)
 	} else if u.Scheme == "http" || u.Scheme == "https" {
 		return b.downloadHTTP(fn)
 	} else {

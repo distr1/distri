@@ -33,6 +33,11 @@ func (b *Ctx) buildgo(opts *pb.GoBuilder, env []string, deps []string, source st
 	if importPath == "" {
 		if u, err := url.Parse(source); err == nil {
 			importPath = u.Host + u.Path
+			// Kludge: URLs cannot contain a Go import path, at least not split into
+			// host and path. Module “tailscale.com@v0.97.0” is an example.
+			if strings.HasPrefix(u.Path, "/@") {
+				importPath = u.Host + strings.TrimPrefix(u.Path, "/")
+			}
 			if idx := strings.Index(importPath, "@v"); idx > -1 {
 				importPath = importPath[:idx]
 			}
