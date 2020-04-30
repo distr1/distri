@@ -3,7 +3,6 @@ hash: "f34f1dc52b2dc60563c2deb6db86d78f6a97bceb29aa0511436844b2fc618040"
 version: "245-11"
 
 writable_sourcedir: true
-in_tree_build: true
 
 cherry_pick: "getty-paths.patch"
 cherry_pick: "serial-getty-simple.patch"
@@ -15,7 +14,16 @@ cherry_pick: "isatty.patch"
 # * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f36776fafbaa0094390dd4e7e3e29805e0b82730
 cherry_pick: "udevadm-synth.patch"
 
-cbuilder: {}
+mesonbuilder: {
+  # TODO: should this go into the mesonbuilder, or should systemd’s meson
+  # files pick it up from --prefix?
+  extra_meson_flag: "-Drootprefix=${DISTRI_PREFIX}"
+  extra_meson_flag: "-Dsplit-usr=false"
+  extra_meson_flag: "-Dsplit-bin=false"
+  extra_meson_flag: "-Dloadkeys-path=/bin/loadkeys"
+  extra_meson_flag: "-Dsetfont-path=/bin/setfont"
+  extra_meson_flag: "-Ddefault-hierarchy=hybrid"
+}
 
 # build dependencies:
 dep: "m4"
@@ -27,25 +35,6 @@ dep: "meson"
 dep: "kmod"
 dep: "cryptsetup"
 dep: "systemd"  # to pick up the latest version
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "./configure --prefix=${DISTRI_PREFIX} -Drootprefix=${DISTRI_PREFIX} -Dsplit-usr=false -Dsplit-bin=false -Dloadkeys-path=/bin/loadkeys -Dsetfont-path=/bin/setfont -Ddefault-hierarchy=hybrid"
-  #  argv: "LDFLAGS=-static"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "ninja -j ${DISTRI_JOBS} -C build -v"
-}
-
-build_step: {
-  argv: "/bin/sh"
-  argv: "-c"
-  argv: "DESTDIR=${DISTRI_DESTDIR} make install"
-}
 
 install: {
   # TODO: remove once both share/pkgconfig (arch-indep) and lib/pkgconfig (arch-dep) are union overlays
