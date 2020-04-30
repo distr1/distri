@@ -22,6 +22,7 @@ mesonbuilder: {
   extra_meson_flag: "-Dsplit-bin=false"
   extra_meson_flag: "-Dloadkeys-path=/bin/loadkeys"
   extra_meson_flag: "-Dsetfont-path=/bin/setfont"
+  extra_meson_flag: "-Dnologin-path=/bin/nologin"
   extra_meson_flag: "-Ddefault-hierarchy=hybrid"
   extra_meson_flag: "-Dman=true"
 }
