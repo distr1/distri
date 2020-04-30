@@ -83,10 +83,13 @@ func ParseVersion(filename string) PackageVersion {
 		parts = parts[i+1:]
 		break
 	}
+	if pkg == "build" && strings.HasSuffix(filename, ".log") {
+		pkg = ""
+	}
 	if len(parts) == 0 {
 		return PackageVersion{Pkg: pkg, Arch: arch}
 	}
-	// TODO: make build log files contain the architecture and delete this conditional:
+	// TODO: delete this conditional once all build logs have been rebuilt
 	if buildFile(parts[0], filename) {
 		parts = parts[1:]
 	}

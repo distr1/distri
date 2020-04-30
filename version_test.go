@@ -73,6 +73,11 @@ func TestExtractPackageRevisionVersion(t *testing.T) {
 		},
 
 		{
+			filename: "_build/git/build-amd64-2.9.5.log", // build log
+			want:     PackageVersion{Arch: "amd64", Upstream: "2.9.5", DistriRevision: 0},
+		},
+
+		{
 			filename: "../../../linux-amd64-4.18.7/out/lib/modules/4.18.7/build",
 			want:     PackageVersion{Pkg: "linux", Arch: "amd64", Upstream: "4.18.7", DistriRevision: 0},
 		},
