@@ -2,6 +2,8 @@ source: "https://www.freedesktop.org/software/polkit/releases/polkit-0.116.tar.g
 hash: "88170c9e711e8db305a12fdb8234fac5706c61969b94e084d0f117d8ec5d34b1"
 version: "0.116-11"
 
+extra_file: "polkit.sysusers"
+
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 
 cbuilder: {
@@ -45,4 +47,11 @@ build_step: {
   argv: "install"
   argv: "V=1"
   argv: "DESTDIR=${DISTRI_DESTDIR}"
+}
+
+install: {
+  file: {
+    srcpath: "polkit.sysusers"
+    destpath: "lib/sysusers.d/polkit.conf"
+  }
 }
