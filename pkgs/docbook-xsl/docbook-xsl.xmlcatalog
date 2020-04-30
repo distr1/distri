@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN" "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  <rewriteSystem systemIdStartString="http://docbook.sourceforge.net/release/xsl/current" rewritePrefix="/ro/docbook-xsl-amd64-1.79.2-4/out/share/xml/docbook/xsl-stylesheets-nons-1.79.2/"/>
+  <rewriteSystem systemIdStartString="http://www.oasis-open.org/docbook/xml/4.2/" rewritePrefix="/ro/docbook-xml-amd64-4.5-1/out/share/xml/docbook/schema/dtd/4.5/"/>
+  <rewriteSystem systemIdStartString="http://www.oasis-open.org/docbook/xml/4.5/" rewritePrefix="/ro/docbook-xml-amd64-4.5-1/out/share/xml/docbook/schema/dtd/4.5/"/>    
+</catalog>

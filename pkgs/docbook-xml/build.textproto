@@ -1,0 +1,13 @@
+source: "https://t.zekjur.net/docbook-xml-4.5.tar.bz2"
+hash: "6a243fbc705630e4244efe2f750022d7d411afc3562c971be5eadf7064adf0b9"
+version: "4.5-1"
+
+cbuilder: {}
+
+# build dependencies:
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}${DISTRI_PREFIX}; cd ${DISTRI_SOURCEDIR} && install -v -m755 -d $d/share/xml/docbook/schema/dtd/4.5 && cp -v -R * $d/share/xml/docbook/schema/dtd/4.5 && ln -s 4.5 $d/share/xml/docbook/schema/dtd/4"
+}

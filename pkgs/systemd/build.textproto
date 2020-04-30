@@ -23,6 +23,7 @@ mesonbuilder: {
   extra_meson_flag: "-Dloadkeys-path=/bin/loadkeys"
   extra_meson_flag: "-Dsetfont-path=/bin/setfont"
   extra_meson_flag: "-Ddefault-hierarchy=hybrid"
+  extra_meson_flag: "-Dman=true"
 }
 
 # build dependencies:
@@ -35,6 +36,9 @@ dep: "meson"
 dep: "kmod"
 dep: "cryptsetup"
 dep: "systemd"  # to pick up the latest version
+dep: "libxslt"  # xsltproc for manpages
+dep: "docbook-xsl"
+dep: "docbook-xml"
 
 install: {
   # TODO: remove once both share/pkgconfig (arch-indep) and lib/pkgconfig (arch-dep) are union overlays
