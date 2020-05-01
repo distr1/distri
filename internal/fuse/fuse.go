@@ -235,8 +235,12 @@ func Mount(ctx context.Context, args []string) (join func(context.Context) error
 	// 	return nil, err
 	// }
 	mfs, err := fuse.Mount(mountpoint, server, &fuse.MountConfig{
-		FSName:   "distri",
-		ReadOnly: true,
+		FSName: "distri",
+		// While squashfs contents are read-only, e.g. exchange directories are
+		// not, so the file system as a whole cannot be read-only. When ReadOnly
+		// is true, the kernel caches so aggressively that newly appearing
+		// images are not accessible.
+		ReadOnly: false,
 		Options: map[string]string{
 			"allow_other": "", // allow all users to read files
 			"suid":        "",
