@@ -1,0 +1,16 @@
+--- old/config/Makefile.am	2018-11-22 02:01:20.000000000 +0100
++++ new/config/Makefile.am	2020-05-01 11:56:01.199545326 +0200
+@@ -71,4 +71,4 @@
+     -DSHELL_CMD="$(SHELL_CMD)" $(MKTEMP_DEFINES)
+ 
+ Xservers.ws: $(srcdir)/Xservers.ws.cpp
+-	$(AM_V_GEN)$(RAWCPP) $(RAWCPPFLAGS) $(CPP_FILES_FLAGS) < $(srcdir)/Xservers.ws.cpp | $(CPP_SED_MAGIC) > $@
++	$(AM_V_GEN)$(RAWCPP) $(RAWCPPFLAGS) -ffreestanding $(CPP_FILES_FLAGS) < $(srcdir)/Xservers.ws.cpp | $(CPP_SED_MAGIC) > $@
+--- old/cpprules.in	2018-11-22 02:01:20.000000000 +0100
++++ new/cpprules.in	2020-05-01 11:56:01.199545326 +0200
+@@ -23,4 +23,4 @@
+                        -e '/\@\@$$/s/\@\@$$/\\/'
+ 
+ .cpp:
+-	$(AM_V_GEN)$(RAWCPP) $(RAWCPPFLAGS) $(CPP_FILES_FLAGS) < $< | $(CPP_SED_MAGIC) > $@
++	$(AM_V_GEN)$(RAWCPP) $(RAWCPPFLAGS) -ffreestanding $(CPP_FILES_FLAGS) < $< | $(CPP_SED_MAGIC) > $@

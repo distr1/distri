@@ -6,6 +6,10 @@ version: "16d74befa4430eb024d81ee4070520afff697d60-8"
 cherry_pick: "libsystemd.patch"
 cherry_pick: "xservers.patch"
 
+# Based on mancha’s original patch from 2013 (!):
+# https://www.linuxquestions.org/questions/slackware-14/empty-lines-in-xdm-config-files-after-current-update-4175468781/
+cherry_pick: "cpp.patch"
+
 writable_sourcedir: true
 in_tree_build: true
 
