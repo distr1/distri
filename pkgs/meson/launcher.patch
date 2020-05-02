@@ -1,0 +1,11 @@
+--- old/mesonbuild/mesonmain.py	2020-05-02 22:37:55.035436359 +0200
++++ new/mesonbuild/mesonmain.py	2020-05-02 22:38:28.588262968 +0200
+@@ -225,6 +225,7 @@
+         launcher = sys.executable
+     else:
+         launcher = os.path.realpath(sys.argv[0])
++    launcher = '/ro/meson-amd64-0.54.1-7/bin/meson'
+     return run(sys.argv[1:], launcher)
+ 
+ if __name__ == '__main__':
+Binary files /dev/null and new/mesonbuild/mesonmain.py~ differ

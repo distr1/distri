@@ -1,6 +1,6 @@
 source: "https://github.com/mesonbuild/meson/releases/download/0.54.1/meson-0.54.1.tar.gz"
 hash: "2f76fb4572762be13ee479292610091b4509af5788bcceb391fe222bcd0296dc"
-version: "0.54.1-5"
+version: "0.54.1-7"
 
 writable_sourcedir: true
 in_tree_build: true
@@ -8,6 +8,8 @@ in_tree_build: true
 cherry_pick: "genmarshal.patch"
 # https://github.com/NixOS/nixpkgs/blob/257aff801079890e2c5ed3fa5b8e5f818f611fad/pkgs/development/tools/build-managers/meson/fix-rpath.patch
 cherry_pick: "rpath.patch"
+
+cherry_pick: "launcher.patch"
 
 pythonbuilder: {}
 
