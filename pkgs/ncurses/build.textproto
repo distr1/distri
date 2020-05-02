@@ -8,6 +8,9 @@ extra_file: "panelw.so.ld"
 extra_file: "formw.so.ld"
 extra_file: "menuw.so.ld"
 
+# Prevent our LDFLAGS from ending up in the pkg-config .pc file:
+cherry_pick: "pc-ldflags.patch"
+
 cbuilder: {
   # TODO: enable C++ support?
   extra_configure_flag: "--without-cxx-binding"

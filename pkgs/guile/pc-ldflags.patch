@@ -1,0 +1,12 @@
+--- old/configure	2017-02-13 22:18:15.000000000 +0100
++++ new/configure	2020-05-02 11:57:10.998023956 +0200
+@@ -54946,7 +54946,7 @@
+ done
+ 
+ GUILE_CFLAGS="$GUILE_CFLAGS $PTHREAD_CFLAGS"
+-GUILE_LIBS="$LDFLAGS $LIBS"
++GUILE_LIBS=" $LIBS"
+ 
+ 
+ 
+Binary files /dev/null and new/configure~ differ

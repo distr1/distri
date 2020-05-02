@@ -5,6 +5,8 @@ pull: {
   releases_url: "https://www.ruby-lang.org/en/downloads/"
 }
 
+cherry_pick: "pc-ldflags.patch"
+
 cbuilder: {}
 
 # build dependencies:

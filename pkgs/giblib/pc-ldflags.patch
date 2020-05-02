@@ -1,0 +1,11 @@
+--- old/giblib.pc.in	2004-09-04 16:40:40.000000000 +0200
++++ new/giblib.pc.in	2020-05-02 11:13:50.450107188 +0200
+@@ -6,6 +6,6 @@
+ Name: giblib
+ Description: wrapper library for imlib2, and other stuff
+ Version: @VERSION@
+-Libs: -L${libdir} -lgiblib @LDFLAGS@ @IMLIB_LIBS@
++Libs: -L${libdir} -lgiblib @IMLIB_LIBS@
+ Cflags: -I${includedir} -I${includedir}/giblib @IMLIB_CFLAGS@
+ 
+Binary files /dev/null and new/giblib.pc.in~ differ

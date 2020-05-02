@@ -1,0 +1,15 @@
+--- old/misc/gen-pkgconfig.in	2020-05-02 11:08:19.661290907 +0200
++++ new/misc/gen-pkgconfig.in	2020-05-02 11:10:50.262568124 +0200
+@@ -92,6 +92,12 @@
+ 	-Wl,-z,*) # ignore flags used to manipulate shared image
+ 		continue
+ 		;;
++	-Wl,-rpath*) # ignore rpath
++		continue
++		;;
++	-Wl,--dynamic-linker*) # ignore ELF interpreter
++		continue
++		;;
+ 	-L*)
+ 		[ -d ${opt##-L} ] || continue
+ 		case ${opt##-L} in
