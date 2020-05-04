@@ -2,6 +2,7 @@ source: "https://archive.mozilla.org/pub/firefox/releases/60.9.0esr/source/firef
 hash: "9f453c8cc5669e46e38f977764d49a36295bf0d023619d9aac782e6bb3e8c53f"
 version: "60.9.0-1"
 
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1635036
 cherry_pick: "shell.patch"
 
 writable_sourcedir: true
