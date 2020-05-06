@@ -425,35 +425,36 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		return err
 	}
 
-	pkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
+	splitpkgs := append(b.Proto.GetSplitPackage(), &pb.SplitPackage{
 		Name:  proto.String(b.Pkg),
 		Claim: []*pb.Claim{{Glob: proto.String("*")}},
 	})
-	for _, pkg := range pkgs {
-		fullName := pkg.GetName() + "-" + b.Arch + "-" + b.Version
+	for _, splitpkg := range splitpkgs {
+		fullName := splitpkg.GetName() + "-" + b.Arch + "-" + b.Version
 		writeEv := trace.Event("write "+fullName, tidBuildpkg)
 
-		deps := append(meta.GetRuntimeDep(),
-			append(b.Proto.GetRuntimeDep(),
-				pkg.GetRuntimeDep()...)...)
+		// defensive copy
+		deps := append([]string{}, meta.GetRuntimeDep()...)
+		deps = append(deps, b.Proto.GetRuntimeDep()...)
+		deps = append(deps, splitpkg.GetRuntimeDep()...)
 		{
 			pruned := make([]string, 0, len(deps))
 			for _, d := range deps {
-				if distri.ParseVersion(d).Pkg == pkg.GetName() {
+				if distri.ParseVersion(d).Pkg == splitpkg.GetName() {
 					continue
 				}
 				pruned = append(pruned, d)
 			}
 			deps = pruned
 		}
-		resolved, err := b.GlobAndResolve(env.DefaultRepo, deps, pkg.GetName())
+		resolved, err := b.GlobAndResolve(env.DefaultRepo, deps, splitpkg.GetName())
 		if err != nil {
-			return fmt.Errorf("resolve: %w", err)
+			return fmt.Errorf("resolve(%s, prune=%s): %w", deps, splitpkg.GetName(), err)
 		}
 
 		// TODO: add the transitive closure of runtime dependencies
 
-		log.Printf("%s runtime deps: %q", pkg.GetName(), resolved)
+		log.Printf("%s runtime deps: %q", splitpkg.GetName(), resolved)
 
 		unions := make([]*pb.Union, len(b.Proto.RuntimeUnion))
 		for idx, o := range b.Proto.RuntimeUnion {
@@ -480,7 +481,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 		if err := renameio.WriteFile(fn, []byte(c), 0644); err != nil {
 			return err
 		}
-		if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+pkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
+		if err := renameio.Symlink(fullName+".meta.textproto", filepath.Join("../distri/pkg/"+splitpkg.GetName()+"-"+b.Arch+".meta.textproto")); err != nil {
 			return err
 		}
 		writeEv.Done()
