@@ -748,6 +748,12 @@ func (b *Ctx) Package() error {
 				if err := os.Symlink(rel, m); err != nil {
 					return err
 				}
+				if pkg.Proto.GetName() == b.Pkg {
+					// Do not add a circular runtime dependency on the main package
+					continue
+				}
+				// automatically add runtime dep on split package to main
+				// package:
 				b.Proto.RuntimeDep = append(b.Proto.RuntimeDep, fullName)
 			}
 		}
