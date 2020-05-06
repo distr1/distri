@@ -1,6 +1,6 @@
-source: "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.18.7.tar.xz"
-hash: "f03b425e262a71e5079736706233a4e9afaf77c8462b552b4d6db2d33f5af731"
-version: "4.18.7-6"
+source: "https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.6.5.tar.xz"
+hash: "f79bd3dbcbe1e7afba256d59b4ca21da12d2c5b4189804dffb2a49fd2b9b52e6"
+version: "5.6.5-7"
 
 writable_sourcedir: true
 in_tree_build: true
@@ -20,6 +20,7 @@ dep: "openssl"
 dep: "perl"
 dep: "gzip"
 dep: "kmod"
+dep: "rsync"
 
 build_step: {
   argv: "make"
