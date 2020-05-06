@@ -1,6 +1,6 @@
 source: "https://mirrors.edge.kernel.org/pub/linux/utils/boot/dracut/dracut-048.tar.xz"
 hash: "0750d6b71b7f95d8dfa338404372bfeb0e5c30e7fe2a21ba55c6dbf3dbcf6a79"
-version: "048-11"
+version: "048-12"
 
 cherry_pick: "exec.patch"
 cherry_pick: "emergency.patch"
@@ -23,7 +23,7 @@ runtime_dep: "findutils"
 runtime_dep: "cpio"
 runtime_dep: "tar"
 runtime_dep: "gzip"
-runtime_dep: "pigz"
+#runtime_dep: "pigz"
 runtime_dep: "sed"
 runtime_dep: "grep"
 runtime_dep: "binutils"  # for strip(1) at generate-time
