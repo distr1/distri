@@ -89,7 +89,7 @@ func TestReaddir(t *testing.T) {
 
 	if err := cmpFileInfo(fis[0], FileInfo{
 		name:    "ack",
-		size:    42496,
+		size:    38400,
 		mode:    0755,
 		modTime: time.Unix(1581275131, 0), // stat -c %Y /ro/ack-amd64-2.24/bin/ack
 	}); err != nil {
@@ -296,7 +296,7 @@ func TestReadfile(t *testing.T) {
 			t.Fatal(err)
 		}
 		sum := fmt.Sprintf("%x", h.Sum(nil))
-		if got, want := sum, "5d6bf64fbabdfabd329ea090daffda15"; got != want {
+		if got, want := sum, "12b328068dba01da0341d4b840c34b0b"; got != want {
 			t.Fatalf("md5(bin/ack): got %s, want %s", got, want)
 		}
 	}
