@@ -17,24 +17,34 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-const splitPackageBuildTextproto = `
+const (
+	splitPackageBuildTextproto = `
 source: "empty://"
 hash: ""
 version: "1"
 
 dep: "bash"
 dep: "coreutils"
+dep: "libxcb"
+dep: "yajl2"
+dep: "gcc"
+dep: "binutils"
+dep: "pkg-config"
+dep: "musl"
+
+extra_file: "xcb.c"
+extra_file: "yajl.c"
 
 split_package: <
   name: "multi-libs"
   runtime_dep: "bash"
-  claim: < glob: "out/lib/*.so" >
+  claim: < glob: "out/bin/xcb" >
 >
 
 build_step: <
   argv: "/bin/sh"
   argv: "-c"
-  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib; mkdir -p $d; touch $d/liba.so"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; gcc ${DISTRI_SOURCEDIR}/xcb.c -o $d/xcb -Wall $(pkg-config --cflags --libs xcb) && gcc ${DISTRI_SOURCEDIR}/yajl.c -o $d/yajl -Wall $(pkg-config --cflags --libs yajl)"
 >
 
 build_step: <
@@ -43,6 +53,23 @@ build_step: <
   argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/doc/multi; mkdir -p $d; touch $d/README.md"
 >
 `
+
+	splitPackageXcbC = `
+#include <xcb/xcb.h>
+int main(int argc, char *argv[]) {
+  xcb_disconnect(NULL); // documented as a no-op
+  return 0;
+}
+`
+
+	splitPackageYajlC = `
+#include <yajl_version.h>
+int main(int argc, char *argv[]) {
+  yajl_version();
+  return 0;
+}
+`
+)
 
 func list(rd *squashfs.Reader, dir string, inode squashfs.Inode) ([]string, error) {
 	fis, err := rd.Readdir(inode)
@@ -97,6 +124,12 @@ func TestSplitPackageBuild(t *testing.T) {
 	deps, err := b.GlobAndResolve(env.DefaultRepo, []string{
 		"bash",
 		"coreutils",
+		"libxcb",
+		"yajl2",
+		"gcc",
+		"binutils", // TODO: make this a runtime_dep in gcc
+		"pkg-config",
+		"musl",
 	}, "")
 	if err != nil {
 		t.Fatal(err)
@@ -120,6 +153,18 @@ func TestSplitPackageBuild(t *testing.T) {
 	if err := ioutil.WriteFile(
 		filepath.Join(pkgDir, "build.textproto"),
 		[]byte(splitPackageBuildTextproto),
+		0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "xcb.c"),
+		[]byte(splitPackageXcbC),
+		0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(
+		filepath.Join(pkgDir, "yajl.c"),
+		[]byte(splitPackageYajlC),
 		0644); err != nil {
 		t.Fatal(err)
 	}
