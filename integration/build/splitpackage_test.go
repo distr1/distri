@@ -190,7 +190,16 @@ func TestSplitPackageBuild(t *testing.T) {
 		{
 			image: "multi-amd64-1.squashfs",
 			want: []string{
-				"out/lib/liba.so", // symlink
+				"bin/xcb",
+				"bin/yajl",
+				"debug",
+				"lib/ld-linux-x86-64.so.2",
+				"lib/libXau.so.6",
+				"lib/libc.so.6",
+				"lib/libxcb.so.1",
+				"lib/libyajl.so.2",
+				"out/bin/xcb", // symlink
+				"out/bin/yajl",
 				"out/share/doc/multi/README.md",
 			},
 		},
@@ -198,7 +207,7 @@ func TestSplitPackageBuild(t *testing.T) {
 		{
 			image: "multi-libs-amd64-1.squashfs",
 			want: []string{
-				"out/lib/liba.so",
+				"out/bin/xcb",
 			},
 		},
 	} {
@@ -225,12 +234,12 @@ func TestSplitPackageBuild(t *testing.T) {
 
 			if test.image == "multi-amd64-1.squashfs" {
 				// Verify out/lib/liba.so is a symlink to the version in multi-libs
-				target, err := readLink(rd, "out/lib/liba.so")
+				target, err := readLink(rd, "out/bin/xcb")
 				if err != nil {
 					t.Fatal(err)
 				}
-				if got, want := target, "../../../multi-libs-amd64-1/out/lib/liba.so"; got != want {
-					t.Errorf("ReadLink(%s) = %q, want %q", "out/lib/liba.so", got, want)
+				if got, want := target, "../../../multi-libs-amd64-1/out/bin/xcb"; got != want {
+					t.Errorf("ReadLink(%s) = %q, want %q", "out/bin/xcb", got, want)
 				}
 			}
 		})
@@ -244,10 +253,16 @@ func TestSplitPackageBuild(t *testing.T) {
 			meta: "multi-amd64-1.meta.textproto",
 			want: []string{
 				"multi-libs-amd64-1", // from splitting
+
 				// from multi-libs:
-				"bash-amd64-5.0-4",
-				"glibc-amd64-2.31-4",  // from bash
-				"ncurses-amd64-6.2-9", // from bash
+				"bash-amd64-5.0-4",             // from build.textproto
+				"glibc-amd64-2.31-4",           // from bash
+				"ncurses-amd64-6.2-9",          // from bash
+				"libxcb-amd64-1.13.1-8",        // from shlibdeps
+				"libxau-amd64-1.0.9-7",         // from libxcb
+				"libpthread-stubs-amd64-0.4-6", // from libxcb
+				"xorgproto-amd64-2020.1-7",     // from libxcb
+				"yajl2-amd64-2.1.0-7",          // from shlibdeps
 			},
 		},
 
@@ -255,8 +270,16 @@ func TestSplitPackageBuild(t *testing.T) {
 			meta: "multi-libs-amd64-1.meta.textproto",
 			want: []string{
 				"bash-amd64-5.0-4",
-				"glibc-amd64-2.31-4",  // from bash
-				"ncurses-amd64-6.2-9", // from bash
+				"glibc-amd64-2.31-4",           // from bash
+				"ncurses-amd64-6.2-9",          // from bash
+				"libxcb-amd64-1.13.1-8",        // from shlibdeps
+				"libxau-amd64-1.0.9-7",         // from libxcb
+				"libpthread-stubs-amd64-0.4-6", // from libxcb
+				"xorgproto-amd64-2020.1-7",     // from libxcb
+
+				// TODO: remove this once runtime deps are added to the correct
+				// split package (and not just to all packages):
+				"yajl2-amd64-2.1.0-7", // from multi (!) shlibdeps
 			},
 		},
 	} {
