@@ -832,6 +832,14 @@ func newerRevisionGoesFirst(deps []string) []string {
 	return result
 }
 
+func appendUnlessEmpty(dirs []string, dir string) []string {
+	if fis, _ := ioutil.ReadDir(dir); len(fis) == 0 {
+		// Empty
+		return dirs
+	}
+	return append(dirs, dir)
+}
+
 func (b *Ctx) env(deps []string, hermetic bool) []string {
 	// TODO: this should go into the C builder once the C builder is used by all packages
 	var (
@@ -848,23 +856,29 @@ func (b *Ctx) env(deps []string, hermetic bool) []string {
 	deps = newerRevisionGoesFirst(deps)
 
 	for _, dep := range deps {
-		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
+		appendFunc := appendUnlessEmpty
+		if dep == b.FullName() {
+			appendFunc = func(dirs []string, dir string) []string {
+				return append(dirs, dir) // always append, even if empty
+			}
+		}
+		libDirs = appendFunc(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
-		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
-		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/out/lib/pkgconfig")
-		pkgconfigDirs = append(pkgconfigDirs, "/ro/"+dep+"/out/share/pkgconfig")
+		libDirs = appendFunc(libDirs, "/ro/"+dep+"/out/lib64")
+		pkgconfigDirs = appendFunc(pkgconfigDirs, "/ro/"+dep+"/out/lib/pkgconfig")
+		pkgconfigDirs = appendFunc(pkgconfigDirs, "/ro/"+dep+"/out/share/pkgconfig")
 		// Exclude glibc from CPATH: it needs to come last (as /usr/include),
 		// and gcc doesn’t recognize that the non-system directory glibc-2.27
 		// duplicates the system directory /usr/include because we only symlink
 		// the contents, not the whole directory.
 		if pv := distri.ParseVersion(dep); pv.Pkg != "glibc" && pv.Pkg != "glibc-i686" {
-			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include")
-			includeDirs = append(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
+			includeDirs = appendFunc(includeDirs, "/ro/"+dep+"/out/include")
+			includeDirs = appendFunc(includeDirs, "/ro/"+dep+"/out/include/x86_64-linux-gnu")
 		}
-		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
+		perl5Dirs = appendFunc(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
 		// TODO: is site-packages the best choice here?
-		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
-		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python2.7/site-packages")
+		pythonDirs = appendFunc(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
+		pythonDirs = appendFunc(pythonDirs, "/ro/"+dep+"/out/lib/python2.7/site-packages")
 	}
 
 	ifNotHermetic := func(val string) string {
@@ -915,15 +929,21 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 	deps = newerRevisionGoesFirst(deps)
 
 	for _, dep := range deps {
+		appendFunc := appendUnlessEmpty
+		if dep == b.FullName() {
+			appendFunc = func(dirs []string, dir string) []string {
+				return append(dirs, dir) // always append, even if empty
+			}
+		}
 		// TODO: these need to be the bindirs of the runtime deps. move wrapper
 		// script creation and runtimeEnv call down to when we know runtimeDeps
-		binDirs = append(binDirs, "/ro/"+dep+"/bin")
-		libDirs = append(libDirs, "/ro/"+dep+"/out/lib")
+		binDirs = appendFunc(binDirs, "/ro/"+dep+"/bin")
+		libDirs = appendFunc(libDirs, "/ro/"+dep+"/out/lib")
 		// TODO: should we try to make programs install to /lib instead? examples: libffi
-		libDirs = append(libDirs, "/ro/"+dep+"/out/lib64")
-		perl5Dirs = append(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
+		libDirs = appendFunc(libDirs, "/ro/"+dep+"/out/lib64")
+		perl5Dirs = appendFunc(perl5Dirs, "/ro/"+dep+"/out/lib/perl5")
 		// TODO: is site-packages the best choice here?
-		pythonDirs = append(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
+		pythonDirs = appendFunc(pythonDirs, "/ro/"+dep+"/out/lib/python3.7/site-packages")
 	}
 
 	env := []string{
