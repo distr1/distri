@@ -1,0 +1,21 @@
+baseURL = "https://distr1.org/"
+languageCode = "en-us"
+title = "distri"
+theme = "distri"
+disableKinds = ["RSS", "taxonomyTerm"]
+publishDir = "../docs/"
+enableRobotsTXT = true
+
+[menu]
+
+  [[menu.main]]
+    name = "blog"
+    title = "Blog"
+    url = "https://michael.stapelberg.ch/posts/tags/distri/"
+    weight = 40
+
+  [[menu.main]]
+    name = "github"
+    title = "GitHub"
+    url = "https://github.com/distr1/distri"
+    weight = 50

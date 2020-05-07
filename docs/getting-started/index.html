@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+
+    
+    
+    <link rel="stylesheet" href="https://distr1.org/sass/sidebar.css">
+
+    <title>distri: getting started</title>
+  </head>
+<body>
+        <div id="content">
+	  <div class="container">
+	    <div class="row">
+	      <div class="col-md-10"><nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">distri</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav ml-auto">
+      
+      
+      
+      <a class="nav-item nav-link " href="/">Home </a>
+      
+      
+      <a class="nav-item nav-link active" href="/getting-started/">Getting started <span class="sr-only">(current)</span></a>
+      
+      
+      <a class="nav-item nav-link " href="/things-to-try/">Things to try </a>
+      
+      
+      <a class="nav-item nav-link " href="https://michael.stapelberg.ch/posts/tags/distri/">Blog </a>
+      
+      
+      <a class="nav-item nav-link " href="https://github.com/distr1/distri">GitHub </a>
+      
+    </div>
+  </div>
+</nav>
+<h1 id="getting-started">Getting started</h1>
+<p>Find current images of the <code>jackherer</code> release branch at <a href="https://repo.distr1.org/distri/jackherer/img/">https://repo.distr1.org/distri/jackherer/img/</a>.</p>
+<p>With all images, use the <code>root</code> account, password <code>peace</code>, to log in.</p>
+<p><strong>TIP</strong>: If you can, use BitTorrent—repo.distr1.org is located in Europe, so transfers to other continents may be slow.</p>
+<p><a href="magnet:?xt=urn:btih:0aa9282c0644608c1ff50a278f4d3fb19950e654&amp;dn=distri-disk.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: distri-disk.img.zst</a></p>
+<p><a href="magnet:?xt=urn:btih:a818059365fb49d9a44e5bd3b1c0d5a25c858592&amp;dn=distri-qemu-serial.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: distri-qemu-serial.img.zst</a></p>
+<h2 id="run-distri-on-real-hardware">Run distri on real hardware</h2>
+<p>The easiest way to run distri on real hardware is to install it onto a spare USB memory stick.</p>
+<p>Obtain a stable path to your USB memory stick by watching <code>/dev/disk/by-id</code> while inserting the stick:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">% watch -dg ls <span style="color:#e6db74">&#39;/dev/disk/by-id/*&#39;</span>
+</code></pre></div><p>Then, copy the <code>distri-disk.img</code> image onto the memory stick:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">dd <span style="color:#66d9ef">if</span><span style="color:#f92672">=</span>distri-disk.img of<span style="color:#f92672">=</span>/dev/disk/by-id/usb-SanDisk_Extreme_Pro_D99B-0:0 bs<span style="color:#f92672">=</span>1M status<span style="color:#f92672">=</span>progress oflag<span style="color:#f92672">=</span>direct
+</code></pre></div><p>Insert the memory stick into a computer and select the memory stick as boot device.</p>
+<h2 id="run-distri-in-docker">Run distri in Docker</h2>
+<p><strong>NOTE</strong>: As a heads-up, the docker <a href="https://github.com/distr1/distri/issues/28">container image is pretty large</a></p>
+<ol>
+<li>(If you’d rather use a local docker container, build it locally: <code>distri pack -docker | docker import - distri</code>).</li>
+<li>Then, run bash within the distri docker container:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">docker run <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	--privileged <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	--entrypoint /entrypoint <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	-ti <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	-e TERM<span style="color:#f92672">=</span>$TERM <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	distr1/distri:jackherer
+</code></pre></div><h2 id="run-distri-in-qemu">Run distri in qemu</h2>
+<p>Depending on what you want to test, the text-only serial interface might be a bit more convenient: it side-steps keyboard configuration mismatches and makes it easily to run distri remotely via an SSH session:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">make qemu-serial DISKIMG<span style="color:#f92672">=</span>distri-qemu-serial.img
+</code></pre></div><p>(You can exit by pressing <code>Ctrl-a x</code>)</p>
+<p>If you want or need a graphical interface, use the <code>qemu-graphic</code> target with the standard <code>distri-disk.img</code> image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">make qemu-graphic DISKIMG<span style="color:#f92672">=</span>distri-disk.img
+</code></pre></div><h2 id="run-distri-in-virtualbox">Run distri in virtualbox</h2>
+<ol>
+<li>
+<p>Convert the distri disk image into a VDI disk image so that virtualbox can use it as a root disk:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vbox-img convert <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --srcfilename distri-disk.img <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --dstfilename vbox-distri.vdi <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --srcformat RAW <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --dstformat VDI
+</code></pre></div></li>
+<li>
+<p>Create a new VM:</p>
+<ul>
+<li>click new button</li>
+<li>select type linux</li>
+<li>select version other linux (64-bit)</li>
+<li>select the VDI disk image from step 1 as existing disk</li>
+</ul>
+</li>
+</ol>
+<h2 id="run-distri-on-google-cloud">Run distri on Google Cloud</h2>
+<p><strong>TIP</strong>: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay the cost, creating the VM in Europe will result in faster installation.</p>
+<ol>
+<li>(If you’d rather use your own Google Cloud Storage bucket, import the <code>distri-gce.tar.gz</code> image into your Google Cloud Storage: <code>gsutil cp distri-gce.tar.gz gs://distri-gce</code>.)</li>
+<li>Create a Compute Engine Image: <code>gcloud compute images create distri0 --source-uri gs://distri-gce/distri-gce.tar.gz</code></li>
+<li>Create VM using that image: <code>gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0</code></li>
+<li>Log in via the serial console and set up an authorized SSH key.</li>
+</ol>
+<h2 id="run-distri-in-lxd">Run distri in LXD</h2>
+<p>See <a href="https://linuxcontainers.org/">https://linuxcontainers.org/</a> for details on LXD, the latest LXC experience.</p>
+<ol>
+<li>
+<p>Loop-mount the root partition of the distri disk image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">udisksctl loop-setup -f distri-disk.img
+mount /dev/loop0p4 /mnt/distri
+</code></pre></div></li>
+<li>
+<p>Archive the root file system:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">tar -C /mnt/distri -caf distri-rootfs.tar .
+umount /mnt/distri
+udisksctl loop-delete -b /dev/loop0
+</code></pre></div></li>
+<li>
+<p>Create an archive containing the <code>metadata.yaml</code> file for LXC:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">cat &gt; metadata.yaml <span style="color:#e6db74">&lt;&lt; EOF
+</span><span style="color:#e6db74">architecture: x86_64
+</span><span style="color:#e6db74">creation_date: 1566894155
+</span><span style="color:#e6db74">properties:
+</span><span style="color:#e6db74">  description: distri
+</span><span style="color:#e6db74">  os: distri
+</span><span style="color:#e6db74">  release: distri jackherer
+</span><span style="color:#e6db74">templates:
+</span><span style="color:#e6db74">EOF</span>
+   
+tar -caf metadata.yaml.tar metadata.yaml
+</code></pre></div></li>
+<li>
+<p>Import the image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lxc image import metadata.yaml.tar distri-rootfs.tar --alias distri
+</code></pre></div></li>
+<li>
+<p>Create an LXC container using the image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lxc init distri distri-01
+lxc config set distri-01 raw.lxc lxc.init.cmd<span style="color:#f92672">=</span>/init
+</code></pre></div></li>
+<li>
+<p>Start the container and run a shell in it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lxc start distri-01
+lxc exec distri-01 bash
+</code></pre></div></li>
+</ol>
+
+
+<hr>
+
+<p class="small">
+  © 2018 Michael Stapelberg and contributors
+</p>
+	      </div>
+	      <div class="col-md-2">
+		<aside class="bd-toc">
+		  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#run-distri-on-real-hardware">Run distri on real hardware</a></li>
+    <li><a href="#run-distri-in-docker">Run distri in Docker</a></li>
+    <li><a href="#run-distri-in-qemu">Run distri in qemu</a></li>
+    <li><a href="#run-distri-in-virtualbox">Run distri in virtualbox</a></li>
+    <li><a href="#run-distri-on-google-cloud">Run distri on Google Cloud</a></li>
+    <li><a href="#run-distri-in-lxd">Run distri in LXD</a></li>
+  </ul>
+</nav>
+		</aside>
+	      </div>
+	    </div>
+
+
+	  </div>
+        </div>    
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
+</body>
+</html>

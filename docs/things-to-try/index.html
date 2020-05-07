@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+
+    
+    
+    <link rel="stylesheet" href="https://distr1.org/sass/sidebar.css">
+
+    <title>distri: cool things to try</title>
+  </head>
+<body>
+        <div id="content">
+	  <div class="container">
+	    <div class="row">
+	      <div class="col-md-10"><nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">distri</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav ml-auto">
+      
+      
+      
+      <a class="nav-item nav-link " href="/">Home </a>
+      
+      
+      <a class="nav-item nav-link " href="/getting-started/">Getting started </a>
+      
+      
+      <a class="nav-item nav-link active" href="/things-to-try/">Things to try <span class="sr-only">(current)</span></a>
+      
+      
+      <a class="nav-item nav-link " href="https://michael.stapelberg.ch/posts/tags/distri/">Blog </a>
+      
+      
+      <a class="nav-item nav-link " href="https://github.com/distr1/distri">GitHub </a>
+      
+    </div>
+  </div>
+</nav>
+
+<h1>Cool things to try</h1>
+
+<h2>Fast package installation</h2>
+
+<div class="d-flex">
+<a class="d-flex" href="https://asciinema.org/a/cwHaOq7LnY01lFB7kpQbAOVua" rel="nofollow"><img src="https://asciinema.org/a/cwHaOq7LnY01lFB7kpQbAOVua.svg" alt="asciicast" height=200></a>
+
+
+<ol>
+<li>Verify <code>i3status</code> is not yet installed: <code>i3status --version</code></li>
+<li>Install the <code>i3status</code> package: <code>distri install i3status</code></li>
+<li>Verify <code>i3status</code> is now installed: <code>i3status --version</code></li>
+</ol>
+
+
+
+</div>
+
+<hr>
+
+<h2>Specific package versions</h2>
+
+<div class="d-flex">
+<a class="d-flex" href="https://asciinema.org/a/VDKEQmsipIAy7e1FNTW3UbEt5" rel="nofollow"><img src="https://asciinema.org/a/VDKEQmsipIAy7e1FNTW3UbEt5.svg" alt="asciicast" height=200></a>
+
+
+<ol>
+<li>
+<p>Find out which package a file belongs to: <code>readlink -f /bin/i3</code></p>
+</li>
+<li>
+<p>If we are unhappy with the path that the exchange directory references, we can side-step it and make a specific selection:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">% i3 --version
+% /ro/i3-amd64-4.15*/bin/i3 --version
+% /ro/i3-amd64-4.17*/bin/i3 --version
+</code></pre></div></li>
+</ol>
+
+
+</div>
+
+<!--
+TODO: https://asciinema.org/a/LtPyjOYazUYSOIj9AcguaPFRd
+Look under the hood: wrapper programs
+  % file /ro/git*/bin/git
+  % readelf -p distrifilename !$
+Include once the article about hermetic packages is done.
+-->
+
+<hr>
+
+<h2>Exchange directories</h2>
+
+<div class="d-flex">
+<a class="d-flex" href="https://asciinema.org/a/LFgF05pfvVwdIRghd19VTCXpB" rel="nofollow"><img src="https://asciinema.org/a/LFgF05pfvVwdIRghd19VTCXpB.svg" alt="asciicast" height=200></a>
+
+
+<ol>
+<li>The <code>/bin</code> directory contains all executables: <code>ls /bin</code></li>
+<li>distri implements common file system hierarchy locations such as <code>/usr/include</code> as a symbolic link to an exchange directory:  <code>ls -l /usr/include</code></li>
+<li>Exchange directories consist of symbolic links to the files of individual distri packages: <code>ls -l /usr/include/</code></li>
+</ol>
+
+
+
+</div>
+
+<hr>
+
+<h2>C build environment</h2>
+
+<div class="d-flex">
+<a class="d-flex" href="https://asciinema.org/a/LKvo6Ja8yUEvsVYJHMMeclIAq" rel="nofollow"><img src="https://asciinema.org/a/LKvo6Ja8yUEvsVYJHMMeclIAq.svg" alt="asciicast" height=200></a>
+
+
+<ol>
+<li>Make available the build dependencies using <code>distri install autoconf automake make gcc libxcb xorgproto</code></li>
+<li>Build standard C software as usual:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">% git clone https://github.com/i3/i3lock
+% cd i3lock
+% autoreconf -fi
+% mkdir build <span style="color:#f92672">&amp;&amp;</span> cd build
+% ../configure
+% make -j8
+</code></pre></div></li>
+</ol>
+
+
+</div>
+
+
+<hr>
+
+<p class="small">
+  © 2018 Michael Stapelberg and contributors
+</p>
+	      </div>
+	      <div class="col-md-2">
+		<aside class="bd-toc">
+		  
+		</aside>
+	      </div>
+	    </div>
+
+
+	  </div>
+        </div>    
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
+</body>
+</html>

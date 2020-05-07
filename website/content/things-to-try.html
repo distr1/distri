@@ -1,0 +1,86 @@
+---
+title: "distri: cool things to try"
+menu:
+  main:
+    title: "Things to try"
+    weight: 30
+---
+
+<h1>Cool things to try</h1>
+
+<h2>Fast package installation</h2>
+
+<div class="d-flex">
+{{< asciinema acid="cwHaOq7LnY01lFB7kpQbAOVua" >}}
+
+{{% md %}}
+1. Verify `i3status` is not yet installed: `i3status --version`
+1. Install the `i3status` package: `distri install i3status`
+1. Verify `i3status` is now installed: `i3status --version`
+{{% /md %}}
+
+</div>
+
+<hr>
+
+<h2>Specific package versions</h2>
+
+<div class="d-flex">
+{{< asciinema acid="VDKEQmsipIAy7e1FNTW3UbEt5" >}}
+
+{{% md %}}
+1. Find out which package a file belongs to: `readlink -f /bin/i3`
+
+1. If we are unhappy with the path that the exchange directory references, we can side-step it and make a specific selection:
+
+    ```shell
+    % i3 --version
+    % /ro/i3-amd64-4.15*/bin/i3 --version
+    % /ro/i3-amd64-4.17*/bin/i3 --version
+    ```
+{{% /md %}}
+</div>
+
+<!--
+TODO: https://asciinema.org/a/LtPyjOYazUYSOIj9AcguaPFRd
+Look under the hood: wrapper programs
+  % file /ro/git*/bin/git
+  % readelf -p distrifilename !$
+Include once the article about hermetic packages is done.
+-->
+
+<hr>
+
+<h2>Exchange directories</h2>
+
+<div class="d-flex">
+{{< asciinema acid="LFgF05pfvVwdIRghd19VTCXpB" >}}
+
+{{% md %}}
+1. The `/bin` directory contains all executables: `ls /bin`
+1. distri implements common file system hierarchy locations such as `/usr/include` as a symbolic link to an exchange directory:  `ls -l /usr/include`
+1. Exchange directories consist of symbolic links to the files of individual distri packages: `ls -l /usr/include/`
+{{% /md %}}
+
+</div>
+
+<hr>
+
+<h2>C build environment</h2>
+
+<div class="d-flex">
+{{< asciinema acid="LKvo6Ja8yUEvsVYJHMMeclIAq" >}}
+
+{{% md %}}
+1. Make available the build dependencies using `distri install autoconf automake make gcc libxcb xorgproto`
+1. Build standard C software as usual:
+    ```shell
+    % git clone https://github.com/i3/i3lock
+    % cd i3lock
+    % autoreconf -fi
+    % mkdir build && cd build
+    % ../configure
+    % make -j8
+    ```
+{{% /md %}}
+</div>

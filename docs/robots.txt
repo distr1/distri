@@ -1,0 +1,2 @@
+User-Agent: *
+sitemap: https://distr1.org/sitemap.xml
