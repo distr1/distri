@@ -296,7 +296,7 @@ func TestReadfile(t *testing.T) {
 			t.Fatal(err)
 		}
 		sum := fmt.Sprintf("%x", h.Sum(nil))
-		if got, want := sum, "12b328068dba01da0341d4b840c34b0b"; got != want {
+		if got, want := sum, "c6c9b5d4d2a49f1b8b5e501f0f827a5c"; got != want {
 			t.Fatalf("md5(bin/ack): got %s, want %s", got, want)
 		}
 	}
