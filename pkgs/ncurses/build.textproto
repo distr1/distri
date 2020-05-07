@@ -9,6 +9,8 @@ extra_file: "formw.so.ld"
 extra_file: "menuw.so.ld"
 
 # Prevent our LDFLAGS from ending up in the pkg-config .pc file:
+# Should eventually show up in the archives at:
+# https://lists.gnu.org/archive/html/bug-ncurses/2020-05/threads.html
 cherry_pick: "pc-ldflags.patch"
 
 cbuilder: {
