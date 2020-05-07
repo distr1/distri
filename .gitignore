@@ -1,4 +1,4 @@
 /build/
 /_build/
-/docs/*.html
+/asciidocs/*.html
 secret.go

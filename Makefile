@@ -125,7 +125,7 @@ qemu-graphic:
 
 .PHONY: docs screen usb release
 
-docs: docs/building.asciidoc docs/package-format.asciidoc docs/index.asciidoc docs/rosetta-stone.asciidoc
+docs: asciidocs/building.asciidoc asciidocs/package-format.asciidoc asciidocs/index.asciidoc asciidocs/rosetta-stone.asciidoc
 	mkdir -p ${DOCSDIR}
 	asciidoctor --destination-dir ${DOCSDIR} $^
 
