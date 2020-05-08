@@ -88,8 +88,6 @@ func logic(listen string) error {
 			return err
 		}
 
-		// TODO(launch): verify cache headers on what we serve so that cloudflare will help
-
 		// TODO: plumb SourcePackage into distri mirror for gcc-libs split package
 
 		indexData := struct {
@@ -119,6 +117,13 @@ func logic(listen string) error {
 			return err
 		}
 		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+		// Cache for one hour:
+		utc := time.Now().UTC()
+		cacheSince := utc.Format(http.TimeFormat)
+		cacheUntil := utc.Add(1 * time.Hour).Format(http.TimeFormat)
+		w.Header().Set("Cache-Control", "max-age=3600, public")
+		w.Header().Set("Last-Modified", cacheSince)
+		w.Header().Set("Expires", cacheUntil)
 		if _, err := w.Write(buf.Bytes()); err != nil {
 			return err
 		}
