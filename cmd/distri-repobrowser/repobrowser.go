@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,7 +11,6 @@ import (
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/pb"
-	"github.com/golang/protobuf/proto"
 
 	// PostgreSQL driver for database/sql:
 	_ "github.com/lib/pq"
@@ -64,6 +61,10 @@ func logic(listen string) error {
 		"repo.distr1.org":       true,
 		"midna.zekjur.net:7080": true,
 	}
+	mc := &metadataCache{
+		cached:  make(map[string]*cachedMetadata),
+		updates: make(map[string]bool),
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/", errHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
@@ -81,27 +82,13 @@ func logic(listen string) error {
 			http.Error(w, "forbidden: "+repoURL.Host, http.StatusForbidden)
 			return nil
 		}
-		// TODO: other sections, too
-		var meta pb.MirrorMeta
-		// TODO: use context for cancelation/timeout
 		u := repoURL.String() + "pkg/meta.binaryproto"
-		resp, err := http.Get(u)
+		meta, err := mc.Get(r.Context(), u)
 		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("%s: unexpected HTTP status: got %v, want OK", u, resp.Status)
-		}
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		if err := proto.Unmarshal(b, &meta); err != nil {
 			return err
 		}
 
-		// TODO: cache fetched meta
+		// TODO(launch): verify cache headers on what we serve so that cloudflare will help
 
 		// TODO: plumb SourcePackage into distri mirror for gcc-libs split package
 

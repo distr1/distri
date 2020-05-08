@@ -83,8 +83,6 @@ td.upstreamversion badge {
 <span class="badge badge-danger">unreachable</span>
 {{ end }}
 {{ end }}
-
-<!-- TODO: flag unreachable packages -->
     </td>
 
     <td>{{ $pv.Arch }}</td>
