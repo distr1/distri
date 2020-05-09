@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"flag"
 	"log"
@@ -67,6 +68,16 @@ func logic(listen, assetsDir string) error {
 		cached:  make(map[string]*cachedMetadata),
 		updates: make(map[string]bool),
 	}
+	go func() {
+		ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
+		defer canc()
+		log.Printf("pre-warming cache")
+		const defaultURL = "https://repo.distr1.org/distri/jackherer/pkg/meta.binaryproto"
+		if err := mc.update(ctx, defaultURL, ""); err != nil {
+			log.Printf("pre-warming %v failed: %v", defaultURL, err)
+		}
+	}()
+
 	mux := http.NewServeMux()
 	for _, fn := range []string{
 		"css/",
