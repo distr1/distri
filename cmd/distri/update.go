@@ -58,7 +58,7 @@ func update(ctx context.Context, args []string) error {
 			return err
 		}
 
-		cmd := exec.Command(os.Args[0], append([]string{"update"}, args...)...)
+		cmd := exec.Command("distri", append([]string{"update"}, args...)...)
 		log.Printf("re-executing %v", cmd.Args)
 		// TODO: clean the environment
 		cmd.Env = append(os.Environ(),
