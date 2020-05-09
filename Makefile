@@ -123,7 +123,7 @@ qemu-serial:
 qemu-graphic:
 	${QEMU}
 
-.PHONY: docs screen usb release
+.PHONY: docs screen usb release deploy-repobrowser
 
 docs: asciidocs/building.asciidoc asciidocs/package-format.asciidoc asciidocs/index.asciidoc asciidocs/rosetta-stone.asciidoc
 	mkdir -p ${DOCSDIR}
@@ -156,3 +156,9 @@ release:
 
 umount:
 	for f in $$(mount | grep distri | cut -d' ' -f 3); do fusermount -u "$$f"; done
+
+deploy-repobrowser: install
+	rsync $(shell go env GOPATH)/bin/distri-repobrowser $(shell go env GOPATH)/bin/distri-checkupstream chuchi:/srv/browse.distr1.org/
+	rsync -a cmd/distri-repobrowser/assets chuchi:/srv/browse.distr1.org/
+	rsync distri-repobrowser.service chuchi:/etc/systemd/system/
+	ssh chuchi 'systemctl daemon-reload && systemctl restart distri-repobrowser'
