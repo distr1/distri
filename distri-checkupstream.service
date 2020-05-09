@@ -1,0 +1,58 @@
+[Unit]
+Description=distri-checkupstream
+
+[Service]
+Type=oneshot
+
+# TODO: why does the Go postgresql driver not default to this?
+Environment=PGHOST=/run/postgresql
+
+Environment=DISTRIROOT=/tmp/distri
+ExecStart=/usr/bin/git clone https://github.com/distr1/distri /tmp/distri
+ExecStart=/srv/browse.distr1.org/distri-checkupstream
+
+# See also http://0pointer.net/blog/dynamic-users-with-systemd.html
+DynamicUser=yes
+
+# Specifying User= with DynamicUser=yes allows for easy up- and downgrades
+# between dynamic and statically allocated users.
+# Also useful to make sure the allocated user name stays the same,
+# e.g. for PostgreSQL authentication.
+User=distri-checkupstream
+
+# Remove all capabilities(7), this is a stateless web server:
+CapabilityBoundingSet=
+
+# Ensure the service can never gain new privileges:
+NoNewPrivileges=yes
+
+# Prohibit access to any kind of namespacing:
+RestrictNamespaces=yes
+
+# Prohibit exotic address families:
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Make home directories inaccessible:
+ProtectHome=true
+
+# Make device nodes except for /dev/null, /dev/zero, /dev/full,
+# /dev/random and /dev/urandom inaccessible:
+PrivateDevices=yes
+
+# Make users other than root and the user for this daemon inaccessible:
+PrivateUsers=yes
+
+# Make cgroup file system hierarchy inaccessible:
+ProtectControlGroups=yes
+
+# Deny kernel module loading:
+ProtectKernelModules=yes
+
+# Make kernel variables (e.g. /proc/sys) read-only:
+ProtectKernelTunables=yes
+
+# Filter dangerous system calls. The following is listed as safe basic choice
+# in systemd.exec(5):
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM

@@ -160,5 +160,5 @@ umount:
 deploy-repobrowser: install
 	rsync $(shell go env GOPATH)/bin/distri-repobrowser $(shell go env GOPATH)/bin/distri-checkupstream chuchi:/srv/browse.distr1.org/
 	rsync -a cmd/distri-repobrowser/assets chuchi:/srv/browse.distr1.org/
-	rsync distri-repobrowser.service chuchi:/etc/systemd/system/
+	rsync distri-repobrowser.service distri-checkupstream.{service,timer} chuchi:/etc/systemd/system/
 	ssh chuchi 'systemctl daemon-reload && systemctl restart distri-repobrowser'
