@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/distr1/distri"
@@ -25,7 +27,7 @@ func errHandlerFunc(h func(w http.ResponseWriter, r *http.Request) error) http.H
 	})
 }
 
-func logic(listen string) error {
+func logic(listen, assetsDir string) error {
 	db, err := sql.Open("postgres", "dbname=distri sslmode=disable")
 	if err != nil {
 		return err
@@ -66,6 +68,17 @@ func logic(listen string) error {
 		updates: make(map[string]bool),
 	}
 	mux := http.NewServeMux()
+	for _, fn := range []string{
+		"css/",
+		"js/",
+	} {
+		if strings.HasSuffix(fn, "/") {
+			mux.Handle("/"+fn, http.StripPrefix("/"+fn, http.FileServer(http.Dir(filepath.Join(assetsDir, fn)))))
+		} else {
+			mux.Handle("/"+fn, http.FileServer(http.Dir(assetsDir)))
+		}
+	}
+
 	mux.Handle("/", errHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
 		// TODO(later): default to https:// and fall back to http:/ with a warning
@@ -134,10 +147,11 @@ func logic(listen string) error {
 
 func main() {
 	var (
-		listen = flag.String("listen", "localhost:8047", "[host]:port to listen on")
+		listen    = flag.String("listen", "localhost:8047", "[host]:port to listen on")
+		assetsDir = flag.String("assets", "assets", "directory in which to find assets")
 	)
 	flag.Parse()
-	if err := logic(*listen); err != nil {
+	if err := logic(*listen, *assetsDir); err != nil {
 		log.Fatal(err)
 	}
 }
