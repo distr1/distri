@@ -22,6 +22,8 @@ var indexTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 
   <title>distri repo browser: {{ .Repo }}</title>
 
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
   <style type="text/css">
 td.upstreamversion {
