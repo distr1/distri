@@ -1,0 +1,10 @@
+source: "https://ftp.gnu.org/gnu/wget/wget-1.20.3.tar.lz"
+hash: "69607ce8216c2d1126b7a872db594b3f21e511e660e07ca1f81be96650932abb"
+version: "1.20.3-1"
+
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
+
+cbuilder: {}
+
+# build dependencies:
+dep: "gnutls"
