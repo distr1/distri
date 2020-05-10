@@ -24,6 +24,8 @@ distri is published in the hope that other, more established distributions, will
 
 **For more details, please see my [blog article “introducing distri”](https://michael.stapelberg.ch/posts/2019-08-17-introducing-distri/)**. You can subscribe to all distri-related posts by subscribing to https://michael.stapelberg.ch/posts/tags/distri/feed.xml.
 
+For discussion and feedback, please subscribe to the [distri mailing list](https://www.freelists.org/list/distri) so that everyone can participate!
+
 ---
 
 {{< getstarted >}}
