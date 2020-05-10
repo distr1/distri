@@ -2,6 +2,8 @@ source: "https://www.freedesktop.org/software/accountsservice/accountsservice-0.
 hash: "ff2b2419a7e06bd9cb335ffe391c7409b49a0f0130b890bd54692a3986699c9b"
 version: "0.6.55-12"
 
+writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
+
 mesonbuilder: {
   extra_meson_flag: "-Dsystemdsystemunitdir=${DISTRI_PREFIX}/lib/systemd/system"
 }
