@@ -6,6 +6,8 @@ writable_sourcedir: true
 in_tree_build: true
 
 cbuilder: {
+  # Keep debug symbols in make install
+  extra_make_flag: "STRIP=/bin/true"
 }
 
 # build dependencies:

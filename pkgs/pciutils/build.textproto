@@ -14,5 +14,5 @@ dep: "which"
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "make install install-lib DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX} SHARED=yes"
+  argv: "make install install-lib DESTDIR=${DISTRI_DESTDIR} PREFIX=${DISTRI_PREFIX} SHARED=yes STRIP="
 }

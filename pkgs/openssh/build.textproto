@@ -16,6 +16,7 @@ cbuilder: {
   extra_configure_flag: "--sysconfdir=/etc/ssh"
   extra_configure_flag: "--with-privsep-path=${DISTRI_PREFIX}/var/empty"
   extra_configure_flag: "--with-pam"
+  extra_configure_flag: "--disable-strip"
 }
 
 install: {
