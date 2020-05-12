@@ -104,7 +104,7 @@ func pack(ctx context.Context, args []string) error {
 	fset.StringVar(&p.repo, "repo", env.DefaultRepo, "TODO")
 	fset.StringVar(&p.extraBase, "base", "", "if non-empty, an additional base image to install")
 	fset.StringVar(&p.diskImg, "diskimg", "", "Write an ext4 file system image to the specified path")
-	fset.Int64Var(&p.diskImgSize, "diskimg_size", 7*1024*1024*1024 /* 7 GiB */, "Disk image size in bytes (default: 7 GiB)")
+	fset.Int64Var(&p.diskImgSize, "diskimg_size", 8*1024*1024*1024 /* 8 GiB */, "Disk image size in bytes (default: 8 GiB)")
 	fset.StringVar(&p.gcsDiskImg, "gcsdiskimg", "", "Write a Google Cloud file system image (tar.gz containing disk.raw) to the specified path")
 	fset.BoolVar(&p.encrypt, "encrypt", false, "Whether to encrypt the image’s partitions (with LUKS)")
 	fset.BoolVar(&p.lvm, "lvm", false, "Whether to place the root file system on an LVM logical volume")
