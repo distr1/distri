@@ -6,9 +6,9 @@
 +After=network.target
 +
 +[Service]
-+ExecStartPre=/bin/sshd -t
-+ExecStart=/bin/sshd -D
-+ExecReload=/bin/sshd -t
++ExecStartPre=/ro/openssh-amd64-8.2p1-11/bin/sshd -t
++ExecStart=/ro/openssh-amd64-8.2p1-11/bin/sshd -D
++ExecReload=/ro/openssh-amd64-8.2p1-11/bin/sshd -t
 +ExecReload=/bin/kill -HUP $MAINPID
 +KillMode=process
 +Restart=on-failure
