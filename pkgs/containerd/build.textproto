@@ -16,7 +16,7 @@ dep: "golang"
 build_step: {
   argv: "/bin/sh"
   argv: "-c"
-  argv: "export GOPATH=$PWD/go CGO_LDFLAGS=\"-g -O2 -Wl,--dynamic-linker=/ro/${DISTRI_RESOLVE:glibc}/out/lib/ld-linux-x86-64.so.2\" GOCACHE=/tmp/throwaway && d=go/src/github.com/containerd/containerd && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && make BUILDTAGS=no_btrfs && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; mv bin/ctr bin/docker-ctr; mv bin/containerd bin/docker-containerd; mv bin/containerd-release bin/docker-containerd-release; mv bin/containerd-shim-runc-v1 bin/docker-containerd-shim-runc-v1; mv bin/containerd-stress bin/docker-containerd-stress; mv bin/containerd-shim bin/docker-containerd-shim; cp bin/* $d/; d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/systemd/system; mkdir -p $d; cp containerd.service $d"
+  argv: "export GOPATH=$PWD/go CGO_LDFLAGS=\"-g -O2 -Wl,--dynamic-linker=/ro/${DISTRI_RESOLVE:glibc}/out/lib/ld-linux-x86-64.so.2\" GOCACHE=/tmp/throwaway && d=go/src/github.com/containerd/containerd && mkdir -p $d && cd $d && cp -T -ar ${DISTRI_SOURCEDIR}/ . && make BUILDTAGS=no_btrfs && d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/bin; mkdir -p $d; cp bin/* $d/; d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/lib/systemd/system; mkdir -p $d; cp containerd.service $d"
 }
 
 install: {

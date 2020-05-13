@@ -5,7 +5,7 @@
  [Service]
  ExecStartPre=-/sbin/modprobe overlay
 -ExecStart=/usr/local/bin/containerd
-+ExecStart=/ro/containerd-amd64-1.3.4-8/out/bin/docker-containerd
++ExecStart=/ro/containerd-amd64-1.3.4-8/out/bin/containerd
  
  Type=notify
  Delegate=yes
