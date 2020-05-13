@@ -466,6 +466,31 @@ HOME_URL=https://distr1.org
 		"--map-root-user", // for mount permissions in the namespace
 		"--mount",
 		"--",
+		"chroot", root, "/ro/bin/systemctl", "preset-all")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return xerrors.Errorf("%v: %w", cmd.Args, err)
+	}
+
+	// TODO: remove this once a graphical session works by default
+	cmd = exec.Command("unshare",
+		"--user",
+		"--map-root-user", // for mount permissions in the namespace
+		"--mount",
+		"--",
+		"chroot", root, "/ro/bin/systemctl", "disable", "lightdm")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return xerrors.Errorf("%v: %w", cmd.Args, err)
+	}
+
+	cmd = exec.Command("unshare",
+		"--user",
+		"--map-root-user", // for mount permissions in the namespace
+		"--mount",
+		"--",
 		"chroot", root, "/ro/bin/systemd-sysusers",
 		"/ro/lib/sysusers.d/basic.conf",
 		"/ro/lib/sysusers.d/systemd.conf")
