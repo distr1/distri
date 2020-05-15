@@ -39,6 +39,9 @@
       <a class="nav-item nav-link " href="https://michael.stapelberg.ch/posts/tags/distri/">Blog </a>
       
       
+      <a class="nav-item nav-link " href="/release-notes/">Releases </a>
+      
+      
       <a class="nav-item nav-link " href="https://github.com/distr1/distri">GitHub </a>
       
     </div>
@@ -46,8 +49,18 @@
 </nav>
 <h1 id="distri-supersilverhaze-2020-05-16">distri supersilverhaze (2020-05-16)</h1>
 <p>If you’re not familiar, distri is a Linux distribution to research fast package management.</p>
-<p>You can read more about distri in my series of <a href="https://michael.stapelberg.ch/posts/tags/distri/">blog posts about distri</a>.</p>
+<p>You can read more about distri starting in my <a href="https://michael.stapelberg.ch/posts/2019-08-17-introducing-distri/">introduction blog post</a>, then in my <a href="https://michael.stapelberg.ch/posts/tags/distri/">series of blog posts about distri</a>.</p>
 <p>Please direct any questions or feedback to the <a href="https://www.freelists.org/list/distri">distri mailing list</a>.</p>
+<hr>
+<form>
+<div class="form-group d-flex justify-content-end">
+<a href="/getting-started/" class="btn btn-primary bigbutton">→ Get started: run distri</a>
+
+<a href="/things-to-try/" class="btn btn-primary bigbutton">→ Cool things to try</a>
+
+</div>
+</form>
+<hr>
 <h2 id="changes-since-the-last-release">Changes since the last release</h2>
 <p>The following sections briefly cover new features in distri, with links to more
 details.</p>
@@ -62,6 +75,7 @@ speed</a>.</p>
 <p>Whereas it previously took ≈40 seconds, a <strong>full distri disk image can now be
 generated in 4 seconds</strong> (with warm caches)!</p>
 <h3 id="debugging">Debugging</h3>
+<p><a href="/things-to-try/"><img src="/img/gdb-debugging-session.thumb.jpg" srcset="/img/gdb-debugging-session.thumb.2x.jpg 2x,/img/gdb-debugging-session.thumb.3x.jpg 3x" width="200" align="right" style="border: 1px solid grey"></a></p>
 <p>I have previously written <a href="https://michael.stapelberg.ch/posts/2019-02-15-debian-debugging-devex/">about the debugging experience in
 Debian</a>,
 which left a lot to be desired. This release of distri comes with two features
@@ -100,7 +114,7 @@ contain <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">E
 <li><a href="https://github.com/distr1/distri/commit/b6a0e43368d54d5ed0e03af687158dc3e2106e38">Cache file lookups resulting in <code>-ENOENT</code></a>. This speeds up dynamic library loading when starting programs.</li>
 <li><a href="https://github.com/distr1/distri/issues/59">issue #59</a> contains an overview of FUSE optimizations that were applied and are yet to be explored.</li>
 </ul>
-<p><a href="https://twitter.com/zekjur/status/1226615325682262017"><img src="/img/chrome-tracing-profile.jpg" width="200" align="right" style="border: 1px solid grey"></a></p>
+<p><a href="https://twitter.com/zekjur/status/1226615325682262017"><img src="/img/chrome-tracing-profile.thumb.jpg" srcset="/img/chrome-tracing-profile.thumb.2x.jpg 2x,/img/chrome-tracing-profile.thumb.3x.jpg 3x" width="200" align="right" style="border: 1px solid grey"></a></p>
 <h3 id="package-build-performance">Package build performance</h3>
 <p>Improving the package build performance results in faster batch builds, and a
 better interactive development experience when iterating on a single package.</p>

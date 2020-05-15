@@ -3,7 +3,18 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://distr1.org/release-notes/</loc>
+    <lastmod>2020-05-15T08:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://distr1.org/</loc>
+    <lastmod>2020-05-15T08:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://distr1.org/release-notes/supersilverhaze/</loc>
+    <lastmod>2020-05-15T08:00:00+02:00</lastmod>
   </url>
   
   <url>
@@ -12,14 +23,6 @@
   
   <url>
     <loc>https://distr1.org/getting-started/</loc>
-  </url>
-  
-  <url>
-    <loc>https://distr1.org/release-notes/supersilverhaze/</loc>
-  </url>
-  
-  <url>
-    <loc>https://distr1.org/release-notes/</loc>
   </url>
   
 </urlset>

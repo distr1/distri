@@ -22,4 +22,4 @@ unsafe = true
     name = "github"
     title = "GitHub"
     url = "https://github.com/distr1/distri"
-    weight = 50
+    weight = 60

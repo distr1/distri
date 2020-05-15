@@ -26,6 +26,13 @@ distri is published in the hope that other, more established distributions, will
 
 For discussion and feedback, please subscribe to the [distri mailing list](https://www.freelists.org/list/distri) so that everyone can participate!
 
+The latest release is [distri supersilverhaze (2020-05-16)](/release-notes/supersilverhaze/).
+
 ---
 
+<form>
+<div class="form-group d-flex justify-content-end">
 {{< getstarted >}}
+{{< thingstotry >}}
+</div>
+</form>

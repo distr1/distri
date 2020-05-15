@@ -1,0 +1,34 @@
+{{ define "main" }}
+	    <div class="row">
+	      <div class="col-md-10">
+
+		{{- partial "nav.html" . -}}
+{{ .Content }}
+
+<h1>distri releases</h1>
+
+<ul>
+  {{ range .Pages }}
+  <li>
+    <a href="{{ .Permalink }}">{{ .Title }}</a>
+  </li>
+  {{ end }}
+  <li>
+    <a href="https://michael.stapelberg.ch/posts/2019-08-17-introducing-distri/">introduction: distri jackherer (2019-08-17)</a>
+  </li>
+</ul>
+
+<hr>
+
+<p class="small">
+  © 2018 Michael Stapelberg and contributors
+</p>
+	      </div>
+	      <div class="col-md-2">
+		<aside class="bd-toc">
+		  {{ .TableOfContents }}
+		</aside>
+	      </div>
+	    </div>
+{{ end }}
+
