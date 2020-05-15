@@ -66,6 +66,29 @@ Include once the article about hermetic packages is done.
 
 <hr>
 
+<h2>Debug symbols and package sources</h2>
+
+<div class="d-flex">
+{{< asciinema acid="sEBGThAutIMZWR6AuCqGrBl9o" >}}
+
+{{% md %}}
+1. Start the GNU Debugger, e.g. `gdb ps`
+1. Set a breakpoint on the `main` function and run the program:
+    ```shell
+    gdb> break main
+    gdb> run
+    ```
+1. Once the breakpoint is hit, list the source code:
+    ```shell
+    gdb> list
+    ```
+1. Notice that you did not have to manually install any debug packages are sources.
+{{% /md %}}
+
+</div>
+
+<hr>
+
 <h2>C build environment</h2>
 
 <div class="d-flex">

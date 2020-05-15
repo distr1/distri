@@ -45,11 +45,11 @@
   </div>
 </nav>
 <h1 id="getting-started">Getting started</h1>
-<p>Find current images of the <code>jackherer</code> release branch at <a href="https://repo.distr1.org/distri/jackherer/img/">https://repo.distr1.org/distri/jackherer/img/</a>.</p>
+<p>Find current images of the <code>supersilverhaze</code> release branch at <a href="https://repo.distr1.org/distri/supersilverhaze/img/">https://repo.distr1.org/distri/supersilverhaze/img/</a>.</p>
 <p>With all images, use the <code>root</code> account, password <code>peace</code>, to log in.</p>
 <p><strong>TIP</strong>: If you can, use BitTorrent—repo.distr1.org is located in Europe, so transfers to other continents may be slow.</p>
-<p><a href="magnet:?xt=urn:btih:0aa9282c0644608c1ff50a278f4d3fb19950e654&amp;dn=distri-disk.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: distri-disk.img.zst</a></p>
-<p><a href="magnet:?xt=urn:btih:a818059365fb49d9a44e5bd3b1c0d5a25c858592&amp;dn=distri-qemu-serial.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: distri-qemu-serial.img.zst</a></p>
+<p><a href="magnet:?xt=urn:btih:cf13ed6143e2cb3a493ab92f74f32bebcb1ddb07&amp;dn=distri-disk.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: supersilverhaze/img/distri-disk.img.zst</a></p>
+<p><a href="magnet:?xt=urn:btih:1a27ae2a26c9a05b0425578be9a7bc997c3779c0&amp;dn=distri-qemu-serial.img.zst&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">magnet link: supersilverhaze/img/distri-qemu-serial.img.zst</a></p>
 <h2 id="run-distri-on-real-hardware">Run distri on real hardware</h2>
 <p>The easiest way to run distri on real hardware is to install it onto a spare USB memory stick.</p>
 <p>Obtain a stable path to your USB memory stick by watching <code>/dev/disk/by-id</code> while inserting the stick:</p>
@@ -68,7 +68,7 @@
 </span><span style="color:#ae81ff"></span>	--entrypoint /entrypoint <span style="color:#ae81ff">\
 </span><span style="color:#ae81ff"></span>	-ti <span style="color:#ae81ff">\
 </span><span style="color:#ae81ff"></span>	-e TERM<span style="color:#f92672">=</span>$TERM <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>	distr1/distri:jackherer
+</span><span style="color:#ae81ff"></span>	distr1/distri:supersilverhaze
 </code></pre></div><h2 id="run-distri-in-qemu">Run distri in qemu</h2>
 <p>Depending on what you want to test, the text-only serial interface might be a bit more convenient: it side-steps keyboard configuration mismatches and makes it easily to run distri remotely via an SSH session:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">make qemu-serial DISKIMG<span style="color:#f92672">=</span>distri-qemu-serial.img
@@ -96,11 +96,11 @@
 </li>
 </ol>
 <h2 id="run-distri-on-google-cloud">Run distri on Google Cloud</h2>
-<p><strong>TIP</strong>: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay the cost, creating the VM in Europe will result in faster installation.</p>
+<p><strong>TIP</strong>: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay the cost, creating the VM in Europe will result in faster installation. Also consider using the faster machine type <code>n1-standard-1</code> over <code>f1-micro</code>.</p>
 <ol>
 <li>(If you’d rather use your own Google Cloud Storage bucket, import the <code>distri-gce.tar.gz</code> image into your Google Cloud Storage: <code>gsutil cp distri-gce.tar.gz gs://distri-gce</code>.)</li>
-<li>Create a Compute Engine Image: <code>gcloud compute images create distri0 --source-uri gs://distri-gce/distri-gce.tar.gz</code></li>
-<li>Create VM using that image: <code>gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0</code></li>
+<li>Create a Compute Engine Image: <code>gcloud compute images create distri0 --source-uri gs://distri-gce/distri-supersilverhaze-gce.tar.gz</code></li>
+<li>Create VM using that image: <code>gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0 --metadata serial-port-enable=1</code></li>
 <li>Log in via the serial console and set up an authorized SSH key.</li>
 </ol>
 <h2 id="run-distri-in-lxd">Run distri in LXD</h2>
@@ -121,11 +121,11 @@ udisksctl loop-delete -b /dev/loop0
 <p>Create an archive containing the <code>metadata.yaml</code> file for LXC:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">cat &gt; metadata.yaml <span style="color:#e6db74">&lt;&lt; EOF
 </span><span style="color:#e6db74">architecture: x86_64
-</span><span style="color:#e6db74">creation_date: 1566894155
+</span><span style="color:#e6db74">creation_date: 1589438963
 </span><span style="color:#e6db74">properties:
 </span><span style="color:#e6db74">  description: distri
 </span><span style="color:#e6db74">  os: distri
-</span><span style="color:#e6db74">  release: distri jackherer
+</span><span style="color:#e6db74">  release: distri supersilverhaze
 </span><span style="color:#e6db74">templates:
 </span><span style="color:#e6db74">EOF</span>
    

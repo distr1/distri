@@ -6,6 +6,10 @@ disableKinds = ["RSS", "taxonomyTerm"]
 publishDir = "../docs/"
 enableRobotsTXT = true
 
+[markup.goldmark.renderer]
+# Required for e.g. <img> tags in markdown articles.
+unsafe = true
+
 [menu]
 
   [[menu.main]]

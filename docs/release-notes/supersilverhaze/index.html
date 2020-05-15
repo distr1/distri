@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+
+    
+    
+    <link rel="stylesheet" href="https://distr1.org/sass/sidebar.css">
+
+    <title>Release Notes: distri supersilverhaze (2020-05-16)</title>
+  </head>
+<body>
+        <div id="content">
+	  <div class="container">
+	    <div class="row">
+	      <div class="col-md-10"><nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">distri</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav ml-auto">
+      
+      
+      
+      <a class="nav-item nav-link " href="/">Home </a>
+      
+      
+      <a class="nav-item nav-link " href="/getting-started/">Getting started </a>
+      
+      
+      <a class="nav-item nav-link " href="/things-to-try/">Things to try </a>
+      
+      
+      <a class="nav-item nav-link " href="https://michael.stapelberg.ch/posts/tags/distri/">Blog </a>
+      
+      
+      <a class="nav-item nav-link " href="https://github.com/distr1/distri">GitHub </a>
+      
+    </div>
+  </div>
+</nav>
+<h1 id="distri-supersilverhaze-2020-05-16">distri supersilverhaze (2020-05-16)</h1>
+<p>If you’re not familiar, distri is a Linux distribution to research fast package management.</p>
+<p>You can read more about distri in my series of <a href="https://michael.stapelberg.ch/posts/tags/distri/">blog posts about distri</a>.</p>
+<p>Please direct any questions or feedback to the <a href="https://www.freelists.org/list/distri">distri mailing list</a>.</p>
+<h2 id="changes-since-the-last-release">Changes since the last release</h2>
+<p>The following sections briefly cover new features in distri, with links to more
+details.</p>
+<p>If you’re curious, you can also browse the <a href="https://github.com/distr1/distri/compare/jackherer...supersilverhaze">commits since the last
+release</a>.</p>
+<h3 id="minitrd">minitrd</h3>
+<p>Building a distri disk image (using e.g. <code>make image</code> or <code>distri pack</code> directly)
+is now significantly faster, because the most time-consuming step has been
+replaced: initrds are no longer built with <code>dracut</code>, but with <a href="https://michael.stapelberg.ch/posts/2020-01-21-initramfs-from-scratch-golang/"><code>minitrd</code>, a custom
+from-scratch implementation optimized for
+speed</a>.</p>
+<p>Whereas it previously took ≈40 seconds, a <strong>full distri disk image can now be
+generated in 4 seconds</strong> (with warm caches)!</p>
+<h3 id="debugging">Debugging</h3>
+<p>I have previously written <a href="https://michael.stapelberg.ch/posts/2019-02-15-debian-debugging-devex/">about the debugging experience in
+Debian</a>,
+which left a lot to be desired. This release of distri comes with two features
+that result in what I consider the gold standard of debugging experience.</p>
+<h4 id="debugging-package-sources">Debugging: package sources</h4>
+<p>All package sources are now available under <code>/usr/src/</code>,
+e.g. <code>/usr/src/procps-ng-amd64-3.3.15-8/</code>. This is powered by:</p>
+<ol>
+<li>
+<p>The <code>srcfs</code> service, which (like <code>debugfs</code> for <code>/ro-dbg</code>) is a <code>distri fuse</code>
+daemon which lazily downloads packages from the repository when they are
+accessed.</p>
+</li>
+<li>
+<p><code>distri build</code> now writes a source squashfs images. Files which are
+referenced by debug info and cannot be found in the source directory will be
+taken from the build directory. This makes generated files available for
+debugging at source level.</p>
+</li>
+</ol>
+<p>Caveat: 15 packages contain at least one generated source code file which is unavailable, to be fixed at a later date.</p>
+<h4 id="debugging-dwarf-debug-symbols">Debugging: DWARF debug symbols</h4>
+<p>The <a href="https://en.wikipedia.org/wiki/DWARF">DWARF</a> debug symbols of all packages
+are available through <code>/ro-dbg</code>,
+e.g. <code>/ro-dbg/emacs-amd64-26.3-15/debug/.build-id/d8/149e8d4e11dc451ac5e718dfc44344c610e23e.debug</code>. While
+the backing <code>debugfs</code> service was already included in the previous release, its
+reliability has been improved: <code>distri fuse -autodownload</code> now keeps retrying
+when started without network connectivity.</p>
+<p>Caveat: 16 packages do not currently ship debug symbols, even though they
+should. A number of other packages do not ship debug symbols because they do not
+contain <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF files</a>.</p>
+<h3 id="fuse-performance">FUSE performance</h3>
+<ul>
+<li><code>distri fuse</code>: avoid running out of file descriptors with many packages by <a href="https://github.com/distr1/distri/commit/af8455d3b396a2d97a07dc05ddcf6ec0439ae062">increasing the open file limit</a></li>
+<li><code>distri fuse</code>: <a href="https://github.com/distr1/distri/pull/58">significant optimizations in scanPackages (now &gt;3x as fast)</a></li>
+<li><a href="https://github.com/distr1/distri/commit/b6a0e43368d54d5ed0e03af687158dc3e2106e38">Cache file lookups resulting in <code>-ENOENT</code></a>. This speeds up dynamic library loading when starting programs.</li>
+<li><a href="https://github.com/distr1/distri/issues/59">issue #59</a> contains an overview of FUSE optimizations that were applied and are yet to be explored.</li>
+</ul>
+<p><a href="https://twitter.com/zekjur/status/1226615325682262017"><img src="/img/chrome-tracing-profile.jpg" width="200" align="right" style="border: 1px solid grey"></a></p>
+<h3 id="package-build-performance">Package build performance</h3>
+<p>Improving the package build performance results in faster batch builds, and a
+better interactive development experience when iterating on a single package.</p>
+<ul>
+<li><code>make</code> 4.3 fixes performance issues with heavily concurrent builds, e.g. <code>linux</code> (down from over an hour to merely 10 minutes).</li>
+<li><code>distri batch</code> and <code>distri build</code> now write <a href="https://twitter.com/zekjur/status/1226615325682262017">a chrome://tracing profile by default</a> (including CPU user/sys counters and MemAvailable counter)</li>
+<li>The FUSE performance optimizations listed in the previous section significantly speed up package building, too. E.g. <code>gtk+-2</code> now builds twice as fast (≈2 minutes down to ≈1 minute).</li>
+<li>see <a href="https://github.com/distr1/distri/issues/59">https://github.com/distr1/distri/issues/59</a> for details</li>
+<li>use <code>${DISTRI_JOBS}</code> instead of hard-coded <code>-j8</code>, add <code>distri build -jobs</code> flag</li>
+<li><code>distri build</code>: ninja: explicitly specify -j, ninja falls back to 3 without the <code>/proc</code> file system</li>
+</ul>
+<h3 id="txtpbfmt">txtpbfmt</h3>
+<p>We now use the <a href="https://github.com/protocolbuffers/txtpbfmt"><code>txtpbfmt</code> Go package (and
+program)</a> to enforce consistent
+formatting of <code>build.textproto</code> files across the repository.</p>
+<p>Furthermore, <code>txtpbfmt</code> allows for programmatic modification of <code>build.textproto</code> files. The <code>distri scaffold</code> subcommand uses <code>txtpbfmt</code> to only update the upstream <code>url</code>, <code>hash</code> and <code>version</code> fields when the package <code>build.textproto</code> file already exists. In particular, this means that manual additions (including comments!) are preserved.</p>
+<p>To make upgrading packages to more recent upstream versions even more convenient, the <code>distri scaffold</code> subcommand now has a <code>-pull</code> flag which will heuristically (see repobrowser for more details) pull in a new upstream version:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">distri scaffold -pull google-chrome
+2020/05/12 09:23:25 not up to date: updating from 80.0.3987.106-1 to 81.0.4044.138-1
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-patch" data-lang="patch">diff --git i/pkgs/google-chrome/build.textproto w/pkgs/google-chrome/build.textproto
+index 91e4113..589300a 100644
+<span style="color:#f92672">--- i/pkgs/google-chrome/build.textproto
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+++ w/pkgs/google-chrome/build.textproto
+</span><span style="color:#a6e22e"></span><span style="color:#75715e">@@ -1,6 +1,6 @@
+</span><span style="color:#75715e"></span><span style="color:#f92672">-source: &#34;http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_80.0.3987.106-1_amd64.deb&#34;
+</span><span style="color:#f92672">-hash: &#34;33bdf0232923d4df0a720cce3a0c5a76eba15f88586255a91058d9e8ebf3a45d&#34;
+</span><span style="color:#f92672">-version: &#34;80.0.3987.106-1-15&#34;
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+source: &#34;http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_81.0.4044.138-1_amd64.deb&#34;
+</span><span style="color:#a6e22e">+hash: &#34;9d13d41d79ce1f04d1f150b5d22fffd31779224cc7d8274f8479b06bcfe6846a&#34;
+</span><span style="color:#a6e22e">+version: &#34;81.0.4044.138-1-16&#34;
+</span><span style="color:#a6e22e"></span> pull: {
+   debian_packages: &#34;https://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages&#34;
+ }
+</code></pre></div><h3 id="repobrowser">repobrowser</h3>
+<p>The distri repo browser is now available at
+<a href="https://browse.distr1.org/">https://browse.distr1.org</a>!</p>
+<p>Similar to <a href="https://godoc.org/,">https://godoc.org/,</a> the distri repo browser can visualize the
+contents of any distri repository. The public instance at
+<a href="https://browse.distr1.org">https://browse.distr1.org</a> is restricted to repositories hosted on
+<a href="https://repo.distr1.org">https://repo.distr1.org</a> for the time being.</p>
+<p>The repo browser displays not only the current versions of all packages in the
+repository, but also flags packages as out of date in case a more recent
+upstream version is known.</p>
+<h4 id="repobrowser-upstream-check-heuristic">repobrowser: upstream check heuristic</h4>
+<p>Checking upstream for newer versions is done largely
+<a href="https://github.com/distr1/distri/commit/08073898f33e12d9bec824bb3bd29581efe3dd94">heuristically</a>. For
+a few popular services (GitHub, GitLab, Go modules, etc.), service-specific APIs
+are used. More specific code can be added where required, but thus far, the
+heuristic covers the vast majority of packages.</p>
+<p>34 packages (6.2%) are currently not categorized because the upstream check
+failed.</p>
+<p>For some packages, this is expected: for example <code>autoconf2.13</code> is technically
+out of date (<code>autoconf</code> 2.69 is current), but <code>mozjs</code> specifically requires the
+older 2.13, so we will need to keep that outdated package around.</p>
+<p>In other cases, upstream is unreachable. Either temporarily (server issues, like
+recently with freedesktop.org) or permanently, e.g. <code>giblib</code>, where the upstream
+URL results in a connection refused error for years.</p>
+<p>Sometimes the heuristic results in a false-positive result: the package is shown
+as up-to-date, but a new major version is available in a different
+subdirectory. Some projects (e.g. <code>util-linux</code>) publish release within a major
+version in their own subdirectory,
+e.g. <a href="https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.1.tar.xz">https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.1.tar.xz</a>.</p>
+<p>The heuristic should be changed to detect that situation, which is tracked in
+<a href="https://github.com/distr1/distri/issues/68">issue #68</a>.</p>
+<h3 id="tab-completion">Tab completion</h3>
+<p>Tab completion for package installation is now available by default:</p>
+<p>Press the tab key after entering <code>distri install </code> and you will be presented
+with a list of available packages.</p>
+<p>This is powered by <code>distri list</code>, which fetches the repository metadata on demand.</p>
+<p>Side note: the default shell for the <code>root</code> account was switched from <code>bash</code> to
+<code>zsh</code> for this, which also enables history by default.</p>
+<h3 id="new-packages">New packages</h3>
+<p>A few new packages have been added, typically because I needed them on my test machine:</p>
+<p>bluez,
+dnsmasq,
+dunst,
+encfs,
+intel-ucode,
+linux-cpupower,
+mesa-demos,
+nano,
+pigz,
+screen,
+tmux,
+upower,
+vim,
+wget,
+xclip,
+xwininfo</p>
+<h3 id="new-upstream-versions">New upstream versions</h3>
+<p>A number of packages has been updated to their current upstream versions:</p>
+<ul>
+<li>432 packages (79.56%) are up to date</li>
+<li>68 packages (12.52%) have a newer upstream available
+<ul>
+<li>43 packages are go modules with a newer minor version</li>
+<li>25 packages are not go modules, but upstream packages where something blocks us from updating, e.g. new bugs or build failures with downstreams</li>
+</ul>
+</li>
+</ul>
+<h3 id="hygiene">Hygiene</h3>
+<ul>
+<li>All <code>distri(1)</code> commands now handle interruptions (<code>SIGINT</code>, <code>SIGTERM</code>) and clean up temporary files.</li>
+<li><code>distri build</code> now <a href="https://github.com/distr1/distri/commit/a0041ffcb523ad6f4cab2c2002594c25d02cdffb">actually mounts the source directory read-only</a> (<a href="https://unix.stackexchange.com/a/128388/181634">Linux ignores the <code>MS_RDONLY</code> flag for bind mounts</a>).</li>
+<li><code>distri patch</code> now provides a proper interactive shell.</li>
+<li><code>distri build</code> now logs the whole build output (including distri messages), not just the build steps.</li>
+<li><code>distri build</code>’s <code>-debug</code> flag now accepts the name of a stage when to spawn a debug shell, e.g. <code>after-install</code>.</li>
+</ul>
+<h3 id="microcode">Microcode</h3>
+<p>GRUB 2.04 now applies CPU microcode updates for Intel CPUs at early boot (<code>amd-ucode</code> is just not yet packaged).</p>
+<h3 id="makefile">Makefile</h3>
+<ul>
+<li><a href="https://github.com/distr1/distri/commit/fd798e188a673884d50b8f96e17a7204b8ae2c3d">The <code>kgdb=</code> and <code>kernel=</code> parameters allow easier kernel debugging</a></li>
+<li>The <code>screen</code> target starts a development <code>screen(1)</code> session</li>
+<li>The <code>usb</code> target writes the distri image to e.g. a USB stick:</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">make usb USB_DISK_ID<span style="color:#f92672">=</span>usb-SanDisk_Extreme_Pro_12345678D99C-0:0
+</code></pre></div><h3 id="autobuilder">autobuilder</h3>
+<p>More work went into the autobuilder, but it is not deployed yet.</p>
+<p>The autobuilder should eventually build every git commit, so that we have quick,
+automated feedback regarding possible breakages, and an easy way to test the
+current version of distri, whether released or not.</p>
+<p>Due to the large data volume (dozens of gigabytes per commit) and operational
+challenges (building a single commit from scratch takes ≈2 hours on an Intel
+Core i9-9900K), this setup requires careful tweaking.</p>
+<h2 id="update-instructions">Update instructions</h2>
+<p>To set expectations: due to its experimental nature, distri does not make any
+guarantees that updates will work. We try to make them work, as long as you
+follow the update instructions described here. Good luck! :)</p>
+<h3 id="ensuring-enough-free-disk-space">Ensuring enough free disk space</h3>
+<p>The <code>jackherer</code> disk image is 7 GB in size, which is not sufficient to hold the default installation in both versions (temporarily). Double the image in size on the host:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">truncate -s +<span style="color:#66d9ef">$((</span><span style="color:#ae81ff">7</span><span style="color:#f92672">*</span><span style="color:#ae81ff">1024</span><span style="color:#f92672">*</span><span style="color:#ae81ff">1024</span><span style="color:#f92672">*</span><span style="color:#ae81ff">1024</span><span style="color:#66d9ef">))</span> distri-disk.img
+</code></pre></div><p>…and enlarge the file systems within the image:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">distri install golang <span style="color:#f92672">&amp;&amp;</span> go get github.com/google/embiggen-disk <span style="color:#f92672">&amp;&amp;</span> ~/go/bin/embiggen-disk -verbose /
+</code></pre></div><h3 id="consider-switching-from-dracut-to-minitrd">Consider switching from dracut to minitrd</h3>
+<p>To switch from dracut to minitrd, use:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">echo minitrd &gt; /etc/distri/initramfs-generator
+</code></pre></div><p>This will be effective upon the next installation of the <code>linux</code> package, including the one in the <code>distri update</code> step below.</p>
+<h3 id="updating-packages">Updating packages</h3>
+<p>Switch to the new release’s package repository:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">echo https://repo.distr1.org/distri/supersilverhaze &gt; /etc/distri/repos.d/distr1.repo
+</code></pre></div><p><strong>Workaround:</strong> Update the <code>distri1</code> package, which contains the <code>distri(1)</code>
+command, before any others:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">distri install distri1
+</code></pre></div><p>This is required for the next command to work properly, and should have been an
+automatic step. Unfortunately, the previously released version has a bug: it
+<a href="https://github.com/distr1/distri/commit/76f76f80efbe0aa07e8277470ad1e4fe5ec581ef">accidentally ran the same old version again instead of the newly installed
+one</a>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">distri update
+</code></pre></div><p>Because <code>systemctl</code> fully resolves symlinks when creating symbolic links in
+<code>/etc/systemd/system</code> to enable a unit, the old version of e.g. SSH remains
+enabled, and the new version explicitly needs to be enabled (improvements tracked in <a href="https://github.com/distr1/distri/issues/69">issue
+#69</a>):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">systemctl --root<span style="color:#f92672">=</span>/ disable ssh
+systemctl --root<span style="color:#f92672">=</span>/ enable ssh
+</code></pre></div><p>Reboot into the new system to pick up all new package versions:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">reboot
+</code></pre></div><p>If you want, you can delete the old packages from your package store:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">distri gc
+</code></pre></div><p>…but you can also keep them so that you can use older versions to reproduce or
+work around a bug.</p>
+
+
+<hr>
+
+<p class="small">
+  © 2018 Michael Stapelberg and contributors
+</p>
+	      </div>
+	      <div class="col-md-2">
+		<aside class="bd-toc">
+		  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#changes-since-the-last-release">Changes since the last release</a>
+      <ul>
+        <li><a href="#minitrd">minitrd</a></li>
+        <li><a href="#debugging">Debugging</a></li>
+        <li><a href="#fuse-performance">FUSE performance</a></li>
+        <li><a href="#package-build-performance">Package build performance</a></li>
+        <li><a href="#txtpbfmt">txtpbfmt</a></li>
+        <li><a href="#repobrowser">repobrowser</a></li>
+        <li><a href="#tab-completion">Tab completion</a></li>
+        <li><a href="#new-packages">New packages</a></li>
+        <li><a href="#new-upstream-versions">New upstream versions</a></li>
+        <li><a href="#hygiene">Hygiene</a></li>
+        <li><a href="#microcode">Microcode</a></li>
+        <li><a href="#makefile">Makefile</a></li>
+        <li><a href="#autobuilder">autobuilder</a></li>
+      </ul>
+    </li>
+    <li><a href="#update-instructions">Update instructions</a>
+      <ul>
+        <li><a href="#ensuring-enough-free-disk-space">Ensuring enough free disk space</a></li>
+        <li><a href="#consider-switching-from-dracut-to-minitrd">Consider switching from dracut to minitrd</a></li>
+        <li><a href="#updating-packages">Updating packages</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+		</aside>
+	      </div>
+	    </div>
+
+
+	  </div>
+        </div>    
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
+</body>
+</html>

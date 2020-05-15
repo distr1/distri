@@ -114,6 +114,30 @@ Include once the article about hermetic packages is done.
 
 <hr>
 
+<h2>Debug symbols and package sources</h2>
+
+<div class="d-flex">
+<a class="d-flex" href="https://asciinema.org/a/sEBGThAutIMZWR6AuCqGrBl9o" rel="nofollow"><img src="https://asciinema.org/a/sEBGThAutIMZWR6AuCqGrBl9o.svg" alt="asciicast" height=200></a>
+
+
+<ol>
+<li>Start the GNU Debugger, e.g. <code>gdb ps</code></li>
+<li>Set a breakpoint on the <code>main</code> function and run the program:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">gdb&gt; break main
+gdb&gt; run
+</code></pre></div></li>
+<li>Once the breakpoint is hit, list the source code:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">gdb&gt; list
+</code></pre></div></li>
+<li>Notice that you did not have to manually install any debug packages are sources.</li>
+</ol>
+
+
+
+</div>
+
+<hr>
+
 <h2>C build environment</h2>
 
 <div class="d-flex">

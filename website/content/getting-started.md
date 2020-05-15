@@ -8,15 +8,15 @@ menu:
 
 # Getting started
 
-Find current images of the `jackherer` release branch at https://repo.distr1.org/distri/jackherer/img/.
+Find current images of the `supersilverhaze` release branch at https://repo.distr1.org/distri/supersilverhaze/img/.
 
 With all images, use the `root` account, password `peace`, to log in.
 
 **TIP**: If you can, use BitTorrent—repo.distr1.org is located in Europe, so transfers to other continents may be slow.
 
-[magnet link: distri-disk.img.zst](magnet:?xt=urn:btih:0aa9282c0644608c1ff50a278f4d3fb19950e654&dn=distri-disk.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce)
+[magnet link: supersilverhaze/img/distri-disk.img.zst](magnet:?xt=urn:btih:cf13ed6143e2cb3a493ab92f74f32bebcb1ddb07&dn=distri-disk.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce)
 
-[magnet link: distri-qemu-serial.img.zst](magnet:?xt=urn:btih:a818059365fb49d9a44e5bd3b1c0d5a25c858592&dn=distri-qemu-serial.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce)
+[magnet link: supersilverhaze/img/distri-qemu-serial.img.zst](magnet:?xt=urn:btih:1a27ae2a26c9a05b0425578be9a7bc997c3779c0&dn=distri-qemu-serial.img.zst&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce)
 
 ## Run distri on real hardware
 
@@ -47,7 +47,7 @@ docker run \
 	--entrypoint /entrypoint \
 	-ti \
 	-e TERM=$TERM \
-	distr1/distri:jackherer
+	distr1/distri:supersilverhaze
 ```
 
 ## Run distri in qemu
@@ -85,11 +85,11 @@ make qemu-graphic DISKIMG=distri-disk.img
 
 ## Run distri on Google Cloud
 
-**TIP**: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay the cost, creating the VM in Europe will result in faster installation.
+**TIP**: The instructions below create a VM in the US so that it qualifies for GCP’s Free Tier. If you’re willing to pay the cost, creating the VM in Europe will result in faster installation. Also consider using the faster machine type `n1-standard-1` over `f1-micro`.
 
 1. (If you’d rather use your own Google Cloud Storage bucket, import the `distri-gce.tar.gz` image into your Google Cloud Storage: `gsutil cp distri-gce.tar.gz gs://distri-gce`.)
-1. Create a Compute Engine Image: `gcloud compute images create distri0 --source-uri gs://distri-gce/distri-gce.tar.gz`
-1. Create VM using that image: `gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0`
+1. Create a Compute Engine Image: `gcloud compute images create distri0 --source-uri gs://distri-gce/distri-supersilverhaze-gce.tar.gz`
+1. Create VM using that image: `gcloud compute instances create instance-1 --zone us-east1-b --machine-type=f1-micro --image=distri0 --metadata serial-port-enable=1`
 1. Log in via the serial console and set up an authorized SSH key.
 
 ## Run distri in LXD
@@ -113,11 +113,11 @@ See https://linuxcontainers.org/ for details on LXD, the latest LXC experience.
     ```shell
     cat > metadata.yaml << EOF
     architecture: x86_64
-    creation_date: 1566894155
+    creation_date: 1589438963
     properties:
       description: distri
       os: distri
-      release: distri jackherer
+      release: distri supersilverhaze
     templates:
     EOF
     
