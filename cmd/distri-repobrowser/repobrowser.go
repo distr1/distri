@@ -72,9 +72,13 @@ func logic(listen, assetsDir string) error {
 		ctx, canc := context.WithTimeout(context.Background(), 5*time.Second)
 		defer canc()
 		log.Printf("pre-warming cache")
-		const defaultURL = "https://repo.distr1.org/distri/jackherer/pkg/meta.binaryproto"
-		if err := mc.update(ctx, defaultURL, ""); err != nil {
-			log.Printf("pre-warming %v failed: %v", defaultURL, err)
+		for _, u := range []string{
+			"https://repo.distr1.org/distri/jackherer/pkg/meta.binaryproto",
+			"https://repo.distr1.org/distri/supersilverhaze/pkg/meta.binaryproto",
+		} {
+			if err := mc.update(ctx, u, ""); err != nil {
+				log.Printf("pre-warming %v failed: %v", u, err)
+			}
 		}
 	}()
 
@@ -96,7 +100,7 @@ func logic(listen, assetsDir string) error {
 		scheme := "http:/"
 		if path == "/" || path == "" {
 			// TODO: update whenever there is a new release. flag?
-			scheme, path = "https:/", "/repo.distr1.org/distri/jackherer/"
+			scheme, path = "https:/", "/repo.distr1.org/distri/supersilverhaze/"
 		}
 		repoURL, err := url.Parse(scheme + path)
 		if err != nil {
