@@ -10,13 +10,17 @@ import (
 var configureTarget = map[string]string{
 	"amd64": "x86_64-pc-linux-gnu",
 	"i686":  "i686-pc-linux-gnu",
+	"arm64": "aarch64-linux-gnu",
 }
 
 func (b *Ctx) buildc(opts *pb.Build, builder *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {
 	// e.g. ncurses needs DESTDIR in the configure step, too, so just export it for all steps.
 	env = append(env, b.substitute("DESTDIR=${DISTRI_DESTDIR}"))
 
-	target := configureTarget[b.Arch]
+	target, ok := configureTarget[b.Arch]
+	if !ok {
+		return nil, nil, xerrors.Errorf("cbuilder: No target host set for architecture %s", b.Arch)
+	}
 
 	if builder.GetAutoreconf() && (!opts.GetWritableSourcedir() || !opts.GetInTreeBuild()) {
 		return nil, nil, xerrors.Errorf("cbuilder: autoreconf requires enabling writable_sourcedir and in_tree_build")
