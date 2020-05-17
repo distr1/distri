@@ -10,6 +10,7 @@ import (
 var configureTarget = map[string]string{
 	"amd64": "x86_64-pc-linux-gnu",
 	"i686":  "i686-pc-linux-gnu",
+	"arm64": "aarch64-linux-gnu",
 }
 
 func (b *Ctx) buildc(opts *pb.Build, builder *pb.CBuilder, env []string) (newSteps []*pb.BuildStep, newEnv []string, _ error) {

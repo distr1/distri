@@ -6,6 +6,7 @@ import "strings"
 var Architectures = map[string]bool{
 	"amd64": true,
 	"i686":  true,
+	"arm64": true,
 }
 
 // HasArchSuffix reports whether pkg ends in an architecture identifier
