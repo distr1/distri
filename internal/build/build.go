@@ -1885,7 +1885,9 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 				cmd := b.muslGccPath()
 				gcc := exec.Command(cmd, args...)
 				log.Printf("compiling wrapper program: %v", gcc.Args)
-				gcc.Env = env
+				if b.Hermetic {
+					gcc.Env = env
+				}
 				gcc.Stderr = os.Stderr
 				if err := gcc.Run(); err != nil {
 					return nil, err
