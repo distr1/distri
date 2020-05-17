@@ -1148,7 +1148,7 @@ int main(int argc, char *argv[]) {
 func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	_, ok := configureTarget[b.Arch]
 	if !ok {
-		return nil, xerrors.Errorf("No target host set for architecture %s", b.Arch)
+		return nil, xerrors.Errorf("no target host set for architecture %s", b.Arch)
 	}
 	if os.Getenv("DISTRI_BUILD_PROCESS") != "1" {
 		chrootDir, err := ioutil.TempDir("", "distri-buildchroot")
