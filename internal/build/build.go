@@ -1145,6 +1145,24 @@ int main(int argc, char *argv[]) {
 }
 `))
 
+var muslGcc = map[string]string{
+	"amd64": "musl-gcc",
+	"i686":  "musl-gcc",
+	"arm64": "aarch64-linux-musl-gcc",
+}
+
+func (b *Ctx) muslGccPath() string {
+	cmd := muslGcc[b.Arch]
+	if b.Pkg == "musl" ||
+		b.Pkg == "gcc" ||
+		b.Pkg == "gcc-i686-host" ||
+		b.Pkg == "gcc-i686" ||
+		b.Pkg == "gcc-i686-c" {
+		cmd = configureTarget[b.Arch]
+	}
+	return cmd
+}
+
 func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 	_, ok := configureTarget[b.Arch]
 	if !ok {
@@ -1864,17 +1882,12 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 				// if ldflags := strings.TrimSpace(getenv("LDFLAGS")); ldflags != "" {
 				// 	args = append(args, strings.Split(ldflags, " ")...)
 				// }
-				cmd := "musl-gcc"
-				if b.Pkg == "musl" ||
-					b.Pkg == "gcc" ||
-					b.Pkg == "gcc-i686-host" ||
-					b.Pkg == "gcc-i686" ||
-					b.Pkg == "gcc-i686-c" {
-					cmd = "gcc"
-				}
+				cmd := b.muslGccPath()
 				gcc := exec.Command(cmd, args...)
 				log.Printf("compiling wrapper program: %v", gcc.Args)
-				gcc.Env = env
+				if b.Hermetic {
+					gcc.Env = env
+				}
 				gcc.Stderr = os.Stderr
 				if err := gcc.Run(); err != nil {
 					return nil, err
