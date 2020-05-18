@@ -68,6 +68,9 @@ func cmdbatch(ctx context.Context, args []string) error {
 		bootstrapFromPath = fset.String("bootstrap_from",
 			"",
 			"Bootstrap a distri build based on the specified packages")
+		arch = fset.String("cross",
+			"",
+			"If non-empty, cross-build for the specified architecture (e.g. i686)")
 	)
 	fset.Usage = usage(fset, batchHelp)
 	fset.Parse(args)
@@ -95,7 +98,7 @@ func cmdbatch(ctx context.Context, args []string) error {
 		Log:        log.New(os.Stdout, "", log.LstdFlags),
 		DistriRoot: env.DistriRoot,
 		DefaultBuildCtx: &build.Ctx{
-			Arch: "amd64", // TODO
+			Arch: *arch,
 			Repo: env.DefaultRepo,
 		},
 	}

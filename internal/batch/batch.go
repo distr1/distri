@@ -42,6 +42,7 @@ type Ctx struct {
 	Log             *log.Logger
 	DistriRoot      env.DistriRootDir
 	DefaultBuildCtx *build.Ctx
+	Arch            string
 }
 
 func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs int) error {
@@ -50,7 +51,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 	// TODO: use simple.NewDirectedMatrix instead?
 	g := simple.NewDirectedGraph()
 
-	const arch = "amd64" // TODO: configurable / auto-detect
+	arch := c.DefaultBuildCtx.Arch
 
 	std := c.DefaultBuildCtx.Clone()
 
@@ -150,7 +151,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 	}
 
 	b := &build.Ctx{
-		Arch: "amd64", // TODO
+		Arch: arch,
 		Repo: env.DefaultRepo,
 	}
 
@@ -250,6 +251,7 @@ func (c *Ctx) Build(ctx context.Context, dryRun, simulate, rebuild bool, jobs in
 		byFullname: byFullname,
 		built:      make(map[string]error),
 		status:     make([]string, jobs+1),
+		arch:       arch,
 	}
 	if err := s.run(ctx); err != nil {
 		return err
@@ -272,6 +274,7 @@ type scheduler struct {
 	g          graph.Directed
 	byFullname map[string]*node
 	built      map[string]error
+	arch       string
 
 	statusMu   sync.Mutex
 	status     []string
@@ -345,7 +348,7 @@ func (s *scheduler) build(ctx context.Context, pkg string) error {
 		return err
 	}
 	defer logFile.Close()
-	build := exec.CommandContext(ctx, "distri", "build")
+	build := exec.CommandContext(ctx, "distri", "build", fmt.Sprintf("-cross=%s", s.arch))
 	build.Dir = s.distriRoot.PkgDir(pkg)
 	build.Stdout = logFile
 	build.Stderr = logFile
