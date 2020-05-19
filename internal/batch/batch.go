@@ -348,11 +348,10 @@ func (s *scheduler) build(ctx context.Context, pkg string) error {
 		return err
 	}
 	defer logFile.Close()
-	archOpt := ""
+	build := exec.CommandContext(ctx, "distri", "build")
 	if s.arch != "" {
-		archOpt = fmt.Sprintf("-cross=%s", s.arch)
+		build.Args = append(build.Args, "-cross="+s.arch)
 	}
-	build := exec.CommandContext(ctx, "distri", "build", archOpt)
 	build.Dir = s.distriRoot.PkgDir(pkg)
 	build.Stdout = logFile
 	build.Stderr = logFile
