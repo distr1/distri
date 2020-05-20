@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+
+    
+    
+    <link rel="stylesheet" href="https://distr1.org/sass/sidebar.css">
+
+    <title>distri: mirrors</title>
+  </head>
+<body>
+        <div id="content">
+	  <div class="container">
+	    <div class="row">
+	      <div class="col-md-10"><nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">distri</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav ml-auto">
+      
+      
+      
+      <a class="nav-item nav-link " href="/">Home </a>
+      
+      
+      <a class="nav-item nav-link " href="/getting-started/">Getting started </a>
+      
+      
+      <a class="nav-item nav-link " href="/things-to-try/">Things to try </a>
+      
+      
+      <a class="nav-item nav-link " href="https://michael.stapelberg.ch/posts/tags/distri/">Blog </a>
+      
+      
+      <a class="nav-item nav-link " href="/release-notes/">Releases </a>
+      
+      
+      <a class="nav-item nav-link " href="https://github.com/distr1/distri">GitHub </a>
+      
+    </div>
+  </div>
+</nav>
+<h1 id="mirrors">Mirrors</h1>
+<p>As a user of distri, please use the default repository at <a href="https://repo.distr1.org/">https://repo.distr1.org/</a>.</p>
+<p>If you are interested in contributing to the project by providing a mirror
+server, the rest of this document is for you!</p>
+<h2 id="distri">distri</h2>
+<p>The distri research linux distribution project was started in 2019 to research
+whether a few architectural changes could enable drastically faster package
+management.</p>
+<p>While the package managers in common Linux distributions (e.g. apt, dnf, …) <a href="https://michael.stapelberg.ch/posts/2019-08-17-linux-package-managers-are-slow/">top
+out at data rates of only a few
+MB/s</a>,
+distri effortlessly saturates 1 Gbit, 10 Gbit and even 40 Gbit connections,
+resulting in superior installation and update speeds.</p>
+<p>You can read more about distri starting in my <a href="https://michael.stapelberg.ch/posts/2019-08-17-introducing-distri/">introduction blog post</a>, then in my <a href="https://michael.stapelberg.ch/posts/tags/distri/">series of blog posts about distri</a>.</p>
+<h2 id="why-run-a-mirror">Why run a mirror?</h2>
+<p>Currently, the distri project only has servers in Europe, so our geographic
+proximity to the rest of the world is pretty poor. See the First Byte results as
+reported on
+<a href="https://performance.sucuri.net/domain/repo.distr1.org">https://performance.sucuri.net/domain/repo.distr1.org</a>:</p>
+<img src="/img/ttfb.jpg" width="600" alt="time to first byte results" style="border: 1px solid #ccc">
+<hr>
+<p>If you are interested in contributing to the project and have the continued
+means to run a mirror, preferably in areas not yet well-covered, that would be
+much appreciated! Users in more parts of the world will be able to experience
+how fast package management can be, and your mirror can play a big role in that!</p>
+<h2 id="mirror-requirements">Mirror requirements</h2>
+<ul>
+<li>
+<p>Please connect your mirror to the internet with a connection speed of <strong>at least 1 Gbit/s</strong>.</p>
+</li>
+<li>
+<p>Please allocate <strong>at least 150 GiB</strong> of disk space for the distri mirror: the
+<a href="https://distr1.org/release-notes/">two most recent distri releases</a> use 66 GiB
+and 26 GiB, respectively. We want to be able to serve at least the two most
+recent distri release from all mirrors.</p>
+</li>
+<li>
+<p>Please <strong>synchronize your mirror at least every 24 hours</strong> with the distri
+repository at <a href="https://repo.distr1.org/,">https://repo.distr1.org/,</a> e.g. by using the following <code>rsync</code>
+invocation in a daily cronjob:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">rsync -av rsync://repo-rsync.distr1.org/distri /srv/repo.distr1.org/distri
+</code></pre></div><p>Note: repo-rsync.distr1.org only allows access for explicitly allowed IPv4 or
+IPv6 addresses or ranges. Please get in touch if you are interested to run a
+mirror! Reach out to <a href="https://michael.stapelberg.ch/">Michael Stapelberg</a> via
+email.</p>
+</li>
+</ul>
+<h2 id="any-questions">Any questions?</h2>
+<p>Please get in touch! Reach out to <a href="https://michael.stapelberg.ch/">Michael
+Stapelberg</a> via email.</p>
+
+
+<hr>
+
+<p class="small">
+  © 2018 Michael Stapelberg and contributors
+</p>
+	      </div>
+	      <div class="col-md-2">
+		<aside class="bd-toc">
+		  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#distri">distri</a></li>
+    <li><a href="#why-run-a-mirror">Why run a mirror?</a></li>
+    <li><a href="#mirror-requirements">Mirror requirements</a></li>
+    <li><a href="#any-questions">Any questions?</a></li>
+  </ul>
+</nav>
+		</aside>
+	      </div>
+	    </div>
+
+
+	  </div>
+        </div>    
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
+</body>
+</html>
