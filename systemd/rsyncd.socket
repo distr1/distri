@@ -1,0 +1,12 @@
+[Unit]
+Description=Rsync Server Socket
+Conflicts=rsyncd.service
+
+[Socket]
+ListenStream=873
+Accept=yes
+IPAddressDeny=any
+IPAddressAllow=2001:db8::1
+
+[Install]
+WantedBy=sockets.target
