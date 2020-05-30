@@ -143,7 +143,7 @@ screen:
 	# Window 3: SSH into the distri instance (better than serial)
 	screen -S distri -X screen
 	screen -S distri -X title "ssh"
-	screen -S distri -X stuff "ssh distri0"
+	screen -S distri -X stuff "ssh -F systemd/ssh_config distri0"
 	# Setup done, now resume screen
 	screen -r distri
 

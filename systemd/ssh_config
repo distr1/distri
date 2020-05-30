@@ -1,0 +1,8 @@
+Host distri0
+     Hostname localhost
+     User root
+     Port 5555
+     UserKnownHostsFile=/dev/null
+     CheckHostIP=no
+     StrictHostKeyChecking=no
+     IdentitiesOnly=yes
