@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v27 v27.0.6
 	github.com/google/renameio v0.1.0
 	github.com/jacobsa/fuse v0.0.0-20200423191118-1d001802f70a
-	github.com/klauspost/compress v1.10.5 // indirect
+	github.com/klauspost/compress v1.10.6
 	github.com/klauspost/pgzip v1.2.3
 	github.com/lib/pq v1.4.0
 	github.com/lpar/gzipped v1.1.0

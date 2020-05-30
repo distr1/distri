@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/distr1/distri"
+	"github.com/klauspost/compress/zstd"
 )
 
 type ErrNotFound struct {
@@ -38,6 +39,20 @@ func (r *gzipReader) Close() error {
 	if err := r.zr.Close(); err != nil {
 		return err
 	}
+	return r.body.Close()
+}
+
+type zstdReader struct {
+	body io.ReadCloser
+	dec  *zstd.Decoder
+}
+
+func (r *zstdReader) Read(p []byte) (n int, err error) {
+	return r.dec.Read(p)
+}
+
+func (r *zstdReader) Close() error {
+	r.dec.Close()
 	return r.body.Close()
 }
 
@@ -102,7 +117,7 @@ func Reader(ctx context.Context, repo distri.Repo, fn string, cache bool) (io.Re
 	}
 	// good for typical links (≤ gigabit)
 	// performance bottleneck for faster links (10 gbit/s+)
-	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set("Accept-Encoding", "zstd, gzip")
 	resp, err := httpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
@@ -123,7 +138,14 @@ func Reader(ctx context.Context, repo distri.Repo, fn string, cache bool) (io.Re
 			return nil, err
 		}
 		rdc = &gzipReader{body: resp.Body, zr: rd}
+	} else if strings.EqualFold(resp.Header.Get("Content-Encoding"), "zstd") {
+		dec, err := zstd.NewReader(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		rdc = &zstdReader{body: resp.Body, dec: dec}
 	}
+
 	var cacheFile *os.File
 	if cacheFn != "" {
 		cacheFile, err = os.Create(cacheFn)
