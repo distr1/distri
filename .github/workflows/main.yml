@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: install txtpbfmt
+      run: go get github.com/protocolbuffers/txtpbfmt/cmd/txtpbfmt@latest
+
+    - name: verify txtpbfmt reports no changes
+      run: ./travis/check-txtpbfmt.sh
