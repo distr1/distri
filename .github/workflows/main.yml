@@ -17,4 +17,6 @@ jobs:
       run: go get github.com/protocolbuffers/txtpbfmt/cmd/txtpbfmt@latest
 
     - name: verify txtpbfmt reports no changes
-      run: ./travis/check-txtpbfmt.sh
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        ./travis/check-txtpbfmt.sh
