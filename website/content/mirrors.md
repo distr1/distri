@@ -61,6 +61,23 @@ recent distri release from all mirrors.
   mirror! Reach out to [Michael Stapelberg](https://michael.stapelberg.ch/) via
   email.
 
+* Please ensure your web server supports `Accept-Encoding: zstd, gzip` for
+  [transparent zstandard transport
+  compression](https://github.com/distr1/distri/issues/77):
+
+  ```shell
+  curl -v \
+    --header 'Accept-Encoding: zstd, gzip' \
+	--connect-to repo.distr1.org:80:chuchi:80 \
+	http://repo.distr1.org/distri/supersilverhaze/pkg/i3status-amd64-2.13-10.squashfs \
+	-o /dev/null |& grep Content-Encoding
+  < Content-Encoding: zstd
+  ```
+
+  When using nginx, build the [external
+  `zstd-nginx-module`](https://github.com/tokers/zstd-nginx-module) and set
+  `zstd_static on` and `gzip_static on`.
+
 ## Any questions?
 
 Please get in touch! Reach out to [Michael
