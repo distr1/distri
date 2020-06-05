@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/kevinpollet/nego@v0.0.0-20200324111829-b3061ca9dd9d"
+hash: "fce7ea4e787ab92e43c30f65d4891fd7f384583e267f71ff7675c6e0103c8e68"
+version: "v0.0.0-20200324111829-b3061ca9dd9d-1"
+
+gomodbuilder: {}
+
+# build dependencies:

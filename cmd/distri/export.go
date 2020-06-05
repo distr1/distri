@@ -9,7 +9,7 @@ import (
 
 	"github.com/distr1/distri/internal/addrfd"
 	"github.com/distr1/distri/internal/env"
-	"github.com/lpar/gzipped"
+	"github.com/lpar/gzipped/v2"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -55,7 +55,7 @@ func export(ctx context.Context, args []string) error {
 	log.Printf("exporting %s on %s", *repo, addr)
 
 	if *gzip {
-		http.Handle("/", gzipped.FileServer(http.Dir(*repo)))
+		http.Handle("/", gzipped.FileServer(gzipped.Dir(*repo)))
 	} else {
 		http.Handle("/", http.FileServer(http.Dir(*repo)))
 	}

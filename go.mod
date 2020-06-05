@@ -2,7 +2,6 @@ module github.com/distr1/distri
 
 require (
 	github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e
-	github.com/golang/gddo v0.0.0-20180911175731-8b031907f29f // indirect
 	github.com/golang/protobuf v1.4.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github/v27 v27.0.6
@@ -11,7 +10,7 @@ require (
 	github.com/klauspost/compress v1.10.6
 	github.com/klauspost/pgzip v1.2.3
 	github.com/lib/pq v1.4.0
-	github.com/lpar/gzipped v1.1.0
+	github.com/lpar/gzipped/v2 v2.0.3-0.20200605003756-5fe469aaaf12
 	github.com/mattn/go-isatty v0.0.12
 	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20191018194151-ab9b9b21328a
@@ -22,7 +21,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/sys v0.0.0-20200428200454-593003d681fa
-	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
