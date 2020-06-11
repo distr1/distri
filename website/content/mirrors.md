@@ -78,6 +78,12 @@ recent distri release from all mirrors.
   `zstd-nginx-module`](https://github.com/tokers/zstd-nginx-module) and set
   `zstd_static on` and `gzip_static on`.
 
+## Monitoring freshness
+
+If you would like to monitor freshness of your mirror, you can use the
+`/_mirror/last-sync-from/repo-rsync.distr1.org` file. It contains a UNIX
+timestamp (`date +%s`) and is updated every minute.
+
 ## Any questions?
 
 Please get in touch! Reach out to [Michael

@@ -108,6 +108,10 @@ compression</a>:</p>
 <code>zstd_static on</code> and <code>gzip_static on</code>.</p>
 </li>
 </ul>
+<h2 id="monitoring-freshness">Monitoring freshness</h2>
+<p>If you would like to monitor freshness of your mirror, you can use the
+<code>/_mirror/last-sync-from/repo-rsync.distr1.org</code> file. It contains a UNIX
+timestamp (<code>date +%s</code>) and is updated every minute.</p>
 <h2 id="any-questions">Any questions?</h2>
 <p>Please get in touch! Reach out to <a href="https://michael.stapelberg.ch/">Michael
 Stapelberg</a> via email.</p>
@@ -126,6 +130,7 @@ Stapelberg</a> via email.</p>
     <li><a href="#distri">distri</a></li>
     <li><a href="#why-run-a-mirror">Why run a mirror?</a></li>
     <li><a href="#mirror-requirements">Mirror requirements</a></li>
+    <li><a href="#monitoring-freshness">Monitoring freshness</a></li>
     <li><a href="#any-questions">Any questions?</a></li>
   </ul>
 </nav>
