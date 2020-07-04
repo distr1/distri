@@ -1,10 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   format:
@@ -20,3 +16,12 @@ jobs:
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
         ./travis/check-txtpbfmt.sh
+
+  commands:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: build commands
+      run: go install ./cmd/...
