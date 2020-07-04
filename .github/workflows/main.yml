@@ -1,0 +1,27 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: install txtpbfmt
+      run: go get github.com/protocolbuffers/txtpbfmt/cmd/txtpbfmt@latest
+
+    - name: verify txtpbfmt reports no changes
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        ./travis/check-txtpbfmt.sh
+
+  commands:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: build commands
+      run: go install ./cmd/...

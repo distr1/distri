@@ -1228,10 +1228,10 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 			// In the namespace, map the current effective uid and gid to root,
 			// so that we can mount file systems:
 			UidMappings: []syscall.SysProcIDMap{
-				{ContainerID: 0, HostID: 1000, Size: 1},
+				{ContainerID: 0, HostID: os.Getuid(), Size: 1},
 			},
 			GidMappings: []syscall.SysProcIDMap{
-				{ContainerID: 0, HostID: 1000, Size: 1},
+				{ContainerID: 0, HostID: os.Getgid(), Size: 1},
 			},
 		}
 		cmd.ExtraFiles = []*os.File{w}

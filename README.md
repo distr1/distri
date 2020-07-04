@@ -1,5 +1,7 @@
 # distri — a Linux distribution to research fast package management
 
+![CI](https://github.com/distr1/distri/workflows/CI/badge.svg)
+
 This repository contains distri, a linux distribution research project.
 
 The contents form a proof-of-concept implementation of the simplest¹ linux distribution I can think of that is still useful². Interestingly enough, in some cases the simple solution has inherent advantages, which I explore and contrast in the articles released at https://michael.stapelberg.ch/posts/tags/distri/

@@ -234,6 +234,7 @@ func pack(ctx context.Context, args []string) error {
 			"etc/distri/repos.d",
 			"ro",
 			"ro-tmp",
+			"tmp",
 		} {
 			if err := os.MkdirAll(filepath.Join(root, dir), 0755); err != nil {
 				return err
@@ -241,6 +242,11 @@ func pack(ctx context.Context, args []string) error {
 		}
 
 		if err := ioutil.WriteFile(filepath.Join(root, "etc/passwd"), []byte(passwd(root)), 0644); err != nil {
+			return err
+		}
+
+		// TODO: de-duplicate with build.go
+		if err := os.Symlink("/ro/glibc-amd64-2.31-4/out/lib", filepath.Join(root, "lib64")); err != nil && !os.IsExist(err) {
 			return err
 		}
 
