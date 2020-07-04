@@ -2,6 +2,7 @@ package build
 
 import (
 	"strconv"
+	"sys"
 
 	"github.com/distr1/distri/pb"
 )
@@ -16,7 +17,7 @@ func (b *Ctx) buildcmake(opts *pb.CMakeBuilder, env []string) (newSteps []*pb.Bu
 		"-G", "Ninja",
 	}, opts.GetExtraCmakeFlag()...)
 	// TODO: apply this unconditionally (rebuild all packages)
-	if b.Arch != "amd64" {
+	if b.Arch != sys.GOARCH {
 		// From https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/CrossCompiling:
 		// If this compiler is a gcc-cross compiler with a prefixed name
 		// (e.g. "arm-elf-gcc") CMake will detect this and automatically find

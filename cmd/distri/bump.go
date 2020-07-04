@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sys"
 
 	"github.com/distr1/distri"
 	"github.com/distr1/distri/internal/build"
@@ -153,7 +154,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 	{
 		deps := buildProto.GetDep()
 		bld := &build.Ctx{
-			Arch: "amd64", // TODO
+			Arch: sys.GOARCH,
 			Repo: env.DefaultRepo,
 		}
 		deps = append(deps, bld.Builderdeps(&buildProto)...)
@@ -186,7 +187,7 @@ func newBumpctx() (*bumpctx, error) {
 	b := &bumpctx{
 		// TODO: use simple.NewDirectedMatrix instead?
 		graph:      simple.NewDirectedGraph(),
-		arch:       "amd64", // TODO: configurable / auto-detect
+		arch:       sys.GOARCH,
 		byFullname: make(map[string]*bumpnode),
 		byPkg:      make(map[string]*bumpnode),
 		srcCache:   make(map[string]string),

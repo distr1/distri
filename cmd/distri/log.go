@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sys"
 	"syscall"
 
 	"github.com/distr1/distri"
@@ -36,7 +37,7 @@ func showlog(ctx context.Context, args []string) error {
 	pkg := fset.Arg(0)
 
 	if *cross == "" {
-		*cross = "amd64" // TODO: native
+		*cross = sys.GOARCH
 	}
 
 	var match string

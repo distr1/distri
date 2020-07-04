@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sys"
 	"syscall"
 
 	"github.com/distr1/distri/internal/build"
@@ -133,7 +134,7 @@ func patch(ctx context.Context, args []string) error {
 	p := &patchctx{
 		build.Ctx{
 			Pkg:     *pkg,
-			Arch:    "amd64", // TODO: -cross flag
+			Arch:    sys.GOARCH, // TODO: -cross flag
 			Version: buildProto.GetVersion(),
 			Proto:   &buildProto,
 		},

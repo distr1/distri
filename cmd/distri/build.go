@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sys"
 	"syscall"
 	"time"
 
@@ -148,7 +149,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 	}
 
 	if cross == "" {
-		cross = "amd64" // TODO: configurable / auto-detect
+		cross = sys.GOARCH
 	}
 
 	b := &build.Ctx{
