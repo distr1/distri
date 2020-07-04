@@ -16,3 +16,6 @@ jobs:
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
         ./travis/check-txtpbfmt.sh
+    
+    - name: build commands
+      run: go install ./cmd/...
