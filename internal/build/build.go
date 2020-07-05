@@ -19,11 +19,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
-	"sys"
 	"syscall"
 	"text/template"
 	"time"
@@ -355,7 +355,7 @@ type Ctx struct {
 
 func NewCtx() (*Ctx, error) {
 	return &Ctx{
-		Arch: sys.GOARCH,
+		Arch: runtime.GOARCH,
 		Repo: env.DefaultRepo,
 	}, nil
 }
@@ -970,7 +970,7 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 func (b *Ctx) Builderdeps(p *pb.Build) []string {
 	var deps []string
 	if builder := p.Builder; builder != nil {
-		const native = sys.GOARCH
+		const native = runtime.GOARCH
 		// The C builder dependencies are re-used by many other builders
 		// (anything that supports linking against C libraries).
 		nativeDeps := []string{
@@ -1007,7 +1007,7 @@ func (b *Ctx) Builderdeps(p *pb.Build) []string {
 			}...)
 		}
 
-		if b.Arch == sys.GOARCH {
+		if b.Arch == runtime.GOARCH {
 			nativeDeps = append(nativeDeps, "gcc", "binutils")
 		} else {
 			nativeDeps = append(nativeDeps,
@@ -1446,7 +1446,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 				return nil, err
 			}
 
-			if b.Arch != sys.GOARCH {
+			if b.Arch != runtime.GOARCH {
 				// gcc-i686 and binutils-i686 are built with --sysroot=/,
 				// meaning they will search for startup files (e.g. crt1.o) in
 				// $(sysroot)/lib.

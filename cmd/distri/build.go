@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sys"
 	"syscall"
 	"time"
 
@@ -149,7 +148,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 	}
 
 	if cross == "" {
-		cross = sys.GOARCH
+		cross = runtime.GOARCH
 	}
 
 	b := &build.Ctx{
