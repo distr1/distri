@@ -355,7 +355,7 @@ type Ctx struct {
 
 func NewCtx() (*Ctx, error) {
 	return &Ctx{
-		Arch: runtime.GOARCH,
+		Arch: runtime.GOARCH, // TODO: configurable
 		Repo: env.DefaultRepo,
 	}, nil
 }
@@ -970,7 +970,7 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 func (b *Ctx) Builderdeps(p *pb.Build) []string {
 	var deps []string
 	if builder := p.Builder; builder != nil {
-		const native = runtime.GOARCH
+		const native = runtime.GOARCH // TODO: configurable
 		// The C builder dependencies are re-used by many other builders
 		// (anything that supports linking against C libraries).
 		nativeDeps := []string{

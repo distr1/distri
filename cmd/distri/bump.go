@@ -154,7 +154,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 	{
 		deps := buildProto.GetDep()
 		bld := &build.Ctx{
-			Arch: runtime.GOARCH,
+			Arch: runtime.GOARCH, // TODO: cross
 			Repo: env.DefaultRepo,
 		}
 		deps = append(deps, bld.Builderdeps(&buildProto)...)
@@ -187,7 +187,7 @@ func newBumpctx() (*bumpctx, error) {
 	b := &bumpctx{
 		// TODO: use simple.NewDirectedMatrix instead?
 		graph:      simple.NewDirectedGraph(),
-		arch:       runtime.GOARCH,
+		arch:       runtime.GOARCH, // TODO: configurable
 		byFullname: make(map[string]*bumpnode),
 		byPkg:      make(map[string]*bumpnode),
 		srcCache:   make(map[string]string),
