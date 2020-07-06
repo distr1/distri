@@ -154,7 +154,7 @@ func (b *bumpctx) addPkg(pkg string) error {
 	{
 		deps := buildProto.GetDep()
 		bld := &build.Ctx{
-			Arch: runtime.GOARCH, // TODO: cross
+			Arch: runtime.GOARCH, // TODO: configurable
 			Repo: env.DefaultRepo,
 		}
 		deps = append(deps, bld.Builderdeps(&buildProto)...)

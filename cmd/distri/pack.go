@@ -278,7 +278,7 @@ func pack(ctx context.Context, args []string) error {
 
 		// Remove packages we don’t need to reduce docker container size:
 		b := &build.Ctx{
-			Arch: runtime.GOARCH,
+			Arch: runtime.GOARCH, // TODO: configurable
 			Repo: env.DefaultRepo,
 		} // TODO: introduce a packctx, make glob take a common ctx
 		resolved, err := b.Glob(p.repo, []string{
@@ -404,7 +404,7 @@ HOME_URL=https://distr1.org
 	}
 
 	b := &build.Ctx{
-		Arch: runtime.GOARCH,
+		Arch: runtime.GOARCH, // TODO: configurable
 		Repo: env.DefaultRepo,
 	} // TODO: introduce a packctx, make glob take a common ctx
 

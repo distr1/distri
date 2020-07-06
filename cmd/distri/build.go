@@ -148,7 +148,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 	}
 
 	if cross == "" {
-		cross = runtime.GOARCH // TODO: configurable
+		cross = runtime.GOARCH
 	}
 
 	b := &build.Ctx{
