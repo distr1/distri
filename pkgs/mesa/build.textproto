@@ -4,7 +4,7 @@ version: "20.0.5-8"
 
 mesonbuilder: {
   extra_meson_flag: "-Dllvm=false"  # TODO: package llvm
-  extra_meson_flag: "-Dgallium-drivers="  # TODO: package llvm
+  extra_meson_flag: "-Dgallium-drivers=iris"  # TODO: package llvm
   extra_meson_flag: "-Dvulkan-drivers=intel"  # TODO: package llvm
   extra_meson_flag: "-Dplatforms=x11"  # TODO: package wayland
 }

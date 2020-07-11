@@ -1,6 +1,6 @@
 source: "http://www.greenwoodsoftware.com/less/less-551.tar.gz"
-hash: "e8544662b3373bf1467489f2338f65c419f6c3b996cb29befc0c424bacd56751"
-version: "551-11"
+hash: "ff165275859381a63f19135a8f1f6c5a194d53ec3187f94121ecd8ef0795fe3d"
+version: "551-12"
 pull: {
   release_regexp: "released version is less-(\\d+)"
 }
