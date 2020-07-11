@@ -362,7 +362,11 @@ func (r *Reader) lookupPath(path string, followSymlink bool) (Inode, error) {
 			//log.Printf("component %q (full: %q) resolved to %q", part, parts[:idx+1], target)
 			target = filepath.Clean(filepath.Join(append(parts[:idx] /* parent */, target)...))
 			//log.Printf("-> %s", target)
-			return r.LookupPath(target)
+			i, err := r.LookupPath(target)
+			if err != nil {
+				return 0, err
+			}
+			inode = i
 		}
 	}
 	return inode, nil
