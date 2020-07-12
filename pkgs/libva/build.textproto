@@ -1,0 +1,8 @@
+source: "https://github.com/intel/libva/releases/download/2.8.0/libva-2.8.0.tar.bz2"
+hash: "adbb1244d278908f89ccfcf254a442de6d71934565a492cb6f03caf2ed4d1ec3"
+version: "2.8.0-1"
+
+cbuilder: {}
+
+# build dependencies:
+dep: "libdrm"

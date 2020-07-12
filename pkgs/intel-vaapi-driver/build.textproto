@@ -1,0 +1,11 @@
+source: "https://github.com/intel/intel-vaapi-driver/releases/download/2.4.1/intel-vaapi-driver-2.4.1.tar.bz2"
+hash: "0081fce08eb3a83f7d99c3b853c8fdfa0af437b8f5b0fb7c66faeb83bcbe0c19"
+version: "2.4.1-1"
+
+cbuilder: {
+  extra_configure_flag: "LIBVA_DRIVERS_PATH=${DISTRI_PREFIX}/lib/dri"
+}
+
+# build dependencies:
+dep: "libdrm"
+dep: "libva"
