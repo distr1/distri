@@ -1158,7 +1158,7 @@ func (b *Ctx) muslGccPath() string {
 		b.Pkg == "gcc-i686-host" ||
 		b.Pkg == "gcc-i686" ||
 		b.Pkg == "gcc-i686-c" {
-		cmd = configureTarget[b.Arch]
+		cmd = configureTarget[b.Arch] + "-gcc"
 	}
 	return cmd
 }
