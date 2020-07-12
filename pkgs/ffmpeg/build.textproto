@@ -1,0 +1,37 @@
+source: "https://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz"
+hash: "ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb"
+version: "4.3.1-2"
+
+cbuilder: {}
+
+# build dependencies:
+dep: "nasm"
+dep: "libdrm"
+dep: "libxcb"
+dep: "pulseaudio"
+
+build_step: {
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--enable-debug"
+  argv: "--enable-shared"
+  argv: "--enable-version3"
+  argv: "--disable-static"
+  argv: "--disable-stripping"
+  argv: "--enable-libxcb"
+  argv: "--enable-libdrm"
+  argv: "--enable-libpulse"
+}
+
+build_step: {
+  argv: "make"
+  argv: "-j${DISTRI_JOBS}"
+  argv: "V=1"
+}
+
+build_step: {
+  argv: "make"
+  argv: "install"
+  argv: "V=1"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+}
