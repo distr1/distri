@@ -2,6 +2,8 @@ source: "https://github.com/NVIDIA/libglvnd/releases/download/v1.2.0/libglvnd-1.
 hash: "2dacbcfa47b7ffb722cbddc0a4f1bc3ecd71d2d7bb461bceb8e396dc6b81dc6d"
 version: "1.2.0-7"
 
+cherry_pick: "51233cc52cbcbe25f8461830913c06f5b5bc9508.patch"
+
 cbuilder: {
   extra_configure_flag: "--enable-debug"
 }
