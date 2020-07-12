@@ -5,4 +5,4 @@ version: "9.0.1-8"
 cbuilder: {}
 
 # build dependencies:
-dep: "mesa"
+dep: "libglvnd"

@@ -5,6 +5,6 @@ version: "1.5.4-10"
 mesonbuilder: {}
 
 # build dependencies:
-dep: "mesa"
+dep: "libglvnd"
 dep: "libdrm"
 dep: "libx11"
