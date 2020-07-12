@@ -45,8 +45,8 @@ build_step: {
   argv: "-dbus-linked"
   argv: "-openssl-linked"
   argv: "-system-harfbuzz"
-# qsql_sqlite.cpp:(.text+0x15ef): undefined reference to `sqlite3_column_table_name16'
-#  argv: "-system-sqlite"
+  # qsql_sqlite.cpp:(.text+0x15ef): undefined reference to `sqlite3_column_table_name16'
+  #  argv: "-system-sqlite"
   argv: "-system-zlib"
   argv: "-xcb"
 }
