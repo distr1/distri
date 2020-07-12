@@ -1,6 +1,6 @@
 source: "https://xorg.freedesktop.org/releases/individual/xserver/xorg-server-1.20.8.tar.bz2"
 hash: "d17b646bee4ba0fb7850c1cc55b18e3e8513ed5c02bdf38da7e107f84e2d0146"
-version: "1.20.8-9"
+version: "1.20.8-15"
 
 pull: {
   # xorg-server-1.14.5.901.tar.bz2 is not valid semver, but newer releases are
@@ -17,6 +17,7 @@ mesonbuilder: {
 }
 
 cherry_pick: "moduledir.patch"
+cherry_pick: "dridir.patch"
 
 # build dependencies:
 dep: "pixman"

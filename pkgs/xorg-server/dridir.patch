@@ -1,0 +1,12 @@
+--- old/include/meson.build	2020-07-11 18:11:27.197386107 +0200
++++ new/include/meson.build	2020-07-11 19:27:12.053246171 +0200
+@@ -173,7 +173,7 @@
+ conf_data.set('DPMSExtension', build_dpms)
+ conf_data.set('DRI2', build_dri2)
+ conf_data.set('DRI3', build_dri3)
+-conf_data.set_quoted('DRI_DRIVER_PATH', dri_dep.get_pkgconfig_variable('dridriverdir'))
++conf_data.set_quoted('DRI_DRIVER_PATH', '/ro/lib/dri/')
+ conf_data.set('HAS_SHM', build_mitshm)
+ conf_data.set('MITSHM', build_mitshm)
+ conf_data.set('PANORAMIX', build_xinerama)
+Binary files /dev/null and new/include/meson.build~ differ
