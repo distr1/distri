@@ -1,0 +1,13 @@
+source: "https://code.videolan.org/videolan/x264/-/archive/296494a4011f58f32adc54304a2654627558c59a/x264-296494a4011f58f32adc54304a2654627558c59a.tar.bz2"
+hash: "cee6ae0628e2176dda590e26e1778443efad245a27543052f43ec1b5b96cf09a"
+version: "296494a4011f58f32adc54304a2654627558c59a-1"
+
+cbuilder: {
+  extra_configure_flag: "--enable-shared"
+  extra_configure_flag: "--enable-debug"
+  extra_configure_flag: "--enable-pic"
+  extra_configure_flag: "--enable-lto"
+}
+
+# build dependencies:
+dep: "nasm"
