@@ -1,0 +1,73 @@
+source: "https://download.qt.io/archive/qt/5.15/5.15.0/single/qt-everywhere-src-5.15.0.tar.xz"
+hash: "22b63d7a7a45183865cc4141124f12b673e7a17b1fe2b91e433f6547c5d548c3"
+version: "5.15.0-2"
+
+cbuilder: {}
+
+# build dependencies:
+dep: "which"
+dep: "libxcb"
+dep: "sqlite3"
+dep: "libjpeg-turbo"
+dep: "libpng"
+dep: "openssl"
+dep: "harfbuzz"
+dep: "freetype"
+dep: "libglvnd"
+dep: "mesa"
+dep: "xcb-util-wm"
+dep: "xcb-util-image"
+dep: "xcb-util-keysyms"
+dep: "xcb-util-renderutil"
+dep: "libxkbcommon"
+dep: "dbus"
+dep: "perl"
+dep: "python3"
+# TODO: zstd
+dep: "iconv"
+dep: "fontconfig"
+# TODO: OpenGL ES 2.0, 3.0, 3.1, 3.2?
+dep: "libinput"
+dep: "pulseaudio"
+
+build_step: {
+  argv: "${DISTRI_SOURCEDIR}/configure"
+  argv: "-sysconfdir"
+  argv: "/etc/xdg"
+  argv: "-prefix"
+  argv: "${DISTRI_PREFIX}"
+  argv: "-confirm-license"
+  argv: "-opensource"
+  argv: "-nomake"
+  argv: "examples"
+  argv: "-skip"
+  argv: "qtwebengine"
+  argv: "-dbus-linked"
+  argv: "-openssl-linked"
+  argv: "-system-harfbuzz"
+# qsql_sqlite.cpp:(.text+0x15ef): undefined reference to `sqlite3_column_table_name16'
+#  argv: "-system-sqlite"
+  argv: "-system-zlib"
+  argv: "-xcb"
+}
+
+build_step: {
+  argv: "make"
+  argv: "-j${DISTRI_JOBS}"
+  argv: "V=1"
+}
+
+build_step: {
+  argv: "make"
+  argv: "-j${DISTRI_JOBS}"
+  argv: "install"
+  argv: "V=1"
+  argv: "DESTDIR=${DISTRI_DESTDIR}"
+  argv: "INSTALL_ROOT=${DISTRI_DESTDIR}"
+}
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "sed -i 's,install_prefix \"${CMAKE_CURRENT_LIST_DIR}/../../../\",install_prefix \"/ro/qt-amd64-5.15.0-2/out\",g' ${DISTRI_DESTDIR}${DISTRI_PREFIX}/lib/cmake/*/*.cmake"
+}
