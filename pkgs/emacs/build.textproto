@@ -1,6 +1,6 @@
 source: "https://mirror.kumi.systems/gnu/emacs/emacs-26.3.tar.xz"
 hash: "4d90e6751ad8967822c6e092db07466b9d383ef1653feb2f95c93e7de66d3485"
-version: "26.3-15"
+version: "26.3-16"
 
 writable_sourcedir: true  # modifies source
 

@@ -1,6 +1,6 @@
 source: "http://freedesktop.org/software/pulseaudio/pavucontrol/pavucontrol-4.0.tar.xz"
 hash: "8fc45bac9722aefa6f022999cbb76242d143c31b314e2dbb38f034f4069d14e2"
-version: "4.0-10"
+version: "4.0-11"
 
 cbuilder: {}
 

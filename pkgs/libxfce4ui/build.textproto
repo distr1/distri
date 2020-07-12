@@ -1,6 +1,6 @@
 source: "https://archive.xfce.org/src/xfce/libxfce4ui/4.13/libxfce4ui-4.13.7.tar.bz2"
 hash: "b932359b47a5f8bdeae4441728abd19980c1a77f9912bc6cf8a50028b0687b08"
-version: "4.13.7-9"
+version: "4.13.7-10"
 
 cbuilder: {}
 

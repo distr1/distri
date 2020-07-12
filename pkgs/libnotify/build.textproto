@@ -1,6 +1,6 @@
 source: "http://ftp.gnome.org/pub/gnome/sources/libnotify/0.7/libnotify-0.7.9.tar.xz"
 hash: "66c0517ed16df7af258e83208faaf5069727dfd66995c4bbc51c16954d674761"
-version: "0.7.9-10"
+version: "0.7.9-11"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

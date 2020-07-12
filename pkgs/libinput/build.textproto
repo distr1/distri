@@ -1,6 +1,6 @@
 source: "https://www.freedesktop.org/software/libinput/libinput-1.15.5.tar.xz"
 hash: "a90efc8f423c3094f2f9f372fb92381b2f3aad62e8b5882a8abe333aa8249c97"
-version: "1.15.5-10"
+version: "1.15.5-11"
 
 mesonbuilder: {
   extra_meson_flag: "-Dlibwacom=false"

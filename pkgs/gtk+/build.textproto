@@ -1,6 +1,6 @@
 source: "https://ftp.gnome.org/pub/gnome/sources/gtk+/3.24/gtk+-3.24.18.tar.xz"
 hash: "f5eaff7f4602e44a9ca7bfad5382d7a73e509a8f00b0bcab91c198d096172ad2"
-version: "3.24.18-10"
+version: "3.24.18-11"
 
 cbuilder: {
   extra_configure_flag: "have_xinput2=yes"  # libxi detection seems broken

@@ -1,6 +1,6 @@
 source: "https://github.com/traviscross/mtr/archive/v0.93.tar.gz"
 hash: "3a1ab330104ddee3135af3cfa567b9608001c5deecbf200c08b545ed6d7a4c8f"
-version: "0.93-12"
+version: "0.93-13"
 
 writable_sourcedir: true  # for autoreconf
 in_tree_build: true

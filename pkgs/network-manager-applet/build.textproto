@@ -1,6 +1,6 @@
 source: "https://download.gnome.org/sources/network-manager-applet/1.8/network-manager-applet-1.8.24.tar.xz"
 hash: "118bbb8a5027634b62e8b45b16ceafce74441529c99bf230654e3bec38f9fbbf"
-version: "1.8.24-14"
+version: "1.8.24-15"
 
 writable_sourcedir: true  # generate files in /usr/src (included in src squashfs)
 

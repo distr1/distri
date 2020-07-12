@@ -1,6 +1,6 @@
 source: "https://webkitgtk.org/releases/webkitgtk-2.22.7.tar.xz"
 hash: "4be6f7d605cd0a690fd26e8aa83b089a33ad9d419148eafcfb60580dd2af30ff"
-version: "2.22.7-9"
+version: "2.22.7-10"
 
 pull: {
   # webkitgtk-2.1.90.1.tar.bz2 is not valid semver, but newer releases are

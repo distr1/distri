@@ -1,6 +1,6 @@
 source: "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_81.0.4044.138-1_amd64.deb"
 hash: "9d13d41d79ce1f04d1f150b5d22fffd31779224cc7d8274f8479b06bcfe6846a"
-version: "81.0.4044.138-1-16"
+version: "81.0.4044.138-1-17"
 pull: {
   debian_packages: "https://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages"
 }
