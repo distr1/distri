@@ -2398,9 +2398,9 @@ func (b *Ctx) downloadHTTP(fn string) error {
 	// http.DefaultTransport’s default compression handling results in an
 	// unwanted gunzip step. E.g., http://rpm5.org/files/popt/popt-1.16.tar.gz
 	// would be stored as an uncompressed tar file.
-	t := *http.DefaultTransport.(*http.Transport)
+	t := http.DefaultTransport.(*http.Transport).Clone()
 	t.DisableCompression = true
-	c := &http.Client{Transport: &t}
+	c := &http.Client{Transport: t}
 	log.Printf("downloading %s to %s", b.Proto.GetSource(), fn)
 	resp, err := c.Get(b.Proto.GetSource())
 	if err != nil {
