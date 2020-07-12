@@ -1,12 +1,15 @@
 source: "https://mesa.freedesktop.org/archive/mesa-20.0.5.tar.xz"
 hash: "2c56a82a28cc924e40ea49752abdf1d701c9952481f53cbc7a080271597f572e"
-version: "20.0.5-8"
+version: "20.0.5-14"
 
 mesonbuilder: {
   extra_meson_flag: "-Dllvm=false"  # TODO: package llvm
-  extra_meson_flag: "-Dgallium-drivers=iris"  # TODO: package llvm
+  extra_meson_flag: "-Dgallium-drivers=iris,swrast"  # TODO: package llvm
   extra_meson_flag: "-Dvulkan-drivers=intel"  # TODO: package llvm
-  extra_meson_flag: "-Dplatforms=x11"  # TODO: package wayland
+  extra_meson_flag: "-Dplatforms=x11,surfaceless,drm"  # TODO: package wayland
+  extra_meson_flag: "-Ddri-search-path=/ro/lib/dri/"
+  extra_meson_flag: "-Dglvnd=true"
+  extra_meson_flag: "-Dgbm=true"
 }
 
 # build dependencies:
@@ -24,3 +27,4 @@ dep: "python3-mako"
 dep: "bison"
 dep: "flex"
 dep: "libxxf86vm"
+dep: "libglvnd"
