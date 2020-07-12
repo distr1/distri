@@ -1,0 +1,12 @@
+--- old/src/EGL/Makefile.in	2019-09-25 17:48:31.000000000 +0200
++++ new/src/EGL/Makefile.in	2020-07-12 23:17:52.512573383 +0200
+@@ -427,7 +427,7 @@
+ libEGL_la_CFLAGS = -I$(srcdir)/$(UTHASH_DIR) -I$(srcdir)/$(UTIL_DIR) \
+ 	-I$(srcdir)/$(GL_DISPATCH_DIR) -I$(top_srcdir)/include \
+ 	$(am__append_1) \
+-	-DDEFAULT_EGL_VENDOR_CONFIG_DIRS=\"@sysconfdir@/glvnd/egl_vendor.d:@datadir@/glvnd/egl_vendor.d\" \
++	-DDEFAULT_EGL_VENDOR_CONFIG_DIRS=\"@sysconfdir@/glvnd/egl_vendor.d:/ro/share/glvnd/egl_vendor.d:@datadir@/glvnd/egl_vendor.d\" \
+ 	$(PTHREAD_CFLAGS)
+ 
+ # Required libraries
+Binary files /dev/null and new/src/EGL/Makefile.in~ differ
