@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -46,7 +47,7 @@ func run(ctx context.Context, args []string) error {
 	cmd := fset.Args()
 
 	p := &build.Ctx{
-		Arch: "amd64", // TODO: -cross flag
+		Arch: runtime.GOARCH, // TODO: -cross flag
 		Repo: env.DefaultRepo,
 	}
 

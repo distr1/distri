@@ -705,7 +705,7 @@ func (fs *fuseFS) scanPackages(mu sync.Locker, pkgs []string) error {
 		}
 		for deleted := range existing {
 			var standin string
-			for _, arch := range []string{"amd64", "i686"} {
+			for arch := range distri.Architectures {
 				archmiddle := "-" + arch + "-"
 				if !strings.Contains(deleted, archmiddle) {
 					continue

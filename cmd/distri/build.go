@@ -148,7 +148,7 @@ func buildpkg(ctx context.Context, hermetic bool, debug string, fuse bool, pwd, 
 	}
 
 	if cross == "" {
-		cross = "amd64" // TODO: configurable / auto-detect
+		cross = runtime.GOARCH
 	}
 
 	b := &build.Ctx{

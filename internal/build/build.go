@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -354,7 +355,7 @@ type Ctx struct {
 
 func NewCtx() (*Ctx, error) {
 	return &Ctx{
-		Arch: "amd64", // TODO
+		Arch: runtime.GOARCH, // TODO: configurable
 		Repo: env.DefaultRepo,
 	}, nil
 }
@@ -969,7 +970,7 @@ func (b *Ctx) runtimeEnv(deps []string) []string {
 func (b *Ctx) Builderdeps(p *pb.Build) []string {
 	var deps []string
 	if builder := p.Builder; builder != nil {
-		const native = "amd64" // TODO: configurable / auto-detect
+		const native = runtime.GOARCH // TODO: configurable
 		// The C builder dependencies are re-used by many other builders
 		// (anything that supports linking against C libraries).
 		nativeDeps := []string{
@@ -1006,8 +1007,7 @@ func (b *Ctx) Builderdeps(p *pb.Build) []string {
 			}...)
 		}
 
-		// TODO: check for native
-		if b.Arch == "amd64" {
+		if b.Arch == runtime.GOARCH {
 			nativeDeps = append(nativeDeps, "gcc", "binutils")
 		} else {
 			nativeDeps = append(nativeDeps,
@@ -1446,8 +1446,7 @@ func (b *Ctx) Build(ctx context.Context, buildLog io.Writer) (*pb.Meta, error) {
 				return nil, err
 			}
 
-			// TODO: test for cross
-			if b.Arch != "amd64" {
+			if b.Arch != runtime.GOARCH {
 				// gcc-i686 and binutils-i686 are built with --sysroot=/,
 				// meaning they will search for startup files (e.g. crt1.o) in
 				// $(sysroot)/lib.

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -133,7 +134,7 @@ func patch(ctx context.Context, args []string) error {
 	p := &patchctx{
 		build.Ctx{
 			Pkg:     *pkg,
-			Arch:    "amd64", // TODO: -cross flag
+			Arch:    runtime.GOARCH, // TODO: -cross flag
 			Version: buildProto.GetVersion(),
 			Proto:   &buildProto,
 		},
