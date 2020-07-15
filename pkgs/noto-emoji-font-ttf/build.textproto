@@ -1,0 +1,13 @@
+source: "https://github.com/googlefonts/noto-emoji/archive/v2020-04-08-unicode12_1.tar.gz"
+hash: "414a538b591f8ace68a98f993f6a33a459a10fede99e9b20b090ceaf7673f95a"
+version: "v2020-04-08-unicode12_1-2"
+
+cbuilder: {}
+
+# build dependencies:
+
+build_step: {
+  argv: "/bin/sh"
+  argv: "-c"
+  argv: "d=${DISTRI_DESTDIR}/${DISTRI_PREFIX}/share/fonts/truetype/noto; mkdir -p $d; cp ${DISTRI_SOURCEDIR}/fonts/NotoColorEmoji.ttf $d/"
+}
