@@ -1,6 +1,6 @@
-source: "distri+gomod://go4.org/mem@v0.0.0-20200411205429-f77f31c81751"
-hash: "ba352b97556e8987d28dec12826cce8105db5b665bb4d8fbb3af44e3fce88e0c"
-version: "v0.0.0-20200411205429-f77f31c81751-1"
+source: "distri+gomod://go4.org/mem@v0.0.0-20200706164138-185c595c3ecc"
+hash: "1ac8e76ee26bddba3255d95ffaef168fecb8c15ad7c4719a6b40e25afdc4dcfb"
+version: "v0.0.0-20200706164138-185c595c3ecc-3"
 
 gomodbuilder: {}
 

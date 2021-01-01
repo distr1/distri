@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/alexbrainman/sspi@v0.0.0-20180613141037-e580b900e9f5"
+hash: "ca70eca3db83b80884e6aa464ae7324547d9ded965ff89642f4466dfa8a530c9"
+version: "v0.0.0-20180613141037-e580b900e9f5-1"
+
+gomodbuilder: {}
+
+# build dependencies:

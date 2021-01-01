@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/lxn/win@v0.0.0-20191128105842-2da648fda5b4"
+hash: "5a548390cd398b90cd677cc296ec455be563741032dac4d0257a2ee3c5b5f0fb"
+version: "v0.0.0-20191128105842-2da648fda5b4-1"
+
+gomodbuilder: {}
+
+# build dependencies:

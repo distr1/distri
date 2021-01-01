@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/tailscale/depaware@v0.0.0-20201003033024-5d95aab075be"
+hash: "6583f200b100a2d0de76a73448d1a1ad298c6a4cfacc0e65d8e26e8adf8e1fc7"
+version: "v0.0.0-20201003033024-5d95aab075be-1"
+
+gomodbuilder: {}
+
+# build dependencies:

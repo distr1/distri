@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/miekg/dns@v1.1.30"
+hash: "adf0d1c6a0e32f6f6ba027a64959b0ebc50263a04ad7b26565ec12fd0d155e1a"
+version: "v1.1.30-1"
+
+gomodbuilder: {}
+
+# build dependencies:

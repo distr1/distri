@@ -1,6 +1,6 @@
-source: "distri+gomod://tailscale.com/@v0.97.0"
-hash: "de874e7f8c7e5dd6a0bd7524824e983ef095d23707086684a22e18a1f4303c24"
-version: "v0.97.0-3"
+source: "distri+gomod://tailscale.com/@v1.2.10"
+hash: "9ce3e67a02ef79ac542f961ce22affcb097cfadb3a1698c70e6c705488665ca9"
+version: "v1.2.10-4"
 
 cherry_pick: "service.patch"
 
@@ -79,8 +79,29 @@ dep: "go-gopkg.in-errgo.v2"  # via go-internal
 dep: "go-golang.org-x-mod"  # via tools
 dep: "go-golang.org-x-tools"  # via tools
 
+
+dep: "go-github.com-alexbrainman-sspi"
+dep: "go-github.com-go--multierror-multierror"
+dep: "go-github.com-godbus-dbus-v5"
+dep: "go-github.com-lxn-walk"
+dep: "go-github.com-lxn-win"
+dep: "go-github.com-miekg-dns"
+dep: "go-github.com-pkg-diff"
+dep: "go-github.com-sergi-go--diff"
+dep: "go-github.com-tailscale-depaware"
+dep: "go-github.com-tcnksm-go--httpstat"
+dep: "go-github.com-yuin-goldmark"
+dep: "go-golang.zx2c4.com-wireguard-windows"
+dep: "go-golang.zx2c4.com-wireguard"
+
+
 install: {
   # Referencing ${DISTRI_BUILDDIR} is easier than constructing the
   # module cache path relative to ${DISTRI_SOURCEDIR}:
   systemd_unit: "${DISTRI_BUILDDIR}/cmd/tailscaled/tailscaled.service"
+
+  file: <
+    srcpath: "pkg/mod/tailscale.com@v1.2.10/cmd/tailscaled/tailscaled.defaults"
+    destpath: "etc/default/tailscaled"
+  >
 }

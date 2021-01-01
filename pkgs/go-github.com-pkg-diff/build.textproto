@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/pkg/diff@v0.0.0-20200914180035-5b29258ca4f7"
+hash: "f873bd33d7083abc6d37ee2e59529bc496e2434ac983d97dc29552c284d56ae3"
+version: "v0.0.0-20200914180035-5b29258ca4f7-1"
+
+gomodbuilder: {}
+
+# build dependencies:

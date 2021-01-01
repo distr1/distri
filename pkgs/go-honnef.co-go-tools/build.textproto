@@ -1,6 +1,6 @@
-source: "distri+gomod://honnef.co/go/tools@v0.0.1-2020.1.3"
-hash: "8795257d105376e0a040bc1d1ff9cfbf50e3dc479fa1f22b9ca693cc85ae24f4"
-version: "v0.0.1-2020.1.3-6"
+source: "distri+gomod://honnef.co/go/tools@v0.0.1-2020.1.4"
+hash: "a9612ed1c432b8644271ca4caa92da4bae42197a56baf1aacf028e3bc46cc259"
+version: "v0.0.1-2020.1.4-8"
 
 gomodbuilder: {}
 

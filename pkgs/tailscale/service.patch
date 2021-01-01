@@ -1,13 +1,11 @@
---- old/pkg/mod/tailscale.com@v0.97.0/cmd/tailscaled/tailscaled.service	2020-03-17 05:16:18.000000000 +0100
-+++ new/pkg/mod/tailscale.com@v0.97.0/cmd/tailscaled/tailscaled.service	2020-04-30 22:51:16.295383073 +0200
-@@ -7,8 +7,7 @@
- StartLimitBurst=0
- 
+--- old/pkg/mod/tailscale.com@v1.2.10/cmd/tailscaled/tailscaled.service	2020-03-17 05:16:18.000000000 +0100
++++ new/pkg/mod/tailscale.com@v1.2.10/cmd/tailscaled/tailscaled.service	2020-04-30 22:51:16.295383073 +0200
+@@ -7,7 +7,7 @@
  [Service]
--EnvironmentFile=/etc/default/tailscaled
+ EnvironmentFile=/etc/default/tailscaled
+ ExecStartPre=/usr/sbin/tailscaled --cleanup
 -ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port $PORT $FLAGS
-+ExecStart=/ro/tailscale-amd64-v0.97.0-3/bin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock
++ExecStart=/ro/tailscale-amd64-v1.2.10-4/bin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port $PORT $FLAGS
+ ExecStopPost=/usr/sbin/tailscaled --cleanup
  
  Restart=on-failure
- 
-Binary files /dev/null and new/pkg/mod/tailscale.com@v0.97.0/cmd/tailscaled/tailscaled.service~ differ

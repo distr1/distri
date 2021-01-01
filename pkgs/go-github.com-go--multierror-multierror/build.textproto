@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/go-multierror/multierror@v1.0.2"
+hash: "3fea1bea000fe7ff822385d633f7f725877ea9f2d57385f1eacf59217d941512"
+version: "v1.0.2-1"
+
+gomodbuilder: {}
+
+# build dependencies:

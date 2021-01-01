@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/yuin/goldmark@v1.2.1"
+hash: "19c8d03b015f200dd99fbb27ddcd6ec8168daa97566b86ca27ad42f4cd7fc142"
+version: "v1.2.1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

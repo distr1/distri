@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/lxn/walk@v0.0.0-20191128110447-55ccb3a9f5c1"
+hash: "f275d032a4e56216d1fc2a8e0746f53fd113b1499634197a2da6ab4f80cb2dd7"
+version: "v0.0.0-20191128110447-55ccb3a9f5c1-1"
+
+gomodbuilder: {}
+
+# build dependencies:

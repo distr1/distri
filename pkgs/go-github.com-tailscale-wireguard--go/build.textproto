@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/tailscale/wireguard-go@v0.0.0-20200317013323-239518935266"
-hash: "d5b11c69de714ddb12430333de1d5774de165a8979093947f229eac647be4dfc"
-version: "v0.0.0-20200317013323-239518935266-1"
+source: "distri+gomod://github.com/tailscale/wireguard-go@v0.0.0-20201021041318-a6168fd06b3f"
+hash: "525aa223d02ccedf77e15035aa41bbbb824acc7c433893fee7f73bf19a17c05f"
+version: "v0.0.0-20201021041318-a6168fd06b3f-3"
 
 gomodbuilder: {}
 

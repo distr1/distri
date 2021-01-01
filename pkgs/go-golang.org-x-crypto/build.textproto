@@ -1,6 +1,6 @@
-source: "distri+gomod://golang.org/x/crypto@v0.0.0-20200311171314-f7b00557c8c4"
-hash: "a7558e985a0ccb42aacd1fcd3db04d4e0b471ed682c5a3bed1ca576d4bc3b7c8"
-version: "v0.0.0-20200311171314-f7b00557c8c4-9"
+source: "distri+gomod://golang.org/x/crypto@v0.0.0-20200709230013-948cd5f35899"
+hash: "adcd6cd707c934c46e16689be06c901be36eb2fe1a7325ba6aaf62f5711779da"
+version: "v0.0.0-20200709230013-948cd5f35899-11"
 
 gomodbuilder: {}
 

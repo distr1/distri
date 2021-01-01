@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/godbus/dbus/v5@v5.0.3"
+hash: "be57d523475b6fa78a2ea4e6e362f024dcf38d286194b0fe351c9aff390b234e"
+version: "v5.0.3-1"
+
+gomodbuilder: {}
+
+# build dependencies:

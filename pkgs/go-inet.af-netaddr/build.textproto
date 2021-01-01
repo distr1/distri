@@ -1,6 +1,6 @@
-source: "distri+gomod://inet.af/netaddr@v0.0.0-20200417213433-f9e5bcc2d6ea"
-hash: "c98e76078be598da8394e5ff143e7df28433580524c29fd313e7000dee49a95c"
-version: "v0.0.0-20200417213433-f9e5bcc2d6ea-1"
+source: "distri+gomod://inet.af/netaddr@v0.0.0-20200810144936-56928fe48a98"
+hash: "acb3aa76b6d45f3da942e1619eefed5a118db89c06583626a442ebe488b30698"
+version: "v0.0.0-20200810144936-56928fe48a98-3"
 
 gomodbuilder: {}
 

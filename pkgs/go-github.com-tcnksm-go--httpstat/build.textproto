@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/tcnksm/go-httpstat@v0.2.0"
+hash: "f6dd40c34dcd70e4b11aa5105a9f64ee5b60092bdb8ed8493191817102a02690"
+version: "v0.2.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,6 +1,6 @@
-source: "distri+gomod://github.com/jsimonetti/rtnetlink@v0.0.0-20200117123717-f846d4f6c1f4"
-hash: "6119b105ccf6b3110996117b3167af9cc48d387e9f26f160c9ca7538deb09b63"
-version: "v0.0.0-20200117123717-f846d4f6c1f4-1"
+source: "distri+gomod://github.com/jsimonetti/rtnetlink@v0.0.0-20201216134343-bde56ed16391"
+hash: "30a85dc0c3b8157fcef5d667dc78821fb7789b2f0bfe2ab7c7c65b098287decf"
+version: "v0.0.0-20201216134343-bde56ed16391-2"
 
 gomodbuilder: {}
 

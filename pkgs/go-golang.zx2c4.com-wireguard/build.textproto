@@ -1,0 +1,7 @@
+source: "distri+gomod://golang.zx2c4.com/wireguard@v0.0.20200321-0.20200715051853-507f148e1c42"
+hash: "f2a978ada048168929d6c8c14934f33ce998af1ebbbcf09376391638e57aab68"
+version: "v0.0.20200321-0.20200715051853-507f148e1c42-1"
+
+gomodbuilder: {}
+
+# build dependencies:

@@ -1,0 +1,7 @@
+source: "distri+gomod://github.com/sergi/go-diff@v1.0.0"
+hash: "3e01290755a21a0794dcba4f731aaff65601e80e38cd848c3b370f39ab2ab62d"
+version: "v1.0.0-1"
+
+gomodbuilder: {}
+
+# build dependencies:
