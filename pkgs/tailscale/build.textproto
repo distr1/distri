@@ -79,7 +79,6 @@ dep: "go-gopkg.in-errgo.v2"  # via go-internal
 dep: "go-golang.org-x-mod"  # via tools
 dep: "go-golang.org-x-tools"  # via tools
 
-
 dep: "go-github.com-alexbrainman-sspi"
 dep: "go-github.com-go--multierror-multierror"
 dep: "go-github.com-godbus-dbus-v5"
@@ -94,14 +93,13 @@ dep: "go-github.com-yuin-goldmark"
 dep: "go-golang.zx2c4.com-wireguard-windows"
 dep: "go-golang.zx2c4.com-wireguard"
 
-
 install: {
   # Referencing ${DISTRI_BUILDDIR} is easier than constructing the
   # module cache path relative to ${DISTRI_SOURCEDIR}:
   systemd_unit: "${DISTRI_BUILDDIR}/cmd/tailscaled/tailscaled.service"
 
-  file: <
+  file: {
     srcpath: "pkg/mod/tailscale.com@v1.2.10/cmd/tailscaled/tailscaled.defaults"
     destpath: "etc/default/tailscaled"
-  >
+  }
 }
