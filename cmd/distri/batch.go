@@ -75,6 +75,10 @@ func cmdbatch(ctx context.Context, args []string) error {
 	fset.Usage = usage(fset, batchHelp)
 	fset.Parse(args)
 
+	if *arch == "" {
+		*arch = runtime.GOARCH
+	}
+
 	if *ctracefile == "" {
 		// Enable writing ctrace output files by default for distri batch. Not
 		// specifying the flag is a time- and power-costly mistake :)
