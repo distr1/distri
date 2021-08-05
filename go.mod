@@ -9,7 +9,6 @@ require (
 	github.com/jacobsa/fuse v0.0.0-20200423191118-1d001802f70a
 	github.com/klauspost/compress v1.10.7
 	github.com/klauspost/pgzip v1.2.3
-	github.com/lib/pq v1.4.0
 	github.com/lpar/gzipped/v2 v2.0.3-0.20200605003756-5fe469aaaf12
 	github.com/mattn/go-isatty v0.0.12
 	github.com/orcaman/writerseeker v0.0.0-20180723184025-774071c66cec

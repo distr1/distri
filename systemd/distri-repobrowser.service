@@ -1,16 +1,14 @@
 [Unit]
 Description=distri-repobrowser
-After=postgresql.service
-Requires=postgresql.service
 StartLimitIntervalSec=0
 StartLimitBurst=0
 
 [Service]
 Restart=always
 
-# TODO: why does the Go postgresql driver not default to this?
-Environment=PGHOST=/run/postgresql
-ExecStart=/srv/browse.distr1.org/distri-repobrowser -assets=/srv/browse.distr1.org/assets
+ExecStart=/srv/browse.distr1.org/distri-repobrowser -assets=/srv/browse.distr1.org/assets -upstream_status_path=/var/lib/distri-checkupstream/upstream_state.json
+
+StateDirectory=distri-checkupstream
 
 # See also http://0pointer.net/blog/dynamic-users-with-systemd.html
 DynamicUser=yes
@@ -60,4 +58,3 @@ SystemCallErrorNumber=EPERM
 
 [Install]
 WantedBy=multi-user.target
-WantedBy=postgresql.service

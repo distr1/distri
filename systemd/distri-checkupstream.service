@@ -4,15 +4,14 @@ Description=distri-checkupstream
 [Service]
 Type=oneshot
 
-# TODO: why does the Go postgresql driver not default to this?
-Environment=PGHOST=/run/postgresql
-
 Environment=DISTRIROOT=/tmp/distri
 ExecStart=/usr/bin/git clone https://github.com/distr1/distri /tmp/distri
-ExecStart=/srv/browse.distr1.org/distri-checkupstream
+ExecStart=/bin/sh -c '/srv/browse.distr1.org/distri-checkupstream -output_path=$$STATE_DIRECTORY/upstream_state.json'
 
 # See also http://0pointer.net/blog/dynamic-users-with-systemd.html
 DynamicUser=yes
+
+StateDirectory=distri-checkupstream
 
 # Specifying User= with DynamicUser=yes allows for easy up- and downgrades
 # between dynamic and statically allocated users.

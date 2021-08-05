@@ -1,25 +1,24 @@
 package main
 
 import (
-	"database/sql"
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/distr1/distri/internal/checkupstream"
 	"github.com/distr1/distri/internal/env"
+	"github.com/google/renameio"
 	"github.com/protocolbuffers/txtpbfmt/parser"
-
-	// PostgreSQL driver for database/sql:
-	_ "github.com/lib/pq"
 )
 
 type checker struct {
-	db            *sql.DB
-	updateVersion *sql.Stmt
+	updateVersion func(pkg, version string) error
 }
 
 func (c *checker) check1(pkg string) error {
@@ -36,36 +35,50 @@ func (c *checker) check1(pkg string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := c.updateVersion.Exec(pkg, remote.Version); err != nil {
+	if err := c.updateVersion(pkg, remote.Version); err != nil {
 		return err
 	}
 	return nil
 }
 
-func logic() error {
-	db, err := sql.Open("postgres", "dbname=distri sslmode=disable")
-	if err != nil {
+func logic(outputPath string) error {
+	b, err := ioutil.ReadFile(outputPath)
+	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
-	markUnreachable, err := db.Prepare(`UPDATE upstream_status SET unreachable = true`)
-	if err != nil {
-		return err
+	type upstreamStatus struct {
+		UpstreamVersion string    `json:"upstream_version"`
+		LastReachable   time.Time `json:"last_reachable"`
+		Unreachable     bool      `json:"unreachable"`
 	}
-	updateVersion, err := db.Prepare(`
-INSERT INTO upstream_status (package, upstream_version, last_reachable, unreachable) VALUES ($1, $2, NOW(), false)
-ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(), unreachable = false
-`)
+	var (
+		packagesMu sync.Mutex
+		packages   = make(map[string]upstreamStatus)
+	)
+	if len(b) > 0 {
+		if err := json.Unmarshal(b, &packages); err != nil {
+			return err
+		}
+	}
+	// Mark every package as unreachable
+	for pkg, cur := range packages {
+		cur.Unreachable = true
+		packages[pkg] = cur
+	}
 	c := &checker{
-		db:            db,
-		updateVersion: updateVersion,
+		updateVersion: func(pkg, version string) error {
+			packagesMu.Lock()
+			defer packagesMu.Unlock()
+			cur := packages[pkg]
+			cur.UpstreamVersion = version
+			cur.LastReachable = time.Now()
+			cur.Unreachable = false
+			packages[pkg] = cur
+			return nil
+		},
 	}
 	fis, err := ioutil.ReadDir(env.DistriRoot.PkgDir(""))
 	if err != nil {
-		return err
-	}
-	// TODO: refactor to collect check1() results, run all db modifications in a
-	// transaction
-	if _, err := markUnreachable.Exec(); err != nil {
 		return err
 	}
 	workers := make(chan struct{}, runtime.NumCPU())
@@ -84,12 +97,21 @@ ON CONFLICT (package) DO UPDATE SET upstream_version = $2, last_reachable = NOW(
 		}()
 	}
 	wg.Wait()
-	return nil
+	b, err = json.Marshal(&packages)
+	if err != nil {
+		return err
+	}
+	return renameio.WriteFile(outputPath, b, 0644)
 }
 
 func main() {
+	var (
+		outputPath = flag.String("output_path",
+			"upstream_status.json",
+			"path containing the current upstream status, if any, to which the output will be written")
+	)
 	flag.Parse()
-	if err := logic(); err != nil {
+	if err := logic(*outputPath); err != nil {
 		log.Fatal(err)
 	}
 }
