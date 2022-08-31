@@ -39,20 +39,64 @@ const (
 	invalidXattr    = 0xFFFFFFFF
 )
 
+// Explanations partly copied from
+// https://dr-emann.github.io/squashfs/squashfs.html#_the_superblock
 type superblock struct {
-	Magic               uint32
-	Inodes              uint32
-	MkfsTime            int32
-	BlockSize           uint32
-	Fragments           uint32
-	Compression         uint16
-	BlockLog            uint16
-	Flags               uint16
-	NoIds               uint16
-	Major               uint16
-	Minor               uint16
-	RootInode           Inode
-	BytesUsed           int64
+	// Magic is always "hsqs"
+	Magic uint32
+
+	// Inodes is the number of inodes stored in the archive.
+	Inodes uint32
+
+	// MkfsTime is the last modification time of the archive, which is identical
+	// to the creation time, since our archives are immutable.
+	//
+	// TODO: change this to uint32 as was done upstream in August 2019:
+	// https://github.com/plougher/squashfs-tools/commit/66e9980f3e29ba59fdd7ab681197df1ff02916c7
+	MkfsTime int32
+
+	// BlockSize is the size of a data block in bytes.
+	// Must be a power of two between 4 KiB and 1 MiB.
+	BlockSize uint32
+
+	// Fragments is the number of entries in the fragment table.
+	Fragments uint32
+
+	// Compression is an ID designating the compressor
+	// used for both data and meta data blocks.
+	//
+	// TODO: define a custom uint16 type
+	Compression uint16
+
+	// The log_2 of the block size. If the two fields do not agree,
+	// the archive is considered corrupted.
+	BlockLog uint16
+
+	// TODO: flag bit definitions?
+	Flags uint16
+
+	// NoIds is the number of entries in the ID lookup table.
+	NoIds uint16
+
+	// Major is the major version number (4).
+	Major uint16
+
+	// Minor is the minor version number (0).
+	Minor uint16
+
+	// RootInode is a reference to the inode of the root directory.
+	RootInode Inode
+
+	// BytesUsed is the number of bytes used by the archive.
+	// Can be less than the actual file size because SquashFS
+	// archives must be padded to a multiple of the underlying
+	// device block size.
+	// TODO: we currently only pad to 4k. what’s the largest underlying?
+	BytesUsed int64
+
+	// Byte offsets at which the respective id table starts.
+	// If the xattr, fragment or export table are absent,
+	// the respective field must be set to 0xFFFFFFFFFFFFFFFF.
 	IdTableStart        int64
 	XattrIdTableStart   int64
 	InodeTableStart     int64
@@ -79,100 +123,218 @@ const (
 	lsocketType
 )
 
+// https://dr-emann.github.io/squashfs/squashfs.html#_common_inode_header
 type inodeHeader struct {
-	InodeType   uint16
-	Mode        uint16
-	Uid         uint16
-	Gid         uint16
-	Mtime       int32
+	// TODO: define a custom uint16 type
+	InodeType uint16
+
+	// Mode is a bit mask representing Unix file permissions for the inode.
+	// This only stores permissions, not the type. The type is reconstructed
+	// from the InodeType field.
+	Mode uint16
+
+	// Uid is an index into the id table, giving the user id of the owner.
+	Uid uint16
+
+	// Gid is an index into the id table, giving the group id of the owner.
+	Gid uint16
+
+	// Mtime is the signed number of seconds since the UNIX epoch.
+	//
+	// TODO: change this to uint32 as was done upstream in August 2019:
+	// https://github.com/plougher/squashfs-tools/commit/66e9980f3e29ba59fdd7ab681197df1ff02916c7
+	Mtime int32
+
+	// InodeNumber is a unique inode number.
+	// Must be at least 1, at most the inode count from the super block.
 	InodeNumber uint32
 }
 
 // fileType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_file_inodes
 type regInodeHeader struct {
 	inodeHeader
 
-	// full byte offset from the start of the file system, e.g. 96 for first
-	// file contents. Not using fragments limits us to 2^32-1-96 (≈ 4GiB) bytes
-	// of file contents.
+	// StartBlock is the full byte offset from the start of the file system,
+	// e.g. 96 for first file contents. Not using fragments limits us to
+	// 2^32-1-96 (≈ 4GiB) bytes of file contents.
 	StartBlock uint32
-	Fragment   uint32
-	Offset     uint32
-	FileSize   uint32
+
+	// Fragment is an index into the fragment table which describes the fragment
+	// block that the tail end of this file is stored in. If fragments are not
+	// used, this field is set to 0xFFFFFFFF.
+	Fragment uint32
+
+	// Offset is the (uncompressed) offset within the fragment block where the
+	// tail end of this file is.
+	Offset uint32
+
+	// FileSize is the (uncompressed) size of this file.
+	FileSize uint32
 
 	// Followed by a uint32 array of compressed block sizes.
+	// See https://dr-emann.github.io/squashfs/squashfs.html#_data_and_fragment_blocks
 }
 
 // lregType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_file_inodes
 type lregInodeHeader struct {
 	inodeHeader
 
-	// full byte offset from the start of the file system, e.g. 96 for first
-	// file contents. Not using fragments limits us to 2^32-1-96 (≈ 4GiB) bytes
-	// of file contents.
+	// StartBlock is the full byte offset from the start of the file system,
+	// e.g. 96 for first file contents. Not using fragments limits us to
+	// 2^32-1-96 (≈ 4GiB) bytes of file contents.
 	StartBlock uint64
-	FileSize   uint64
-	Sparse     uint64
-	Nlink      uint32
-	Fragment   uint32
-	Offset     uint32
-	Xattr      uint32
+
+	// FileSize is the (uncompressed) size of this file.
+	FileSize uint64
+
+	// Sparse is the number of bytes saved by omitting zero bytes. Used in the
+	// kernel for sparse file accounting.
+	Sparse uint64
+
+	// Nlink is the number of hard links to this node.
+	Nlink uint32
+
+	// Fragment is an index into the fragment table which describes the fragment
+	// block that the tail end of this file is stored in. If fragments are not
+	// used, this field is set to 0xFFFFFFFF.
+	Fragment uint32
+
+	// Offset is the (uncompressed) offset within the fragment block where the
+	// tail end of this file is.
+	Offset uint32
+
+	// Xattr is an index into the Xattr table, or 0xFFFFFFFF if the inode has no
+	// extended attributes.
+	Xattr uint32
 
 	// Followed by a uint32 array of compressed block sizes.
 }
 
 // symlinkType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_symbolic_links
 type symlinkInodeHeader struct {
 	inodeHeader
 
-	Nlink       uint32
+	// Nlink is the number of hard links to this symlink.
+	Nlink uint32
+
+	// SymlinkSize is the size in bytes of the target path this symlink points
+	// to.
 	SymlinkSize uint32
 
-	// Followed by a byte array of SymlinkSize bytes.
+	// Followed by a byte array of SymlinkSize bytes. The path is not
+	// null-terminated.
 }
 
 // chrdevType and blkdevType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_device_special_files
 type devInodeHeader struct {
 	inodeHeader
 
+	// Nlink is the number of hard links to this entry.
 	Nlink uint32
-	Rdev  uint32
+
+	// Rdev is the system-specific device number.
+	Rdev uint32
 }
 
 // fifoType and socketType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_ipc_inodes_fifo_or_socket
 type ipcInodeHeader struct {
 	inodeHeader
 
+	// Nlink is the number of hard links to this entry.
 	Nlink uint32
 }
 
 // dirType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_directory_inodes
 type dirInodeHeader struct {
 	inodeHeader
 
-	StartBlock  uint32
-	Nlink       uint32
-	FileSize    uint16
-	Offset      uint16
+	// StartBlock is the block index of the metadata block in the directory
+	// table where the entry information starts. This is relative to the
+	// directory table location.
+	StartBlock uint32
+
+	// Nlink is the number of hard links to this directory.
+	Nlink uint32
+
+	// FileSize is the total (uncompressed) size in bytes of the entry listing
+	// in the directory table, including headers.
+	//
+	// This value is 3 bytes larger than the real listing. The Linux kernel
+	// creates "." and ".." entries for offsets 0 and 1, and only after 3 looks
+	// into the listing, subtracting 3 from the size.
+	FileSize uint16
+
+	// Offset is the (uncompressed) offset within the metadata block in the
+	// directory table where the directory listing starts.
+	Offset uint16
+
+	// ParentInode is the inode number of the parent of this directory. If this
+	// is the root directory, ParentInode should be 0.
 	ParentInode uint32
 }
 
 // ldirType
+//
+// https://dr-emann.github.io/squashfs/squashfs.html#_directory_inodes
 type ldirInodeHeader struct {
 	inodeHeader
 
-	Nlink       uint32
-	FileSize    uint32
-	StartBlock  uint32
+	// Nlink is the number of hard links to this directory.
+	Nlink uint32
+
+	// FileSize is the total (uncompressed) size in bytes of the entry listing
+	// in the directory table, including headers.
+	//
+	// This value is 3 bytes larger than the real listing. The Linux kernel
+	// creates "." and ".." entries for offsets 0 and 1, and only after 3 looks
+	// into the listing, subtracting 3 from the size.
+	FileSize uint32
+
+	// StartBlock is the block index of the metadata block in the directory
+	// table where the entry information starts. This is relative to the
+	// directory table location.
+	StartBlock uint32
+
+	// ParentInode is the inode number of the parent of this directory. If this
+	// is the root directory, ParentInode should be 0.
 	ParentInode uint32
-	Icount      uint16
-	Offset      uint16
-	Xattr       uint32
+
+	// Icount is the number of directory index entries following this inode.
+	Icount uint16
+
+	// Offset is the (uncompressed) offset within the metadata block in the
+	// directory table where the directory listing starts.
+	Offset uint16
+
+	// Xattr is an index into the Xattr table, or 0xFFFFFFFF if the inode has no
+	// extended attributes.
+	Xattr uint32
 }
 
+// https://dr-emann.github.io/squashfs/squashfs.html#_directory_table
 type dirHeader struct {
-	Count       uint32
-	StartBlock  uint32
+	// Count is the number of entries following the header.
+	Count uint32
+
+	// StartBlock is the location of the metadata block in the inode table where
+	// the inodes are stored. This is relative to the inode table start from the
+	// super block.
+	StartBlock uint32
+
+	// InodeOffset is an arbitrary inode number. The entries that follow store
+	// their inode number as a difference to this value.
 	InodeOffset uint32
 }
 
@@ -184,13 +346,22 @@ func (d *dirHeader) Unmarshal(b []byte) {
 	d.InodeOffset = e.Uint32(b[8:])
 }
 
+// https://dr-emann.github.io/squashfs/squashfs.html#_directory_table
 type dirEntry struct {
-	Offset      uint16
-	InodeNumber int16
-	EntryType   uint16
-	Size        uint16
+	// Offset is an offset into the uncompressed inode metadata block.
+	Offset uint16
 
-	// Followed by a byte array of Size bytes.
+	// InodeNumber is the difference of this inode relative to dirHeader.InodeOffset.
+	InodeNumber int16
+
+	// EntryType is the inode type. For extended inodes, the basic type is
+	// stored here instead.
+	EntryType uint16
+
+	// Size is one less than the size of the entry name.
+	Size uint16
+
+	// Followed by a byte array of Size+1 bytes.
 }
 
 func (d *dirEntry) Unmarshal(b []byte) {
@@ -216,7 +387,12 @@ var xattrPrefix = map[int]string{
 }
 
 type Xattr struct {
-	Type     uint16
+	// Type is a prefix id for the key name. If the value that follows is stored
+	// out-of-line, the flag 0x0100 is ORed to the type id.
+	//
+	// TODO: define a custom uint16 type
+	Type uint16
+
 	FullName string
 	Value    []byte
 }
@@ -323,6 +499,7 @@ func filesystemFlags() uint16 {
 		noXattr           // no xattrs
 		compopt           // compressor-specific options present?
 	)
+	// TODO: is noXattr still accurate?
 	return noI | noF | noFrag | noX | noXattr
 }
 
@@ -734,6 +911,7 @@ func (f *file) Close() error {
 	return nil
 }
 
+// https://dr-emann.github.io/squashfs/squashfs.html#_xattr_table
 func writeXattr(w io.Writer, xattrs []Xattr) error {
 	for _, attr := range xattrs {
 		if err := binary.Write(w, binary.LittleEndian, struct {
