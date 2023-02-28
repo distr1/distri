@@ -15,11 +15,11 @@ require (
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20191018194151-ab9b9b21328a
 	github.com/s-urbaniak/uevent v1.0.0
 	golang.org/x/exp v0.0.0-20190221220918-438050ddec5e
-	golang.org/x/mod v0.2.0
-	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
+	golang.org/x/net v0.7.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200428200454-593003d681fa
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sys v0.5.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
