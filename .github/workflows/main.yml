@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: install txtpbfmt
-      run: go get github.com/protocolbuffers/txtpbfmt/cmd/txtpbfmt@latest
+      run: go install github.com/protocolbuffers/txtpbfmt/cmd/txtpbfmt@latest
 
     - name: verify txtpbfmt reports no changes
       run: |
