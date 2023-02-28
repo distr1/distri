@@ -19,7 +19,7 @@ require (
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200428200454-593003d681fa
+	golang.org/x/sys v0.1.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
