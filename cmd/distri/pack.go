@@ -937,7 +937,8 @@ name=root,type=` + typeLinux)
 		root = "/dev/mapper/" + districrypt
 	}
 
-	mkfs = exec.Command("sudo", "mkfs.ext4", root)
+	// Our grub (2.04) does not understand metadata_csum_seed yet.
+	mkfs = exec.Command("sudo", "mkfs.ext4", "-O", "^metadata_csum_seed", root)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	if err := mkfs.Run(); err != nil {
