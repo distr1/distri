@@ -1059,6 +1059,10 @@ name=root,type=` + typeLinux)
 		return err
 	}
 
+	if err := ioutil.WriteFile("/mnt/etc/default/grub", []byte("GRUB_DISTRIBUTOR=distri\n"), 0755); err != nil {
+		return xerrors.Errorf("writing /etc/default/grub: %v", err)
+	}
+
 	var params []string
 	if !p.serialOnly {
 		params = append(params, "console=tty1")
