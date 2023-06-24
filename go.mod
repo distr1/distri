@@ -30,7 +30,7 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/kevinpollet/nego v0.0.0-20200324111829-b3061ca9dd9d // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
