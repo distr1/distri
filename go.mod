@@ -19,7 +19,7 @@ require (
 	golang.org/x/net v0.17.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	golang.org/x/sys v0.13.0
+	golang.org/x/sys v0.15.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414
 	google.golang.org/grpc v1.29.1
@@ -30,8 +30,8 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/kevinpollet/nego v0.0.0-20200324111829-b3061ca9dd9d // indirect
-	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	gonum.org/v1/netlib v0.0.0-20181018051557-57e1e4db57a7 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200429120912-1f37eeb960b2 // indirect
