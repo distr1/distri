@@ -2,8 +2,8 @@ module github.com/distr1/distri
 
 require (
 	github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e
-	github.com/golang/protobuf v1.4.0
-	github.com/google/go-cmp v0.4.0
+	github.com/golang/protobuf v1.5.0
+	github.com/google/go-cmp v0.5.5
 	github.com/google/go-github/v27 v27.0.6
 	github.com/google/renameio v0.1.0
 	github.com/jacobsa/fuse v0.0.0-20210904154839-95fc8d118111
@@ -23,7 +23,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20181012194325-406984d37414
 	google.golang.org/grpc v1.29.1
-	google.golang.org/protobuf v1.21.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
