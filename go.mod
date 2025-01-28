@@ -3,7 +3,7 @@ module github.com/distr1/distri
 require (
 	github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e
 	github.com/golang/protobuf v1.5.4
-	github.com/google/go-cmp v0.5.5
+	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v27 v27.0.6
 	github.com/google/renameio v0.1.0
 	github.com/jacobsa/fuse v0.0.0-20210904154839-95fc8d118111
@@ -27,7 +27,7 @@ require (
 )
 
 require (
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
+	github.com/golang/glog v1.2.4 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/kevinpollet/nego v0.0.0-20200324111829-b3061ca9dd9d // indirect
 	golang.org/x/crypto v0.31.0 // indirect
