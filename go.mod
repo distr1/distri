@@ -1,5 +1,7 @@
 module github.com/distr1/distri
 
+go 1.24
+
 require (
 	github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e
 	github.com/golang/protobuf v1.5.4
@@ -36,5 +38,3 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200429120912-1f37eeb960b2 // indirect
 )
-
-go 1.20
