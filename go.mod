@@ -18,7 +18,7 @@ require (
 	github.com/s-urbaniak/uevent v1.0.0
 	golang.org/x/exp v0.0.0-20190221220918-438050ddec5e
 	golang.org/x/mod v0.17.0
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.7.0
 	golang.org/x/sync v0.12.0
 	golang.org/x/sys v0.31.0
