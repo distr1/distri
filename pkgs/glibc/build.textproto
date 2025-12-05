@@ -29,10 +29,10 @@ dep: "m4"  # TODO: remove once m4 is declared a runtime-dep of bison
 dep: "gzip"
 dep: "python3"
 
-# TODO: specify cross-compile target like in buildc.go?
 build_step: {
   argv: "${DISTRI_SOURCEDIR}/configure"
   argv: "--prefix=${DISTRI_PREFIX}"
+  argv: "--host=${DISTRI_CONFIGURE_HOST}"
   argv: "--sysconfdir=/etc"
   argv: "--disable-dependency-tracking"
   # TODO: remove again
@@ -65,5 +65,6 @@ build_step: {
 
 build_step: {
   argv: "rm"
+  argv: "-f"
   argv: "${DISTRI_DESTDIR}/etc/ld.so.cache"
 }
